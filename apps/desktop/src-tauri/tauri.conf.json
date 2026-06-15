@@ -1,0 +1,30 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Crosslog",
+  "version": "0.0.0",
+  "identifier": "dev.crosslog.app",
+  "build": {
+    "beforeDevCommand": "pnpm --filter @crosslog/desktop dev",
+    "beforeBuildCommand": "pnpm --filter @crosslog/desktop build",
+    "devUrl": "http://127.0.0.1:1420",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Crosslog",
+        "width": 1280,
+        "height": 800,
+        "minWidth": 960,
+        "minHeight": 540
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": false,
+    "targets": "all"
+  }
+}

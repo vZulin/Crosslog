@@ -1,0 +1,48 @@
+{
+  "name": "crosslog",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.15.4",
+  "scripts": {
+    "dev:web": "corepack pnpm --filter @crosslog/web dev",
+    "dev:desktop": "corepack pnpm --filter @crosslog/desktop tauri dev",
+    "build:web": "corepack pnpm --filter @crosslog/web build",
+    "build:desktop": "corepack pnpm --filter @crosslog/desktop tauri build",
+    "lint": "eslint .",
+    "test:unit": "vitest run packages/core/tests packages/ui/tests packages/platform/tests",
+    "test:integration": "vitest run tests/integration",
+    "test:ui:web": "playwright test --config playwright.config.ts",
+    "test:ui:desktop": "wdio run wdio.conf.ts",
+    "bench": "vitest bench tests/performance packages/core/tests packages/platform/tests"
+  },
+  "dependencies": {
+    "@tanstack/react-virtual": "^3.11.2",
+    "@tauri-apps/api": "^2.2.0",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.1",
+    "@tauri-apps/cli": "^2.2.7",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "@typescript-eslint/eslint-plugin": "^8.19.0",
+    "@typescript-eslint/parser": "^8.19.0",
+    "@wdio/cli": "^9.4.5",
+    "@wdio/globals": "^9.4.5",
+    "@wdio/local-runner": "^9.4.5",
+    "@wdio/mocha-framework": "^9.4.5",
+    "eslint": "^9.17.0",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "jsdom": "^25.0.1",
+    "playwright": "^1.49.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.6",
+    "vitest": "^2.1.8"
+  }
+}

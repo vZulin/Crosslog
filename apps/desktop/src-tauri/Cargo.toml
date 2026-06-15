@@ -1,0 +1,31 @@
+[package]
+name = "crosslog-desktop"
+version = "0.0.0"
+description = "Crosslog desktop shell"
+authors = ["Crosslog"]
+edition = "2021"
+rust-version = "1.77"
+
+[lib]
+name = "crosslog_desktop"
+path = "src/lib.rs"
+
+[[bin]]
+name = "crosslog-desktop"
+path = "src/main.rs"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tauri = { version = "2", features = [] }
+thiserror = "2"
+encoding_rs = "0.8"
+chardetng = "0.1"
+notify = "7"
+
+[dev-dependencies]
+tempfile = "3"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+

@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "allowJs": false,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@crosslog/core": ["packages/core/src/index.ts"],
+      "@crosslog/core/*": ["packages/core/src/*"],
+      "@crosslog/platform": ["packages/platform/src/index.ts"],
+      "@crosslog/platform/*": ["packages/platform/src/*"],
+      "@crosslog/ui": ["packages/ui/src/index.ts"],
+      "@crosslog/ui/*": ["packages/ui/src/*"]
+    }
+  },
+  "include": ["apps", "packages", "tests", "*.config.ts", "*.conf.ts", "eslint.config.js"]
+}

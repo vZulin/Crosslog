@@ -1,3 +1,4 @@
+# OS and editor files
 .DS_Store
 Thumbs.db
 *.tmp
@@ -5,14 +6,46 @@ Thumbs.db
 .vscode/
 .idea/
 
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Node.js / pnpm / Vite
+node_modules/
+.pnpm-store/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Test artifacts
+playwright-report/
+test-results/
+allure-results/
+allure-report/
+wdio-*.log
+
+# Rust / Tauri
+target/
+debug/
+release/
+*.rs.bk
+*.rlib
+*.prof*
+apps/desktop/src-tauri/gen/schemas/
+
+# Xcode / Swift test harness local state
 .build/
 DerivedData/
 *.swiftpm/
-Packages/
-
 xcuserdata/
 *.xcuserstate
 *.xccheckout
 *.moved-aside
 
-dist/

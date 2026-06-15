@@ -1,0 +1,17 @@
+{
+  "name": "@crosslog/ui",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*"
+  },
+  "dependencies": {
+    "@crosslog/core": "workspace:*",
+    "@crosslog/platform": "workspace:*",
+    "react": "^19.0.0",
+    "zustand": "^5.0.3"
+  }
+}
+

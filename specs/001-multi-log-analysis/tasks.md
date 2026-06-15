@@ -22,35 +22,35 @@ any user story implementation starts.
 **Purpose**: Initialize the shared Web/Desktop workspace, tooling, scripts,
 test harnesses, and icon pipeline.
 
-- [ ] T001 Create pnpm workspace manifest in `pnpm-workspace.yaml`
-- [ ] T002 Create root package manifest with workspace scripts in `package.json`
-- [ ] T003 Create TypeScript base configuration in `tsconfig.base.json`
-- [ ] T004 [P] Create lint configuration in `eslint.config.js`
-- [ ] T005 [P] Create formatting configuration in `.prettierrc.json`
-- [ ] T006 Create Vite Web app scaffold in `apps/web/package.json`
-- [ ] T007 Create Vite Web entrypoint in `apps/web/src/main.tsx`
-- [ ] T008 Create Tauri Desktop app package scaffold in `apps/desktop/package.json`
-- [ ] T009 Create Tauri Desktop Rust manifest in `apps/desktop/src-tauri/Cargo.toml`
-- [ ] T010 Create Tauri Desktop configuration in `apps/desktop/src-tauri/tauri.conf.json`
-- [ ] T011 [P] Create core package scaffold in `packages/core/package.json`
-- [ ] T012 [P] Create platform package scaffold in `packages/platform/package.json`
-- [ ] T013 [P] Create UI package scaffold in `packages/ui/package.json`
-- [ ] T014 [P] Configure Vitest workspace in `vitest.config.ts`
-- [ ] T015 [P] Configure Playwright Web tests in `playwright.config.ts`
-- [ ] T016 [P] Configure WebdriverIO Desktop tests for Windows/Linux in `wdio.conf.ts`
-- [ ] T017 [P] Implement macOS Desktop UI XCTest/Accessibility harness in `apps/desktop/tests/ui/macos/CrosslogUITests.swift`
-- [ ] T018 [P] Add macOS Desktop UI harness runner documentation in `apps/desktop/tests/ui/macos/README.md`
-- [ ] T019 [P] Add macOS Desktop empty-state smoke UI test in `apps/desktop/tests/ui/macos/EmptyStateUITests.swift`
-- [ ] T020 [P] Create Windows build script set in `scripts/windows/build.ps1`, `scripts/windows/build-web.ps1`, and `scripts/windows/build-desktop.ps1`
-- [ ] T021 [P] Create Windows test script set in `scripts/windows/test.ps1`, `scripts/windows/test-ui.ps1`, and `scripts/windows/perf.ps1`
-- [ ] T022 [P] Create macOS build script set in `scripts/macos/build.sh`, `scripts/macos/build-web.sh`, and `scripts/macos/build-desktop.sh`
-- [ ] T023 [P] Create macOS test script set in `scripts/macos/test.sh`, `scripts/macos/test-ui.sh`, and `scripts/macos/perf.sh`
-- [ ] T024 [P] Create Linux build script set in `scripts/linux/build.sh`, `scripts/linux/build-web.sh`, and `scripts/linux/build-desktop.sh`
-- [ ] T025 [P] Create Linux test script set in `scripts/linux/test.sh`, `scripts/linux/test-ui.sh`, and `scripts/linux/perf.sh`
-- [ ] T026 [P] Create shared benchmark fixture generator in `tests/fixtures/generate-log-fixtures.ts`
-- [ ] T027 Generate app icon assets from `crosslog-icon.svg` into `assets/icons/README.md`
-- [ ] T028 Add setup smoke test for workspace imports in `tests/integration/workspace-smoke.test.ts`
-- [ ] T029 Run setup validation command documented in `scripts/macos/test.sh`
+- [X] T001 Create pnpm workspace manifest in `pnpm-workspace.yaml`
+- [X] T002 Create root package manifest with workspace scripts in `package.json`
+- [X] T003 Create TypeScript base configuration in `tsconfig.base.json`
+- [X] T004 [P] Create lint configuration in `eslint.config.js`
+- [X] T005 [P] Create formatting configuration in `.prettierrc.json`
+- [X] T006 Create Vite Web app scaffold in `apps/web/package.json`
+- [X] T007 Create Vite Web entrypoint in `apps/web/src/main.tsx`
+- [X] T008 Create Tauri Desktop app package scaffold in `apps/desktop/package.json`
+- [X] T009 Create Tauri Desktop Rust manifest in `apps/desktop/src-tauri/Cargo.toml`
+- [X] T010 Create Tauri Desktop configuration in `apps/desktop/src-tauri/tauri.conf.json`
+- [X] T011 [P] Create core package scaffold in `packages/core/package.json`
+- [X] T012 [P] Create platform package scaffold in `packages/platform/package.json`
+- [X] T013 [P] Create UI package scaffold in `packages/ui/package.json`
+- [X] T014 [P] Configure Vitest workspace in `vitest.config.ts`
+- [X] T015 [P] Configure Playwright Web tests in `playwright.config.ts`
+- [X] T016 [P] Configure WebdriverIO Desktop tests for Windows/Linux in `wdio.conf.ts`
+- [X] T017 [P] Implement macOS Desktop UI XCTest/Accessibility harness in `apps/desktop/tests/ui/macos/CrosslogUITests.swift`
+- [X] T018 [P] Add macOS Desktop UI harness runner documentation in `apps/desktop/tests/ui/macos/README.md`
+- [X] T019 [P] Add macOS Desktop empty-state smoke UI test in `apps/desktop/tests/ui/macos/EmptyStateUITests.swift`
+- [X] T020 [P] Create Windows build script set in `scripts/windows/build.ps1`, `scripts/windows/build-web.ps1`, and `scripts/windows/build-desktop.ps1`
+- [X] T021 [P] Create Windows test script set in `scripts/windows/test.ps1`, `scripts/windows/test-ui.ps1`, and `scripts/windows/perf.ps1`
+- [X] T022 [P] Create macOS build script set in `scripts/macos/build.sh`, `scripts/macos/build-web.sh`, and `scripts/macos/build-desktop.sh`
+- [X] T023 [P] Create macOS test script set in `scripts/macos/test.sh`, `scripts/macos/test-ui.sh`, and `scripts/macos/perf.sh`
+- [X] T024 [P] Create Linux build script set in `scripts/linux/build.sh`, `scripts/linux/build-web.sh`, and `scripts/linux/build-desktop.sh`
+- [X] T025 [P] Create Linux test script set in `scripts/linux/test.sh`, `scripts/linux/test-ui.sh`, and `scripts/linux/perf.sh`
+- [X] T026 [P] Create shared benchmark fixture generator in `tests/fixtures/generate-log-fixtures.ts`
+- [X] T027 Generate app icon assets from `crosslog-icon.svg` into `assets/icons/README.md`
+- [X] T028 Add setup smoke test for workspace imports in `tests/integration/workspace-smoke.test.ts`
+- [X] T029 Run setup validation command documented in `scripts/macos/test.sh`
 
 ---
 
@@ -62,50 +62,50 @@ user story.
 
 **Critical**: No user story work can begin until this phase is complete.
 
-- [ ] T030 Create shared domain barrel exports in `packages/core/src/index.ts`
-- [ ] T031 [P] Define LogPane domain types in `packages/core/src/log-pane/log-pane.ts`
-- [ ] T032 [P] Define FileSource domain types in `packages/core/src/file-source/file-source.ts`
-- [ ] T033 [P] Define DirectorySource domain types in `packages/core/src/directory/directory-source.ts`
-- [ ] T034 [P] Define LogLine and chunk types in `packages/core/src/log-line/log-line.ts`
-- [ ] T035 [P] Define SearchState domain types in `packages/core/src/search/search-state.ts`
-- [ ] T036 [P] Define Session domain schema types in `packages/core/src/session/session.ts`
-- [ ] T037 [P] Define CapabilityReport types in `packages/core/src/capabilities/capability-report.ts`
-- [ ] T038 Define shared typed error model in `packages/core/src/errors/crosslog-error.ts`
-- [ ] T039 Define FileAccessPort contract in `packages/platform/src/ports/file-access-port.ts`
-- [ ] T040 Define DirectoryAccessPort contract in `packages/platform/src/ports/directory-access-port.ts`
-- [ ] T041 Define FileWatcherPort contract in `packages/platform/src/ports/file-watcher-port.ts`
-- [ ] T042 Define SessionStorePort contract in `packages/platform/src/ports/session-store-port.ts`
-- [ ] T043 Define CapabilityPort contract in `packages/platform/src/ports/capability-port.ts`
-- [ ] T044 Define SourcePickerPort contract in `packages/platform/src/ports/source-picker-port.ts`
-- [ ] T045 Define DragDropSourcePort contract in `packages/platform/src/ports/drag-drop-source-port.ts`
-- [ ] T046 Add platform port contract tests in `packages/platform/tests/ports/platform-ports.contract.test.ts`
-- [ ] T047 Add read-only file safety test helpers in `tests/integration/helpers/read-only-assertions.ts`
-- [ ] T048 Add inert log rendering test helpers in `tests/integration/helpers/inert-rendering-assertions.ts`
-- [ ] T049 Add 20 MB benchmark fixture definition in `tests/fixtures/large-20mb-log.fixture.ts`
-- [ ] T050 Add timestamp fixture definitions in `tests/fixtures/timestamped-logs.fixture.ts`
-- [ ] T051 Add encoding fixture definitions in `tests/fixtures/encoded-logs.fixture.ts`
-- [ ] T052 Create shared React app shell skeleton in `packages/ui/src/app-shell/AppShell.tsx`
-- [ ] T053 Create Web shell adapter injection point in `apps/web/src/platform/createWebPlatform.ts`
-- [ ] T054 Create Desktop shell adapter injection point in `apps/desktop/src/platform/createDesktopPlatform.ts`
-- [ ] T055 Create Rust command module skeleton in `apps/desktop/src-tauri/src/commands/mod.rs`
-- [ ] T056 Create Rust event module skeleton in `apps/desktop/src-tauri/src/events/mod.rs`
-- [ ] T057 Add FileAccessPort implementation tests in `packages/platform/tests/file-access/file-access.contract.test.ts`
-- [ ] T058 Add file open policy tests in `packages/core/tests/file-source/file-open-policy.test.ts`
-- [ ] T059 Implement shared file size and memory policy in `packages/core/src/file-source/file-open-policy.ts`
-- [ ] T060 Implement browser file access adapter in `packages/platform/src/browser/browser-file-access.ts`
-- [ ] T061 Implement Tauri file access binding in `packages/platform/src/tauri/tauri-file-access.ts`
-- [ ] T062 Implement Rust read-only file access commands in `apps/desktop/src-tauri/src/commands/file_access.rs`
-- [ ] T063 Add encoding detection and manual selection tests in `packages/core/tests/encoding/encoding-selection.test.ts`
-- [ ] T064 Implement encoding detection and manual encoding selection model in `packages/core/src/encoding/encoding-selection.ts`
-- [ ] T065 Implement encoding chooser UI in `packages/ui/src/log-pane/EncodingChooser.tsx`
-- [ ] T066 Add Web manual encoding UI test in `apps/web/tests/ui/manual-encoding.spec.ts`
-- [ ] T067 Add Desktop manual encoding UI test in `apps/desktop/tests/ui/manual-encoding.spec.ts`
-- [ ] T068 Implement Desktop source picker and drag/drop bindings in `packages/platform/src/tauri/tauri-source-picker.ts`
-- [ ] T069 Add Desktop source picker and drag/drop UI tests in `apps/desktop/tests/ui/source-loading.spec.ts`
-- [ ] T070 Add no-op future decoration provider interface in `packages/core/src/decorations/line-decoration-provider.ts`
-- [ ] T071 Add hidden future UI slot component in `packages/ui/src/log-pane/FuturePaneToolbarSlot.tsx`
-- [ ] T072 Verify MVP future controls are hidden in `packages/ui/tests/future-slots-hidden.test.tsx`
-- [ ] T073 Run foundational automated tests using `scripts/macos/test.sh`
+- [X] T030 Create shared domain barrel exports in `packages/core/src/index.ts`
+- [X] T031 [P] Define LogPane domain types in `packages/core/src/log-pane/log-pane.ts`
+- [X] T032 [P] Define FileSource domain types in `packages/core/src/file-source/file-source.ts`
+- [X] T033 [P] Define DirectorySource domain types in `packages/core/src/directory/directory-source.ts`
+- [X] T034 [P] Define LogLine and chunk types in `packages/core/src/log-line/log-line.ts`
+- [X] T035 [P] Define SearchState domain types in `packages/core/src/search/search-state.ts`
+- [X] T036 [P] Define Session domain schema types in `packages/core/src/session/session.ts`
+- [X] T037 [P] Define CapabilityReport types in `packages/core/src/capabilities/capability-report.ts`
+- [X] T038 Define shared typed error model in `packages/core/src/errors/crosslog-error.ts`
+- [X] T039 Define FileAccessPort contract in `packages/platform/src/ports/file-access-port.ts`
+- [X] T040 Define DirectoryAccessPort contract in `packages/platform/src/ports/directory-access-port.ts`
+- [X] T041 Define FileWatcherPort contract in `packages/platform/src/ports/file-watcher-port.ts`
+- [X] T042 Define SessionStorePort contract in `packages/platform/src/ports/session-store-port.ts`
+- [X] T043 Define CapabilityPort contract in `packages/platform/src/ports/capability-port.ts`
+- [X] T044 Define SourcePickerPort contract in `packages/platform/src/ports/source-picker-port.ts`
+- [X] T045 Define DragDropSourcePort contract in `packages/platform/src/ports/drag-drop-source-port.ts`
+- [X] T046 Add platform port contract tests in `packages/platform/tests/ports/platform-ports.contract.test.ts`
+- [X] T047 Add read-only file safety test helpers in `tests/integration/helpers/read-only-assertions.ts`
+- [X] T048 Add inert log rendering test helpers in `tests/integration/helpers/inert-rendering-assertions.ts`
+- [X] T049 Add 20 MB benchmark fixture definition in `tests/fixtures/large-20mb-log.fixture.ts`
+- [X] T050 Add timestamp fixture definitions in `tests/fixtures/timestamped-logs.fixture.ts`
+- [X] T051 Add encoding fixture definitions in `tests/fixtures/encoded-logs.fixture.ts`
+- [X] T052 Create shared React app shell skeleton in `packages/ui/src/app-shell/AppShell.tsx`
+- [X] T053 Create Web shell adapter injection point in `apps/web/src/platform/createWebPlatform.ts`
+- [X] T054 Create Desktop shell adapter injection point in `apps/desktop/src/platform/createDesktopPlatform.ts`
+- [X] T055 Create Rust command module skeleton in `apps/desktop/src-tauri/src/commands/mod.rs`
+- [X] T056 Create Rust event module skeleton in `apps/desktop/src-tauri/src/events/mod.rs`
+- [X] T057 Add FileAccessPort implementation tests in `packages/platform/tests/file-access/file-access.contract.test.ts`
+- [X] T058 Add file open policy tests in `packages/core/tests/file-source/file-open-policy.test.ts`
+- [X] T059 Implement shared file size and memory policy in `packages/core/src/file-source/file-open-policy.ts`
+- [X] T060 Implement browser file access adapter in `packages/platform/src/browser/browser-file-access.ts`
+- [X] T061 Implement Tauri file access binding in `packages/platform/src/tauri/tauri-file-access.ts`
+- [X] T062 Implement Rust read-only file access commands in `apps/desktop/src-tauri/src/commands/file_access.rs`
+- [X] T063 Add encoding detection and manual selection tests in `packages/core/tests/encoding/encoding-selection.test.ts`
+- [X] T064 Implement encoding detection and manual encoding selection model in `packages/core/src/encoding/encoding-selection.ts`
+- [X] T065 Implement encoding chooser UI in `packages/ui/src/log-pane/EncodingChooser.tsx`
+- [X] T066 Add Web manual encoding UI test in `apps/web/tests/ui/manual-encoding.spec.ts`
+- [X] T067 Add Desktop manual encoding UI test in `apps/desktop/tests/ui/manual-encoding.spec.ts`
+- [X] T068 Implement Desktop source picker and drag/drop bindings in `packages/platform/src/tauri/tauri-source-picker.ts`
+- [X] T069 Add Desktop source picker and drag/drop UI tests in `apps/desktop/tests/ui/source-loading.spec.ts`
+- [X] T070 Add no-op future decoration provider interface in `packages/core/src/decorations/line-decoration-provider.ts`
+- [X] T071 Add hidden future UI slot component in `packages/ui/src/log-pane/FuturePaneToolbarSlot.tsx`
+- [X] T072 Verify MVP future controls are hidden in `packages/ui/tests/future-slots-hidden.test.tsx`
+- [X] T073 Run foundational automated tests using `scripts/macos/test.sh`
 
 ---
 
