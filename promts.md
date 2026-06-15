@@ -1,3 +1,6 @@
+
+https://github.github.com/spec-kit/quickstart.html
+
 /speckit.constitution
 
 Create the project constitution for "Crosslog".
@@ -97,6 +100,7 @@ The plan must include explicit phases for:
    - directory search bar;
    - save and load filters and highlights sers;
    - error states.
+   Use ./crosslog-icon.svg as the basis for creating an icon for the application
 
 4. Architecture design.
    Include:
