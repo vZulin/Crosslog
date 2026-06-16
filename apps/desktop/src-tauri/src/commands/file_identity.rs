@@ -35,11 +35,9 @@ fn platform_identity(path: &PathBuf, metadata: &fs::Metadata) -> String {
     use std::os::windows::fs::MetadataExt;
 
     format!(
-        "windows:{}:{}:{}:{}",
+        "windows:{}:{}",
         path.display(),
-        metadata.creation_time(),
-        metadata.last_write_time(),
-        metadata.file_size()
+        metadata.creation_time()
     )
 }
 
