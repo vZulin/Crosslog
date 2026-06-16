@@ -10,16 +10,24 @@ import {
   createSynchronizationPlan,
   createTimeAnchorPane,
   createTimestampRecognitionService,
+  createSessionSnapshot,
   defaultTimestampFormats,
   directorySourceReducer,
   emptySearchState,
   getCurrentDirectoryFile,
   logPaneReducer,
+  restoreLogPaneStateFromSession,
+  type DirectoryFileEntry,
   type FileSource,
+  type Session,
+  type SessionDirectorySource,
+  type SessionFileSource,
 } from "@crosslog/core";
 import { FuturePaneToolbarSlot } from "../log-pane/FuturePaneToolbarSlot";
 import { PaneRail } from "../pane-rail/PaneRail";
 import { usePaneSearchStore } from "../search/usePaneSearchStore";
+import { SessionRecoveryBanner } from "../session/SessionRecoveryBanner";
+import { useSessionRestore, useSessionSnapshotWriter } from "../session/useSessionRestore";
 import { SynchronizationToggle } from "../sync/SynchronizationToggle";
 import { TimestampConfigError } from "../sync/TimestampConfigError";
 import { getPaneOffset, useSynchronizationStore } from "../sync/useSynchronizationStore";
@@ -59,10 +67,47 @@ export function AppShell({ platform }: AppShellProps) {
   const selectPreviousSearchMatch = usePaneSearchStore((store) => store.selectPreviousMatch);
   const selectNextSearchMatch = usePaneSearchStore((store) => store.selectNextMatch);
   const publishFileLifecycleEvent = useFileLifecycleEvents(setFileSources);
+  const restoreState = useSessionRestore(platform.sessionStore, {
+    onSessionRestored: (session) => {
+      const restoredDirectorySource = session.sources.find(
+        (source): source is SessionDirectorySource => source.kind === "directory",
+      );
+
+      dispatch({ type: "replaceState", state: restoreLogPaneStateFromSession(session) });
+      setFileSources(restoreFileSourcesFromSession(session));
+
+      if (restoredDirectorySource) {
+        const restoredFiles = restoreDirectoryFilesFromSession(restoredDirectorySource);
+        dispatchDirectorySource({ type: "refreshFiles", files: restoredFiles });
+
+        if (restoredDirectorySource.currentFileId) {
+          dispatchDirectorySource({ type: "selectFile", fileId: restoredDirectorySource.currentFileId });
+        }
+      }
+    },
+  });
   const timestampService = React.useMemo(
     () => createTimestampRecognitionService(defaultTimestampFormats),
     [],
   );
+  const sessionSnapshot = React.useMemo(
+    () =>
+      state.panes.length === 0
+        ? null
+        : createSessionSnapshot({
+            panes: state.panes,
+            fileSources: Object.values(fileSources),
+            directorySources: [directorySource],
+          }),
+    [directorySource, fileSources, state.panes],
+  );
+
+  useSessionSnapshotWriter(
+    platform.sessionStore,
+    sessionSnapshot,
+    restoreState.status === "ready" && state.panes.length > 0,
+  );
+
   const paneData = React.useMemo(
     () =>
       state.panes.map((pane) => {
@@ -191,6 +236,7 @@ export function AppShell({ platform }: AppShellProps) {
 
   return (
     <main aria-label="Crosslog workspace">
+      <SessionRecoveryBanner message={restoreState.message} />
       {platform.capabilities.limitations.map((limitation) => (
         <p key={limitation.capability}>{limitation.message}</p>
       ))}
@@ -370,6 +416,29 @@ function createInitialFileSources(platform: FileSource["fileIdentity"]["platform
     samplePanes
       .filter((pane) => pane.sourceRef && pane.sourceRef !== "source-directory")
       .map((pane) => [pane.sourceRef, createSampleFileSource(pane.sourceRef!, pane.title, platform)]),
+  );
+}
+
+function restoreFileSourcesFromSession(session: Session): FileSourceMap {
+  return Object.fromEntries(
+    session.sources
+      .filter((source): source is SessionFileSource => source.kind === "file")
+      .map((source) => [
+        source.id,
+        createSampleFileSource(source.id, source.displayName, source.fileIdentity.platform),
+      ]),
+  );
+}
+
+function restoreDirectoryFilesFromSession(source: SessionDirectorySource): readonly DirectoryFileEntry[] {
+  return source.files.map((file) =>
+    createDirectoryFileEntry({
+      identity: file.identity,
+      name: file.name,
+      createdAt: file.createdAt ? new Date(file.createdAt) : null,
+      fallbackOrderKey: file.fallbackOrderKey,
+      sizeBytes: file.sizeBytes,
+    }),
   );
 }
 

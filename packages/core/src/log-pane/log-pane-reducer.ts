@@ -21,7 +21,8 @@ export type LogPaneAction =
   | { readonly type: "closePane"; readonly paneId: LogPaneId }
   | { readonly type: "resizePane"; readonly leftPaneId: LogPaneId; readonly delta: number }
   | { readonly type: "setHorizontalScroll"; readonly paneId: LogPaneId; readonly scrollLeft: number }
-  | { readonly type: "setActivePane"; readonly paneId: LogPaneId };
+  | { readonly type: "setActivePane"; readonly paneId: LogPaneId }
+  | { readonly type: "replaceState"; readonly state: LogPaneState };
 
 export function createLogPane(overrides: Partial<LogPane> = {}): LogPane {
   const id = overrides.id ?? "pane-1";
@@ -53,6 +54,9 @@ export function createLogPaneState(panes: readonly LogPane[] = []): LogPaneState
 
 export function logPaneReducer(state: LogPaneState, action: LogPaneAction): LogPaneState {
   switch (action.type) {
+    case "replaceState":
+      return createLogPaneState(action.state.panes);
+
     case "addPane": {
       const pane = createNumberedPane(state.nextPaneNumber, action.pane);
       return activatePane({

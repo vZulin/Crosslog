@@ -311,25 +311,25 @@ state restores, corrupt the pending snapshot, and verify last-valid recovery.
 
 ### Tests for User Story 6 (MANDATORY)
 
-- [ ] T167 [P] [US6] Add session schema unit tests in `packages/core/tests/session/session-schema.test.ts`
-- [ ] T168 [P] [US6] Add session migration tests in `packages/core/tests/session/session-migrations.test.ts`
-- [ ] T169 [P] [US6] Add SessionStorePort contract tests in `packages/platform/tests/session/session-store.contract.test.ts`
-- [ ] T170 [P] [US6] Add Web session restore UI test in `apps/web/tests/ui/session-restore.spec.ts`
-- [ ] T171 [P] [US6] Add Desktop session restore UI test in `apps/desktop/tests/ui/session-restore.spec.ts`
-- [ ] T172 [P] [US6] Add session write performance test in `tests/performance/session-write.bench.ts`
+- [X] T167 [P] [US6] Add session schema unit tests in `packages/core/tests/session/session-schema.test.ts`
+- [X] T168 [P] [US6] Add session migration tests in `packages/core/tests/session/session-migrations.test.ts`
+- [X] T169 [P] [US6] Add SessionStorePort contract tests in `packages/platform/tests/session/session-store.contract.test.ts`
+- [X] T170 [P] [US6] Add Web session restore UI test in `apps/web/tests/ui/session-restore.spec.ts`
+- [X] T171 [P] [US6] Add Desktop session restore UI test in `apps/desktop/tests/ui/session-restore.spec.ts`
+- [X] T172 [P] [US6] Add session write performance test in `tests/performance/session-write.bench.ts`
 
 ### Implementation for User Story 6
 
-- [ ] T173 [P] [US6] Implement session schema validation in `packages/core/src/session/session-schema.ts`
-- [ ] T174 [P] [US6] Implement session migration registry in `packages/core/src/session/session-migrations.ts`
-- [ ] T175 [US6] Implement session serializer without scroll positions in `packages/core/src/session/session-serializer.ts`
-- [ ] T176 [US6] Implement Web IndexedDB session store in `packages/platform/src/browser/browser-session-store.ts`
-- [ ] T177 [US6] Implement Desktop atomic session commands in `apps/desktop/src-tauri/src/commands/session_store.rs`
-- [ ] T178 [US6] Implement Tauri session store binding in `packages/platform/src/tauri/tauri-session-store.ts`
-- [ ] T179 [US6] Implement session restore orchestration in `packages/ui/src/session/useSessionRestore.ts`
-- [ ] T180 [US6] Implement session recovery error UI in `packages/ui/src/session/SessionRecoveryBanner.tsx`
-- [ ] T181 [US6] Run US6 automated tests using `scripts/macos/test.sh`
-- [ ] T182 [US6] Run US6 UI tests using `scripts/macos/test-ui.sh`
+- [X] T173 [P] [US6] Implement session schema validation in `packages/core/src/session/session-schema.ts`
+- [X] T174 [P] [US6] Implement session migration registry in `packages/core/src/session/session-migrations.ts`
+- [X] T175 [US6] Implement session serializer without scroll positions in `packages/core/src/session/session-serializer.ts`
+- [X] T176 [US6] Implement Web IndexedDB session store in `packages/platform/src/browser/browser-session-store.ts`
+- [X] T177 [US6] Implement Desktop atomic session commands in `apps/desktop/src-tauri/src/commands/session_store.rs`
+- [X] T178 [US6] Implement Tauri session store binding in `packages/platform/src/tauri/tauri-session-store.ts`
+- [X] T179 [US6] Implement session restore orchestration in `packages/ui/src/session/useSessionRestore.ts`
+- [X] T180 [US6] Implement session recovery error UI in `packages/ui/src/session/SessionRecoveryBanner.tsx`
+- [X] T181 [US6] Run US6 automated tests using `scripts/macos/test.sh`
+- [X] T182 [US6] Run US6 UI tests using `scripts/macos/test-ui.sh`
 
 **Checkpoint**: User Story 6 is independently functional with crash-safe
 session recovery and no scroll restoration.

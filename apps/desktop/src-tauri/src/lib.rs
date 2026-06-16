@@ -8,7 +8,10 @@ pub fn run() {
             commands::directory_access::list_top_level_directory_files,
             commands::directory_access::refresh_directory_files,
             commands::file_identity::get_file_identity,
-            commands::file_access::read_file_metadata
+            commands::file_access::read_file_metadata,
+            commands::session_store::load_last_valid_session,
+            commands::session_store::write_session_snapshot,
+            commands::session_store::recover_session
         ])
         .run(tauri::generate_context!())
         .expect("failed to run Crosslog desktop shell");

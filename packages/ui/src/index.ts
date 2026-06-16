@@ -1,4 +1,6 @@
 export * from "./app-shell/AppShell";
+export * from "./session/SessionRecoveryBanner";
+export * from "./session/useSessionRestore";
 export * from "./log-pane/EncodingChooser";
 export * from "./log-pane/DeletedFileStatus";
 export * from "./log-pane/FuturePaneToolbarSlot";
