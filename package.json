@@ -13,8 +13,8 @@
     "test:unit": "vitest run packages/core/tests packages/ui/tests packages/platform/tests",
     "test:integration": "vitest run tests/integration",
     "test:ui:web": "playwright test --config playwright.config.ts",
-    "test:ui:desktop": "wdio run wdio.conf.ts",
-    "bench": "vitest bench tests/performance packages/core/tests packages/platform/tests"
+    "test:ui:desktop": "node scripts/run-desktop-ui-tests.mjs",
+    "bench": "vitest bench --run tests/performance packages/core/tests packages/platform/tests"
   },
   "dependencies": {
     "@tanstack/react-virtual": "^3.11.2",
@@ -35,6 +35,7 @@
     "@wdio/globals": "^9.4.5",
     "@wdio/local-runner": "^9.4.5",
     "@wdio/mocha-framework": "^9.4.5",
+    "@wdio/spec-reporter": "^9.4.5",
     "eslint": "^9.17.0",
     "eslint-plugin-react-hooks": "^5.1.0",
     "jsdom": "^25.0.1",

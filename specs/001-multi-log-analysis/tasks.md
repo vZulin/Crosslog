@@ -121,31 +121,31 @@ and horizontal scrolling.
 
 ### Tests for User Story 1 (MANDATORY)
 
-- [ ] T074 [P] [US1] Add LogPane reducer unit tests in `packages/core/tests/log-pane/log-pane-reducer.test.ts`
-- [ ] T075 [P] [US1] Add pane layout state tests in `packages/ui/tests/pane-rail/pane-layout.test.tsx`
-- [ ] T076 [P] [US1] Add Web multi-pane UI test in `apps/web/tests/ui/multi-pane-layout.spec.ts`
-- [ ] T077 [P] [US1] Add Desktop multi-pane UI test in `apps/desktop/tests/ui/multi-pane-layout.spec.ts`
-- [ ] T078 [P] [US1] Add virtualization smoke performance test in `tests/performance/log-pane-virtualization.bench.ts`
-- [ ] T079 [P] [US1] Add text selection and copy tests in `packages/ui/tests/log-pane/log-text-copy.test.tsx`
-- [ ] T080 [P] [US1] Add Web text copy UI test in `apps/web/tests/ui/log-text-copy.spec.ts`
-- [ ] T081 [P] [US1] Add Desktop text copy UI test in `apps/desktop/tests/ui/log-text-copy.spec.ts`
+- [X] T074 [P] [US1] Add LogPane reducer unit tests in `packages/core/tests/log-pane/log-pane-reducer.test.ts`
+- [X] T075 [P] [US1] Add pane layout state tests in `packages/ui/tests/pane-rail/pane-layout.test.tsx`
+- [X] T076 [P] [US1] Add Web multi-pane UI test in `apps/web/tests/ui/multi-pane-layout.spec.ts`
+- [X] T077 [P] [US1] Add Desktop multi-pane UI test in `apps/desktop/tests/ui/multi-pane-layout.spec.ts`
+- [X] T078 [P] [US1] Add virtualization smoke performance test in `tests/performance/log-pane-virtualization.bench.ts`
+- [X] T079 [P] [US1] Add text selection and copy tests in `packages/ui/tests/log-pane/log-text-copy.test.tsx`
+- [X] T080 [P] [US1] Add Web text copy UI test in `apps/web/tests/ui/log-text-copy.spec.ts`
+- [X] T081 [P] [US1] Add Desktop text copy UI test in `apps/desktop/tests/ui/log-text-copy.spec.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T082 [P] [US1] Implement LogPane reducer in `packages/core/src/log-pane/log-pane-reducer.ts`
-- [ ] T083 [P] [US1] Implement pane layout model in `packages/core/src/log-pane/pane-layout.ts`
-- [ ] T084 [US1] Implement PaneRail component in `packages/ui/src/pane-rail/PaneRail.tsx`
-- [ ] T085 [US1] Implement LogPane component in `packages/ui/src/log-pane/LogPane.tsx`
-- [ ] T086 [US1] Implement add-pane and split-pane controls in `packages/ui/src/pane-rail/AddPaneButton.tsx`
-- [ ] T087 [US1] Implement pane close behavior in `packages/ui/src/log-pane/ClosePaneButton.tsx`
-- [ ] T088 [US1] Implement pane resizing behavior in `packages/ui/src/pane-rail/PaneResizer.tsx`
-- [ ] T089 [US1] Implement independent horizontal log scrolling in `packages/ui/src/log-pane/HorizontalLogScroller.tsx`
-- [ ] T090 [US1] Implement virtual log viewport in `packages/ui/src/log-pane/VirtualLogViewport.tsx`
-- [ ] T091 [US1] Implement virtualized log text selection and context menu copy in `packages/ui/src/log-pane/LogTextSelection.tsx`
-- [ ] T092 [US1] Wire Web app shell to pane rail in `apps/web/src/App.tsx`
-- [ ] T093 [US1] Wire Desktop app shell to pane rail in `apps/desktop/src/App.tsx`
-- [ ] T094 [US1] Run US1 automated tests using `scripts/macos/test.sh`
-- [ ] T095 [US1] Run US1 UI tests using `scripts/macos/test-ui.sh`
+- [X] T082 [P] [US1] Implement LogPane reducer in `packages/core/src/log-pane/log-pane-reducer.ts`
+- [X] T083 [P] [US1] Implement pane layout model in `packages/core/src/log-pane/pane-layout.ts`
+- [X] T084 [US1] Implement PaneRail component in `packages/ui/src/pane-rail/PaneRail.tsx`
+- [X] T085 [US1] Implement LogPane component in `packages/ui/src/log-pane/LogPane.tsx`
+- [X] T086 [US1] Implement add-pane and split-pane controls in `packages/ui/src/pane-rail/AddPaneButton.tsx`
+- [X] T087 [US1] Implement pane close behavior in `packages/ui/src/log-pane/ClosePaneButton.tsx`
+- [X] T088 [US1] Implement pane resizing behavior in `packages/ui/src/pane-rail/PaneResizer.tsx`
+- [X] T089 [US1] Implement independent horizontal log scrolling in `packages/ui/src/log-pane/HorizontalLogScroller.tsx`
+- [X] T090 [US1] Implement virtual log viewport in `packages/ui/src/log-pane/VirtualLogViewport.tsx`
+- [X] T091 [US1] Implement virtualized log text selection and context menu copy in `packages/ui/src/log-pane/LogTextSelection.tsx`
+- [X] T092 [US1] Wire Web app shell to pane rail in `apps/web/src/App.tsx`
+- [X] T093 [US1] Wire Desktop app shell to pane rail in `apps/desktop/src/App.tsx`
+- [X] T094 [US1] Run US1 automated tests using `scripts/macos/test.sh`
+- [X] T095 [US1] Run US1 UI tests using `scripts/macos/test-ui.sh`
 
 **Checkpoint**: User Story 1 is independently functional and testable.
 

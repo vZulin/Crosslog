@@ -4,7 +4,7 @@ extension:
   id: git
   name: "Git Branching Workflow"
   version: "1.0.0"
-  description: "Feature branch creation, numbering (sequential/timestamp), validation, and Git remote detection"
+  description: "Feature branch creation, numbering (sequential/timestamp), validation, Git remote detection, auto-push, and GitHub checks waiting"
   author: spec-kit-core
   repository: https://github.com/github/spec-kit
   license: MIT
@@ -13,6 +13,8 @@ requires:
   speckit_version: ">=0.2.0"
   tools:
     - name: git
+      required: false
+    - name: gh
       required: false
 
 provides:
@@ -31,7 +33,7 @@ provides:
       description: "Initialize a Git repository with an initial commit"
     - name: speckit.git.commit
       file: commands/speckit.git.commit.md
-      description: "Auto-commit changes after a Spec Kit command completes"
+      description: "Auto-commit changes after a Spec Kit command completes, with optional push and GitHub checks waiting"
 
   config:
     - name: "git-config.yml"
@@ -110,9 +112,9 @@ hooks:
     description: "Auto-commit after task generation"
   after_implement:
     command: speckit.git.commit
-    optional: true
-    prompt: "Commit implementation changes?"
-    description: "Auto-commit after implementation"
+    optional: false
+    prompt: "Commit, push, and wait for GitHub checks?"
+    description: "Auto-commit, push, and wait for GitHub checks after implementation"
   after_checklist:
     command: speckit.git.commit
     optional: true

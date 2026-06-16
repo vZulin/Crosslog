@@ -49,8 +49,8 @@ auto_commit:
     enabled: false
     message: "[Spec Kit] Add tasks"
   after_implement:
-    enabled: false
-    message: "[Spec Kit] Implementation progress"
+    enabled: true
+    message: "[Spec Kit] Implement feature"
   after_checklist:
     enabled: false
     message: "[Spec Kit] Add checklist"
@@ -60,3 +60,14 @@ auto_commit:
   after_taskstoissues:
     enabled: false
     message: "[Spec Kit] Sync tasks to issues"
+
+# Auto-push after selected events. Intended for completed implementation work,
+# where remote CI is the final validation gate.
+auto_push:
+  default: false
+  after_implement:
+    enabled: true
+    remote: origin
+    wait_for_checks: true
+    wait_timeout_seconds: 900
+    poll_interval_seconds: 5

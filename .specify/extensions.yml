@@ -118,9 +118,9 @@ hooks:
   - extension: git
     command: speckit.git.commit
     enabled: true
-    optional: true
-    prompt: Commit implementation changes?
-    description: Auto-commit after implementation
+    optional: false
+    prompt: Commit, push, and wait for GitHub checks?
+    description: Auto-commit, push, and wait for GitHub checks after implementation
     condition: null
   after_checklist:
   - extension: git

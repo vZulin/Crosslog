@@ -1,6 +1,6 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { AppShell } from "@crosslog/ui";
+import { App } from "./App";
 import { createWebPlatform } from "./platform/createWebPlatform";
 
 const rootElement = document.getElementById("root");
@@ -11,7 +11,6 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <React.StrictMode>
-    <AppShell platform={createWebPlatform()} />
+    <App platform={createWebPlatform()} />
   </React.StrictMode>,
 );
-

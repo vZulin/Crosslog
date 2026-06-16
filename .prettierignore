@@ -1,0 +1,13 @@
+node_modules/
+dist/
+build/
+coverage/
+playwright-report/
+test-results/
+allure-results/
+allure-report/
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+apps/desktop/src-tauri/target/
+apps/desktop/src-tauri/gen/schemas/

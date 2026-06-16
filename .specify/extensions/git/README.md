@@ -1,6 +1,6 @@
 # Git Branching Workflow Extension
 
-Git repository initialization, feature branch creation, numbering (sequential/timestamp), validation, remote detection, and auto-commit for Spec Kit.
+Git repository initialization, feature branch creation, numbering (sequential/timestamp), validation, remote detection, auto-commit, auto-push, and GitHub checks waiting for Spec Kit.
 
 ## Overview
 
@@ -11,6 +11,7 @@ This extension provides Git operations as an optional, self-contained module. It
 - **Branch validation** to ensure branches follow naming conventions
 - **Git remote detection** for GitHub integration (e.g., issue creation)
 - **Auto-commit** after core commands (configurable per-command with custom messages)
+- **Auto-push and GitHub checks waiting** after configured events
 
 ## Commands
 
@@ -20,7 +21,7 @@ This extension provides Git operations as an optional, self-contained module. It
 | `speckit.git.feature` | Create a feature branch with sequential or timestamp numbering |
 | `speckit.git.validate` | Validate current branch follows feature branch naming conventions |
 | `speckit.git.remote` | Detect Git remote URL for GitHub integration |
-| `speckit.git.commit` | Auto-commit changes (configurable per-command enable/disable and messages) |
+| `speckit.git.commit` | Auto-commit changes, optionally push to GitHub, and wait for checks |
 
 ## Hooks
 
@@ -40,7 +41,7 @@ This extension provides Git operations as an optional, self-contained module. It
 | `after_clarify` | `speckit.git.commit` | Yes | Auto-commit after clarification |
 | `after_plan` | `speckit.git.commit` | Yes | Auto-commit after planning |
 | `after_tasks` | `speckit.git.commit` | Yes | Auto-commit after task generation |
-| `after_implement` | `speckit.git.commit` | Yes | Auto-commit after implementation |
+| `after_implement` | `speckit.git.commit` | No | Auto-commit, push, and wait for GitHub checks after implementation |
 | `after_checklist` | `speckit.git.commit` | Yes | Auto-commit after checklist |
 | `after_analyze` | `speckit.git.commit` | Yes | Auto-commit after analysis |
 | `after_taskstoissues` | `speckit.git.commit` | Yes | Auto-commit after issue sync |
@@ -63,6 +64,13 @@ auto_commit:
   after_specify:
     enabled: true
     message: "[Spec Kit] Add specification"
+
+auto_push:
+  default: false
+  after_implement:
+    enabled: true
+    remote: origin
+    wait_for_checks: true
 ```
 
 ## Installation
@@ -89,6 +97,7 @@ When Git is not installed or the directory is not a Git repository:
 - Branch creation is skipped with a warning
 - Branch validation is skipped with a warning
 - Remote detection returns empty results
+- Auto-push fails clearly if the configured remote is not GitHub or `gh` is unavailable while checks waiting is enabled
 
 ## Scripts
 

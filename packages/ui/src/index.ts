@@ -1,4 +1,11 @@
 export * from "./app-shell/AppShell";
 export * from "./log-pane/EncodingChooser";
 export * from "./log-pane/FuturePaneToolbarSlot";
-
+export * from "./log-pane/ClosePaneButton";
+export * from "./log-pane/HorizontalLogScroller";
+export * from "./log-pane/LogPane";
+export * from "./log-pane/LogTextSelection";
+export * from "./log-pane/VirtualLogViewport";
+export * from "./pane-rail/AddPaneButton";
+export * from "./pane-rail/PaneRail";
+export * from "./pane-rail/PaneResizer";

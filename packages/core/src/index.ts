@@ -5,6 +5,8 @@ export type * from "./file-source/file-open-policy";
 export type * from "./file-source/file-source";
 export type * from "./log-line/log-line";
 export type * from "./log-pane/log-pane";
+export * from "./log-pane/log-pane-reducer";
+export * from "./log-pane/pane-layout";
 export type * from "./search/search-state";
 export type * from "./session/session";
 export type * from "./sync/time-offset";

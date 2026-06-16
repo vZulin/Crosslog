@@ -1,5 +1,6 @@
 $ErrorActionPreference = "Stop"
 Set-Location (Join-Path $PSScriptRoot "../..")
-corepack pnpm test:ui:web
-corepack pnpm test:ui:desktop
+. (Join-Path $PSScriptRoot "invoke-checked-command.ps1")
 
+Invoke-CheckedCommand corepack pnpm test:ui:web
+Invoke-CheckedCommand corepack pnpm test:ui:desktop

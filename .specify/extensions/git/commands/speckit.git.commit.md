@@ -1,10 +1,10 @@
 ---
-description: "Auto-commit changes after a Spec Kit command completes"
+description: "Auto-commit changes after a Spec Kit command completes, with optional push and GitHub checks waiting"
 ---
 
 # Auto-Commit Changes
 
-Automatically stage and commit all changes after a Spec Kit command completes.
+Automatically stage and commit all changes after a Spec Kit command completes. For configured events, push the resulting commit to GitHub and wait for GitHub Actions checks.
 
 ## Behavior
 
@@ -16,6 +16,9 @@ This command is invoked as a hook after (or before) core commands. It:
 4. Falls back to `auto_commit.default` if no event-specific key exists
 5. Uses the per-command `message` if configured, otherwise a default message
 6. If enabled and there are uncommitted changes, runs `git add .` + `git commit`
+7. Checks `.specify/extensions/git/git-config.yml` for the `auto_push` section
+8. If enabled for the event, pushes `HEAD` to the configured remote
+9. If `wait_for_checks` is enabled, waits for the GitHub Actions run for the pushed commit and fails if checks fail
 
 ## Execution
 
@@ -39,6 +42,15 @@ auto_commit:
   after_plan:
     enabled: false
     message: "[Spec Kit] Add implementation plan"
+
+auto_push:
+  default: false
+  after_implement:
+    enabled: true
+    remote: origin
+    wait_for_checks: true
+    wait_timeout_seconds: 900
+    poll_interval_seconds: 5
 ```
 
 ## Graceful Degradation
@@ -46,3 +58,5 @@ auto_commit:
 - If Git is not available or the current directory is not a repository: skips with a warning
 - If no config file exists: skips (disabled by default)
 - If no changes to commit: skips with a message
+- If auto-push is enabled but the configured remote is not a GitHub remote: fails with a clear error
+- If `wait_for_checks` is enabled but `gh` is unavailable or checks fail: fails with a clear error

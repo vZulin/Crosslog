@@ -201,4 +201,7 @@ Note: This command assumes a complete task breakdown exists in tasks.md. If task
         Executing: `/{command}`
         EXECUTE_COMMAND: {command}
         ```
+        Execute the hook command before returning the final implementation summary, and wait for it to complete. For `speckit.git.commit`, run the platform-appropriate script with the actual event name:
+        - Bash: `.specify/extensions/git/scripts/bash/auto-commit.sh after_implement`
+        - PowerShell: `.specify/extensions/git/scripts/powershell/auto-commit.ps1 after_implement`
     - If no hooks are registered or `.specify/extensions.yml` does not exist, skip silently
