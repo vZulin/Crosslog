@@ -9,3 +9,7 @@ export * from "./log-pane/VirtualLogViewport";
 export * from "./pane-rail/AddPaneButton";
 export * from "./pane-rail/PaneRail";
 export * from "./pane-rail/PaneResizer";
+export * from "./sync/SynchronizationToggle";
+export * from "./sync/TimeOffsetEditor";
+export * from "./sync/TimestampConfigError";
+export * from "./sync/useSynchronizationStore";

@@ -162,29 +162,29 @@ independent scrolling.
 
 ### Tests for User Story 2 (MANDATORY)
 
-- [ ] T096 [P] [US2] Add timestamp parser unit tests in `packages/core/tests/timestamps/timestamp-parser.test.ts`
-- [ ] T097 [P] [US2] Add synchronization engine unit tests in `packages/core/tests/sync/sync-engine.test.ts`
-- [ ] T098 [P] [US2] Add time offset unit tests in `packages/core/tests/sync/time-offset.test.ts`
-- [ ] T099 [P] [US2] Add Web synchronization UI test in `apps/web/tests/ui/synchronized-scrolling.spec.ts`
-- [ ] T100 [P] [US2] Add Desktop synchronization UI test in `apps/desktop/tests/ui/synchronized-scrolling.spec.ts`
-- [ ] T101 [P] [US2] Add synchronization benchmark in `tests/performance/synchronization.bench.ts`
-- [ ] T102 [P] [US2] Add timestamp config loading and validation tests in `packages/core/tests/timestamps/timestamp-config.test.ts`
+- [X] T096 [P] [US2] Add timestamp parser unit tests in `packages/core/tests/timestamps/timestamp-parser.test.ts`
+- [X] T097 [P] [US2] Add synchronization engine unit tests in `packages/core/tests/sync/sync-engine.test.ts`
+- [X] T098 [P] [US2] Add time offset unit tests in `packages/core/tests/sync/time-offset.test.ts`
+- [X] T099 [P] [US2] Add Web synchronization UI test in `apps/web/tests/ui/synchronized-scrolling.spec.ts`
+- [X] T100 [P] [US2] Add Desktop synchronization UI test in `apps/desktop/tests/ui/synchronized-scrolling.spec.ts`
+- [X] T101 [P] [US2] Add synchronization benchmark in `tests/performance/synchronization.bench.ts`
+- [X] T102 [P] [US2] Add timestamp config loading and validation tests in `packages/core/tests/timestamps/timestamp-config.test.ts`
 
 ### Implementation for User Story 2
 
-- [ ] T103 [P] [US2] Implement TimestampFormat compiler in `packages/core/src/timestamps/timestamp-format.ts`
-- [ ] T104 [P] [US2] Implement timestamp recognition service in `packages/core/src/timestamps/timestamp-recognition-service.ts`
-- [ ] T105 [P] [US2] Implement timestamp config loader and validator in `packages/core/src/timestamps/timestamp-config.ts`
-- [ ] T106 [US2] Implement invalid timestamp config error UI in `packages/ui/src/sync/TimestampConfigError.tsx`
-- [ ] T107 [P] [US2] Implement time offset model in `packages/core/src/sync/time-offset.ts`
-- [ ] T108 [US2] Implement synchronization engine in `packages/core/src/sync/synchronization-engine.ts`
-- [ ] T109 [US2] Implement active pane anchor tracking in `packages/core/src/sync/time-anchor-pane.ts`
-- [ ] T110 [US2] Implement synchronization store binding in `packages/ui/src/sync/useSynchronizationStore.ts`
-- [ ] T111 [US2] Implement synchronization toggle UI in `packages/ui/src/sync/SynchronizationToggle.tsx`
-- [ ] T112 [US2] Implement time offset editor UI in `packages/ui/src/sync/TimeOffsetEditor.tsx`
-- [ ] T113 [US2] Connect synchronized scrolling to virtual viewport in `packages/ui/src/log-pane/VirtualLogViewport.tsx`
-- [ ] T114 [US2] Run US2 automated tests using `scripts/macos/test.sh`
-- [ ] T115 [US2] Run US2 UI tests using `scripts/macos/test-ui.sh`
+- [X] T103 [P] [US2] Implement TimestampFormat compiler in `packages/core/src/timestamps/timestamp-format.ts`
+- [X] T104 [P] [US2] Implement timestamp recognition service in `packages/core/src/timestamps/timestamp-recognition-service.ts`
+- [X] T105 [P] [US2] Implement timestamp config loader and validator in `packages/core/src/timestamps/timestamp-config.ts`
+- [X] T106 [US2] Implement invalid timestamp config error UI in `packages/ui/src/sync/TimestampConfigError.tsx`
+- [X] T107 [P] [US2] Implement time offset model in `packages/core/src/sync/time-offset.ts`
+- [X] T108 [US2] Implement synchronization engine in `packages/core/src/sync/synchronization-engine.ts`
+- [X] T109 [US2] Implement active pane anchor tracking in `packages/core/src/sync/time-anchor-pane.ts`
+- [X] T110 [US2] Implement synchronization store binding in `packages/ui/src/sync/useSynchronizationStore.ts`
+- [X] T111 [US2] Implement synchronization toggle UI in `packages/ui/src/sync/SynchronizationToggle.tsx`
+- [X] T112 [US2] Implement time offset editor UI in `packages/ui/src/sync/TimeOffsetEditor.tsx`
+- [X] T113 [US2] Connect synchronized scrolling to virtual viewport in `packages/ui/src/log-pane/VirtualLogViewport.tsx`
+- [X] T114 [US2] Run US2 automated tests using `scripts/macos/test.sh`
+- [X] T115 [US2] Run US2 UI tests using `scripts/macos/test-ui.sh`
 
 **Checkpoint**: User Story 2 is independently functional with timestamped
 fixtures and does not require directory navigation, search, or live updates.

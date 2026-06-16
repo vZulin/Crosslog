@@ -9,6 +9,7 @@ const macosHarnessFiles = [
   "apps/desktop/tests/ui/macos/EmptyStateUITests.swift",
   "apps/desktop/tests/ui/macos/MultiPaneLayoutUITests.swift",
   "apps/desktop/tests/ui/macos/LogTextCopyUITests.swift",
+  "apps/desktop/tests/ui/macos/SynchronizedScrollingUITests.swift",
 ];
 
 if (platform === "darwin") {

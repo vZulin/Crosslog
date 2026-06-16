@@ -1,5 +1,5 @@
 import type { SearchState } from "../search/search-state";
-import type { TimeOffset } from "../sync/time-offset";
+import { zeroTimeOffset } from "../sync/time-offset";
 import type { LogPane, LogPaneId } from "./log-pane";
 import {
   DEFAULT_PANE_WIDTH,
@@ -30,14 +30,6 @@ export const emptySearchState: SearchState = {
   matches: [],
   currentMatchIndex: null,
   error: null,
-};
-
-export const zeroTimeOffset: TimeOffset = {
-  days: 0,
-  hours: 0,
-  minutes: 0,
-  seconds: 0,
-  milliseconds: 0,
 };
 
 export function createLogPane(overrides: Partial<LogPane> = {}): LogPane {

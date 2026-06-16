@@ -7,7 +7,9 @@ import { PaneResizer } from "./PaneResizer";
 export interface PaneRailPane {
   readonly pane: LogPaneModel;
   readonly lines: readonly string[];
+  readonly timestamps?: readonly (Date | null)[];
   readonly directoryLabel?: string;
+  readonly synchronizationTargetLineNumber?: number | null;
 }
 
 export interface PaneRailProps {
@@ -18,6 +20,8 @@ export interface PaneRailProps {
   readonly onActivatePane: (paneId: string) => void;
   readonly onResizePane: (leftPaneId: string, delta: number) => void;
   readonly onHorizontalScroll: (paneId: string, scrollLeft: number) => void;
+  readonly onTimeAnchorChange?: (paneId: string, lineNumber: number, timestamp: Date | null) => void;
+  readonly onTimeOffsetChange?: (paneId: string, offset: LogPaneModel["timeOffset"]) => void;
 }
 
 export function PaneRail({
@@ -28,6 +32,8 @@ export function PaneRail({
   onActivatePane,
   onResizePane,
   onHorizontalScroll,
+  onTimeAnchorChange,
+  onTimeOffsetChange,
 }: PaneRailProps) {
   return (
     <section aria-label="Log panes" data-testid="pane-rail" style={{ display: "flex", overflowX: "auto" }}>
@@ -36,10 +42,14 @@ export function PaneRail({
           <LogPane
             pane={entry.pane}
             lines={entry.lines}
+            timestamps={entry.timestamps}
             directoryLabel={entry.directoryLabel}
+            synchronizationTargetLineNumber={entry.synchronizationTargetLineNumber}
             onClose={onClosePane}
             onActivate={onActivatePane}
             onHorizontalScroll={onHorizontalScroll}
+            onTimeAnchorChange={onTimeAnchorChange}
+            onTimeOffsetChange={onTimeOffsetChange}
           />
           {index < panes.length - 1 ? (
             <PaneResizer
