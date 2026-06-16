@@ -7,7 +7,8 @@ export default defineConfig({
     trace: "on-first-retry"
   },
   webServer: {
-    command: "pnpm --filter @crosslog/web preview --host 127.0.0.1 --port 4173",
+    command:
+      "corepack pnpm --filter @crosslog/web build && corepack pnpm --filter @crosslog/web preview --host 127.0.0.1 --port 4173",
     url: "http://127.0.0.1:4173",
     reuseExistingServer: !process.env.CI
   },
@@ -18,4 +19,3 @@ export default defineConfig({
     }
   ]
 });
-

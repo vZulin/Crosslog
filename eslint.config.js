@@ -9,6 +9,11 @@ export default [
       "dist/",
       "build/",
       "coverage/",
+      "playwright-report/",
+      "test-results/",
+      "allure-results/",
+      "allure-report/",
+      "wdio-*.log",
       "apps/desktop/src-tauri/target/",
       "*.min.js"
     ]
@@ -34,4 +39,3 @@ export default [
     }
   }
 ];
-
