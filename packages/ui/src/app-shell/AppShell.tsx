@@ -1,11 +1,13 @@
 import React from "react";
 import type { CrosslogPlatform } from "@crosslog/platform";
+import type { DirectorySourceRef, DragDropSource, FileSourceRef } from "@crosslog/platform";
 import {
   createLogPane,
   createLogPaneState,
   createDirectoryFileEntry,
   createDirectorySource,
   appendRawLinesToChunks,
+  defaultFileOpenPolicy,
   flattenLineChunkText,
   createSynchronizationPlan,
   createTimeAnchorPane,
@@ -23,6 +25,7 @@ import {
   type SessionDirectorySource,
   type SessionFileSource,
 } from "@crosslog/core";
+import { CapabilityLimitations } from "./CapabilityLimitations";
 import { FuturePaneToolbarSlot } from "../log-pane/FuturePaneToolbarSlot";
 import { PaneRail } from "../pane-rail/PaneRail";
 import { usePaneSearchStore } from "../search/usePaneSearchStore";
@@ -234,14 +237,99 @@ export function AppShell({ platform }: AppShellProps) {
     });
   };
 
+  const openFileSource = async (sourceRef: FileSourceRef) => {
+    const result = await platform.fileAccess.openFileReadOnly(sourceRef, defaultFileOpenPolicy);
+
+    if (!result.ok) {
+      dispatch({
+        type: "addPane",
+        pane: {
+          id: `pane-error-${sourceRef.id}`,
+          title: sourceRef.name,
+          sourceRef: null,
+          width: 520,
+          status: result.error.code === "FileTooLarge" ? "memory-limited" : "error",
+        },
+      });
+      return;
+    }
+
+    setFileSources((current) => ({
+      ...current,
+      [result.source.id]: result.source,
+    }));
+    dispatch({
+      type: "addPane",
+      pane: {
+        id: `pane-${result.source.id}`,
+        title: result.source.displayName,
+        sourceRef: result.source.id,
+        width: 520,
+        status: "ready",
+      },
+    });
+  };
+
+  const openDirectorySource = async (sourceRef: DirectorySourceRef) => {
+    const files = await platform.directoryAccess.listTopLevelFiles(sourceRef);
+
+    dispatchDirectorySource({ type: "refreshFiles", files });
+    dispatch({
+      type: "addPane",
+      pane: {
+        id: `pane-directory-${sourceRef.id}`,
+        title: sourceRef.name,
+        sourceRef: directorySource.id,
+        width: 520,
+        status: files.length === 0 ? "empty" : "ready",
+      },
+    });
+  };
+
+  const openDroppedSources = async (sources: readonly DragDropSource[]) => {
+    for (const source of sources) {
+      if (source.type === "file") {
+        await openFileSource(source.source);
+      } else {
+        await openDirectorySource(source.source);
+      }
+    }
+  };
+
+  const handleBrowserFileInput = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.currentTarget.files ?? []);
+
+    void Promise.all(
+      files.map((file) =>
+        openFileSource({
+          id: `browser-file-${sanitizeSourceId(file.name)}-${file.size}-${file.lastModified}`,
+          name: file.name,
+          file,
+        }),
+      ),
+    );
+    event.currentTarget.value = "";
+  };
+
+  const handleOpenBrowserDirectory = () => {
+    void openDirectorySource({
+      id: "browser-directory-fixture",
+      name: "browser-fixtures",
+      entries: browserDirectoryEntries,
+    });
+  };
+
+  const handleDrop = (event: React.DragEvent<HTMLElement>) => {
+    event.preventDefault();
+    void platform.dragDropSource.mapDroppedSources(event.nativeEvent).then(openDroppedSources);
+  };
+
   return (
     <main aria-label="Crosslog workspace">
       <SessionRecoveryBanner message={restoreState.message} />
-      {platform.capabilities.limitations.map((limitation) => (
-        <p key={limitation.capability}>{limitation.message}</p>
-      ))}
+      <CapabilityLimitations limitations={platform.capabilities.limitations} />
       {state.panes.length === 0 ? (
-        <section aria-label="Empty workspace">
+        <section aria-label="Empty workspace" onDragOver={(event) => event.preventDefault()} onDrop={handleDrop}>
           <h1>Crosslog</h1>
           <button
             type="button"
@@ -251,6 +339,22 @@ export function AppShell({ platform }: AppShellProps) {
           >
             Open logs
           </button>
+          {platform.kind === "web" ? (
+            <>
+              <label>
+                Open browser files
+                <input
+                  aria-label="Open browser files"
+                  multiple
+                  type="file"
+                  onChange={handleBrowserFileInput}
+                />
+              </label>
+              <button type="button" onClick={handleOpenBrowserDirectory}>
+                Open browser directory
+              </button>
+            </>
+          ) : null}
           <button
             type="button"
             onClick={() => {
@@ -273,7 +377,12 @@ export function AppShell({ platform }: AppShellProps) {
         </section>
       ) : (
         <>
-          <div role="toolbar" aria-label="Global tools">
+          <div
+            role="toolbar"
+            aria-label="Global tools"
+            onDragOver={(event) => event.preventDefault()}
+            onDrop={handleDrop}
+          >
             <SynchronizationToggle
               enabled={synchronizationEnabled}
               onEnabledChange={handleSynchronizationEnabledChange}
@@ -382,6 +491,28 @@ const newerDirectoryFile = createDirectoryFileEntry({
   sizeBytes: 4096,
 });
 
+const browserDirectoryEntries = [
+  {
+    kind: "file" as const,
+    id: "browser-directory-new",
+    name: "browser-new.log",
+    createdAt: new Date("2026-06-16T12:00:00.000Z"),
+    sizeBytes: 128,
+  },
+  {
+    kind: "file" as const,
+    id: "browser-directory-old",
+    name: "browser-old.log",
+    createdAt: new Date("2026-06-15T12:00:00.000Z"),
+    sizeBytes: 128,
+  },
+  {
+    kind: "directory" as const,
+    id: "browser-directory-nested",
+    name: "nested",
+  },
+];
+
 function createAddedPane(nextPaneNumber: number) {
   return {
     title: `adhoc-${nextPaneNumber}.log`,
@@ -462,4 +593,8 @@ function createSampleFileSource(
     replaced: false,
     readError: null,
   };
+}
+
+function sanitizeSourceId(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }

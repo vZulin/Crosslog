@@ -347,21 +347,21 @@ side-by-side panes and search work, and verify unsupported capability messaging.
 
 ### Tests for User Story 7 (MANDATORY)
 
-- [ ] T183 [P] [US7] Add browser capability unit tests in `packages/platform/tests/browser/browser-capabilities.test.ts`
-- [ ] T184 [P] [US7] Add browser file adapter tests in `packages/platform/tests/browser/browser-file-access.test.ts`
-- [ ] T185 [P] [US7] Add browser directory adapter tests in `packages/platform/tests/browser/browser-directory-access.test.ts`
-- [ ] T186 [P] [US7] Add browser drag-and-drop UI test in `apps/web/tests/ui/browser-drag-drop.spec.ts`
-- [ ] T187 [P] [US7] Add browser unsupported capability UI test in `apps/web/tests/ui/browser-capabilities.spec.ts`
+- [X] T183 [P] [US7] Add browser capability unit tests in `packages/platform/tests/browser/browser-capabilities.test.ts`
+- [X] T184 [P] [US7] Add browser file adapter tests in `packages/platform/tests/browser/browser-file-access.test.ts`
+- [X] T185 [P] [US7] Add browser directory adapter tests in `packages/platform/tests/browser/browser-directory-access.test.ts`
+- [X] T186 [P] [US7] Add browser drag-and-drop UI test in `apps/web/tests/ui/browser-drag-drop.spec.ts`
+- [X] T187 [P] [US7] Add browser unsupported capability UI test in `apps/web/tests/ui/browser-capabilities.spec.ts`
 
 ### Implementation for User Story 7
 
-- [ ] T188 [P] [US7] Implement browser capability report in `packages/platform/src/browser/browser-capabilities.ts`
-- [ ] T189 [US7] Connect browser file access adapter to browser loading flow in `apps/web/src/platform/browserFileSources.ts`
-- [ ] T190 [US7] Implement browser drag-and-drop source mapper in `apps/web/src/platform/browserDropSources.ts`
-- [ ] T191 [US7] Implement browser directory loading integration in `packages/platform/src/browser/browser-directory-access.ts`
-- [ ] T192 [US7] Implement unsupported capability messaging in `packages/ui/src/app-shell/CapabilityLimitations.tsx`
-- [ ] T193 [US7] Run US7 automated tests using `scripts/macos/test.sh`
-- [ ] T194 [US7] Run US7 UI tests using `scripts/macos/test-ui.sh`
+- [X] T188 [P] [US7] Implement browser capability report in `packages/platform/src/browser/browser-capabilities.ts`
+- [X] T189 [US7] Connect browser file access adapter to browser loading flow in `apps/web/src/platform/browserFileSources.ts`
+- [X] T190 [US7] Implement browser drag-and-drop source mapper in `apps/web/src/platform/browserDropSources.ts`
+- [X] T191 [US7] Implement browser directory loading integration in `packages/platform/src/browser/browser-directory-access.ts`
+- [X] T192 [US7] Implement unsupported capability messaging in `packages/ui/src/app-shell/CapabilityLimitations.tsx`
+- [X] T193 [US7] Run US7 automated tests using `scripts/macos/test.sh`
+- [X] T194 [US7] Run US7 UI tests using `scripts/macos/test-ui.sh`
 
 **Checkpoint**: User Story 7 is independently functional for browser-supported
 capabilities and explicit about unsupported monitoring.

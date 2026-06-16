@@ -1,4 +1,5 @@
 export * from "./app-shell/AppShell";
+export * from "./app-shell/CapabilityLimitations";
 export * from "./session/SessionRecoveryBanner";
 export * from "./session/useSessionRestore";
 export * from "./log-pane/EncodingChooser";

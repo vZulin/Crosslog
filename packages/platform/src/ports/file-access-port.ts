@@ -3,6 +3,7 @@ import type { CrosslogError, FileOpenPolicy, FileSource } from "@crosslog/core";
 export interface FileSourceRef {
   readonly id: string;
   readonly name: string;
+  readonly file?: File;
 }
 
 export type FileAccessResult =
@@ -17,4 +18,3 @@ export interface FileAccessPort {
   decodeFile(sourceRef: FileSourceRef, encodingChoice: string): Promise<string>;
   getFileIdentity(sourceRef: FileSourceRef): Promise<string>;
 }
-

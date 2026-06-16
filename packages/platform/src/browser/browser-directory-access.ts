@@ -3,25 +3,15 @@ import {
   type DirectoryFileEntry,
   sortDirectoryFileEntries,
 } from "@crosslog/core";
-import type { DirectoryAccessPort, DirectorySourceRef } from "../ports/directory-access-port";
-
-export type BrowserDirectoryEntryDescriptor =
-  | {
-      readonly kind: "file";
-      readonly id: string;
-      readonly name: string;
-      readonly createdAt?: Date | null;
-      readonly sizeBytes?: number;
-    }
-  | {
-      readonly kind: "directory";
-      readonly id: string;
-      readonly name: string;
-    };
+import type {
+  DirectoryAccessPort,
+  DirectoryEntryDescriptor,
+  DirectorySourceRef,
+} from "../ports/directory-access-port";
 
 export class BrowserDirectoryAccess implements DirectoryAccessPort {
   constructor(
-    private readonly directories: ReadonlyMap<string, readonly BrowserDirectoryEntryDescriptor[]> = new Map(),
+    private readonly directories: ReadonlyMap<string, readonly DirectoryEntryDescriptor[]> = new Map(),
   ) {}
 
   async listTopLevelFiles(directoryRef: DirectorySourceRef): Promise<readonly DirectoryFileEntry[]> {
@@ -33,7 +23,7 @@ export class BrowserDirectoryAccess implements DirectoryAccessPort {
   }
 
   private readDirectoryFiles(directoryRef: DirectorySourceRef): readonly DirectoryFileEntry[] {
-    const descriptors = this.directories.get(directoryRef.id) ?? [];
+    const descriptors = directoryRef.entries ?? this.directories.get(directoryRef.id) ?? [];
     const files = descriptors.flatMap((descriptor) => {
       if (descriptor.kind !== "file") {
         return [];
