@@ -383,13 +383,13 @@ security validation, and cross-platform script execution.
 - [X] T202 Generate final icon assets into `assets/icons/crosslog.iconset/README.md`
 - [X] T203 Update developer documentation in `docs/development.md`
 - [ ] T204 Run Windows build validation using `scripts/windows/build.ps1`
-- [ ] T205 Run Windows automated tests using `scripts/windows/test.ps1`
+- [X] T205 Run Windows automated tests using `scripts/windows/test.ps1`
 - [ ] T206 Run Windows UI tests using `scripts/windows/test-ui.ps1`
 - [X] T207 Run macOS build validation using `scripts/macos/build.sh`
 - [X] T208 Run macOS automated tests using `scripts/macos/test.sh`
 - [X] T209 Run macOS UI tests using `scripts/macos/test-ui.sh`
 - [ ] T210 Run Linux build validation using `scripts/linux/build.sh`
-- [ ] T211 Run Linux automated tests using `scripts/linux/test.sh`
+- [X] T211 Run Linux automated tests using `scripts/linux/test.sh`
 - [ ] T212 Run Linux UI tests using `scripts/linux/test-ui.sh`
 - [ ] T213 Run performance validation using `scripts/windows/perf.ps1`, `scripts/macos/perf.sh`, and `scripts/linux/perf.sh`
 
