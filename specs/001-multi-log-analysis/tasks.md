@@ -241,24 +241,24 @@ matches, handle invalid regex, and confirm pane search state isolation.
 
 ### Tests for User Story 4 (MANDATORY)
 
-- [ ] T136 [P] [US4] Add search engine unit tests in `packages/core/tests/search/search-engine.test.ts`
-- [ ] T137 [P] [US4] Add invalid regex tests in `packages/core/tests/search/search-errors.test.ts`
-- [ ] T138 [P] [US4] Add search state isolation tests in `packages/ui/tests/search/search-state.test.tsx`
-- [ ] T139 [P] [US4] Add Web search UI test in `apps/web/tests/ui/log-search.spec.ts`
-- [ ] T140 [P] [US4] Add Desktop search UI test in `apps/desktop/tests/ui/log-search.spec.ts`
-- [ ] T141 [P] [US4] Add 20 MB search benchmark in `tests/performance/search-20mb.bench.ts`
+- [X] T136 [P] [US4] Add search engine unit tests in `packages/core/tests/search/search-engine.test.ts`
+- [X] T137 [P] [US4] Add invalid regex tests in `packages/core/tests/search/search-errors.test.ts`
+- [X] T138 [P] [US4] Add search state isolation tests in `packages/ui/tests/search/search-state.test.tsx`
+- [X] T139 [P] [US4] Add Web search UI test in `apps/web/tests/ui/log-search.spec.ts`
+- [X] T140 [P] [US4] Add Desktop search UI test in `apps/desktop/tests/ui/log-search.spec.ts`
+- [X] T141 [P] [US4] Add 20 MB search benchmark in `tests/performance/search-20mb.bench.ts`
 
 ### Implementation for User Story 4
 
-- [ ] T142 [P] [US4] Implement search query model in `packages/core/src/search/search-query.ts`
-- [ ] T143 [US4] Implement search engine in `packages/core/src/search/search-engine.ts`
-- [ ] T144 [US4] Implement incremental search update logic in `packages/core/src/search/search-index.ts`
-- [ ] T145 [US4] Implement pane search store binding in `packages/ui/src/search/usePaneSearchStore.ts`
-- [ ] T146 [US4] Implement pane search controls in `packages/ui/src/search/PaneSearchControls.tsx`
-- [ ] T147 [US4] Implement search result navigation controls in `packages/ui/src/search/SearchResultNavigator.tsx`
-- [ ] T148 [US4] Connect search matches to virtual viewport in `packages/ui/src/log-pane/VirtualLogViewport.tsx`
-- [ ] T149 [US4] Run US4 automated tests using `scripts/macos/test.sh`
-- [ ] T150 [US4] Run US4 UI tests using `scripts/macos/test-ui.sh`
+- [X] T142 [P] [US4] Implement search query model in `packages/core/src/search/search-query.ts`
+- [X] T143 [US4] Implement search engine in `packages/core/src/search/search-engine.ts`
+- [X] T144 [US4] Implement incremental search update logic in `packages/core/src/search/search-index.ts`
+- [X] T145 [US4] Implement pane search store binding in `packages/ui/src/search/usePaneSearchStore.ts`
+- [X] T146 [US4] Implement pane search controls in `packages/ui/src/search/PaneSearchControls.tsx`
+- [X] T147 [US4] Implement search result navigation controls in `packages/ui/src/search/SearchResultNavigator.tsx`
+- [X] T148 [US4] Connect search matches to virtual viewport in `packages/ui/src/log-pane/VirtualLogViewport.tsx`
+- [X] T149 [US4] Run US4 automated tests using `scripts/macos/test.sh`
+- [X] T150 [US4] Run US4 UI tests using `scripts/macos/test-ui.sh`
 
 **Checkpoint**: User Story 4 is independently functional with loaded content
 fixtures and does not require live file watching.

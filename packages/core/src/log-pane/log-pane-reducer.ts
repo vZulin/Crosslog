@@ -1,4 +1,4 @@
-import type { SearchState } from "../search/search-state";
+import { emptySearchState } from "../search/search-state";
 import { zeroTimeOffset } from "../sync/time-offset";
 import type { LogPane, LogPaneId } from "./log-pane";
 import {
@@ -22,15 +22,6 @@ export type LogPaneAction =
   | { readonly type: "resizePane"; readonly leftPaneId: LogPaneId; readonly delta: number }
   | { readonly type: "setHorizontalScroll"; readonly paneId: LogPaneId; readonly scrollLeft: number }
   | { readonly type: "setActivePane"; readonly paneId: LogPaneId };
-
-export const emptySearchState: SearchState = {
-  query: "",
-  mode: "text",
-  caseSensitive: false,
-  matches: [],
-  currentMatchIndex: null,
-  error: null,
-};
 
 export function createLogPane(overrides: Partial<LogPane> = {}): LogPane {
   const id = overrides.id ?? "pane-1";

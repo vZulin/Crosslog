@@ -5,6 +5,7 @@ import { LogTextSelection } from "./LogTextSelection";
 import { PaneHeader } from "./PaneHeader";
 import { VirtualLogViewport } from "./VirtualLogViewport";
 import { TimeOffsetEditor } from "../sync/TimeOffsetEditor";
+import { PaneSearchControls } from "../search/PaneSearchControls";
 
 export interface LogPaneProps {
   readonly pane: LogPaneModel;
@@ -18,6 +19,11 @@ export interface LogPaneProps {
   readonly onNavigateDirectory?: (paneId: string, direction: "previous" | "next") => void;
   readonly onTimeAnchorChange?: (paneId: string, lineNumber: number, timestamp: Date | null) => void;
   readonly onTimeOffsetChange?: (paneId: string, offset: LogPaneModel["timeOffset"]) => void;
+  readonly onSearchQueryChange?: (paneId: string, query: string) => void;
+  readonly onSearchRegexModeChange?: (paneId: string, enabled: boolean) => void;
+  readonly onSearchCaseSensitiveChange?: (paneId: string, enabled: boolean) => void;
+  readonly onPreviousSearchMatch?: (paneId: string) => void;
+  readonly onNextSearchMatch?: (paneId: string) => void;
 }
 
 export function LogPane({
@@ -32,7 +38,17 @@ export function LogPane({
   onNavigateDirectory,
   onTimeAnchorChange,
   onTimeOffsetChange,
+  onSearchQueryChange,
+  onSearchRegexModeChange,
+  onSearchCaseSensitiveChange,
+  onPreviousSearchMatch,
+  onNextSearchMatch,
 }: LogPaneProps) {
+  const activeSearchMatch =
+    pane.searchState.currentMatchIndex === null
+      ? null
+      : pane.searchState.matches[pane.searchState.currentMatchIndex] ?? null;
+
   return (
     <article
       aria-label={`Log pane ${pane.title}`}
@@ -55,6 +71,15 @@ export function LogPane({
       />
       <div role="toolbar" aria-label={`Pane tools for ${pane.title}`}>
         <LogTextSelection title={pane.title} lines={lines} />
+        <PaneSearchControls
+          title={pane.title}
+          searchState={pane.searchState}
+          onQueryChange={(query) => onSearchQueryChange?.(pane.id, query)}
+          onRegexModeChange={(enabled) => onSearchRegexModeChange?.(pane.id, enabled)}
+          onCaseSensitiveChange={(enabled) => onSearchCaseSensitiveChange?.(pane.id, enabled)}
+          onPreviousMatch={() => onPreviousSearchMatch?.(pane.id)}
+          onNextMatch={() => onNextSearchMatch?.(pane.id)}
+        />
         <TimeOffsetEditor
           title={pane.title}
           value={pane.timeOffset}
@@ -70,6 +95,8 @@ export function LogPane({
           title={pane.title}
           lines={lines}
           timestamps={timestamps}
+          searchMatches={pane.searchState.matches}
+          activeSearchMatchLineNumber={activeSearchMatch?.lineNumber ?? null}
           synchronizationTargetLineNumber={synchronizationTargetLineNumber}
           onTimeAnchorChange={(lineNumber, timestamp) => onTimeAnchorChange?.(pane.id, lineNumber, timestamp)}
         />

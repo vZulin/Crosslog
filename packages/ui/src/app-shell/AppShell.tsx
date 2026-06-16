@@ -10,11 +10,13 @@ import {
   createTimestampRecognitionService,
   defaultTimestampFormats,
   directorySourceReducer,
+  emptySearchState,
   getCurrentDirectoryFile,
   logPaneReducer,
 } from "@crosslog/core";
 import { FuturePaneToolbarSlot } from "../log-pane/FuturePaneToolbarSlot";
 import { PaneRail } from "../pane-rail/PaneRail";
+import { usePaneSearchStore } from "../search/usePaneSearchStore";
 import { SynchronizationToggle } from "../sync/SynchronizationToggle";
 import { TimestampConfigError } from "../sync/TimestampConfigError";
 import { getPaneOffset, useSynchronizationStore } from "../sync/useSynchronizationStore";
@@ -43,30 +45,56 @@ export function AppShell({ platform }: AppShellProps) {
   const setSynchronizationAnchor = useSynchronizationStore((store) => store.setAnchor);
   const setPaneOffset = useSynchronizationStore((store) => store.setPaneOffset);
   const setPlanResult = useSynchronizationStore((store) => store.setPlanResult);
+  const searchStates = usePaneSearchStore((store) => store.states);
+  const setPaneSearchLines = usePaneSearchStore((store) => store.setPaneLines);
+  const setSearchQuery = usePaneSearchStore((store) => store.setQuery);
+  const setSearchMode = usePaneSearchStore((store) => store.setMode);
+  const setSearchCaseSensitive = usePaneSearchStore((store) => store.setCaseSensitive);
+  const selectPreviousSearchMatch = usePaneSearchStore((store) => store.selectPreviousMatch);
+  const selectNextSearchMatch = usePaneSearchStore((store) => store.selectNextMatch);
   const timestampService = React.useMemo(
     () => createTimestampRecognitionService(defaultTimestampFormats),
     [],
   );
-  const panes = state.panes.map((pane) => {
-    const currentDirectoryFile = pane.sourceRef === directorySource.id ? getCurrentDirectoryFile(directorySource) : null;
-    const paneTitle = currentDirectoryFile?.name ?? pane.title;
-    const lines = currentDirectoryFile ? getSampleLines(currentDirectoryFile.name) : getSampleLines(pane.title);
-    const recognizedLines = lines.map((line, index) => timestampService.recognizeLine(index + 1, line, pane.id));
+  const paneData = React.useMemo(
+    () =>
+      state.panes.map((pane) => {
+        const currentDirectoryFile =
+          pane.sourceRef === directorySource.id ? getCurrentDirectoryFile(directorySource) : null;
+        const paneTitle = currentDirectoryFile?.name ?? pane.title;
+        const lines = currentDirectoryFile ? getSampleLines(currentDirectoryFile.name) : getSampleLines(pane.title);
+        const recognizedLines = lines.map((line, index) => timestampService.recognizeLine(index + 1, line, pane.id));
 
-    return {
-      pane: {
-        ...pane,
-        title: paneTitle,
-        timeOffset: getPaneOffset(syncOffsets, pane.id),
-        syncEnabled: synchronizationEnabled,
-        status: pane.sourceRef === directorySource.id && directorySource.files.length === 0 ? "empty" as const : pane.status,
-      },
-      lines,
-      timestamps: recognizedLines.map((line) => line.timestamp),
-      synchronizationTargetLineNumber: syncTargets[pane.id] ?? null,
-      directorySource: pane.sourceRef === directorySource.id ? directorySource : undefined,
-    };
-  });
+        return {
+          pane: {
+            ...pane,
+            title: paneTitle,
+            timeOffset: getPaneOffset(syncOffsets, pane.id),
+            syncEnabled: synchronizationEnabled,
+            status:
+              pane.sourceRef === directorySource.id && directorySource.files.length === 0
+                ? ("empty" as const)
+                : pane.status,
+          },
+          lines,
+          timestamps: recognizedLines.map((line) => line.timestamp),
+          synchronizationTargetLineNumber: syncTargets[pane.id] ?? null,
+          directorySource: pane.sourceRef === directorySource.id ? directorySource : undefined,
+        };
+      }),
+    [directorySource, state.panes, syncOffsets, syncTargets, synchronizationEnabled, timestampService],
+  );
+  const panes = paneData.map((entry) => ({
+    ...entry,
+    pane: {
+      ...entry.pane,
+      searchState: searchStates[entry.pane.id] ?? emptySearchState,
+    },
+  }));
+
+  React.useEffect(() => {
+    paneData.forEach((entry) => setPaneSearchLines(entry.pane.id, entry.lines));
+  }, [paneData, setPaneSearchLines]);
 
   const handleAnchorChange = (paneId: string, _lineNumber: number, timestamp: Date | null) => {
     const anchor = createTimeAnchorPane(paneId, timestamp, "scroll");
@@ -81,7 +109,7 @@ export function AppShell({ platform }: AppShellProps) {
       enabled: synchronizationEnabled,
       anchorPaneId: anchor.paneId,
       anchorTimestamp: anchor.anchorTimestamp,
-      panes: panes.map((entry) => ({
+      panes: paneData.map((entry) => ({
         paneId: entry.pane.id,
         timeOffset: entry.pane.timeOffset,
         syncEnabled: entry.pane.syncEnabled,
@@ -174,6 +202,11 @@ export function AppShell({ platform }: AppShellProps) {
             onNavigateDirectory={(_paneId, direction) => dispatchDirectorySource({ type: "navigate", direction })}
             onTimeAnchorChange={handleAnchorChange}
             onTimeOffsetChange={setPaneOffset}
+            onSearchQueryChange={setSearchQuery}
+            onSearchRegexModeChange={(paneId, enabled) => setSearchMode(paneId, enabled ? "regex" : "text")}
+            onSearchCaseSensitiveChange={setSearchCaseSensitive}
+            onPreviousSearchMatch={selectPreviousSearchMatch}
+            onNextSearchMatch={selectNextSearchMatch}
           />
         </>
       )}
@@ -245,10 +278,21 @@ function createAddedPane(nextPaneNumber: number) {
 }
 
 function getSampleLines(title: string): readonly string[] {
-  return [
-    `2026-06-16T09:00:00.000Z ${title} boot sequence started with a deliberately long line for horizontal scrolling verification`,
-    `2026-06-16T09:00:01.250Z ${title} connected to upstream service`,
-    `2026-06-16T09:00:02.500Z ${title} processed request id=42 status=ok`,
-    `2026-06-16T09:00:03.750Z ${title} completed comparison sample`,
-  ];
+  return Array.from({ length: 250 }, (_, index) => {
+    const lineNumber = index + 1;
+    const secondsAfterStart = index;
+    const minute = Math.floor(secondsAfterStart / 60);
+    const second = secondsAfterStart % 60;
+
+    if (lineNumber === 181) {
+      return `2026-06-16T09:03:00.000Z ${title} line 180 token=outside-viewport`;
+    }
+
+    return [
+      `2026-06-16T09:00:00.000Z ${title} boot sequence started with a deliberately long line for horizontal scrolling verification`,
+      `2026-06-16T09:00:01.250Z ${title} connected to upstream service`,
+      `2026-06-16T09:00:02.500Z ${title} processed request id=42 status=ok`,
+      `2026-06-16T09:00:03.750Z ${title} completed comparison sample`,
+    ][index] ?? `2026-06-16T09:${String(minute).padStart(2, "0")}:${String(second).padStart(2, "0")}.000Z ${title} line ${lineNumber}`;
+  });
 }

@@ -1,4 +1,5 @@
 import React from "react";
+import type { SearchMatch } from "@crosslog/core";
 
 export interface VisibleLogLine {
   readonly lineNumber: number;
@@ -10,6 +11,8 @@ export interface VirtualLogViewportProps {
   readonly title: string;
   readonly lines: readonly string[];
   readonly timestamps?: readonly (Date | null)[];
+  readonly searchMatches?: readonly SearchMatch[];
+  readonly activeSearchMatchLineNumber?: number | null;
   readonly maxVisibleLines?: number;
   readonly synchronizationTargetLineNumber?: number | null;
   readonly onTimeAnchorChange?: (lineNumber: number, timestamp: Date | null) => void;
@@ -37,15 +40,19 @@ export function VirtualLogViewport({
   title,
   lines,
   timestamps,
+  searchMatches = [],
+  activeSearchMatchLineNumber,
   maxVisibleLines,
   synchronizationTargetLineNumber,
   onTimeAnchorChange,
 }: VirtualLogViewportProps) {
+  const searchMatchLineNumbers = new Set(searchMatches.map((match) => match.lineNumber));
+  const targetLineNumber = activeSearchMatchLineNumber ?? synchronizationTargetLineNumber ?? null;
   const visibleLines = createVisibleLogLineWindow(
     lines,
     maxVisibleLines,
     timestamps,
-    synchronizationTargetLineNumber ?? null,
+    targetLineNumber,
   );
 
   return (
@@ -54,6 +61,8 @@ export function VirtualLogViewport({
         <li
           key={line.lineNumber}
           data-line-number={line.lineNumber}
+          data-search-match={searchMatchLineNumbers.has(line.lineNumber) ? "true" : "false"}
+          data-active-search-match={line.lineNumber === activeSearchMatchLineNumber ? "true" : "false"}
           data-sync-target={line.lineNumber === synchronizationTargetLineNumber ? "true" : "false"}
           onClick={() => onTimeAnchorChange?.(line.lineNumber, line.timestamp)}
         >

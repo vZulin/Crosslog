@@ -23,6 +23,11 @@ export interface PaneRailProps {
   readonly onNavigateDirectory?: (paneId: string, direction: "previous" | "next") => void;
   readonly onTimeAnchorChange?: (paneId: string, lineNumber: number, timestamp: Date | null) => void;
   readonly onTimeOffsetChange?: (paneId: string, offset: LogPaneModel["timeOffset"]) => void;
+  readonly onSearchQueryChange?: (paneId: string, query: string) => void;
+  readonly onSearchRegexModeChange?: (paneId: string, enabled: boolean) => void;
+  readonly onSearchCaseSensitiveChange?: (paneId: string, enabled: boolean) => void;
+  readonly onPreviousSearchMatch?: (paneId: string) => void;
+  readonly onNextSearchMatch?: (paneId: string) => void;
 }
 
 export function PaneRail({
@@ -36,6 +41,11 @@ export function PaneRail({
   onNavigateDirectory,
   onTimeAnchorChange,
   onTimeOffsetChange,
+  onSearchQueryChange,
+  onSearchRegexModeChange,
+  onSearchCaseSensitiveChange,
+  onPreviousSearchMatch,
+  onNextSearchMatch,
 }: PaneRailProps) {
   return (
     <section aria-label="Log panes" data-testid="pane-rail" style={{ display: "flex", overflowX: "auto" }}>
@@ -53,6 +63,11 @@ export function PaneRail({
             onNavigateDirectory={onNavigateDirectory}
             onTimeAnchorChange={onTimeAnchorChange}
             onTimeOffsetChange={onTimeOffsetChange}
+            onSearchQueryChange={onSearchQueryChange}
+            onSearchRegexModeChange={onSearchRegexModeChange}
+            onSearchCaseSensitiveChange={onSearchCaseSensitiveChange}
+            onPreviousSearchMatch={onPreviousSearchMatch}
+            onNextSearchMatch={onNextSearchMatch}
           />
           {index < panes.length - 1 ? (
             <PaneResizer
