@@ -275,25 +275,25 @@ content, replace it with the same name, and verify pane-local behavior.
 
 ### Tests for User Story 5 (MANDATORY)
 
-- [ ] T151 [P] [US5] Add file lifecycle unit tests in `packages/core/tests/file-source/file-lifecycle.test.ts`
-- [ ] T152 [P] [US5] Add watcher event mapping tests in `packages/platform/tests/file-watcher/file-watcher-events.test.ts`
-- [ ] T153 [P] [US5] Add read-only safety integration tests in `tests/integration/read-only-file-safety.test.ts`
-- [ ] T154 [P] [US5] Add Web unsupported monitoring UI test in `apps/web/tests/ui/unsupported-monitoring.spec.ts`
-- [ ] T155 [P] [US5] Add Desktop live update UI test in `apps/desktop/tests/ui/live-file-updates.spec.ts`
-- [ ] T156 [P] [US5] Add live append performance test in `tests/performance/live-append.bench.ts`
+- [X] T151 [P] [US5] Add file lifecycle unit tests in `packages/core/tests/file-source/file-lifecycle.test.ts`
+- [X] T152 [P] [US5] Add watcher event mapping tests in `packages/platform/tests/file-watcher/file-watcher-events.test.ts`
+- [X] T153 [P] [US5] Add read-only safety integration tests in `tests/integration/read-only-file-safety.test.ts`
+- [X] T154 [P] [US5] Add Web unsupported monitoring UI test in `apps/web/tests/ui/unsupported-monitoring.spec.ts`
+- [X] T155 [P] [US5] Add Desktop live update UI test in `apps/desktop/tests/ui/live-file-updates.spec.ts`
+- [X] T156 [P] [US5] Add live append performance test in `tests/performance/live-append.bench.ts`
 
 ### Implementation for User Story 5
 
-- [ ] T157 [P] [US5] Implement file lifecycle reducer in `packages/core/src/file-source/file-lifecycle.ts`
-- [ ] T158 [P] [US5] Implement append line chunk update in `packages/core/src/file-source/line-chunk-store.ts`
-- [ ] T159 [US5] Implement Rust file watcher commands in `apps/desktop/src-tauri/src/commands/file_watcher.rs`
-- [ ] T160 [US5] Implement Rust file identity detection in `apps/desktop/src-tauri/src/commands/file_identity.rs`
-- [ ] T161 [US5] Implement Tauri watcher adapter binding in `packages/platform/src/tauri/tauri-file-watcher.ts`
-- [ ] T162 [US5] Implement browser watcher unsupported adapter in `packages/platform/src/browser/browser-file-watcher.ts`
-- [ ] T163 [US5] Implement deleted-file status UI in `packages/ui/src/log-pane/DeletedFileStatus.tsx`
-- [ ] T164 [US5] Implement replacement-file transition handling in `packages/ui/src/log-pane/useFileLifecycleEvents.ts`
-- [ ] T165 [US5] Run US5 automated tests using `scripts/macos/test.sh`
-- [ ] T166 [US5] Run US5 UI tests using `scripts/macos/test-ui.sh`
+- [X] T157 [P] [US5] Implement file lifecycle reducer in `packages/core/src/file-source/file-lifecycle.ts`
+- [X] T158 [P] [US5] Implement append line chunk update in `packages/core/src/file-source/line-chunk-store.ts`
+- [X] T159 [US5] Implement Rust file watcher commands in `apps/desktop/src-tauri/src/commands/file_watcher.rs`
+- [X] T160 [US5] Implement Rust file identity detection in `apps/desktop/src-tauri/src/commands/file_identity.rs`
+- [X] T161 [US5] Implement Tauri watcher adapter binding in `packages/platform/src/tauri/tauri-file-watcher.ts`
+- [X] T162 [US5] Implement browser watcher unsupported adapter in `packages/platform/src/browser/browser-file-watcher.ts`
+- [X] T163 [US5] Implement deleted-file status UI in `packages/ui/src/log-pane/DeletedFileStatus.tsx`
+- [X] T164 [US5] Implement replacement-file transition handling in `packages/ui/src/log-pane/useFileLifecycleEvents.ts`
+- [X] T165 [US5] Run US5 automated tests using `scripts/macos/test.sh`
+- [X] T166 [US5] Run US5 UI tests using `scripts/macos/test-ui.sh`
 
 **Checkpoint**: User Story 5 is independently functional on Desktop and reports
 unsupported monitoring clearly in Web.

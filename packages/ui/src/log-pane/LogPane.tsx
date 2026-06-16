@@ -4,6 +4,7 @@ import { HorizontalLogScroller } from "./HorizontalLogScroller";
 import { LogTextSelection } from "./LogTextSelection";
 import { PaneHeader } from "./PaneHeader";
 import { VirtualLogViewport } from "./VirtualLogViewport";
+import { DeletedFileStatus } from "./DeletedFileStatus";
 import { TimeOffsetEditor } from "../sync/TimeOffsetEditor";
 import { PaneSearchControls } from "../search/PaneSearchControls";
 
@@ -97,10 +98,12 @@ export function LogPane({
           timestamps={timestamps}
           searchMatches={pane.searchState.matches}
           activeSearchMatchLineNumber={activeSearchMatch?.lineNumber ?? null}
+          maxVisibleLines={400}
           synchronizationTargetLineNumber={synchronizationTargetLineNumber}
           onTimeAnchorChange={(lineNumber, timestamp) => onTimeAnchorChange?.(pane.id, lineNumber, timestamp)}
         />
       </HorizontalLogScroller>
+      {pane.status === "deleted" ? <DeletedFileStatus title={pane.title} /> : null}
       {pane.syncEnabled ? null : <p>Synchronization disabled for this pane</p>}
       <footer>{pane.status}</footer>
     </article>

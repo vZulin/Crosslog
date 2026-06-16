@@ -5,6 +5,8 @@ import {
   createLogPaneState,
   createDirectoryFileEntry,
   createDirectorySource,
+  appendRawLinesToChunks,
+  flattenLineChunkText,
   createSynchronizationPlan,
   createTimeAnchorPane,
   createTimestampRecognitionService,
@@ -13,6 +15,7 @@ import {
   emptySearchState,
   getCurrentDirectoryFile,
   logPaneReducer,
+  type FileSource,
 } from "@crosslog/core";
 import { FuturePaneToolbarSlot } from "../log-pane/FuturePaneToolbarSlot";
 import { PaneRail } from "../pane-rail/PaneRail";
@@ -20,6 +23,7 @@ import { usePaneSearchStore } from "../search/usePaneSearchStore";
 import { SynchronizationToggle } from "../sync/SynchronizationToggle";
 import { TimestampConfigError } from "../sync/TimestampConfigError";
 import { getPaneOffset, useSynchronizationStore } from "../sync/useSynchronizationStore";
+import { useFileLifecycleEvents, type FileSourceMap } from "../log-pane/useFileLifecycleEvents";
 
 export interface AppShellProps {
   readonly platform: CrosslogPlatform;
@@ -27,6 +31,8 @@ export interface AppShellProps {
 
 export function AppShell({ platform }: AppShellProps) {
   const [state, dispatch] = React.useReducer(logPaneReducer, createLogPaneState());
+  const [fileSources, setFileSources] = React.useState<FileSourceMap>(() => createInitialFileSources(platform.kind));
+  const liveAppendCounter = React.useRef(1);
   const [directorySource, dispatchDirectorySource] = React.useReducer(
     directorySourceReducer,
     createDirectorySource({
@@ -52,6 +58,7 @@ export function AppShell({ platform }: AppShellProps) {
   const setSearchCaseSensitive = usePaneSearchStore((store) => store.setCaseSensitive);
   const selectPreviousSearchMatch = usePaneSearchStore((store) => store.selectPreviousMatch);
   const selectNextSearchMatch = usePaneSearchStore((store) => store.selectNextMatch);
+  const publishFileLifecycleEvent = useFileLifecycleEvents(setFileSources);
   const timestampService = React.useMemo(
     () => createTimestampRecognitionService(defaultTimestampFormats),
     [],
@@ -62,8 +69,20 @@ export function AppShell({ platform }: AppShellProps) {
         const currentDirectoryFile =
           pane.sourceRef === directorySource.id ? getCurrentDirectoryFile(directorySource) : null;
         const paneTitle = currentDirectoryFile?.name ?? pane.title;
-        const lines = currentDirectoryFile ? getSampleLines(currentDirectoryFile.name) : getSampleLines(pane.title);
+        const fileSource = pane.sourceRef ? fileSources[pane.sourceRef] : null;
+        const lines = currentDirectoryFile
+          ? getSampleLines(currentDirectoryFile.name)
+          : fileSource
+            ? flattenLineChunkText(fileSource.lineChunks)
+            : getSampleLines(pane.title);
         const recognizedLines = lines.map((line, index) => timestampService.recognizeLine(index + 1, line, pane.id));
+        const status = fileSource?.deleted
+          ? ("deleted" as const)
+          : fileSource?.watchState === "unsupported"
+            ? pane.status
+            : pane.sourceRef === directorySource.id && directorySource.files.length === 0
+              ? ("empty" as const)
+              : pane.status;
 
         return {
           pane: {
@@ -71,10 +90,7 @@ export function AppShell({ platform }: AppShellProps) {
             title: paneTitle,
             timeOffset: getPaneOffset(syncOffsets, pane.id),
             syncEnabled: synchronizationEnabled,
-            status:
-              pane.sourceRef === directorySource.id && directorySource.files.length === 0
-                ? ("empty" as const)
-                : pane.status,
+            status,
           },
           lines,
           timestamps: recognizedLines.map((line) => line.timestamp),
@@ -82,7 +98,7 @@ export function AppShell({ platform }: AppShellProps) {
           directorySource: pane.sourceRef === directorySource.id ? directorySource : undefined,
         };
       }),
-    [directorySource, state.panes, syncOffsets, syncTargets, synchronizationEnabled, timestampService],
+    [directorySource, fileSources, state.panes, syncOffsets, syncTargets, synchronizationEnabled, timestampService],
   );
   const panes = paneData.map((entry) => ({
     ...entry,
@@ -132,9 +148,52 @@ export function AppShell({ platform }: AppShellProps) {
   };
 
   const unsupportedPaneCount = excludedPaneIds.length;
+  const activePane = state.panes.find((pane) => pane.id === state.activePaneId) ?? null;
+  const activeFileSource = activePane?.sourceRef ? fileSources[activePane.sourceRef] : null;
+  const lifecycleActionsDisabled = !activeFileSource;
+
+  const handleAppendLiveLine = () => {
+    if (!activeFileSource) {
+      return;
+    }
+
+    publishFileLifecycleEvent({
+      type: "FileAppended",
+      sourceId: activeFileSource.id,
+      lines: [`2026-06-16T09:05:00.000Z ${activeFileSource.displayName} live appended line ${liveAppendCounter.current++}`],
+    });
+  };
+
+  const handleDeleteActiveFile = () => {
+    if (!activeFileSource) {
+      return;
+    }
+
+    publishFileLifecycleEvent({ type: "FileDeleted", sourceId: activeFileSource.id });
+  };
+
+  const handleReplaceActiveFile = () => {
+    if (!activeFileSource) {
+      return;
+    }
+
+    publishFileLifecycleEvent({
+      type: "FileReplaced",
+      sourceId: activeFileSource.id,
+      identity: `${activeFileSource.fileIdentity.value}:replacement:${Date.now()}`,
+      sizeBytes: 96,
+      lines: [
+        `2026-06-16T09:06:00.000Z ${activeFileSource.displayName} replacement file started`,
+        `2026-06-16T09:06:01.000Z ${activeFileSource.displayName} replacement file ready`,
+      ],
+    });
+  };
 
   return (
     <main aria-label="Crosslog workspace">
+      {platform.capabilities.limitations.map((limitation) => (
+        <p key={limitation.capability}>{limitation.message}</p>
+      ))}
       {state.panes.length === 0 ? (
         <section aria-label="Empty workspace">
           <h1>Crosslog</h1>
@@ -187,6 +246,15 @@ export function AppShell({ platform }: AppShellProps) {
             {unsupportedPaneCount > 0 ? (
               <span aria-live="polite">{unsupportedPaneCount} untimed pane excluded</span>
             ) : null}
+            <button type="button" disabled={lifecycleActionsDisabled} onClick={handleAppendLiveLine}>
+              Append live line
+            </button>
+            <button type="button" disabled={lifecycleActionsDisabled} onClick={handleDeleteActiveFile}>
+              Delete active file
+            </button>
+            <button type="button" disabled={lifecycleActionsDisabled} onClick={handleReplaceActiveFile}>
+              Replace active file
+            </button>
           </div>
           <TimestampConfigError message={null} />
           <PaneRail
@@ -295,4 +363,34 @@ function getSampleLines(title: string): readonly string[] {
       `2026-06-16T09:00:03.750Z ${title} completed comparison sample`,
     ][index] ?? `2026-06-16T09:${String(minute).padStart(2, "0")}:${String(second).padStart(2, "0")}.000Z ${title} line ${lineNumber}`;
   });
+}
+
+function createInitialFileSources(platform: FileSource["fileIdentity"]["platform"]): FileSourceMap {
+  return Object.fromEntries(
+    samplePanes
+      .filter((pane) => pane.sourceRef && pane.sourceRef !== "source-directory")
+      .map((pane) => [pane.sourceRef, createSampleFileSource(pane.sourceRef!, pane.title, platform)]),
+  );
+}
+
+function createSampleFileSource(
+  id: string,
+  displayName: string,
+  platform: FileSource["fileIdentity"]["platform"],
+): FileSource {
+  const lines = getSampleLines(displayName);
+
+  return {
+    id,
+    fileIdentity: { value: id, platform },
+    displayName,
+    pathLabel: displayName,
+    sizeBytes: lines.join("\n").length,
+    encoding: "utf-8",
+    lineChunks: appendRawLinesToChunks([], lines),
+    watchState: platform === "desktop" ? "watching" : "unsupported",
+    deleted: false,
+    replaced: false,
+    readError: null,
+  };
 }

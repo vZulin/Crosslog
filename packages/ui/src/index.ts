@@ -1,5 +1,6 @@
 export * from "./app-shell/AppShell";
 export * from "./log-pane/EncodingChooser";
+export * from "./log-pane/DeletedFileStatus";
 export * from "./log-pane/FuturePaneToolbarSlot";
 export * from "./log-pane/ClosePaneButton";
 export * from "./log-pane/HorizontalLogScroller";
@@ -16,3 +17,4 @@ export * from "./sync/useSynchronizationStore";
 export * from "./log-pane/DirectoryNavigator";
 export * from "./log-pane/EmptyDirectoryStatus";
 export * from "./log-pane/PaneHeader";
+export * from "./log-pane/useFileLifecycleEvents";
