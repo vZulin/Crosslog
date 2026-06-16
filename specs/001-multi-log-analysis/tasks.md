@@ -373,21 +373,21 @@ capabilities and explicit about unsupported monitoring.
 **Purpose**: Complete release readiness, performance validation, documentation,
 security validation, and cross-platform script execution.
 
-- [ ] T195 [P] Add release fixture documentation in `tests/fixtures/README.md`
-- [ ] T196 [P] Add read-only security audit test in `tests/integration/log-content-inert-security.test.ts`
-- [ ] T197 [P] Add memory pressure opening test in `tests/performance/memory-pressure-open.bench.ts`
-- [ ] T198 [P] Add 20 MB open benchmark in `tests/performance/open-20mb.bench.ts`
-- [ ] T199 [P] Add directory switch benchmark threshold check in `tests/performance/directory-switch-threshold.bench.ts`
-- [ ] T200 [P] Add fresh-start three-source workflow benchmark in `tests/performance/fresh-start-three-sources.bench.ts`
-- [ ] T201 Add quickstart validation script in `scripts/macos/validate-quickstart.sh`
-- [ ] T202 Generate final icon assets into `assets/icons/crosslog.iconset/README.md`
-- [ ] T203 Update developer documentation in `docs/development.md`
+- [X] T195 [P] Add release fixture documentation in `tests/fixtures/README.md`
+- [X] T196 [P] Add read-only security audit test in `tests/integration/log-content-inert-security.test.ts`
+- [X] T197 [P] Add memory pressure opening test in `tests/performance/memory-pressure-open.bench.ts`
+- [X] T198 [P] Add 20 MB open benchmark in `tests/performance/open-20mb.bench.ts`
+- [X] T199 [P] Add directory switch benchmark threshold check in `tests/performance/directory-switch-threshold.bench.ts`
+- [X] T200 [P] Add fresh-start three-source workflow benchmark in `tests/performance/fresh-start-three-sources.bench.ts`
+- [X] T201 Add quickstart validation script in `scripts/macos/validate-quickstart.sh`
+- [X] T202 Generate final icon assets into `assets/icons/crosslog.iconset/README.md`
+- [X] T203 Update developer documentation in `docs/development.md`
 - [ ] T204 Run Windows build validation using `scripts/windows/build.ps1`
 - [ ] T205 Run Windows automated tests using `scripts/windows/test.ps1`
 - [ ] T206 Run Windows UI tests using `scripts/windows/test-ui.ps1`
-- [ ] T207 Run macOS build validation using `scripts/macos/build.sh`
-- [ ] T208 Run macOS automated tests using `scripts/macos/test.sh`
-- [ ] T209 Run macOS UI tests using `scripts/macos/test-ui.sh`
+- [X] T207 Run macOS build validation using `scripts/macos/build.sh`
+- [X] T208 Run macOS automated tests using `scripts/macos/test.sh`
+- [X] T209 Run macOS UI tests using `scripts/macos/test-ui.sh`
 - [ ] T210 Run Linux build validation using `scripts/linux/build.sh`
 - [ ] T211 Run Linux automated tests using `scripts/linux/test.sh`
 - [ ] T212 Run Linux UI tests using `scripts/linux/test-ui.sh`
