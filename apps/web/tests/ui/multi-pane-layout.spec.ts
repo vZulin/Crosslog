@@ -7,7 +7,7 @@ test("opens and manages multiple log panes", async ({ page }) => {
   await expect(page.getByTestId("pane-rail")).toBeVisible();
   await expect(page.getByRole("heading", { name: "app.log" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "service.log" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "latest.log" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "app-2026-06-16.log" })).toBeVisible();
 
   await page.getByRole("button", { name: "Split active pane" }).click();
   await expect(page.getByTestId("log-pane")).toHaveCount(4);

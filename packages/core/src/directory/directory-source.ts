@@ -1,25 +1,11 @@
-import type { FileIdentity } from "../file-source/file-source";
+import type { DirectoryFileEntry } from "./directory-file-entry";
+import type { NavigationIndex } from "./navigation-index";
 
 export type DirectorySourceId = string;
 
 export interface DirectoryIdentity {
   readonly value: string;
   readonly platform: "web" | "desktop";
-}
-
-export interface DirectoryFileEntry {
-  readonly identity: FileIdentity;
-  readonly name: string;
-  readonly createdAt: Date | null;
-  readonly fallbackOrderKey: string;
-  readonly sizeBytes: number;
-}
-
-export interface NavigationIndex {
-  readonly orderedFileIds: readonly string[];
-  readonly currentFileId: string | null;
-  readonly previousFileId: string | null;
-  readonly nextFileId: string | null;
 }
 
 export interface DirectorySource {
@@ -31,4 +17,3 @@ export interface DirectorySource {
   readonly navigationIndex: NavigationIndex;
   readonly watchState: "unsupported" | "watching" | "stopped" | "failed";
 }
-

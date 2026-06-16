@@ -202,29 +202,29 @@ not auto-switch.
 
 ### Tests for User Story 3 (MANDATORY)
 
-- [ ] T116 [P] [US3] Add navigation index unit tests in `packages/core/tests/directory/navigation-index.test.ts`
-- [ ] T117 [P] [US3] Add directory source state tests in `packages/core/tests/directory/directory-source.test.ts`
-- [ ] T118 [P] [US3] Add DirectoryAccessPort integration tests in `tests/integration/directory-access.contract.test.ts`
-- [ ] T119 [P] [US3] Add Web directory navigation UI test in `apps/web/tests/ui/directory-navigation.spec.ts`
-- [ ] T120 [P] [US3] Add Desktop directory navigation UI test in `apps/desktop/tests/ui/directory-navigation.spec.ts`
-- [ ] T121 [P] [US3] Add directory switch benchmark in `tests/performance/directory-switch.bench.ts`
-- [ ] T122 [P] [US3] Add empty-directory and subdirectory-only tests in `packages/core/tests/directory/empty-directory.test.ts`
-- [ ] T123 [P] [US3] Add Web empty-directory UI test in `apps/web/tests/ui/empty-directory.spec.ts`
-- [ ] T124 [P] [US3] Add Desktop empty-directory UI test in `apps/desktop/tests/ui/empty-directory.spec.ts`
+- [X] T116 [P] [US3] Add navigation index unit tests in `packages/core/tests/directory/navigation-index.test.ts`
+- [X] T117 [P] [US3] Add directory source state tests in `packages/core/tests/directory/directory-source.test.ts`
+- [X] T118 [P] [US3] Add DirectoryAccessPort integration tests in `tests/integration/directory-access.contract.test.ts`
+- [X] T119 [P] [US3] Add Web directory navigation UI test in `apps/web/tests/ui/directory-navigation.spec.ts`
+- [X] T120 [P] [US3] Add Desktop directory navigation UI test in `apps/desktop/tests/ui/directory-navigation.spec.ts`
+- [X] T121 [P] [US3] Add directory switch benchmark in `tests/performance/directory-switch.bench.ts`
+- [X] T122 [P] [US3] Add empty-directory and subdirectory-only tests in `packages/core/tests/directory/empty-directory.test.ts`
+- [X] T123 [P] [US3] Add Web empty-directory UI test in `apps/web/tests/ui/empty-directory.spec.ts`
+- [X] T124 [P] [US3] Add Desktop empty-directory UI test in `apps/desktop/tests/ui/empty-directory.spec.ts`
 
 ### Implementation for User Story 3
 
-- [ ] T125 [P] [US3] Implement DirectoryFileEntry model in `packages/core/src/directory/directory-file-entry.ts`
-- [ ] T126 [P] [US3] Implement navigation index in `packages/core/src/directory/navigation-index.ts`
-- [ ] T127 [US3] Implement directory source reducer in `packages/core/src/directory/directory-source-reducer.ts`
-- [ ] T128 [US3] Implement browser directory adapter in `packages/platform/src/browser/browser-directory-access.ts`
-- [ ] T129 [US3] Implement Tauri directory commands in `apps/desktop/src-tauri/src/commands/directory_access.rs`
-- [ ] T130 [US3] Implement Desktop directory adapter binding in `packages/platform/src/tauri/tauri-directory-access.ts`
-- [ ] T131 [US3] Implement DirectoryNavigator UI in `packages/ui/src/log-pane/DirectoryNavigator.tsx`
-- [ ] T132 [US3] Implement empty-directory status UI in `packages/ui/src/log-pane/EmptyDirectoryStatus.tsx`
-- [ ] T133 [US3] Connect directory source labels in `packages/ui/src/log-pane/PaneHeader.tsx`
-- [ ] T134 [US3] Run US3 automated tests using `scripts/macos/test.sh`
-- [ ] T135 [US3] Run US3 UI tests using `scripts/macos/test-ui.sh`
+- [X] T125 [P] [US3] Implement DirectoryFileEntry model in `packages/core/src/directory/directory-file-entry.ts`
+- [X] T126 [P] [US3] Implement navigation index in `packages/core/src/directory/navigation-index.ts`
+- [X] T127 [US3] Implement directory source reducer in `packages/core/src/directory/directory-source-reducer.ts`
+- [X] T128 [US3] Implement browser directory adapter in `packages/platform/src/browser/browser-directory-access.ts`
+- [X] T129 [US3] Implement Tauri directory commands in `apps/desktop/src-tauri/src/commands/directory_access.rs`
+- [X] T130 [US3] Implement Desktop directory adapter binding in `packages/platform/src/tauri/tauri-directory-access.ts`
+- [X] T131 [US3] Implement DirectoryNavigator UI in `packages/ui/src/log-pane/DirectoryNavigator.tsx`
+- [X] T132 [US3] Implement empty-directory status UI in `packages/ui/src/log-pane/EmptyDirectoryStatus.tsx`
+- [X] T133 [US3] Connect directory source labels in `packages/ui/src/log-pane/PaneHeader.tsx`
+- [X] T134 [US3] Run US3 automated tests using `scripts/macos/test.sh`
+- [X] T135 [US3] Run US3 UI tests using `scripts/macos/test-ui.sh`
 
 **Checkpoint**: User Story 3 is independently functional after setup and
 foundation, using directory fixtures and explicit capability reporting.

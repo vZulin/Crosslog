@@ -13,3 +13,6 @@ export * from "./sync/SynchronizationToggle";
 export * from "./sync/TimeOffsetEditor";
 export * from "./sync/TimestampConfigError";
 export * from "./sync/useSynchronizationStore";
+export * from "./log-pane/DirectoryNavigator";
+export * from "./log-pane/EmptyDirectoryStatus";
+export * from "./log-pane/PaneHeader";

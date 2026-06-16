@@ -1,5 +1,8 @@
 export type * from "./capabilities/capability-report";
+export * from "./directory/directory-file-entry";
 export type * from "./directory/directory-source";
+export * from "./directory/directory-source-reducer";
+export * from "./directory/navigation-index";
 export type * from "./errors/crosslog-error";
 export type * from "./file-source/file-open-policy";
 export type * from "./file-source/file-source";

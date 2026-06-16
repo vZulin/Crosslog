@@ -1,5 +1,5 @@
 import React from "react";
-import type { LogPane as LogPaneModel } from "@crosslog/core";
+import type { DirectorySource, LogPane as LogPaneModel } from "@crosslog/core";
 import { LogPane } from "../log-pane/LogPane";
 import { AddPaneButton } from "./AddPaneButton";
 import { PaneResizer } from "./PaneResizer";
@@ -8,7 +8,7 @@ export interface PaneRailPane {
   readonly pane: LogPaneModel;
   readonly lines: readonly string[];
   readonly timestamps?: readonly (Date | null)[];
-  readonly directoryLabel?: string;
+  readonly directorySource?: DirectorySource;
   readonly synchronizationTargetLineNumber?: number | null;
 }
 
@@ -20,6 +20,7 @@ export interface PaneRailProps {
   readonly onActivatePane: (paneId: string) => void;
   readonly onResizePane: (leftPaneId: string, delta: number) => void;
   readonly onHorizontalScroll: (paneId: string, scrollLeft: number) => void;
+  readonly onNavigateDirectory?: (paneId: string, direction: "previous" | "next") => void;
   readonly onTimeAnchorChange?: (paneId: string, lineNumber: number, timestamp: Date | null) => void;
   readonly onTimeOffsetChange?: (paneId: string, offset: LogPaneModel["timeOffset"]) => void;
 }
@@ -32,6 +33,7 @@ export function PaneRail({
   onActivatePane,
   onResizePane,
   onHorizontalScroll,
+  onNavigateDirectory,
   onTimeAnchorChange,
   onTimeOffsetChange,
 }: PaneRailProps) {
@@ -43,11 +45,12 @@ export function PaneRail({
             pane={entry.pane}
             lines={entry.lines}
             timestamps={entry.timestamps}
-            directoryLabel={entry.directoryLabel}
+            directorySource={entry.directorySource}
             synchronizationTargetLineNumber={entry.synchronizationTargetLineNumber}
             onClose={onClosePane}
             onActivate={onActivatePane}
             onHorizontalScroll={onHorizontalScroll}
+            onNavigateDirectory={onNavigateDirectory}
             onTimeAnchorChange={onTimeAnchorChange}
             onTimeOffsetChange={onTimeOffsetChange}
           />

@@ -3,10 +3,14 @@ import type { CrosslogPlatform } from "@crosslog/platform";
 import {
   createLogPane,
   createLogPaneState,
+  createDirectoryFileEntry,
+  createDirectorySource,
   createSynchronizationPlan,
   createTimeAnchorPane,
   createTimestampRecognitionService,
   defaultTimestampFormats,
+  directorySourceReducer,
+  getCurrentDirectoryFile,
   logPaneReducer,
 } from "@crosslog/core";
 import { FuturePaneToolbarSlot } from "../log-pane/FuturePaneToolbarSlot";
@@ -21,6 +25,16 @@ export interface AppShellProps {
 
 export function AppShell({ platform }: AppShellProps) {
   const [state, dispatch] = React.useReducer(logPaneReducer, createLogPaneState());
+  const [directorySource, dispatchDirectorySource] = React.useReducer(
+    directorySourceReducer,
+    createDirectorySource({
+      id: "source-directory",
+      directoryIdentity: { value: "source-directory", platform: platform.kind },
+      displayName: "logs/2026",
+      files: sampleDirectoryFiles,
+      watchState: platform.capabilities.canDiscoverNewDirectoryFiles ? "watching" : "unsupported",
+    }),
+  );
   const synchronizationEnabled = useSynchronizationStore((store) => store.enabled);
   const syncOffsets = useSynchronizationStore((store) => store.offsets);
   const syncTargets = useSynchronizationStore((store) => store.targets);
@@ -34,19 +48,23 @@ export function AppShell({ platform }: AppShellProps) {
     [],
   );
   const panes = state.panes.map((pane) => {
-    const lines = getSampleLines(pane.title);
+    const currentDirectoryFile = pane.sourceRef === directorySource.id ? getCurrentDirectoryFile(directorySource) : null;
+    const paneTitle = currentDirectoryFile?.name ?? pane.title;
+    const lines = currentDirectoryFile ? getSampleLines(currentDirectoryFile.name) : getSampleLines(pane.title);
     const recognizedLines = lines.map((line, index) => timestampService.recognizeLine(index + 1, line, pane.id));
 
     return {
       pane: {
         ...pane,
+        title: paneTitle,
         timeOffset: getPaneOffset(syncOffsets, pane.id),
         syncEnabled: synchronizationEnabled,
+        status: pane.sourceRef === directorySource.id && directorySource.files.length === 0 ? "empty" as const : pane.status,
       },
       lines,
       timestamps: recognizedLines.map((line) => line.timestamp),
       synchronizationTargetLineNumber: syncTargets[pane.id] ?? null,
-      directoryLabel: pane.sourceRef === "source-directory" ? "logs/2026" : undefined,
+      directorySource: pane.sourceRef === directorySource.id ? directorySource : undefined,
     };
   });
 
@@ -100,6 +118,24 @@ export function AppShell({ platform }: AppShellProps) {
           >
             Open logs
           </button>
+          <button
+            type="button"
+            onClick={() => {
+              dispatchDirectorySource({ type: "refreshFiles", files: [] });
+              dispatch({
+                type: "addPane",
+                pane: {
+                  id: "pane-empty-directory",
+                  title: "logs/empty",
+                  sourceRef: "source-directory",
+                  width: 520,
+                  status: "empty",
+                },
+              });
+            }}
+          >
+            Open empty directory
+          </button>
           <p>{platform.kind === "web" ? "Web workspace" : "Desktop workspace"}</p>
         </section>
       ) : (
@@ -109,6 +145,17 @@ export function AppShell({ platform }: AppShellProps) {
               enabled={synchronizationEnabled}
               onEnabledChange={handleSynchronizationEnabledChange}
             />
+            <button
+              type="button"
+              onClick={() =>
+                dispatchDirectorySource({
+                  type: "refreshFiles",
+                  files: [newerDirectoryFile, ...directorySource.files],
+                })
+              }
+            >
+              Discover newer directory file
+            </button>
             {unsupportedPaneCount > 0 ? (
               <span aria-live="polite">{unsupportedPaneCount} untimed pane excluded</span>
             ) : null}
@@ -124,6 +171,7 @@ export function AppShell({ platform }: AppShellProps) {
             onHorizontalScroll={(paneId, scrollLeft) =>
               dispatch({ type: "setHorizontalScroll", paneId, scrollLeft })
             }
+            onNavigateDirectory={(_paneId, direction) => dispatchDirectorySource({ type: "navigate", direction })}
             onTimeAnchorChange={handleAnchorChange}
             onTimeOffsetChange={setPaneOffset}
           />
@@ -158,6 +206,34 @@ const samplePanes = [
     status: "ready",
   }),
 ];
+
+const sampleDirectoryFiles = [
+  createDirectoryFileEntry({
+    identity: { value: "directory-file-2026-06-16", platform: "web" },
+    name: "app-2026-06-16.log",
+    createdAt: new Date("2026-06-16T09:00:00.000Z"),
+    sizeBytes: 4096,
+  }),
+  createDirectoryFileEntry({
+    identity: { value: "directory-file-2026-06-15", platform: "web" },
+    name: "app-2026-06-15.log",
+    createdAt: new Date("2026-06-15T09:00:00.000Z"),
+    sizeBytes: 4096,
+  }),
+  createDirectoryFileEntry({
+    identity: { value: "directory-file-2026-06-14", platform: "web" },
+    name: "app-2026-06-14.log",
+    createdAt: new Date("2026-06-14T09:00:00.000Z"),
+    sizeBytes: 4096,
+  }),
+];
+
+const newerDirectoryFile = createDirectoryFileEntry({
+  identity: { value: "directory-file-2026-06-17", platform: "web" },
+  name: "app-2026-06-17.log",
+  createdAt: new Date("2026-06-17T09:00:00.000Z"),
+  sizeBytes: 4096,
+});
 
 function createAddedPane(nextPaneNumber: number) {
   return {

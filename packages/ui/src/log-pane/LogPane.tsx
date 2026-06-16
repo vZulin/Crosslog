@@ -1,8 +1,8 @@
 import React from "react";
-import type { LogPane as LogPaneModel } from "@crosslog/core";
-import { ClosePaneButton } from "./ClosePaneButton";
+import type { DirectorySource, LogPane as LogPaneModel } from "@crosslog/core";
 import { HorizontalLogScroller } from "./HorizontalLogScroller";
 import { LogTextSelection } from "./LogTextSelection";
+import { PaneHeader } from "./PaneHeader";
 import { VirtualLogViewport } from "./VirtualLogViewport";
 import { TimeOffsetEditor } from "../sync/TimeOffsetEditor";
 
@@ -10,11 +10,12 @@ export interface LogPaneProps {
   readonly pane: LogPaneModel;
   readonly lines: readonly string[];
   readonly timestamps?: readonly (Date | null)[];
-  readonly directoryLabel?: string;
+  readonly directorySource?: DirectorySource;
   readonly synchronizationTargetLineNumber?: number | null;
   readonly onClose: (paneId: string) => void;
   readonly onActivate: (paneId: string) => void;
   readonly onHorizontalScroll: (paneId: string, scrollLeft: number) => void;
+  readonly onNavigateDirectory?: (paneId: string, direction: "previous" | "next") => void;
   readonly onTimeAnchorChange?: (paneId: string, lineNumber: number, timestamp: Date | null) => void;
   readonly onTimeOffsetChange?: (paneId: string, offset: LogPaneModel["timeOffset"]) => void;
 }
@@ -23,11 +24,12 @@ export function LogPane({
   pane,
   lines,
   timestamps,
-  directoryLabel,
+  directorySource,
   synchronizationTargetLineNumber,
   onClose,
   onActivate,
   onHorizontalScroll,
+  onNavigateDirectory,
   onTimeAnchorChange,
   onTimeOffsetChange,
 }: LogPaneProps) {
@@ -44,11 +46,13 @@ export function LogPane({
       onFocus={() => onActivate(pane.id)}
       onClick={() => onActivate(pane.id)}
     >
-      <header>
-        <h2>{pane.title}</h2>
-        {directoryLabel ? <p>{directoryLabel}</p> : null}
-        <ClosePaneButton title={pane.title} onClose={() => onClose(pane.id)} />
-      </header>
+      <PaneHeader
+        paneId={pane.id}
+        title={pane.title}
+        directorySource={directorySource}
+        onClose={() => onClose(pane.id)}
+        onNavigateDirectory={onNavigateDirectory}
+      />
       <div role="toolbar" aria-label={`Pane tools for ${pane.title}`}>
         <LogTextSelection title={pane.title} lines={lines} />
         <TimeOffsetEditor
