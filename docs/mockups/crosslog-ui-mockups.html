@@ -1,0 +1,2286 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Crosslog UI Mockups</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --page-bg: #e9e9ee;
+        --page-text: #1d1d1f;
+        --page-muted: #6e6e73;
+        --window-bg: #f5f5f7;
+        --content-bg: #ffffff;
+        --toolbar-bg: rgba(250, 250, 250, 0.86);
+        --sidebar-bg: rgba(246, 246, 246, 0.78);
+        --panel-bg: #fbfbfd;
+        --pane-bg: #ffffff;
+        --pane-active: #fbfdff;
+        --input-bg: #ffffff;
+        --hover: rgba(0, 0, 0, 0.045);
+        --active: rgba(0, 122, 255, 0.12);
+        --border: rgba(0, 0, 0, 0.09);
+        --border-strong: rgba(0, 0, 0, 0.16);
+        --shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.1), 0 18px 48px rgba(0, 0, 0, 0.14), 0 42px 90px rgba(0, 0, 0, 0.1);
+        --floating-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.1), 0 12px 32px rgba(0, 0, 0, 0.16);
+        --accent: #007aff;
+        --accent-strong: #0067d7;
+        --danger: #ff3b30;
+        --warning: #ff9500;
+        --success: #34c759;
+        --purple: #af52de;
+        --teal: #5ac8fa;
+        --log-text: #1f2328;
+        --log-muted: #75808a;
+        --log-row-alt: rgba(0, 0, 0, 0.018);
+        --log-match: #fff2a8;
+        --log-warning-bg: #fff4d7;
+        --log-error-bg: #ffe7e7;
+        --radius-window: 12px;
+        --radius-panel: 10px;
+        --radius-control: 7px;
+        --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        --font-mono: "SF Mono", Menlo, Monaco, Consolas, "Courier New", monospace;
+      }
+
+      [data-theme="dark"] {
+        color-scheme: dark;
+        --page-bg: #111214;
+        --page-text: #f5f5f7;
+        --page-muted: #a1a1a6;
+        --window-bg: #1c1c1e;
+        --content-bg: #202124;
+        --toolbar-bg: rgba(38, 38, 40, 0.88);
+        --sidebar-bg: rgba(30, 30, 32, 0.78);
+        --panel-bg: #25262a;
+        --pane-bg: #242528;
+        --pane-active: #292d33;
+        --input-bg: #2c2c2e;
+        --hover: rgba(255, 255, 255, 0.065);
+        --active: rgba(10, 132, 255, 0.2);
+        --border: rgba(255, 255, 255, 0.09);
+        --border-strong: rgba(255, 255, 255, 0.18);
+        --shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.07), 0 18px 48px rgba(0, 0, 0, 0.46), 0 42px 90px rgba(0, 0, 0, 0.34);
+        --floating-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.08), 0 14px 34px rgba(0, 0, 0, 0.48);
+        --accent: #0a84ff;
+        --accent-strong: #409cff;
+        --danger: #ff453a;
+        --warning: #ff9f0a;
+        --success: #30d158;
+        --purple: #bf5af2;
+        --teal: #64d2ff;
+        --log-text: #edf0f2;
+        --log-muted: #90979f;
+        --log-row-alt: rgba(255, 255, 255, 0.028);
+        --log-match: rgba(255, 214, 10, 0.26);
+        --log-warning-bg: rgba(255, 159, 10, 0.16);
+        --log-error-bg: rgba(255, 69, 58, 0.17);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background:
+          radial-gradient(circle at top left, rgba(0, 122, 255, 0.12), transparent 34rem),
+          linear-gradient(180deg, var(--page-bg), var(--window-bg));
+        color: var(--page-text);
+        font-family: var(--font-ui);
+        font-size: 13px;
+        line-height: 1.35;
+      }
+
+      button,
+      input,
+      select,
+      textarea {
+        font: inherit;
+      }
+
+      button {
+        color: inherit;
+      }
+
+      .catalog {
+        width: min(1480px, calc(100vw - 48px));
+        margin: 0 auto;
+        padding: 28px 0 56px;
+      }
+
+      .catalog-header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 24px;
+        align-items: end;
+        margin-bottom: 18px;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: 26px;
+        line-height: 32px;
+      }
+
+      .subtitle {
+        margin-top: 6px;
+        color: var(--page-muted);
+        max-width: 760px;
+      }
+
+      .mockup-controls {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+
+      .segmented {
+        display: inline-flex;
+        gap: 2px;
+        padding: 3px;
+        border: 0.5px solid var(--border);
+        border-radius: 9px;
+        background: var(--toolbar-bg);
+        backdrop-filter: saturate(180%) blur(18px);
+      }
+
+      .segmented button {
+        height: 28px;
+        min-width: 68px;
+        padding: 0 11px;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        cursor: pointer;
+      }
+
+      .segmented button[aria-pressed="true"] {
+        background: var(--content-bg);
+        box-shadow: 0 0 0 0.5px var(--border), 0 1px 2px rgba(0, 0, 0, 0.08);
+      }
+
+      .gallery-nav {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding: 10px 0 14px;
+        margin-bottom: 12px;
+        background: linear-gradient(180deg, var(--page-bg), rgba(255, 255, 255, 0));
+      }
+
+      .gallery-nav a {
+        flex: 0 0 auto;
+        padding: 7px 10px;
+        color: var(--page-text);
+        text-decoration: none;
+        border: 0.5px solid var(--border);
+        border-radius: 999px;
+        background: var(--toolbar-bg);
+        backdrop-filter: saturate(180%) blur(18px);
+      }
+
+      .section {
+        margin-top: 28px;
+      }
+
+      .section-title {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: baseline;
+        margin-bottom: 12px;
+      }
+
+      .section-title h2 {
+        font-size: 19px;
+        line-height: 25px;
+      }
+
+      .section-title p {
+        color: var(--page-muted);
+      }
+
+      .mockup-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      .mockup-grid.three {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .mock-card {
+        min-width: 0;
+        border: 0.5px solid var(--border);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.36);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+      }
+
+      [data-theme="dark"] .mock-card {
+        background: rgba(255, 255, 255, 0.035);
+      }
+
+      .mock-card-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+        min-height: 42px;
+        padding: 10px 12px;
+        border-bottom: 0.5px solid var(--border);
+        background: var(--toolbar-bg);
+        backdrop-filter: saturate(180%) blur(18px);
+      }
+
+      .mock-card-header strong {
+        font-size: 13px;
+      }
+
+      .mock-card-header span {
+        color: var(--page-muted);
+        font-size: 12px;
+      }
+
+      .mock-card-body {
+        padding: 14px;
+      }
+
+      .window {
+        overflow: hidden;
+        border-radius: var(--radius-window);
+        border: 0.5px solid var(--border);
+        background: var(--window-bg);
+        box-shadow: var(--shadow);
+      }
+
+      .main-window {
+        height: 760px;
+      }
+
+      .titlebar {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: center;
+        height: 52px;
+        padding: 0 14px;
+        border-bottom: 0.5px solid var(--border);
+        background: var(--toolbar-bg);
+        backdrop-filter: saturate(180%) blur(20px);
+      }
+
+      .chrome {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 74px;
+      }
+
+      .traffic {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.12);
+      }
+
+      .traffic.red {
+        background: #ff5f57;
+      }
+
+      .traffic.yellow {
+        background: #febc2e;
+      }
+
+      .traffic.green {
+        background: #28c840;
+      }
+
+      .caption-buttons {
+        display: none;
+        gap: 3px;
+      }
+
+      .caption-buttons span {
+        display: grid;
+        place-items: center;
+        width: 34px;
+        height: 26px;
+        border-radius: 6px;
+        color: var(--page-muted);
+        background: var(--hover);
+      }
+
+      [data-platform="windows"] .traffic,
+      [data-platform="linux"] .traffic,
+      [data-platform="web"] .traffic {
+        display: none;
+      }
+
+      [data-platform="windows"] .caption-buttons,
+      [data-platform="linux"] .caption-buttons {
+        display: flex;
+      }
+
+      [data-platform="windows"] .titlebar,
+      [data-platform="linux"] .titlebar {
+        grid-template-columns: minmax(0, 1fr) auto auto;
+      }
+
+      [data-platform="windows"] .chrome,
+      [data-platform="linux"] .chrome {
+        order: 3;
+        min-width: auto;
+      }
+
+      [data-platform="windows"] .platform-title,
+      [data-platform="linux"] .platform-title {
+        order: 1;
+      }
+
+      [data-platform="windows"] .toolbar-actions,
+      [data-platform="linux"] .toolbar-actions {
+        order: 2;
+      }
+
+      [data-platform="web"] .window {
+        border-radius: 10px;
+      }
+
+      [data-platform="web"] .titlebar {
+        height: 48px;
+        grid-template-columns: minmax(0, 1fr) auto;
+      }
+
+      [data-platform="web"] .chrome {
+        display: none;
+      }
+
+      .platform-title {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .app-title {
+        font-weight: 650;
+        white-space: nowrap;
+      }
+
+      .search-field {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        height: 30px;
+        max-width: 430px;
+        min-width: 220px;
+        padding: 0 10px;
+        border: 0.5px solid var(--border);
+        border-radius: 8px;
+        background: var(--input-bg);
+        color: var(--page-muted);
+        box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.02);
+      }
+
+      .toolbar-actions {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+
+      .icon-button,
+      .text-button,
+      .primary-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        height: 28px;
+        min-width: 28px;
+        padding: 0 10px;
+        border: 0.5px solid var(--border);
+        border-radius: var(--radius-control);
+        background: var(--content-bg);
+        color: var(--page-text);
+        cursor: default;
+        white-space: nowrap;
+      }
+
+      .icon-button {
+        padding: 0;
+        width: 28px;
+        color: var(--page-muted);
+      }
+
+      .toolbar-button {
+        min-width: auto;
+        padding: 0 9px;
+      }
+
+      .toolbar-button.compact {
+        padding: 0 7px;
+        font-size: 12px;
+      }
+
+      .primary-button {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: #ffffff;
+      }
+
+      .toggle-on {
+        background: var(--active);
+        color: var(--accent-strong);
+      }
+
+      .shell {
+        display: grid;
+        grid-template-columns: 238px minmax(0, 1fr) 332px;
+        height: calc(100% - 80px);
+        min-height: 0;
+      }
+
+      .sidebar,
+      .inspector {
+        min-width: 0;
+        border-right: 0.5px solid var(--border);
+        background: var(--sidebar-bg);
+        backdrop-filter: saturate(180%) blur(20px);
+        overflow: hidden;
+      }
+
+      .inspector {
+        border-right: 0;
+        border-left: 0.5px solid var(--border);
+        background: var(--panel-bg);
+      }
+
+      .side-section {
+        padding: 12px;
+      }
+
+      .section-label {
+        margin: 12px 0 6px;
+        color: var(--page-muted);
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      .source-row,
+      .result-row,
+      .menu-row,
+      .setting-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 30px;
+        padding: 6px 8px;
+        border-radius: 7px;
+      }
+
+      .source-row.active,
+      .menu-row.active {
+        background: var(--active);
+      }
+
+      .source-icon,
+      .small-icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 auto;
+        width: 22px;
+        height: 22px;
+        border-radius: 6px;
+        background: var(--hover);
+        color: var(--page-muted);
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .source-text {
+        min-width: 0;
+        flex: 1;
+      }
+
+      .source-name,
+      .row-title {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .source-meta,
+      .row-subtitle {
+        color: var(--page-muted);
+        font-size: 11px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .badge-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        margin-top: 4px;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        min-height: 18px;
+        padding: 2px 6px;
+        border: 0.5px solid var(--border);
+        border-radius: 5px;
+        background: var(--hover);
+        color: var(--page-muted);
+        font-size: 10px;
+        font-weight: 650;
+      }
+
+      .badge.live {
+        color: var(--success);
+        background: rgba(52, 199, 89, 0.12);
+      }
+
+      .badge.warn {
+        color: var(--warning);
+        background: rgba(255, 149, 0, 0.12);
+      }
+
+      .badge.error {
+        color: var(--danger);
+        background: rgba(255, 59, 48, 0.12);
+      }
+
+      .workspace {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        background: var(--content-bg);
+      }
+
+      .pane-tools {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        height: 44px;
+        padding: 0 12px;
+        border-bottom: 0.5px solid var(--border);
+        background: var(--content-bg);
+      }
+
+      .chips {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        height: 23px;
+        max-width: 190px;
+        padding: 0 8px;
+        border: 0.5px solid var(--border);
+        border-radius: 999px;
+        background: var(--hover);
+        color: var(--page-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 12px;
+      }
+
+      .pane-rail {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        overflow: hidden;
+      }
+
+      .log-pane {
+        position: relative;
+        flex: 0 0 33.333%;
+        min-width: 310px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border-right: 0.5px solid var(--border);
+        background: var(--pane-bg);
+      }
+
+      .log-pane.active {
+        background: var(--pane-active);
+      }
+
+      .log-pane.active::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto;
+        height: 2px;
+        background: var(--accent);
+        z-index: 2;
+      }
+
+      .pane-header {
+        min-height: 72px;
+        padding: 10px 10px 8px;
+        border-bottom: 0.5px solid var(--border);
+        background: linear-gradient(180deg, var(--pane-active), var(--pane-bg));
+      }
+
+      .pane-title-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .pane-title {
+        min-width: 0;
+        flex: 1;
+        font-weight: 700;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .pane-subtitle {
+        margin-top: 2px;
+        color: var(--page-muted);
+        font-size: 11px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .pane-search {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 36px;
+        padding: 6px 9px;
+        border-bottom: 0.5px solid var(--border);
+        background: var(--pane-bg);
+      }
+
+      .mini-input {
+        height: 26px;
+        min-width: 0;
+        flex: 1;
+        padding: 0 8px;
+        border: 0.5px solid var(--border);
+        border-radius: 6px;
+        background: var(--input-bg);
+        color: var(--page-text);
+      }
+
+      .log-viewport {
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        line-height: 20px;
+        color: var(--log-text);
+        background:
+          linear-gradient(90deg, rgba(128, 128, 128, 0.12) 0, rgba(128, 128, 128, 0.12) 58px, transparent 58px),
+          var(--pane-bg);
+      }
+
+      .log-row {
+        display: grid;
+        grid-template-columns: 58px 172px 52px minmax(280px, 1fr);
+        min-width: 760px;
+        padding-right: 14px;
+        white-space: nowrap;
+      }
+
+      .log-row:nth-child(even) {
+        background: var(--log-row-alt);
+      }
+
+      .line-number {
+        padding-right: 8px;
+        text-align: right;
+        color: var(--log-muted);
+        user-select: none;
+      }
+
+      .timestamp {
+        color: var(--teal);
+      }
+
+      .level {
+        font-weight: 700;
+      }
+
+      .level.warn {
+        color: var(--warning);
+      }
+
+      .level.error {
+        color: var(--danger);
+      }
+
+      .level.info {
+        color: var(--accent-strong);
+      }
+
+      .log-row.highlight-warning {
+        background: var(--log-warning-bg);
+      }
+
+      .log-row.highlight-error {
+        background: var(--log-error-bg);
+      }
+
+      .match {
+        padding: 1px 3px;
+        border-radius: 4px;
+        background: var(--log-match);
+        color: inherit;
+      }
+
+      .selection {
+        border-radius: 4px;
+        background: var(--accent);
+        color: #ffffff;
+      }
+
+      .pane-footer,
+      .statusbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        height: 28px;
+        padding: 0 10px;
+        border-top: 0.5px solid var(--border);
+        color: var(--page-muted);
+        font-size: 11px;
+      }
+
+      .statusbar {
+        height: 28px;
+        border-top: 0.5px solid var(--border);
+        background: var(--toolbar-bg);
+        backdrop-filter: saturate(180%) blur(20px);
+      }
+
+      .add-pane {
+        display: grid;
+        place-items: center;
+        flex: 0 0 42px;
+        background: var(--content-bg);
+        border-right: 0.5px solid var(--border);
+      }
+
+      .inspector-tabs {
+        display: flex;
+        gap: 4px;
+        padding: 10px 10px 0;
+        overflow-x: auto;
+      }
+
+      .tab {
+        flex: 0 0 auto;
+        height: 26px;
+        padding: 0 9px;
+        border: 0.5px solid var(--border);
+        border-radius: 7px;
+        background: var(--hover);
+        color: var(--page-muted);
+      }
+
+      .tab.active {
+        background: var(--content-bg);
+        color: var(--page-text);
+      }
+
+      .panel-block {
+        margin: 10px;
+        padding: 10px;
+        border: 0.5px solid var(--border);
+        border-radius: 8px;
+        background: var(--content-bg);
+      }
+
+      .panel-block h3 {
+        margin-bottom: 9px;
+        font-size: 13px;
+      }
+
+      .rule-row {
+        display: grid;
+        grid-template-columns: 25px 50px minmax(0, 1fr) 38px 34px;
+        align-items: center;
+        gap: 5px;
+        min-height: 31px;
+        margin-top: 6px;
+      }
+
+      .rule-token {
+        min-width: 0;
+        padding: 5px 7px;
+        border: 0.5px solid var(--border);
+        border-radius: 6px;
+        background: var(--input-bg);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .color-swatch {
+        width: 22px;
+        height: 22px;
+        border: 0.5px solid var(--border);
+        border-radius: 5px;
+      }
+
+      .swatch-red {
+        background: #ff5b5b;
+      }
+
+      .swatch-yellow {
+        background: #ffd45c;
+      }
+
+      .swatch-blue {
+        background: #64d2ff;
+      }
+
+      .swatch-purple {
+        background: #bf5af2;
+      }
+
+      .swatch-green {
+        background: #6ee787;
+      }
+
+      .progress-line {
+        height: 7px;
+        margin-top: 8px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: var(--hover);
+      }
+
+      .progress-line span {
+        display: block;
+        height: 100%;
+        width: 62%;
+        background: var(--accent);
+      }
+
+      .empty-workspace {
+        display: grid;
+        place-items: center;
+        height: 520px;
+        border: 1px dashed var(--border-strong);
+        border-radius: 12px;
+        background: var(--content-bg);
+      }
+
+      .empty-box {
+        width: min(420px, 90%);
+        text-align: center;
+      }
+
+      .drop-target {
+        display: grid;
+        place-items: center;
+        width: 86px;
+        height: 86px;
+        margin: 0 auto 16px;
+        border: 1px dashed var(--accent);
+        border-radius: 18px;
+        color: var(--accent-strong);
+        background: var(--active);
+        font-weight: 800;
+      }
+
+      .settings-window {
+        display: grid;
+        grid-template-columns: 220px minmax(0, 1fr);
+        height: 560px;
+      }
+
+      .settings-sidebar {
+        border-right: 0.5px solid var(--border);
+        background: var(--sidebar-bg);
+        padding: 12px;
+      }
+
+      .settings-content {
+        overflow: hidden;
+        background: var(--content-bg);
+      }
+
+      .settings-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 52px;
+        padding: 0 18px;
+        border-bottom: 0.5px solid var(--border);
+      }
+
+      .settings-scroll {
+        height: calc(100% - 52px);
+        overflow: hidden;
+        padding: 14px 18px 18px;
+      }
+
+      .settings-section {
+        margin-bottom: 18px;
+        padding: 12px;
+        border: 0.5px solid var(--border);
+        border-radius: 9px;
+        background: var(--panel-bg);
+      }
+
+      .setting-row {
+        justify-content: space-between;
+        border-bottom: 0.5px solid var(--border);
+        border-radius: 0;
+      }
+
+      .setting-row:last-child {
+        border-bottom: 0;
+      }
+
+      .switch {
+        width: 36px;
+        height: 22px;
+        padding: 2px;
+        border-radius: 999px;
+        background: var(--accent);
+      }
+
+      .switch::after {
+        content: "";
+        display: block;
+        width: 18px;
+        height: 18px;
+        margin-left: 14px;
+        border-radius: 50%;
+        background: #ffffff;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);
+      }
+
+      .switch.off {
+        background: var(--hover);
+        border: 0.5px solid var(--border);
+      }
+
+      .switch.off::after {
+        margin-left: 0;
+        background: var(--content-bg);
+      }
+
+      .filter-rule {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 6px;
+        min-height: 34px;
+        margin-top: 7px;
+      }
+
+      .filter-rule.disabled {
+        opacity: 0.58;
+      }
+
+      .rule-controls {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .filter-rule .rule-token {
+        flex: 1 1 auto;
+      }
+
+      .mode-buttons {
+        display: inline-flex;
+        flex: 0 0 auto;
+        align-items: center;
+        gap: 3px;
+        padding: 2px;
+        border: 0.5px solid var(--border);
+        border-radius: 7px;
+        background: var(--input-bg);
+      }
+
+      .mode-button {
+        display: inline-grid;
+        place-items: center;
+        width: 28px;
+        height: 24px;
+        border: 0;
+        border-radius: 5px;
+        background: transparent;
+        color: var(--page-muted);
+        font-weight: 700;
+        line-height: 1;
+        cursor: default;
+      }
+
+      .mode-button.active {
+        background: var(--active);
+        color: var(--accent-strong);
+        box-shadow: inset 0 0 0 1px var(--accent);
+      }
+
+      .mode-button.disabled {
+        opacity: 0.42;
+      }
+
+      .mode-button.use-rule {
+        width: 38px;
+      }
+
+      .add-filter-row {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+      }
+
+      .filter-builder {
+        padding: 10px;
+        border: 0.5px dashed var(--border-strong);
+        border-radius: 8px;
+        background: var(--hover);
+      }
+
+      .dialog-board {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .dialog,
+      .popover,
+      .menu,
+      .command-palette {
+        border: 0.5px solid var(--border);
+        border-radius: 12px;
+        background: var(--panel-bg);
+        box-shadow: var(--floating-shadow);
+        overflow: hidden;
+      }
+
+      .dialog {
+        min-height: 260px;
+      }
+
+      .dialog-head {
+        padding: 13px 14px;
+        border-bottom: 0.5px solid var(--border);
+        background: var(--toolbar-bg);
+      }
+
+      .dialog-title {
+        font-weight: 750;
+      }
+
+      .dialog-body {
+        padding: 14px;
+      }
+
+      .dialog-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        padding: 12px 14px;
+        border-top: 0.5px solid var(--border);
+        background: var(--toolbar-bg);
+      }
+
+      .field {
+        display: grid;
+        gap: 5px;
+        margin-bottom: 10px;
+      }
+
+      .field label {
+        color: var(--page-muted);
+        font-size: 11px;
+        font-weight: 650;
+      }
+
+      .field input,
+      .field select,
+      .field textarea {
+        width: 100%;
+        min-height: 28px;
+        padding: 6px 8px;
+        border: 0.5px solid var(--border);
+        border-radius: 6px;
+        background: var(--input-bg);
+        color: var(--page-text);
+      }
+
+      .field textarea {
+        min-height: 72px;
+        resize: none;
+        font-family: var(--font-mono);
+        font-size: 12px;
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .menu {
+        min-width: 240px;
+        padding: 6px;
+      }
+
+      .menu-row {
+        justify-content: space-between;
+        min-height: 28px;
+      }
+
+      .shortcut {
+        color: var(--page-muted);
+        font-size: 11px;
+      }
+
+      .menu-divider {
+        height: 1px;
+        margin: 5px 4px;
+        background: var(--border);
+      }
+
+      .popover {
+        padding: 8px;
+      }
+
+      .popover-row {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        margin-top: 8px;
+      }
+
+      .command-palette {
+        max-width: 720px;
+        margin: 0 auto;
+      }
+
+      .command-input {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        height: 52px;
+        padding: 0 14px;
+        border-bottom: 0.5px solid var(--border);
+        font-size: 17px;
+      }
+
+      .command-results {
+        padding: 8px;
+      }
+
+      .platform-strip {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .platform-card {
+        border: 0.5px solid var(--border);
+        border-radius: 11px;
+        background: var(--content-bg);
+        overflow: hidden;
+      }
+
+      .mini-frame {
+        height: 118px;
+        border-bottom: 0.5px solid var(--border);
+        background: var(--window-bg);
+      }
+
+      .mini-titlebar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 30px;
+        padding: 0 8px;
+        border-bottom: 0.5px solid var(--border);
+        background: var(--toolbar-bg);
+      }
+
+      .mini-body {
+        display: grid;
+        grid-template-columns: 34% 1fr 26%;
+        height: 88px;
+      }
+
+      .mini-body div {
+        border-right: 0.5px solid var(--border);
+      }
+
+      .mini-body div:last-child {
+        border-right: 0;
+      }
+
+      .platform-card-text {
+        padding: 9px;
+      }
+
+      .toast {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: fit-content;
+        padding: 9px 12px;
+        border: 0.5px solid var(--border);
+        border-radius: 999px;
+        background: var(--toolbar-bg);
+        backdrop-filter: saturate(180%) blur(20px);
+        box-shadow: var(--floating-shadow);
+      }
+
+      .problem-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .problem-row {
+        padding: 8px;
+        border-radius: 8px;
+        background: var(--hover);
+      }
+
+      .web-warning {
+        display: none;
+        margin-top: 8px;
+        color: var(--warning);
+      }
+
+      [data-platform="web"] .web-warning {
+        display: block;
+      }
+
+      @media (max-width: 1100px) {
+        .catalog {
+          width: min(100vw - 24px, 1480px);
+        }
+
+        .catalog-header,
+        .mockup-grid,
+        .mockup-grid.three,
+        .dialog-board,
+        .platform-strip {
+          grid-template-columns: 1fr;
+        }
+
+        .main-window {
+          height: 820px;
+        }
+
+        .shell {
+          grid-template-columns: 52px minmax(520px, 1fr) 300px;
+          overflow-x: auto;
+        }
+
+        .sidebar .side-section > :not(.section-label):not(.source-row.active) {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body data-theme="light" data-platform="macos">
+    <div class="catalog">
+      <header class="catalog-header">
+        <div>
+          <h1>Crosslog UI Mockups</h1>
+          <p class="subtitle">
+            Full-product mockup catalog for multi-log analysis, synchronized scrolling, filters, highlights,
+            directory search, settings, platform variants, and user interaction dialogs.
+          </p>
+        </div>
+        <div class="mockup-controls" aria-label="Mockup controls">
+          <div class="segmented" aria-label="Theme">
+            <button type="button" data-theme-button="light" aria-pressed="true">Light</button>
+            <button type="button" data-theme-button="dark" aria-pressed="false">Dark</button>
+          </div>
+          <div class="segmented" aria-label="Platform">
+            <button type="button" data-platform-button="macos" aria-pressed="true">macOS</button>
+            <button type="button" data-platform-button="windows" aria-pressed="false">Windows</button>
+            <button type="button" data-platform-button="linux" aria-pressed="false">Linux</button>
+            <button type="button" data-platform-button="web" aria-pressed="false">Web</button>
+          </div>
+        </div>
+      </header>
+
+      <nav class="gallery-nav" aria-label="Mockup sections">
+        <a href="#workspace">Main window</a>
+        <a href="#empty">Empty state</a>
+        <a href="#settings">Settings</a>
+        <a href="#panels">Panels</a>
+        <a href="#dialogs">Dialogs</a>
+        <a href="#menus">Menus</a>
+        <a href="#platforms">Platforms</a>
+      </nav>
+
+      <section id="workspace" class="section">
+        <div class="section-title">
+          <div>
+            <h2>Main Analysis Window</h2>
+            <p>Shared workspace with platform-specific chrome and full inspector surface.</p>
+          </div>
+          <p class="platform-note">Current platform: macOS Desktop</p>
+        </div>
+
+        <div class="window main-window">
+          <div class="titlebar">
+            <div class="chrome">
+              <span class="traffic red"></span>
+              <span class="traffic yellow"></span>
+              <span class="traffic green"></span>
+              <span class="caption-buttons"><span>-</span><span>[]</span><span>x</span></span>
+            </div>
+            <div class="platform-title">
+              <span class="app-title">Crosslog</span>
+              <div class="search-field"><span>Search or command</span><span class="shortcut">Cmd K</span></div>
+            </div>
+            <div class="toolbar-actions">
+              <button class="text-button toolbar-button" title="Show or hide the source sidebar">Sidebar</button>
+              <button class="text-button toolbar-button" title="Open files, directories, recent sources, or SSH sources">Open Source</button>
+              <button class="text-button toolbar-button toggle-on" title="Synchronize panes by recognized timestamps">Sync On</button>
+              <button class="text-button toolbar-button" title="Split the rightmost log pane">Add Pane</button>
+              <button class="text-button toolbar-button" title="Show filters, highlights, directory search, and details">Inspector</button>
+              <button class="text-button toolbar-button" title="Open application settings">Settings</button>
+            </div>
+          </div>
+
+          <div class="shell">
+            <aside class="sidebar" aria-label="Sources">
+              <div class="side-section">
+                <div class="section-label">Sources</div>
+                <div class="source-row active">
+                  <span class="source-icon">F</span>
+                  <div class="source-text">
+                    <div class="source-name">api-gateway.log</div>
+                    <div class="source-meta">/var/log/prod/api-gateway.log</div>
+                  </div>
+                  <span class="badge live">Live</span>
+                </div>
+                <div class="source-row">
+                  <span class="source-icon">D</span>
+                  <div class="source-text">
+                    <div class="source-name">service-logs</div>
+                    <div class="source-meta">selected: worker-2026-06-17.log</div>
+                  </div>
+                </div>
+                <div class="source-row">
+                  <span class="source-icon">S</span>
+                  <div class="source-text">
+                    <div class="source-name">prod-east:/logs</div>
+                    <div class="source-meta">OpenSSH config, read-only</div>
+                  </div>
+                  <span class="badge warn">SSH</span>
+                </div>
+                <div class="source-row">
+                  <span class="source-icon">F</span>
+                  <div class="source-text">
+                    <div class="source-name">legacy.log</div>
+                    <div class="source-meta">Windows-1251, deleted</div>
+                  </div>
+                  <span class="badge error">Deleted</span>
+                </div>
+
+                <div class="section-label">Sessions</div>
+                <div class="source-row">
+                  <span class="source-icon">3</span>
+                  <div class="source-text">
+                    <div class="source-name">Payment incident</div>
+                    <div class="source-meta">3 panes, 4 sources, 08:42</div>
+                  </div>
+                </div>
+                <div class="source-row">
+                  <span class="source-icon">2</span>
+                  <div class="source-text">
+                    <div class="source-name">Rotation check</div>
+                    <div class="source-meta">2 panes, 1 missing source</div>
+                  </div>
+                </div>
+
+                <div class="section-label">Saved Sets</div>
+                <div class="source-row">
+                  <span class="source-icon">H</span>
+                  <div class="source-text">
+                    <div class="source-name">Errors and Warnings</div>
+                    <div class="source-meta">filter + highlight template</div>
+                  </div>
+                </div>
+                <div class="source-row">
+                  <span class="source-icon">R</span>
+                  <div class="source-text">
+                    <div class="source-name">Request trace</div>
+                    <div class="source-meta">trace IDs and latency rules</div>
+                  </div>
+                </div>
+              </div>
+            </aside>
+
+            <main class="workspace" aria-label="Log workspace">
+              <div class="pane-tools">
+                <div class="chips">
+                  <span class="chip">Sync on</span>
+                  <span class="chip">Anchor: api-gateway.log</span>
+                  <span class="chip">Filter: Production Errors</span>
+                  <span class="chip">Highlight: Errors and Warnings</span>
+                </div>
+                <div class="toolbar-actions">
+                  <button class="text-button toolbar-button compact" title="Focus previous pane">Prev Pane</button>
+                  <button class="text-button toolbar-button compact" title="Focus next pane">Next Pane</button>
+                  <button class="text-button toolbar-button compact" title="Change pane layout">Layout</button>
+                </div>
+              </div>
+
+              <div class="pane-rail">
+                <section class="log-pane active">
+                  <header class="pane-header">
+                    <div class="pane-title-row">
+                      <span class="pane-title">api-gateway.log</span>
+                      <button class="text-button toolbar-button compact" title="Find inside this pane">Find</button>
+                      <button class="text-button toolbar-button compact" title="Open pane actions">Menu</button>
+                      <button class="text-button toolbar-button compact" title="Close this pane">Close</button>
+                    </div>
+                    <div class="pane-subtitle">UTF-8, Live, +00:00:00.000, 250,000 lines</div>
+                    <div class="badge-row">
+                      <span class="badge live">Watching</span>
+                      <span class="badge">Anchor</span>
+                      <span class="badge">12 matches</span>
+                    </div>
+                  </header>
+                  <div class="pane-search">
+                    <input class="mini-input" value="request_id=4f9a" aria-label="Pane search query" />
+                    <span class="mode-buttons" aria-label="Search options for api-gateway.log">
+                      <button class="mode-button active" title="Match case" aria-pressed="true">Aa</button>
+                      <button class="mode-button active" title="Use regular expression" aria-pressed="true">.*</button>
+                    </span>
+                    <button class="text-button toolbar-button compact">Prev</button>
+                    <button class="text-button toolbar-button compact">Next</button>
+                  </div>
+                  <div class="log-viewport">
+                    <div class="log-row"><span class="line-number">18420</span><span class="timestamp">09:01:15.105</span><span class="level info">INFO</span><span>accepted request <span class="match">request_id=4f9a</span> from edge-12</span></div>
+                    <div class="log-row"><span class="line-number">18421</span><span class="timestamp">09:01:15.122</span><span class="level info">INFO</span><span>validated token scope=payments.read user=74812</span></div>
+                    <div class="log-row highlight-warning"><span class="line-number">18422</span><span class="timestamp">09:01:15.181</span><span class="level warn">WARN</span><span>retry scheduled upstream=ledger attempt=2 delay=120ms</span></div>
+                    <div class="log-row highlight-error"><span class="line-number">18423</span><span class="timestamp">09:01:15.222</span><span class="level error">ERROR</span><span>upstream failed status=503 trace=981f latency=904ms</span></div>
+                    <div class="log-row"><span class="line-number">18424</span><span class="timestamp">09:01:15.245</span><span class="level info">INFO</span><span>fallback cache hit account=active ttl=42s</span></div>
+                    <div class="log-row"><span class="line-number">18425</span><span class="timestamp">09:01:15.291</span><span class="level info">INFO</span><span>responded status=200 duration=186ms</span></div>
+                    <div class="log-row"><span class="line-number">18426</span><span class="timestamp">09:01:15.311</span><span class="level info">INFO</span><span>connection returned pool=ledger-primary idle=14</span></div>
+                    <div class="log-row"><span class="line-number">18427</span><span class="timestamp">09:01:15.408</span><span class="level info">INFO</span><span>received request path=/payments/list</span></div>
+                  </div>
+                  <footer class="pane-footer"><span>horizontal scroll: 0 px</span><span>selected: line 18423</span></footer>
+                </section>
+
+                <section class="log-pane">
+                  <header class="pane-header">
+                    <div class="pane-title-row">
+                      <span class="pane-title">worker-2026-06-17.log</span>
+                      <button class="text-button toolbar-button compact" title="Previous directory log">Prev Log</button>
+                      <button class="text-button toolbar-button compact" title="Next directory log">Next Log</button>
+                      <button class="text-button toolbar-button compact" title="Open pane actions">Menu</button>
+                    </div>
+                    <div class="pane-subtitle">service-logs, newest by creation time, -00:00:02.400</div>
+                    <div class="badge-row">
+                      <span class="badge live">Directory</span>
+                      <span class="badge">Offset</span>
+                      <span class="badge">Synced</span>
+                    </div>
+                  </header>
+                  <div class="pane-search">
+                    <input class="mini-input" value="ledger" aria-label="Pane search query" />
+                    <span class="mode-buttons" aria-label="Search options for worker log">
+                      <button class="mode-button" title="Match case" aria-pressed="false">Aa</button>
+                      <button class="mode-button" title="Use regular expression" aria-pressed="false">.*</button>
+                    </span>
+                    <button class="text-button toolbar-button compact">Prev</button>
+                    <button class="text-button toolbar-button compact">Next</button>
+                  </div>
+                  <div class="log-viewport">
+                    <div class="log-row"><span class="line-number">88201</span><span class="timestamp">09:01:12.703</span><span class="level info">INFO</span><span>job received request_id=4f9a queue=payments</span></div>
+                    <div class="log-row"><span class="line-number">88202</span><span class="timestamp">09:01:12.714</span><span class="level info">INFO</span><span>normalized account payload fields=31</span></div>
+                    <div class="log-row highlight-warning"><span class="line-number">88203</span><span class="timestamp">09:01:12.768</span><span class="level warn">WARN</span><span>ledger call slow threshold=250ms actual=412ms</span></div>
+                    <div class="log-row highlight-error"><span class="line-number">88204</span><span class="timestamp">09:01:12.822</span><span class="level error">ERROR</span><span>ledger status=503 retryable=true trace=981f</span></div>
+                    <div class="log-row"><span class="line-number">88205</span><span class="timestamp">09:01:12.891</span><span class="level info">INFO</span><span>retry attempt=2 jitter=120ms</span></div>
+                    <div class="log-row"><span class="line-number">88206</span><span class="timestamp">09:01:13.009</span><span class="level info">INFO</span><span>cache fallback completed request_id=4f9a</span></div>
+                  </div>
+                  <footer class="pane-footer"><span>directory file 18 of 21</span><span>target line 88204</span></footer>
+                </section>
+
+                <section class="log-pane">
+                  <header class="pane-header">
+                    <div class="pane-title-row">
+                      <span class="pane-title">legacy.log</span>
+                      <button class="text-button toolbar-button compact" title="Select encoding">Encoding</button>
+                      <button class="text-button toolbar-button compact" title="Open pane actions">Menu</button>
+                    </div>
+                    <div class="pane-subtitle">Windows-1251, deleted, loaded content retained</div>
+                    <div class="badge-row">
+                      <span class="badge error">Deleted</span>
+                      <span class="badge warn">Untimed</span>
+                    </div>
+                  </header>
+                  <div class="pane-search">
+                    <input class="mini-input" value="timeout" aria-label="Pane search query" />
+                    <span class="mode-buttons" aria-label="Search options for legacy.log">
+                      <button class="mode-button" title="Match case" aria-pressed="false">Aa</button>
+                      <button class="mode-button" title="Use regular expression" aria-pressed="false">.*</button>
+                    </span>
+                  </div>
+                  <div class="log-viewport">
+                    <div class="log-row"><span class="line-number">310</span><span class="timestamp">no timestamp</span><span class="level info">INFO</span><span>legacy service started encoding=windows-1251</span></div>
+                    <div class="log-row"><span class="line-number">311</span><span class="timestamp">no timestamp</span><span class="level warn">WARN</span><span>old driver timeout after 5000 ms</span></div>
+                    <div class="log-row"><span class="line-number">312</span><span class="timestamp">no timestamp</span><span class="level info">INFO</span><span>loaded content remains searchable after deletion</span></div>
+                    <div class="log-row"><span class="line-number">313</span><span class="timestamp">no timestamp</span><span class="level error">ERROR</span><span>watching stopped because source was removed</span></div>
+                  </div>
+                  <footer class="pane-footer"><span>sync excluded</span><span>deleted at 09:03:18</span></footer>
+                </section>
+
+                <div class="add-pane"><button class="text-button toolbar-button compact" title="Split the rightmost pane">Add Pane</button></div>
+              </div>
+            </main>
+
+            <aside class="inspector" aria-label="Inspector">
+              <div class="inspector-tabs">
+                <button class="tab active">Filters</button>
+                <button class="tab">Highlights</button>
+                <button class="tab">Dir Search</button>
+                <button class="tab">Details</button>
+              </div>
+
+              <div class="panel-block">
+                <h3>Filter Set</h3>
+                <div class="field">
+                  <label>Active set</label>
+                  <select><option>Production Errors</option></select>
+                </div>
+                <div class="chips">
+                  <span class="chip">All panes</span>
+                  <span class="chip">Mixed match modes</span>
+                </div>
+                <div class="progress-line"><span></span></div>
+                <p class="source-meta" style="margin-top: 7px;">12,420 shown from 250,000 loaded lines</p>
+              </div>
+
+              <div class="panel-block">
+                <h3>Positive Filters</h3>
+                <div class="filter-rule">
+                  <span class="rule-token">ERROR</span>
+                  <span class="mode-buttons" aria-label="Filter options for ERROR">
+                    <button class="mode-button active" title="Match case" aria-pressed="true">Aa</button>
+                    <button class="mode-button" title="Use regular expression" aria-pressed="false">.*</button>
+                    <button class="mode-button active use-rule" title="Use this filter rule" aria-pressed="true">Use</button>
+                  </span>
+                </div>
+                <div class="filter-rule">
+                  <span class="rule-token">timeout|refused|503</span>
+                  <span class="mode-buttons" aria-label="Filter options for timeout refused 503">
+                    <button class="mode-button" title="Match case" aria-pressed="false">Aa</button>
+                    <button class="mode-button active" title="Use regular expression" aria-pressed="true">.*</button>
+                    <button class="mode-button active use-rule" title="Use this filter rule" aria-pressed="true">Use</button>
+                  </span>
+                </div>
+                <div class="filter-rule disabled">
+                  <span class="rule-token">deprecated warning</span>
+                  <span class="mode-buttons" aria-label="Disabled filter options for deprecated warning">
+                    <button class="mode-button" title="Match case" aria-pressed="false">Aa</button>
+                    <button class="mode-button" title="Use regular expression" aria-pressed="false">.*</button>
+                    <button class="mode-button disabled use-rule" title="This filter rule is disabled" aria-pressed="false">Use</button>
+                  </span>
+                </div>
+                <div class="add-filter-row">
+                  <button class="text-button toolbar-button">Add Positive Filter</button>
+                </div>
+              </div>
+
+              <div class="panel-block">
+                <h3>Negative Filters</h3>
+                <div class="filter-rule">
+                  <span class="rule-token">healthcheck</span>
+                  <span class="mode-buttons" aria-label="Filter options for healthcheck">
+                    <button class="mode-button" title="Match case" aria-pressed="false">Aa</button>
+                    <button class="mode-button" title="Use regular expression" aria-pressed="false">.*</button>
+                    <button class="mode-button active use-rule" title="Use this filter rule" aria-pressed="true">Use</button>
+                  </span>
+                </div>
+                <div class="filter-rule disabled">
+                  <span class="rule-token">debug probe</span>
+                  <span class="mode-buttons" aria-label="Disabled filter options for debug probe">
+                    <button class="mode-button active" title="Match case" aria-pressed="true">Aa</button>
+                    <button class="mode-button" title="Use regular expression" aria-pressed="false">.*</button>
+                    <button class="mode-button disabled use-rule" title="This filter rule is disabled" aria-pressed="false">Use</button>
+                  </span>
+                </div>
+                <div class="add-filter-row">
+                  <button class="text-button toolbar-button">Add Negative Filter</button>
+                </div>
+              </div>
+
+              <div class="panel-block">
+                <h3>Highlight Template</h3>
+                <div class="source-row active">
+                  <span class="color-swatch swatch-red"></span>
+                  <div class="source-text">
+                    <div class="source-name">Errors and Warnings</div>
+                    <div class="source-meta">Built-in template, customized colors</div>
+                  </div>
+                </div>
+                <div class="filter-rule">
+                  <span class="rule-token">ERROR|FATAL</span>
+                  <span class="mode-buttons" aria-label="Highlight options for ERROR FATAL">
+                    <button class="mode-button active" title="Use regular expression" aria-pressed="true">.*</button>
+                    <button class="mode-button active" title="Use bold text style" aria-pressed="true">B</button>
+                    <button class="mode-button active use-rule" title="Use this highlight rule" aria-pressed="true">Use</button>
+                  </span>
+                </div>
+                <div class="filter-rule">
+                  <span class="rule-token">WARN</span>
+                  <span class="mode-buttons" aria-label="Highlight options for WARN">
+                    <button class="mode-button" title="Use regular expression" aria-pressed="false">.*</button>
+                    <button class="mode-button" title="Use bold text style" aria-pressed="false">B</button>
+                    <button class="mode-button active use-rule" title="Use this highlight rule" aria-pressed="true">Use</button>
+                  </span>
+                </div>
+              </div>
+            </aside>
+          </div>
+          <footer class="statusbar">
+            <span>3 panes, sync on, 1 untimed pane excluded</span>
+            <span>Active: api-gateway.log, 09:01:15.222, UTF-8, watching 2 sources</span>
+          </footer>
+        </div>
+      </section>
+
+      <section id="empty" class="section">
+        <div class="section-title">
+          <div>
+            <h2>Empty Workspace</h2>
+            <p>First screen keeps secondary tools hidden until logs exist.</p>
+          </div>
+        </div>
+        <div class="window">
+          <div class="titlebar">
+            <div class="chrome">
+              <span class="traffic red"></span>
+              <span class="traffic yellow"></span>
+              <span class="traffic green"></span>
+              <span class="caption-buttons"><span>-</span><span>[]</span><span>x</span></span>
+            </div>
+            <div class="platform-title"><span class="app-title">Crosslog</span><div class="search-field">Search or command</div></div>
+            <div class="toolbar-actions"><button class="text-button toolbar-button">Open Source</button><button class="text-button toolbar-button">Settings</button></div>
+          </div>
+          <div class="empty-workspace">
+            <div class="empty-box">
+              <div class="drop-target">LOG</div>
+              <h2>Open logs to begin analysis</h2>
+              <p class="subtitle" style="margin: 8px auto 16px;">
+                Drop files or directories here, or open read-only sources with the platform picker.
+              </p>
+              <div class="toolbar-actions" style="justify-content: center;">
+                <button class="primary-button">Open Files</button>
+                <button class="text-button">Open Directory</button>
+              </div>
+              <p class="web-warning">Browser mode cannot watch local files unless the browser grants compatible access.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="settings" class="section">
+        <div class="section-title">
+          <div>
+            <h2>Settings Window</h2>
+            <p>Desktop Preferences window and Web settings modal share the same sections.</p>
+          </div>
+        </div>
+        <div class="mockup-grid">
+          <div class="mock-card">
+            <div class="mock-card-header"><strong>Appearance and Logs</strong><span>Light and dark configuration</span></div>
+            <div class="mock-card-body">
+              <div class="window">
+                <div class="titlebar">
+                  <div class="chrome">
+                    <span class="traffic red"></span><span class="traffic yellow"></span><span class="traffic green"></span>
+                    <span class="caption-buttons"><span>-</span><span>[]</span><span>x</span></span>
+                  </div>
+                  <div class="platform-title"><span class="app-title">Settings</span></div>
+                  <div class="toolbar-actions"><button class="text-button">Done</button></div>
+                </div>
+                <div class="settings-window">
+                  <aside class="settings-sidebar">
+                    <div class="menu-row active"><span class="small-icon">G</span><span>General</span></div>
+                    <div class="menu-row"><span class="small-icon">A</span><span>Appearance</span></div>
+                    <div class="menu-row"><span class="small-icon">L</span><span>Logs</span></div>
+                    <div class="menu-row"><span class="small-icon">T</span><span>Timestamps</span></div>
+                    <div class="menu-row"><span class="small-icon">F</span><span>Filters</span></div>
+                    <div class="menu-row"><span class="small-icon">S</span><span>Search</span></div>
+                    <div class="menu-row"><span class="small-icon">K</span><span>Shortcuts</span></div>
+                    <div class="menu-row"><span class="small-icon">P</span><span>Security</span></div>
+                  </aside>
+                  <main class="settings-content">
+                    <div class="settings-title"><h2>General</h2><span class="badge">System theme</span></div>
+                    <div class="settings-scroll">
+                      <section class="settings-section">
+                        <h3>Session</h3>
+                        <div class="setting-row"><span>Restore previous session on launch</span><span class="switch"></span></div>
+                        <div class="setting-row"><span>Confirm before closing many panes</span><span class="switch"></span></div>
+                        <div class="setting-row"><span>Recent source retention</span><span class="badge">30 days</span></div>
+                      </section>
+                      <section class="settings-section">
+                        <h3>Workspace</h3>
+                        <div class="setting-row"><span>Default pane width</span><span class="badge">520 px</span></div>
+                        <div class="setting-row"><span>Default directory sort</span><span class="badge">Creation time</span></div>
+                        <div class="setting-row"><span>UI density</span><span class="badge">Compact</span></div>
+                      </section>
+                    </div>
+                  </main>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mock-card">
+            <div class="mock-card-header"><strong>Timestamps, Filters, Security</strong><span>Advanced sections</span></div>
+            <div class="mock-card-body">
+              <div class="settings-section">
+                <h3>Timestamp Formats</h3>
+                <div class="field"><label>Detection pattern</label><input value="\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\.\\d{3}" /></div>
+                <div class="field"><label>Parser</label><input value="%Y-%m-%d %H:%M:%S.%f" /></div>
+                <div class="field"><label>Test input</label><input value="2026-06-17 09:01:15.122 INFO ready" /></div>
+                <div class="badge-row"><span class="badge live">Parsed</span><span class="badge">first valid timestamp wins</span></div>
+              </div>
+              <div class="settings-section">
+                <h3>Filters and Highlights</h3>
+                <div class="setting-row"><span>Default filter scope</span><span class="badge">All panes</span></div>
+                <div class="setting-row"><span>Built-in templates</span><span class="badge">5 enabled</span></div>
+                <div class="setting-row"><span>Rule conflict priority</span><span class="badge">Higher first</span></div>
+              </div>
+              <div class="settings-section">
+                <h3>Security</h3>
+                <div class="setting-row"><span>Open logs read-only</span><span class="switch"></span></div>
+                <div class="setting-row"><span>Disable link activation in logs</span><span class="switch"></span></div>
+                <div class="setting-row"><span>SSH credential storage</span><span class="badge">Ask every time</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="panels" class="section">
+        <div class="section-title">
+          <div>
+            <h2>Panels and Inspectors</h2>
+            <p>Side panels for sources, filters, highlights, directory search, details, and problems.</p>
+          </div>
+        </div>
+        <div class="mockup-grid three">
+          <div class="mock-card">
+            <div class="mock-card-header"><strong>Directory Search</strong><span>All opened directories</span></div>
+            <div class="mock-card-body">
+              <div class="panel-block">
+                <div class="field"><label>Query</label><input value="trace=981f|status=503" /></div>
+                <div class="chips"><span class="chip">Regex</span><span class="chip">Case off</span><span class="chip">All directories</span></div>
+              </div>
+              <div class="panel-block">
+                <h3>Results</h3>
+                <div class="result-row active"><span class="small-icon">1</span><div class="source-text"><div class="row-title">worker-2026-06-17.log:88204</div><div class="row-subtitle">ledger status=503 retryable=true trace=981f</div></div></div>
+                <div class="result-row"><span class="small-icon">2</span><div class="source-text"><div class="row-title">api-2026-06-17.log:18423</div><div class="row-subtitle">upstream failed status=503 trace=981f</div></div></div>
+                <div class="result-row"><span class="small-icon">3</span><div class="source-text"><div class="row-title">edge-2026-06-17.log:70991</div><div class="row-subtitle">retry response forwarded trace=981f</div></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mock-card">
+            <div class="mock-card-header"><strong>Highlight Templates</strong><span>Five built-ins</span></div>
+            <div class="mock-card-body">
+              <div class="source-row active"><span class="color-swatch swatch-red"></span><div class="source-text"><div class="source-name">Errors and Warnings</div><div class="source-meta">ERROR, FATAL, WARN</div></div></div>
+              <div class="source-row"><span class="color-swatch swatch-green"></span><div class="source-text"><div class="source-name">HTTP Status</div><div class="source-meta">2xx, 3xx, 4xx, 5xx</div></div></div>
+              <div class="source-row"><span class="color-swatch swatch-yellow"></span><div class="source-text"><div class="source-name">Latency</div><div class="source-meta">duration and timeout patterns</div></div></div>
+              <div class="source-row"><span class="color-swatch swatch-purple"></span><div class="source-text"><div class="source-name">Identifiers</div><div class="source-meta">request, trace, session IDs</div></div></div>
+              <div class="source-row"><span class="color-swatch swatch-blue"></span><div class="source-text"><div class="source-name">Timestamps and Services</div><div class="source-meta">time segments and service prefixes</div></div></div>
+            </div>
+          </div>
+
+          <div class="mock-card">
+            <div class="mock-card-header"><strong>Details and Problems</strong><span>Current pane diagnostics</span></div>
+            <div class="mock-card-body">
+              <div class="panel-block">
+                <h3>Active Pane</h3>
+                <div class="setting-row"><span>Source</span><span class="badge">api-gateway.log</span></div>
+                <div class="setting-row"><span>Encoding</span><span class="badge">UTF-8</span></div>
+                <div class="setting-row"><span>Time offset</span><span class="badge">+00:00:00.000</span></div>
+                <div class="setting-row"><span>Sync state</span><span class="badge live">Anchor</span></div>
+              </div>
+              <div class="panel-block">
+                <h3>Problems</h3>
+                <div class="problem-list">
+                  <div class="problem-row"><span class="badge warn">Warning</span> legacy.log has no recognized timestamps.</div>
+                  <div class="problem-row"><span class="badge error">Deleted</span> legacy.log is retained but no longer watching.</div>
+                  <div class="problem-row web-warning"><span class="badge warn">Web</span> Browser cannot discover new local directory files.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="dialogs" class="section">
+        <div class="section-title">
+          <div>
+            <h2>Dialogs, Sheets, Popovers</h2>
+            <p>All high-value user interactions requested by the requirements and UI design.</p>
+          </div>
+        </div>
+        <div class="dialog-board">
+          <div class="dialog">
+            <div class="dialog-head"><div class="dialog-title">Open Source</div><div class="source-meta">Split button menu</div></div>
+            <div class="dialog-body">
+              <div class="menu" style="box-shadow: none;">
+                <div class="menu-row active"><span>Open File...</span><span class="shortcut">Cmd O</span></div>
+                <div class="menu-row"><span>Open Files...</span><span class="shortcut">Cmd Shift O</span></div>
+                <div class="menu-row"><span>Open Directory...</span><span class="shortcut">Cmd Shift D</span></div>
+                <div class="menu-row"><span>Open SSH Source...</span><span class="shortcut">Future</span></div>
+                <div class="menu-divider"></div>
+                <div class="menu-row"><span>Paste Path</span><span class="shortcut">Cmd V</span></div>
+                <div class="menu-row"><span>Drop files here</span><span></span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="dialog">
+            <div class="dialog-head"><div class="dialog-title">Open Directory</div><div class="source-meta">Top-level files only</div></div>
+            <div class="dialog-body">
+              <div class="field"><label>Directory</label><input value="/var/log/prod/service-logs" /></div>
+              <div class="form-grid">
+                <div class="field"><label>Sort strategy</label><select><option>Creation time</option></select></div>
+                <div class="field"><label>Initial file</label><select><option>Newest file</option></select></div>
+              </div>
+              <div class="setting-row"><span>Search directory after open</span><span class="switch"></span></div>
+              <div class="setting-row"><span>Open selected files as panes</span><span class="badge">off</span></div>
+            </div>
+            <div class="dialog-actions"><button class="text-button">Cancel</button><button class="primary-button">Open</button></div>
+          </div>
+
+          <div class="dialog">
+            <div class="dialog-head"><div class="dialog-title">Open SSH Source</div><div class="source-meta">OpenSSH compatible future flow</div></div>
+            <div class="dialog-body">
+              <div class="form-grid">
+                <div class="field"><label>Host alias</label><input value="prod-east" /></div>
+                <div class="field"><label>Port</label><input value="22" /></div>
+              </div>
+              <div class="field"><label>Remote path</label><input value="/var/log/service/api.log" /></div>
+              <div class="field"><label>Authentication</label><select><option>OpenSSH config</option><option>Password</option></select></div>
+              <div class="setting-row"><span>Open read-only</span><span class="switch"></span></div>
+            </div>
+            <div class="dialog-actions"><button class="text-button">Test</button><button class="primary-button">Open</button></div>
+          </div>
+
+          <div class="dialog">
+            <div class="dialog-head"><div class="dialog-title">Time Offset</div><div class="source-meta">Per-pane synchronization offset</div></div>
+            <div class="dialog-body">
+              <div class="form-grid">
+                <div class="field"><label>Days</label><input value="0" /></div>
+                <div class="field"><label>Hours</label><input value="0" /></div>
+                <div class="field"><label>Minutes</label><input value="0" /></div>
+                <div class="field"><label>Seconds</label><input value="-2" /></div>
+                <div class="field"><label>Milliseconds</label><input value="-400" /></div>
+                <div class="field"><label>Apply to</label><select><option>Active pane</option></select></div>
+              </div>
+              <div class="panel-block"><strong>Preview</strong><p class="source-meta">09:01:15.222 becomes 09:01:12.822</p></div>
+            </div>
+            <div class="dialog-actions"><button class="text-button">Reset</button><button class="primary-button">Apply</button></div>
+          </div>
+
+          <div class="dialog">
+            <div class="dialog-head"><div class="dialog-title">Encoding Not Detected</div><div class="source-meta">Manual selection</div></div>
+            <div class="dialog-body">
+              <div class="field"><label>Encoding</label><select><option>Windows-1251</option><option>UTF-8</option><option>UTF-16 LE</option><option>Windows-1252</option></select></div>
+              <div class="field"><label>Preview</label><textarea>09:01:15 service started
+09:01:16 request completed
+09:01:17 warning: retry scheduled</textarea></div>
+            </div>
+            <div class="dialog-actions"><button class="text-button">Cancel</button><button class="primary-button">Apply</button></div>
+          </div>
+
+          <div class="dialog">
+            <div class="dialog-head"><div class="dialog-title">File Too Large</div><div class="source-meta">Open is stopped before load</div></div>
+            <div class="dialog-body">
+              <div class="problem-row"><span class="badge error">Limit</span> audit.log is 148 MB. Current limit is 20 MB.</div>
+              <div class="field"><label>Temporary limit</label><select><option>Increase once to 150 MB</option><option>Change settings</option></select></div>
+              <p class="source-meta">The source remains read-only and is not partially loaded.</p>
+            </div>
+            <div class="dialog-actions"><button class="text-button">Cancel</button><button class="primary-button">Increase Once</button></div>
+          </div>
+
+          <div class="dialog">
+            <div class="dialog-head"><div class="dialog-title">Session Recovery</div><div class="source-meta">Restore without scroll positions</div></div>
+            <div class="dialog-body">
+              <div class="result-row active"><span class="small-icon">3</span><div class="source-text"><div class="row-title">Payment incident</div><div class="row-subtitle">3 panes, order and widths available</div></div></div>
+              <div class="result-row"><span class="small-icon">!</span><div class="source-text"><div class="row-title">legacy.log missing</div><div class="row-subtitle">Pane can restore with retained unavailable state</div></div></div>
+            </div>
+            <div class="dialog-actions"><button class="text-button">Start Clean</button><button class="primary-button">Restore</button></div>
+          </div>
+
+          <div class="dialog">
+            <div class="dialog-head"><div class="dialog-title">Save Highlight Set</div><div class="source-meta">Template persistence</div></div>
+            <div class="dialog-body">
+              <div class="field"><label>Name</label><input value="Payment Incident Highlights" /></div>
+              <div class="field"><label>Includes</label><select><option>Filters and highlights</option><option>Highlights only</option></select></div>
+              <div class="badge-row"><span class="badge">5 rules</span><span class="badge">All panes scope</span><span class="badge">Exportable</span></div>
+            </div>
+            <div class="dialog-actions"><button class="text-button">Cancel</button><button class="primary-button">Save</button></div>
+          </div>
+
+          <div class="dialog">
+            <div class="dialog-head"><div class="dialog-title">First Run Onboarding</div><div class="source-meta">One-step shortcut learning</div></div>
+            <div class="dialog-body">
+              <div class="drop-target">CL</div>
+              <h3 style="text-align: center;">Open logs read-only</h3>
+              <p class="subtitle" style="text-align: center; margin-top: 8px;">Press Cmd O to open files, or drop a directory onto the workspace.</p>
+            </div>
+            <div class="dialog-actions"><button class="primary-button">Open Files</button></div>
+          </div>
+
+          <div class="dialog">
+            <div class="dialog-head"><div class="dialog-title">Invalid Timestamp Config</div><div class="source-meta">Settings sheet problem state</div></div>
+            <div class="dialog-body">
+              <div class="problem-row"><span class="badge error">Parser</span> `%Y-%m-%d %H:%M:%S.%Q` uses an unsupported fraction token.</div>
+              <div class="field"><label>Detection pattern</label><input value="\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}" /></div>
+              <div class="field"><label>Parser</label><input value="%Y-%m-%d %H:%M:%S.%f" /></div>
+              <div class="badge-row"><span class="badge live">Test passed</span><span class="badge">Apply to untimed panes</span></div>
+            </div>
+            <div class="dialog-actions"><button class="text-button">Cancel</button><button class="primary-button">Save Format</button></div>
+          </div>
+
+          <div class="dialog">
+            <div class="dialog-head"><div class="dialog-title">Delete Saved Set</div><div class="source-meta">Confirmation popover equivalent</div></div>
+            <div class="dialog-body">
+              <div class="problem-row"><span class="badge warn">Confirm</span> Delete "Payment Incident Highlights" from saved filter and highlight sets?</div>
+              <p class="source-meta" style="margin-top: 10px;">Active panes keep their current applied rules until another set is selected.</p>
+            </div>
+            <div class="dialog-actions"><button class="text-button">Cancel</button><button class="primary-button">Delete Set</button></div>
+          </div>
+
+          <div class="dialog">
+            <div class="dialog-head"><div class="dialog-title">Import and Export Settings</div><div class="source-meta">Native picker or Web upload/download</div></div>
+            <div class="dialog-body">
+              <div class="setting-row"><span>Timestamp formats</span><span class="switch"></span></div>
+              <div class="setting-row"><span>Filter and highlight sets</span><span class="switch"></span></div>
+              <div class="setting-row"><span>Appearance and shortcuts</span><span class="badge">optional</span></div>
+              <p class="web-warning">Web exports a settings file through browser download.</p>
+            </div>
+            <div class="dialog-actions"><button class="text-button">Import</button><button class="primary-button">Export</button></div>
+          </div>
+
+          <div class="dialog">
+            <div class="dialog-head"><div class="dialog-title">SSH Password Prompt</div><div class="source-meta">Secure credential interaction</div></div>
+            <div class="dialog-body">
+              <div class="field"><label>Host</label><input value="prod-east" /></div>
+              <div class="field"><label>Username</label><input value="deploy" /></div>
+              <div class="field"><label>Password</label><input value="************" /></div>
+              <div class="setting-row"><span>Store in platform credential manager</span><span class="badge">Ask every time</span></div>
+              <p class="web-warning">Browser mode should not persist SSH passwords without a trusted credential backend.</p>
+            </div>
+            <div class="dialog-actions"><button class="text-button">Cancel</button><button class="primary-button">Connect</button></div>
+          </div>
+        </div>
+
+        <div class="mockup-grid" style="margin-top: 18px;">
+          <div class="mock-card">
+            <div class="mock-card-header"><strong>Command Palette</strong><span>Actions, panes, sources, settings</span></div>
+            <div class="mock-card-body">
+              <div class="command-palette">
+                <div class="command-input"><span class="small-icon">K</span><span>Apply production errors</span><span class="shortcut">Cmd K</span></div>
+                <div class="command-results">
+                  <div class="menu-row active"><span>Apply filter set: Production Errors</span><span class="shortcut">Action</span></div>
+                  <div class="menu-row"><span>Open Settings: Filters and Highlights</span><span class="shortcut">Settings</span></div>
+                  <div class="menu-row"><span>Switch to pane: api-gateway.log</span><span class="shortcut">Pane</span></div>
+                  <div class="menu-row"><span>Directory search: status=503</span><span class="shortcut">Search</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mock-card">
+            <div class="mock-card-header"><strong>Selected Text Popover</strong><span>Quick filter and highlight flow</span></div>
+            <div class="mock-card-body">
+              <div class="popover">
+                <div><strong>Selected:</strong> <span class="selection">status=503</span></div>
+                <div class="popover-row">
+                  <button class="text-button">Copy</button>
+                  <button class="text-button">Find</button>
+                  <button class="text-button">Filter Include</button>
+                  <button class="text-button">Filter Exclude</button>
+                </div>
+                <div class="menu" style="margin-top: 8px; box-shadow: none;">
+                  <div class="menu-row active"><span>Highlight as Error</span><span class="color-swatch swatch-red"></span></div>
+                  <div class="menu-row"><span>Highlight as Warning</span><span class="color-swatch swatch-yellow"></span></div>
+                  <div class="menu-row"><span>Highlight as Request ID</span><span class="color-swatch swatch-purple"></span></div>
+                  <div class="menu-row"><span>Custom color...</span><span></span></div>
+                </div>
+              </div>
+              <div class="toast" style="margin-top: 14px;"><span class="small-icon">OK</span><span>Highlight rule added</span></div>
+            </div>
+          </div>
+
+          <div class="mock-card">
+            <div class="mock-card-header"><strong>Add Filter From Panel</strong><span>Manual filter creation</span></div>
+            <div class="mock-card-body">
+              <div class="filter-builder">
+                <div class="field"><label>Filter group</label><select><option>Positive filters: show matching lines</option><option>Negative filters: hide matching lines</option></select></div>
+                <div class="field"><label>Pattern</label><input value="status=503" /></div>
+                <div class="filter-rule">
+                  <span class="rule-token">status=503</span>
+                  <span class="mode-buttons" aria-label="New filter options">
+                    <button class="mode-button" title="Match case" aria-pressed="false">Aa</button>
+                    <button class="mode-button" title="Use regular expression" aria-pressed="false">.*</button>
+                    <button class="mode-button active use-rule" title="Use this filter rule" aria-pressed="true">Use</button>
+                  </span>
+                </div>
+                <div class="dialog-actions" style="margin: 10px -10px -10px;">
+                  <button class="text-button">Cancel</button>
+                  <button class="primary-button">Add Filter</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mock-card">
+            <div class="mock-card-header"><strong>Right-Click Filter Flow</strong><span>Selection to rule</span></div>
+            <div class="mock-card-body">
+              <div class="menu">
+                <div class="menu-row"><span>Copy</span><span class="shortcut">Cmd C</span></div>
+                <div class="menu-row active"><span>Filter Selection</span><span>&gt;</span></div>
+                <div class="menu-row"><span>Add Positive Filter: "status=503"</span><span></span></div>
+                <div class="menu-row"><span>Add Negative Filter: "status=503"</span><span></span></div>
+                <div class="menu-row"><span>Add Regex Filter from Selection...</span><span></span></div>
+                <div class="menu-divider"></div>
+                <div class="menu-row"><span>Highlight Selection</span><span>&gt;</span></div>
+              </div>
+              <div class="toast" style="margin-top: 14px;"><span class="small-icon">OK</span><span>Positive filter "status=503" added and enabled</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="menus" class="section">
+        <div class="section-title">
+          <div>
+            <h2>Menus</h2>
+            <p>Desktop application menus, Web app menu, context menus, and pane menus.</p>
+          </div>
+        </div>
+        <div class="mockup-grid three">
+          <div class="mock-card">
+            <div class="mock-card-header"><strong>Desktop File Menu</strong><span>Native menu equivalent</span></div>
+            <div class="mock-card-body">
+              <div class="menu">
+                <div class="menu-row active"><span>Open File...</span><span class="shortcut">Cmd O</span></div>
+                <div class="menu-row"><span>Open Files...</span><span class="shortcut">Cmd Shift O</span></div>
+                <div class="menu-row"><span>Open Directory...</span><span class="shortcut">Cmd Shift D</span></div>
+                <div class="menu-row"><span>Open SSH Source...</span><span class="shortcut">Future</span></div>
+                <div class="menu-divider"></div>
+                <div class="menu-row"><span>Open Recent</span><span>&gt;</span></div>
+                <div class="menu-row"><span>Close Pane</span><span class="shortcut">Cmd W</span></div>
+                <div class="menu-row"><span>Close Window</span><span></span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mock-card">
+            <div class="mock-card-header"><strong>Log Text Context Menu</strong><span>Selection actions</span></div>
+            <div class="mock-card-body">
+              <div class="menu">
+                <div class="menu-row active"><span>Copy</span><span class="shortcut">Cmd C</span></div>
+                <div class="menu-row"><span>Copy Line</span><span></span></div>
+                <div class="menu-row"><span>Copy With Line Numbers</span><span></span></div>
+                <div class="menu-divider"></div>
+                <div class="menu-row"><span>Find Selection in Pane</span><span></span></div>
+                <div class="menu-row"><span>Search Selection in Directories</span><span></span></div>
+                <div class="menu-row active"><span>Filter Selection</span><span>&gt;</span></div>
+                <div class="menu-row"><span>Add Positive Filter</span><span>show matches</span></div>
+                <div class="menu-row"><span>Add Negative Filter</span><span>hide matches</span></div>
+                <div class="menu-row"><span>Add Regex Filter...</span><span></span></div>
+                <div class="menu-row"><span>Highlight Selection</span><span>&gt;</span></div>
+                <div class="menu-row"><span>Add Timestamp Parser</span><span></span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mock-card">
+            <div class="mock-card-header"><strong>Pane Header Menu</strong><span>Source and sync actions</span></div>
+            <div class="mock-card-body">
+              <div class="menu">
+                <div class="menu-row active"><span>Rename Pane Label</span><span></span></div>
+                <div class="menu-row"><span>Set Time Offset...</span><span class="shortcut">Cmd Opt T</span></div>
+                <div class="menu-row"><span>Select Encoding...</span><span></span></div>
+                <div class="menu-row"><span>Reload Source</span><span></span></div>
+                <div class="menu-divider"></div>
+                <div class="menu-row"><span>Duplicate Pane</span><span></span></div>
+                <div class="menu-row"><span>Close Other Panes</span><span></span></div>
+                <div class="menu-row"><span>Disable Sync for This Pane</span><span></span></div>
+                <div class="menu-row"><span>Export Visible Lines</span><span></span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mock-card">
+            <div class="mock-card-header"><strong>Web Application Menu</strong><span>Browser-safe actions</span></div>
+            <div class="mock-card-body">
+              <div class="menu">
+                <div class="menu-row active"><span>Open Browser Files</span><span></span></div>
+                <div class="menu-row"><span>Open Browser Directory</span><span></span></div>
+                <div class="menu-row"><span>Import Settings</span><span></span></div>
+                <div class="menu-row"><span>Export Settings</span><span></span></div>
+                <div class="menu-divider"></div>
+                <div class="menu-row"><span>Toggle Sidebar</span><span></span></div>
+                <div class="menu-row"><span>Toggle Inspector</span><span></span></div>
+                <div class="menu-row"><span>Keyboard Shortcuts</span><span></span></div>
+                <div class="web-warning">Automatic local file watching depends on browser capabilities.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mock-card">
+            <div class="mock-card-header"><strong>Source Sidebar Menu</strong><span>File, directory, SSH source</span></div>
+            <div class="mock-card-body">
+              <div class="menu">
+                <div class="menu-row active"><span>Open in New Pane</span><span></span></div>
+                <div class="menu-row"><span>Open in Active Pane</span><span></span></div>
+                <div class="menu-row"><span>Reveal in Finder</span><span></span></div>
+                <div class="menu-row"><span>Copy Path</span><span></span></div>
+                <div class="menu-row"><span>Reload</span><span></span></div>
+                <div class="menu-row"><span>Select Encoding...</span><span></span></div>
+                <div class="menu-row"><span>Stop Watching</span><span></span></div>
+                <div class="menu-row"><span>Remove from Workspace</span><span></span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mock-card">
+            <div class="mock-card-header"><strong>Tools Menu</strong><span>Analysis commands</span></div>
+            <div class="mock-card-body">
+              <div class="menu">
+                <div class="menu-row active"><span>Synchronize Scrolling</span><span class="shortcut">Cmd Shift L</span></div>
+                <div class="menu-row"><span>Directory Search</span><span class="shortcut">Cmd Shift F</span></div>
+                <div class="menu-row"><span>Filters</span><span class="shortcut">Cmd Opt F</span></div>
+                <div class="menu-row"><span>Highlights</span><span class="shortcut">Cmd Opt H</span></div>
+                <div class="menu-row"><span>Command Palette</span><span class="shortcut">Cmd K</span></div>
+                <div class="menu-divider"></div>
+                <div class="menu-row"><span>Go to Line...</span><span></span></div>
+                <div class="menu-row"><span>Go to Timestamp...</span><span></span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="platforms" class="section">
+        <div class="section-title">
+          <div>
+            <h2>Platform Variants</h2>
+            <p>The app keeps one UI model while changing chrome, pickers, menus, and capability messages.</p>
+          </div>
+        </div>
+        <div class="platform-strip">
+          <div class="platform-card">
+            <div class="mini-frame">
+              <div class="mini-titlebar"><span><span class="traffic red"></span> <span class="traffic yellow"></span> <span class="traffic green"></span></span><span>Crosslog</span></div>
+              <div class="mini-body"><div></div><div></div><div></div></div>
+            </div>
+            <div class="platform-card-text"><strong>macOS Desktop</strong><p class="source-meta">Native menu bar, traffic lights, sheets, Finder reveal.</p></div>
+          </div>
+          <div class="platform-card">
+            <div class="mini-frame">
+              <div class="mini-titlebar"><span>Crosslog</span><span class="caption-buttons" style="display: flex;"><span>-</span><span>[]</span><span>x</span></span></div>
+              <div class="mini-body"><div></div><div></div><div></div></div>
+            </div>
+            <div class="platform-card-text"><strong>Windows Desktop</strong><p class="source-meta">Caption buttons, Explorer reveal, Ctrl shortcuts, native pickers.</p></div>
+          </div>
+          <div class="platform-card">
+            <div class="mini-frame">
+              <div class="mini-titlebar"><span>Crosslog</span><span class="caption-buttons" style="display: flex;"><span>-</span><span>[]</span><span>x</span></span></div>
+              <div class="mini-body"><div></div><div></div><div></div></div>
+            </div>
+            <div class="platform-card-text"><strong>Linux Desktop</strong><p class="source-meta">Desktop-environment chrome, file manager reveal, Ctrl shortcuts.</p></div>
+          </div>
+          <div class="platform-card">
+            <div class="mini-frame">
+              <div class="mini-titlebar"><span>browser tab: Crosslog</span><span class="badge">Web</span></div>
+              <div class="mini-body"><div></div><div></div><div></div></div>
+            </div>
+            <div class="platform-card-text"><strong>Web</strong><p class="source-meta">Browser pickers, uploads/downloads, explicit local monitoring limits.</p></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const body = document.body;
+
+      function setPressed(selector, value) {
+        document.querySelectorAll(selector).forEach((button) => {
+          const key = button.dataset.themeButton || button.dataset.platformButton;
+          button.setAttribute("aria-pressed", String(key === value));
+        });
+      }
+
+      document.querySelectorAll("[data-theme-button]").forEach((button) => {
+        button.addEventListener("click", () => {
+          body.dataset.theme = button.dataset.themeButton;
+          setPressed("[data-theme-button]", button.dataset.themeButton);
+        });
+      });
+
+      const platformLabels = {
+        macos: "macOS Desktop",
+        windows: "Windows Desktop",
+        linux: "Linux Desktop",
+        web: "Web",
+      };
+
+      document.querySelectorAll("[data-platform-button]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const platform = button.dataset.platformButton;
+          body.dataset.platform = platform;
+          setPressed("[data-platform-button]", platform);
+          document.querySelectorAll(".platform-note").forEach((node) => {
+            node.textContent = "Current platform: " + platformLabels[platform];
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

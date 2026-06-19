@@ -1,0 +1,1210 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Crosslog Minimal UI Mockups</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --page-bg: #ececf1;
+        --page-text: #1d1d1f;
+        --muted: #6e6e73;
+        --window: #f5f5f7;
+        --surface: #ffffff;
+        --surface-2: #f7f7f9;
+        --rail: #f0f0f3;
+        --panel: #fbfbfd;
+        --pane: #ffffff;
+        --toolbar: rgba(250, 250, 250, 0.86);
+        --input: #ffffff;
+        --hover: rgba(0, 0, 0, 0.05);
+        --selected: rgba(0, 122, 255, 0.13);
+        --border: rgba(0, 0, 0, 0.09);
+        --strong-border: rgba(0, 0, 0, 0.16);
+        --accent: #007aff;
+        --accent-2: #0067d7;
+        --danger: #ff3b30;
+        --warning: #ff9500;
+        --success: #34c759;
+        --teal: #0a84ff;
+        --log: #1f2328;
+        --log-muted: #78838e;
+        --match: #fff2a8;
+        --warn-bg: #fff4d7;
+        --error-bg: #ffe8e7;
+        --shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.1), 0 16px 44px rgba(0, 0, 0, 0.14), 0 36px 72px rgba(0, 0, 0, 0.1);
+        --float-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.1), 0 12px 32px rgba(0, 0, 0, 0.16);
+        --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        --font-mono: "SF Mono", Menlo, Monaco, Consolas, "Courier New", monospace;
+      }
+
+      [data-theme="dark"] {
+        color-scheme: dark;
+        --page-bg: #111214;
+        --page-text: #f5f5f7;
+        --muted: #a1a1a6;
+        --window: #1c1c1e;
+        --surface: #222326;
+        --surface-2: #292a2e;
+        --rail: #18191b;
+        --panel: #242529;
+        --pane: #202124;
+        --toolbar: rgba(35, 35, 38, 0.88);
+        --input: #2c2c2e;
+        --hover: rgba(255, 255, 255, 0.065);
+        --selected: rgba(10, 132, 255, 0.2);
+        --border: rgba(255, 255, 255, 0.09);
+        --strong-border: rgba(255, 255, 255, 0.18);
+        --accent: #0a84ff;
+        --accent-2: #409cff;
+        --danger: #ff453a;
+        --warning: #ff9f0a;
+        --success: #30d158;
+        --teal: #64d2ff;
+        --log: #edf0f2;
+        --log-muted: #949ba3;
+        --match: rgba(255, 214, 10, 0.25);
+        --warn-bg: rgba(255, 159, 10, 0.16);
+        --error-bg: rgba(255, 69, 58, 0.18);
+        --shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.07), 0 18px 48px rgba(0, 0, 0, 0.46), 0 42px 90px rgba(0, 0, 0, 0.34);
+        --float-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.08), 0 14px 34px rgba(0, 0, 0, 0.48);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        background: linear-gradient(180deg, var(--page-bg), var(--window));
+        color: var(--page-text);
+        font-family: var(--font-ui);
+        font-size: 13px;
+      }
+
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+
+      button {
+        color: inherit;
+      }
+
+      .sprite {
+        position: absolute;
+        width: 0;
+        height: 0;
+        overflow: hidden;
+      }
+
+      .icon {
+        width: 16px;
+        height: 16px;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        fill: none;
+      }
+
+      .page {
+        width: min(1500px, calc(100vw - 48px));
+        margin: 0 auto;
+        padding: 28px 0 56px;
+      }
+
+      .header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 24px;
+        align-items: end;
+        margin-bottom: 20px;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: 26px;
+        line-height: 32px;
+      }
+
+      .subtitle {
+        max-width: 780px;
+        margin-top: 6px;
+        color: var(--muted);
+        line-height: 1.4;
+      }
+
+      .segments {
+        display: inline-flex;
+        gap: 2px;
+        padding: 3px;
+        border: 0.5px solid var(--border);
+        border-radius: 9px;
+        background: var(--toolbar);
+        backdrop-filter: saturate(180%) blur(18px);
+      }
+
+      .segments button {
+        min-width: 72px;
+        height: 28px;
+        padding: 0 10px;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        cursor: default;
+      }
+
+      .segments button[aria-pressed="true"] {
+        background: var(--surface);
+        box-shadow: 0 0 0 0.5px var(--border), 0 1px 2px rgba(0, 0, 0, 0.08);
+      }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: flex-end;
+      }
+
+      .nav {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding: 10px 0 14px;
+        margin-bottom: 18px;
+        background: linear-gradient(180deg, var(--page-bg), rgba(255, 255, 255, 0));
+      }
+
+      .nav a {
+        flex: 0 0 auto;
+        padding: 7px 10px;
+        border: 0.5px solid var(--border);
+        border-radius: 999px;
+        background: var(--toolbar);
+        color: var(--page-text);
+        text-decoration: none;
+      }
+
+      .section {
+        margin-top: 28px;
+      }
+
+      .section-title {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: baseline;
+        margin-bottom: 12px;
+      }
+
+      .section-title h2 {
+        font-size: 19px;
+      }
+
+      .section-title p {
+        color: var(--muted);
+      }
+
+      .window {
+        overflow: hidden;
+        border: 0.5px solid var(--border);
+        border-radius: 12px;
+        background: var(--window);
+        box-shadow: var(--shadow);
+      }
+
+      .main-window {
+        height: 800px;
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: center;
+        height: 48px;
+        padding: 0 12px;
+        border-bottom: 0.5px solid var(--border);
+        background: var(--toolbar);
+        backdrop-filter: saturate(180%) blur(20px);
+      }
+
+      .traffic-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 76px;
+      }
+
+      .traffic {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+      }
+
+      .red { background: #ff5f57; }
+      .yellow { background: #febc2e; }
+      .green { background: #28c840; }
+
+      .caption-buttons {
+        display: none;
+        gap: 3px;
+      }
+
+      .caption-buttons span {
+        display: grid;
+        place-items: center;
+        width: 32px;
+        height: 24px;
+        border-radius: 6px;
+        color: var(--muted);
+        background: var(--hover);
+      }
+
+      [data-platform="windows"] .traffic,
+      [data-platform="linux"] .traffic,
+      [data-platform="web"] .traffic {
+        display: none;
+      }
+
+      [data-platform="windows"] .caption-buttons,
+      [data-platform="linux"] .caption-buttons {
+        display: flex;
+      }
+
+      [data-platform="web"] .traffic-group {
+        display: none;
+      }
+
+      [data-platform="web"] .topbar {
+        grid-template-columns: minmax(0, 1fr) auto;
+      }
+
+      .command {
+        justify-self: center;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: min(460px, 100%);
+        height: 28px;
+        padding: 0 9px;
+        border: 0.5px solid var(--border);
+        border-radius: 7px;
+        background: var(--input);
+        color: var(--muted);
+      }
+
+      .top-actions {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .icon-button {
+        display: inline-grid;
+        place-items: center;
+        width: 28px;
+        height: 28px;
+        border: 0;
+        border-radius: 7px;
+        background: transparent;
+        color: var(--muted);
+        cursor: default;
+      }
+
+      .icon-button:hover,
+      .icon-button.active {
+        background: var(--hover);
+        color: var(--page-text);
+      }
+
+      .icon-button.active {
+        background: var(--selected);
+        color: var(--accent-2);
+      }
+
+      .app-grid {
+        display: grid;
+        grid-template-columns: 48px 286px minmax(0, 1fr);
+        height: calc(100% - 76px);
+        min-height: 0;
+      }
+
+      .activity {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 6px;
+        border-right: 0.5px solid var(--border);
+        background: var(--rail);
+      }
+
+      .activity .spacer {
+        flex: 1;
+      }
+
+      .side-panel {
+        min-width: 0;
+        border-right: 0.5px solid var(--border);
+        background: var(--panel);
+        overflow: hidden;
+      }
+
+      .panel-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 38px;
+        padding: 0 10px 0 12px;
+        border-bottom: 0.5px solid var(--border);
+      }
+
+      .panel-head h3 {
+        font-size: 12px;
+        letter-spacing: 0;
+      }
+
+      .panel-body {
+        padding: 10px;
+      }
+
+      .panel-tabs {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 4px;
+        margin-bottom: 10px;
+      }
+
+      .panel-tabs button {
+        height: 26px;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        color: var(--muted);
+      }
+
+      .panel-tabs button.active {
+        background: var(--selected);
+        color: var(--accent-2);
+      }
+
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 30px;
+        padding: 6px 7px;
+        border-radius: 7px;
+      }
+
+      .row.active {
+        background: var(--selected);
+      }
+
+      .row-icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 auto;
+        width: 22px;
+        height: 22px;
+        border-radius: 6px;
+        background: var(--hover);
+        color: var(--muted);
+      }
+
+      .row-main {
+        min-width: 0;
+        flex: 1;
+      }
+
+      .row-title {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .row-meta {
+        color: var(--muted);
+        font-size: 11px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        min-height: 18px;
+        padding: 2px 6px;
+        border-radius: 5px;
+        background: var(--hover);
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 650;
+      }
+
+      .tag.live { color: var(--success); background: rgba(52, 199, 89, 0.12); }
+      .tag.warn { color: var(--warning); background: rgba(255, 149, 0, 0.12); }
+      .tag.error { color: var(--danger); background: rgba(255, 59, 48, 0.12); }
+
+      .workspace {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        background: var(--surface);
+      }
+
+      .tabs {
+        display: flex;
+        align-items: end;
+        height: 36px;
+        padding-left: 8px;
+        border-bottom: 0.5px solid var(--border);
+        background: var(--surface-2);
+      }
+
+      .tab {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        height: 30px;
+        max-width: 220px;
+        min-width: 0;
+        padding: 0 7px 0 10px;
+        border: 0.5px solid transparent;
+        border-bottom: 0;
+        border-radius: 8px 8px 0 0;
+        color: var(--muted);
+      }
+
+      .tab.active {
+        background: var(--surface);
+        border-color: var(--border);
+        color: var(--page-text);
+      }
+
+      .tab span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .tab-add {
+        margin: 0 6px 5px;
+      }
+
+      .pane-rail {
+        flex: 1;
+        display: flex;
+        min-height: 0;
+        overflow: hidden;
+      }
+
+      .pane {
+        position: relative;
+        flex: 1 1 0;
+        min-width: 320px;
+        display: flex;
+        flex-direction: column;
+        border-right: 0.5px solid var(--border);
+        background: var(--pane);
+        overflow: hidden;
+      }
+
+      .pane.active::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 2px;
+        background: var(--accent);
+      }
+
+      .pane-head {
+        min-height: 52px;
+        padding: 8px 9px 7px;
+        border-bottom: 0.5px solid var(--border);
+      }
+
+      .pane-title-row {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .pane-title {
+        min-width: 0;
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-weight: 700;
+      }
+
+      .pane-meta {
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 11px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .pane-search {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        min-height: 34px;
+        padding: 5px 8px;
+        border-bottom: 0.5px solid var(--border);
+      }
+
+      .field {
+        min-width: 0;
+        flex: 1;
+        height: 26px;
+        padding: 0 8px;
+        border: 0.5px solid var(--border);
+        border-radius: 6px;
+        background: var(--input);
+        color: var(--page-text);
+      }
+
+      .mode-group {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        padding: 2px;
+        border: 0.5px solid var(--border);
+        border-radius: 7px;
+        background: var(--input);
+      }
+
+      .mode {
+        display: grid;
+        place-items: center;
+        min-width: 26px;
+        height: 22px;
+        padding: 0 5px;
+        border: 0;
+        border-radius: 5px;
+        background: transparent;
+        color: var(--muted);
+        font-weight: 750;
+      }
+
+      .mode.active {
+        background: var(--selected);
+        color: var(--accent-2);
+        box-shadow: inset 0 0 0 1px var(--accent);
+      }
+
+      .mode.disabled {
+        opacity: 0.42;
+      }
+
+      .log {
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+        background:
+          linear-gradient(90deg, rgba(128, 128, 128, 0.12) 0, rgba(128, 128, 128, 0.12) 54px, transparent 54px),
+          var(--pane);
+        color: var(--log);
+        font-family: var(--font-mono);
+        font-size: 12px;
+        line-height: 20px;
+      }
+
+      .line {
+        display: grid;
+        grid-template-columns: 54px 148px 50px minmax(260px, 1fr);
+        min-width: 700px;
+        white-space: nowrap;
+      }
+
+      .line:nth-child(even) {
+        background: rgba(128, 128, 128, 0.035);
+      }
+
+      .ln {
+        padding-right: 8px;
+        color: var(--log-muted);
+        text-align: right;
+      }
+
+      .time { color: var(--teal); }
+      .info { color: var(--accent-2); font-weight: 700; }
+      .warn { color: var(--warning); font-weight: 700; }
+      .error { color: var(--danger); font-weight: 700; }
+      .line.warn-row { background: var(--warn-bg); }
+      .line.error-row { background: var(--error-bg); }
+      .match { padding: 1px 3px; border-radius: 4px; background: var(--match); }
+
+      .status {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+        height: 28px;
+        padding: 0 10px;
+        border-top: 0.5px solid var(--border);
+        background: var(--toolbar);
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .rule {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 6px;
+        align-items: center;
+        margin-top: 7px;
+      }
+
+      .rule.disabled {
+        opacity: 0.55;
+      }
+
+      .panel-card {
+        margin-top: 10px;
+        padding: 9px;
+        border: 0.5px solid var(--border);
+        border-radius: 8px;
+        background: var(--surface);
+      }
+
+      .panel-card h3 {
+        margin-bottom: 8px;
+        font-size: 12px;
+      }
+
+      .mini-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .mock-card {
+        overflow: hidden;
+        border: 0.5px solid var(--border);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.32);
+      }
+
+      [data-theme="dark"] .mock-card {
+        background: rgba(255, 255, 255, 0.035);
+      }
+
+      .mock-card-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+        min-height: 42px;
+        padding: 10px 12px;
+        border-bottom: 0.5px solid var(--border);
+        background: var(--toolbar);
+      }
+
+      .mock-card-body {
+        padding: 14px;
+      }
+
+      .menu,
+      .popover,
+      .dialog {
+        border: 0.5px solid var(--border);
+        border-radius: 12px;
+        background: var(--panel);
+        box-shadow: var(--float-shadow);
+        overflow: hidden;
+      }
+
+      .menu {
+        padding: 6px;
+      }
+
+      .menu-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: center;
+        min-height: 28px;
+        padding: 5px 8px;
+        border-radius: 7px;
+      }
+
+      .menu-row.active {
+        background: var(--selected);
+      }
+
+      .dialog-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 14px;
+        border-bottom: 0.5px solid var(--border);
+        background: var(--toolbar);
+      }
+
+      .dialog-body {
+        padding: 14px;
+      }
+
+      .dialog-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        padding: 12px 14px;
+        border-top: 0.5px solid var(--border);
+        background: var(--toolbar);
+      }
+
+      .text-button,
+      .primary-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        height: 28px;
+        padding: 0 10px;
+        border: 0.5px solid var(--border);
+        border-radius: 7px;
+        background: var(--surface);
+        color: var(--page-text);
+      }
+
+      .primary-button {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: #fff;
+      }
+
+      .empty {
+        display: grid;
+        place-items: center;
+        height: 420px;
+        border: 1px dashed var(--strong-border);
+        border-radius: 12px;
+        background: var(--surface);
+        text-align: center;
+      }
+
+      .drop {
+        display: grid;
+        place-items: center;
+        width: 84px;
+        height: 84px;
+        margin: 0 auto 14px;
+        border: 1px dashed var(--accent);
+        border-radius: 18px;
+        background: var(--selected);
+        color: var(--accent-2);
+      }
+
+      .settings-grid {
+        display: grid;
+        grid-template-columns: 54px 220px minmax(0, 1fr);
+        height: 520px;
+      }
+
+      .settings-list {
+        border-right: 0.5px solid var(--border);
+        background: var(--panel);
+        padding: 10px;
+      }
+
+      .settings-content {
+        background: var(--surface);
+        padding: 14px;
+      }
+
+      .setting-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+        min-height: 34px;
+        border-bottom: 0.5px solid var(--border);
+      }
+
+      @media (max-width: 1100px) {
+        .page { width: min(100vw - 24px, 1500px); }
+        .header,
+        .mini-grid {
+          grid-template-columns: 1fr;
+        }
+        .main-window { height: 860px; }
+        .app-grid {
+          grid-template-columns: 48px 260px minmax(520px, 1fr);
+          overflow-x: auto;
+        }
+      }
+    </style>
+  </head>
+  <body data-theme="light" data-platform="macos">
+    <svg class="sprite" aria-hidden="true">
+      <symbol id="i-files" viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v5h5"/><path d="M4 7v14h3"/></symbol>
+      <symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 5h16l-6 7v5l-4 2v-7z"/></symbol>
+      <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 4a8 8 0 0 0 0 16h1.5a1.8 1.8 0 0 0 1.2-3.1 1.5 1.5 0 0 1 1-2.6H17a3 3 0 0 0 3-3A7.4 7.4 0 0 0 12 4z"/><path d="M8 10h.01M10.5 7.5h.01M14 7.5h.01M16 10h.01"/></symbol>
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></symbol>
+      <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4z"/></symbol>
+      <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9 7 7M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M7 7l10 10M17 7 7 17"/></symbol>
+      <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+      <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+      <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 6h7l2 2h9v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+      <symbol id="i-more" viewBox="0 0 24 24"><path d="M6 12h.01M12 12h.01M18 12h.01"/></symbol>
+      <symbol id="i-sync" viewBox="0 0 24 24"><path d="M20 7v5h-5"/><path d="M4 17v-5h5"/><path d="M18 12a6 6 0 0 0-10-4.5L4 12M6 12a6 6 0 0 0 10 4.5l4-4.5"/></symbol>
+      <symbol id="i-terminal" viewBox="0 0 24 24"><path d="m5 7 5 5-5 5"/><path d="M12 17h7"/></symbol>
+    </svg>
+
+    <div class="page">
+      <header class="header">
+        <div>
+          <h1>Crosslog Minimal UI Mockups</h1>
+          <p class="subtitle">A lean IDE-style direction: icon activity rail, left tool panels, local pane actions, browser-like pane tabs, compact mode buttons, and reduced global chrome.</p>
+        </div>
+        <div class="controls">
+          <div class="segments" aria-label="Theme">
+            <button type="button" data-theme-button="light" aria-pressed="true">Light</button>
+            <button type="button" data-theme-button="dark" aria-pressed="false">Dark</button>
+          </div>
+          <div class="segments" aria-label="Platform">
+            <button type="button" data-platform-button="macos" aria-pressed="true">macOS</button>
+            <button type="button" data-platform-button="windows" aria-pressed="false">Windows</button>
+            <button type="button" data-platform-button="linux" aria-pressed="false">Linux</button>
+            <button type="button" data-platform-button="web" aria-pressed="false">Web</button>
+          </div>
+        </div>
+      </header>
+
+      <nav class="nav" aria-label="Mockup sections">
+        <a href="#workspace">Workspace</a>
+        <a href="#panels">Panels</a>
+        <a href="#dialogs">Dialogs</a>
+        <a href="#settings">Settings</a>
+        <a href="#empty">Empty</a>
+      </nav>
+
+      <section id="workspace" class="section">
+        <div class="section-title">
+          <div>
+            <h2>Main Workspace</h2>
+            <p>Global buttons are icon-only; source opening is local to each pane.</p>
+          </div>
+          <p class="platform-note">Current platform: macOS Desktop</p>
+        </div>
+
+        <div class="window main-window">
+          <div class="topbar">
+            <div class="traffic-group">
+              <span class="traffic red"></span>
+              <span class="traffic yellow"></span>
+              <span class="traffic green"></span>
+              <span class="caption-buttons"><span>-</span><span>[]</span><span>x</span></span>
+            </div>
+            <div class="command"><svg class="icon"><use href="#i-search"/></svg><span>Command or workspace search</span><span style="margin-left:auto;color:var(--muted);font-size:11px;">Cmd K</span></div>
+            <div class="top-actions">
+              <button class="icon-button active" title="Synchronize scrolling" aria-label="Synchronize scrolling"><svg class="icon"><use href="#i-sync"/></svg></button>
+              <button class="icon-button" title="Settings" aria-label="Settings"><svg class="icon"><use href="#i-gear"/></svg></button>
+            </div>
+          </div>
+
+          <div class="app-grid">
+            <aside class="activity" aria-label="Activity">
+              <button class="icon-button active" title="Filters" aria-label="Filters"><svg class="icon"><use href="#i-filter"/></svg></button>
+              <button class="icon-button" title="Highlights" aria-label="Highlights"><svg class="icon"><use href="#i-palette"/></svg></button>
+              <button class="icon-button" title="Directory search" aria-label="Directory search"><svg class="icon"><use href="#i-search"/></svg></button>
+              <button class="icon-button" title="Sources" aria-label="Sources"><svg class="icon"><use href="#i-files"/></svg></button>
+              <button class="icon-button" title="Saved sets" aria-label="Saved sets"><svg class="icon"><use href="#i-bookmark"/></svg></button>
+              <div class="spacer"></div>
+              <button class="icon-button" title="Settings" aria-label="Settings"><svg class="icon"><use href="#i-gear"/></svg></button>
+            </aside>
+
+            <aside class="side-panel" aria-label="Filters panel">
+              <div class="panel-head">
+                <h3>Filters</h3>
+                <button class="icon-button active" title="Add filter" aria-label="Add filter"><svg class="icon"><use href="#i-plus"/></svg></button>
+              </div>
+              <div class="panel-body">
+                <div class="panel-tabs">
+                  <button class="active">All</button>
+                  <button>Pane</button>
+                  <button>Set</button>
+                  <button>Live</button>
+                </div>
+                <div class="panel-card">
+                  <h3>Positive</h3>
+                  <div class="rule"><input class="field" value="ERROR" /><span class="mode-group"><button class="mode active" title="Match case">Aa</button><button class="mode" title="Regex">.*</button><button class="mode active" title="Use rule">Use</button></span></div>
+                  <div class="rule"><input class="field" value="timeout|refused|503" /><span class="mode-group"><button class="mode" title="Match case">Aa</button><button class="mode active" title="Regex">.*</button><button class="mode active" title="Use rule">Use</button></span></div>
+                </div>
+                <div class="panel-card">
+                  <h3>Negative</h3>
+                  <div class="rule"><input class="field" value="healthcheck" /><span class="mode-group"><button class="mode" title="Match case">Aa</button><button class="mode" title="Regex">.*</button><button class="mode active" title="Use rule">Use</button></span></div>
+                  <div class="rule disabled"><input class="field" value="debug probe" /><span class="mode-group"><button class="mode active" title="Match case">Aa</button><button class="mode" title="Regex">.*</button><button class="mode disabled" title="Rule disabled">Use</button></span></div>
+                </div>
+                <div class="panel-card">
+                  <h3>Scope</h3>
+                  <div class="row active"><span class="row-icon"><svg class="icon"><use href="#i-terminal"/></svg></span><div class="row-main"><div class="row-title">All panes</div><div class="row-meta">12,420 shown from 250,000 lines</div></div></div>
+                  <div class="row"><span class="row-icon"><svg class="icon"><use href="#i-bookmark"/></svg></span><div class="row-main"><div class="row-title">Production Errors</div><div class="row-meta">Saved filter set</div></div></div>
+                </div>
+              </div>
+            </aside>
+
+            <main class="workspace" aria-label="Log workspace">
+              <div class="tabs">
+                <div class="tab active"><span>api-gateway.log</span><button class="icon-button" title="Close pane"><svg class="icon"><use href="#i-x"/></svg></button></div>
+                <div class="tab"><span>worker-2026-06-17.log</span><button class="icon-button" title="Close pane"><svg class="icon"><use href="#i-x"/></svg></button></div>
+                <div class="tab"><span>legacy.log</span><button class="icon-button" title="Close pane"><svg class="icon"><use href="#i-x"/></svg></button></div>
+                <button class="icon-button tab-add" title="Add pane" aria-label="Add pane"><svg class="icon"><use href="#i-plus"/></svg></button>
+              </div>
+
+              <div class="pane-rail">
+                <section class="pane active">
+                  <div class="pane-head">
+                    <div class="pane-title-row">
+                      <button class="icon-button" title="Open source for this pane" aria-label="Open source for api-gateway pane"><svg class="icon"><use href="#i-folder"/></svg></button>
+                      <div class="pane-title">api-gateway.log</div>
+                      <button class="icon-button" title="Find in pane" aria-label="Find in pane"><svg class="icon"><use href="#i-search"/></svg></button>
+                      <button class="icon-button" title="Pane menu" aria-label="Pane menu"><svg class="icon"><use href="#i-more"/></svg></button>
+                    </div>
+                    <div class="pane-meta">UTF-8, live, +00:00:00.000, 250,000 lines</div>
+                  </div>
+                  <div class="pane-search"><input class="field" value="request_id=4f9a" /><span class="mode-group"><button class="mode active">Aa</button><button class="mode active">.*</button></span><button class="icon-button" title="Previous match"><svg class="icon"><use href="#i-chevron-left"/></svg></button><button class="icon-button" title="Next match"><svg class="icon"><use href="#i-chevron-right"/></svg></button></div>
+                  <div class="log">
+                    <div class="line"><span class="ln">18420</span><span class="time">09:01:15.105</span><span class="info">INFO</span><span>accepted request <span class="match">request_id=4f9a</span> from edge-12</span></div>
+                    <div class="line"><span class="ln">18421</span><span class="time">09:01:15.122</span><span class="info">INFO</span><span>validated token scope=payments.read user=74812</span></div>
+                    <div class="line warn-row"><span class="ln">18422</span><span class="time">09:01:15.181</span><span class="warn">WARN</span><span>retry scheduled upstream=ledger attempt=2 delay=120ms</span></div>
+                    <div class="line error-row"><span class="ln">18423</span><span class="time">09:01:15.222</span><span class="error">ERROR</span><span>upstream failed status=503 trace=981f latency=904ms</span></div>
+                    <div class="line"><span class="ln">18424</span><span class="time">09:01:15.245</span><span class="info">INFO</span><span>fallback cache hit account=active ttl=42s</span></div>
+                    <div class="line"><span class="ln">18425</span><span class="time">09:01:15.291</span><span class="info">INFO</span><span>responded status=200 duration=186ms</span></div>
+                  </div>
+                </section>
+
+                <section class="pane">
+                  <div class="pane-head">
+                    <div class="pane-title-row">
+                      <button class="icon-button" title="Open source for this pane"><svg class="icon"><use href="#i-folder"/></svg></button>
+                      <div class="pane-title">worker-2026-06-17.log</div>
+                      <button class="icon-button" title="Previous directory log"><svg class="icon"><use href="#i-chevron-left"/></svg></button>
+                      <button class="icon-button" title="Next directory log"><svg class="icon"><use href="#i-chevron-right"/></svg></button>
+                      <button class="icon-button" title="Pane menu"><svg class="icon"><use href="#i-more"/></svg></button>
+                    </div>
+                    <div class="pane-meta">service-logs, newest by creation time, -00:00:02.400</div>
+                  </div>
+                  <div class="pane-search"><input class="field" value="ledger" /><span class="mode-group"><button class="mode">Aa</button><button class="mode">.*</button></span><button class="icon-button" title="Previous match"><svg class="icon"><use href="#i-chevron-left"/></svg></button><button class="icon-button" title="Next match"><svg class="icon"><use href="#i-chevron-right"/></svg></button></div>
+                  <div class="log">
+                    <div class="line"><span class="ln">88201</span><span class="time">09:01:12.703</span><span class="info">INFO</span><span>job received request_id=4f9a queue=payments</span></div>
+                    <div class="line"><span class="ln">88202</span><span class="time">09:01:12.714</span><span class="info">INFO</span><span>normalized account payload fields=31</span></div>
+                    <div class="line warn-row"><span class="ln">88203</span><span class="time">09:01:12.768</span><span class="warn">WARN</span><span>ledger call slow threshold=250ms actual=412ms</span></div>
+                    <div class="line error-row"><span class="ln">88204</span><span class="time">09:01:12.822</span><span class="error">ERROR</span><span>ledger status=503 retryable=true trace=981f</span></div>
+                  </div>
+                </section>
+              </div>
+            </main>
+          </div>
+          <div class="status"><span>3 panes, sync on, active: api-gateway.log</span><span>1 untimed pane excluded, watching 2 sources</span></div>
+        </div>
+      </section>
+
+      <section id="panels" class="section">
+        <div class="section-title">
+          <div>
+            <h2>Left Tool Panels</h2>
+            <p>Sources, saved sets, highlights, and directory search are separate activity panels.</p>
+          </div>
+        </div>
+        <div class="mini-grid">
+          <div class="mock-card">
+            <div class="mock-card-head"><strong>Sources Panel</strong><span class="row-meta">Opened sources only</span></div>
+            <div class="mock-card-body">
+              <div class="row active"><span class="row-icon"><svg class="icon"><use href="#i-files"/></svg></span><div class="row-main"><div class="row-title">api-gateway.log</div><div class="row-meta">/var/log/prod/api-gateway.log</div></div><span class="tag live">Live</span></div>
+              <div class="row"><span class="row-icon"><svg class="icon"><use href="#i-folder"/></svg></span><div class="row-main"><div class="row-title">service-logs</div><div class="row-meta">worker-2026-06-17.log selected</div></div></div>
+              <div class="row"><span class="row-icon"><svg class="icon"><use href="#i-terminal"/></svg></span><div class="row-main"><div class="row-title">prod-east:/logs</div><div class="row-meta">OpenSSH config, read-only</div></div><span class="tag warn">SSH</span></div>
+            </div>
+          </div>
+          <div class="mock-card">
+            <div class="mock-card-head"><strong>Saved Sets Panel</strong><span class="row-meta">Not mixed with sources</span></div>
+            <div class="mock-card-body">
+              <div class="row active"><span class="row-icon"><svg class="icon"><use href="#i-bookmark"/></svg></span><div class="row-main"><div class="row-title">Production Errors</div><div class="row-meta">2 positive, 1 negative, 2 highlights</div></div></div>
+              <div class="row"><span class="row-icon"><svg class="icon"><use href="#i-palette"/></svg></span><div class="row-main"><div class="row-title">Latency Investigation</div><div class="row-meta">duration and timeout patterns</div></div></div>
+              <div class="row"><span class="row-icon"><svg class="icon"><use href="#i-filter"/></svg></span><div class="row-main"><div class="row-title">Request Trace</div><div class="row-meta">trace IDs and request IDs</div></div></div>
+            </div>
+          </div>
+          <div class="mock-card">
+            <div class="mock-card-head"><strong>Directory Search Panel</strong><span class="row-meta">Dedicated tool</span></div>
+            <div class="mock-card-body">
+              <div class="pane-search"><input class="field" value="trace=981f|status=503" /><span class="mode-group"><button class="mode">Aa</button><button class="mode active">.*</button></span></div>
+              <div class="row active"><span class="row-icon">1</span><div class="row-main"><div class="row-title">worker-2026-06-17.log:88204</div><div class="row-meta">ledger status=503 retryable=true trace=981f</div></div></div>
+              <div class="row"><span class="row-icon">2</span><div class="row-main"><div class="row-title">api-2026-06-17.log:18423</div><div class="row-meta">upstream failed status=503 trace=981f</div></div></div>
+            </div>
+          </div>
+          <div class="mock-card">
+            <div class="mock-card-head"><strong>Highlight Panel</strong><span class="row-meta">Template-first</span></div>
+            <div class="mock-card-body">
+              <div class="rule"><input class="field" value="ERROR|FATAL" /><span class="mode-group"><button class="mode active">.*</button><button class="mode active">B</button><button class="mode active">Use</button></span></div>
+              <div class="rule"><input class="field" value="WARN" /><span class="mode-group"><button class="mode">.*</button><button class="mode">B</button><button class="mode active">Use</button></span></div>
+              <div class="rule"><input class="field" value="request_id=[a-z0-9]+" /><span class="mode-group"><button class="mode active">.*</button><button class="mode">B</button><button class="mode active">Use</button></span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="dialogs" class="section">
+        <div class="section-title">
+          <div>
+            <h2>Minimal Menus and Popovers</h2>
+            <p>Actions are anchored to the pane or selected text instead of global toolbar buttons.</p>
+          </div>
+        </div>
+        <div class="mini-grid">
+          <div class="mock-card">
+            <div class="mock-card-head"><strong>Pane Source Popover</strong><span class="row-meta">Opened from folder icon in pane</span></div>
+            <div class="mock-card-body">
+              <div class="menu">
+                <div class="menu-row active"><span>Open File...</span><span>Cmd O</span></div>
+                <div class="menu-row"><span>Open Directory...</span><span></span></div>
+                <div class="menu-row"><span>Open SSH Source...</span><span>future</span></div>
+                <div class="menu-row"><span>Replace Source in This Pane</span><span></span></div>
+              </div>
+            </div>
+          </div>
+          <div class="mock-card">
+            <div class="mock-card-head"><strong>Selected Text Context Menu</strong><span class="row-meta">Filter from selection</span></div>
+            <div class="mock-card-body">
+              <div class="menu">
+                <div class="menu-row"><span>Copy</span><span>Cmd C</span></div>
+                <div class="menu-row active"><span>Filter Selection</span><span>&gt;</span></div>
+                <div class="menu-row"><span>Add Positive Filter: "status=503"</span><span></span></div>
+                <div class="menu-row"><span>Add Negative Filter: "status=503"</span><span></span></div>
+                <div class="menu-row"><span>Highlight Selection</span><span>&gt;</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="mock-card">
+            <div class="mock-card-head"><strong>Time Offset Sheet</strong><span class="row-meta">Pane-local action</span></div>
+            <div class="mock-card-body">
+              <div class="dialog">
+                <div class="dialog-head"><strong>Time Offset</strong><span class="row-meta">worker pane</span></div>
+                <div class="dialog-body">
+                  <div class="rule"><input class="field" value="-2" /><span class="tag">seconds</span></div>
+                  <div class="rule"><input class="field" value="-400" /><span class="tag">milliseconds</span></div>
+                  <p class="row-meta">09:01:15.222 becomes 09:01:12.822</p>
+                </div>
+                <div class="dialog-actions"><button class="text-button">Reset</button><button class="primary-button">Apply</button></div>
+              </div>
+            </div>
+          </div>
+          <div class="mock-card">
+            <div class="mock-card-head"><strong>Encoding Sheet</strong><span class="row-meta">Pane-local action</span></div>
+            <div class="mock-card-body">
+              <div class="dialog">
+                <div class="dialog-head"><strong>Select Encoding</strong><span class="row-meta">legacy.log</span></div>
+                <div class="dialog-body">
+                  <select class="field"><option>Windows-1251</option><option>UTF-8</option><option>UTF-16 LE</option></select>
+                  <p class="row-meta" style="margin-top:10px;">Preview uses selected encoding before applying.</p>
+                </div>
+                <div class="dialog-actions"><button class="text-button">Cancel</button><button class="primary-button">Apply</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="settings" class="section">
+        <div class="section-title">
+          <div>
+            <h2>Settings</h2>
+            <p>Opened from the gear icon; still uses left activity navigation.</p>
+          </div>
+        </div>
+        <div class="window">
+          <div class="topbar">
+            <div class="traffic-group"><span class="traffic red"></span><span class="traffic yellow"></span><span class="traffic green"></span><span class="caption-buttons"><span>-</span><span>[]</span><span>x</span></span></div>
+            <div class="command"><svg class="icon"><use href="#i-gear"/></svg><span>Settings</span></div>
+            <div class="top-actions"><button class="icon-button" title="Close settings"><svg class="icon"><use href="#i-x"/></svg></button></div>
+          </div>
+          <div class="settings-grid">
+            <aside class="activity"><button class="icon-button active" title="General"><svg class="icon"><use href="#i-gear"/></svg></button><button class="icon-button" title="Logs"><svg class="icon"><use href="#i-files"/></svg></button><button class="icon-button" title="Filters"><svg class="icon"><use href="#i-filter"/></svg></button><button class="icon-button" title="Search"><svg class="icon"><use href="#i-search"/></svg></button></aside>
+            <aside class="settings-list"><div class="row active"><div class="row-main"><div class="row-title">General</div><div class="row-meta">Session and workspace</div></div></div><div class="row"><div class="row-main"><div class="row-title">Logs</div><div class="row-meta">Limits and encodings</div></div></div><div class="row"><div class="row-main"><div class="row-title">Filters</div><div class="row-meta">Defaults and saved sets</div></div></div></aside>
+            <main class="settings-content"><h2>General</h2><div class="panel-card"><div class="setting-row"><span>Restore session on launch</span><span class="tag live">On</span></div><div class="setting-row"><span>Default pane width</span><span class="tag">520 px</span></div><div class="setting-row"><span>Theme</span><span class="tag">System</span></div></div><div class="panel-card"><h3>Logs</h3><div class="setting-row"><span>Maximum file size</span><span class="tag">20 MB</span></div><div class="setting-row"><span>Pre-processing buffer</span><span class="tag">Viewport + N</span></div></div></main>
+          </div>
+        </div>
+      </section>
+
+      <section id="empty" class="section">
+        <div class="section-title">
+          <div>
+            <h2>Empty Workspace</h2>
+            <p>Minimal first screen: source opening is still local to the first pane slot.</p>
+          </div>
+        </div>
+        <div class="window">
+          <div class="topbar">
+            <div class="traffic-group"><span class="traffic red"></span><span class="traffic yellow"></span><span class="traffic green"></span><span class="caption-buttons"><span>-</span><span>[]</span><span>x</span></span></div>
+            <div class="command"><svg class="icon"><use href="#i-search"/></svg><span>Command or workspace search</span></div>
+            <div class="top-actions"><button class="icon-button"><svg class="icon"><use href="#i-gear"/></svg></button></div>
+          </div>
+          <div class="empty">
+            <div>
+              <div class="drop"><svg class="icon" style="width:34px;height:34px;"><use href="#i-folder"/></svg></div>
+              <h2>Drop logs here</h2>
+              <p class="subtitle" style="margin:8px auto 14px;">Open a file or directory into the first pane. More panes are added with the plus tab.</p>
+              <button class="icon-button active" title="Open source for first pane" style="margin:auto;"><svg class="icon"><use href="#i-folder"/></svg></button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const body = document.body;
+      const platformLabels = {
+        macos: "macOS Desktop",
+        windows: "Windows Desktop",
+        linux: "Linux Desktop",
+        web: "Web",
+      };
+
+      function press(selector, value) {
+        document.querySelectorAll(selector).forEach((button) => {
+          const key = button.dataset.themeButton || button.dataset.platformButton;
+          button.setAttribute("aria-pressed", String(key === value));
+        });
+      }
+
+      document.querySelectorAll("[data-theme-button]").forEach((button) => {
+        button.addEventListener("click", () => {
+          body.dataset.theme = button.dataset.themeButton;
+          press("[data-theme-button]", button.dataset.themeButton);
+        });
+      });
+
+      document.querySelectorAll("[data-platform-button]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const platform = button.dataset.platformButton;
+          body.dataset.platform = platform;
+          press("[data-platform-button]", platform);
+          document.querySelectorAll(".platform-note").forEach((node) => {
+            node.textContent = "Current platform: " + platformLabels[platform];
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

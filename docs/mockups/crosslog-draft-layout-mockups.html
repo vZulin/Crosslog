@@ -1,0 +1,1744 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Crosslog Draft Layout Mockups</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --page-bg: #ececf1;
+        --page-text: #1d1d1f;
+        --muted: #6e6e73;
+        --window: #f5f5f7;
+        --surface: #ffffff;
+        --surface-2: #f7f7f9;
+        --rail: #f0f0f3;
+        --panel: #fbfbfd;
+        --pane: #ffffff;
+        --toolbar: rgba(250, 250, 250, 0.88);
+        --input: #ffffff;
+        --hover: rgba(0, 0, 0, 0.05);
+        --selected: rgba(0, 122, 255, 0.13);
+        --border: rgba(0, 0, 0, 0.09);
+        --strong-border: rgba(0, 0, 0, 0.16);
+        --accent: #007aff;
+        --accent-2: #0067d7;
+        --danger: #ff3b30;
+        --warning: #ff9500;
+        --success: #34c759;
+        --teal: #0a84ff;
+        --purple: #af52de;
+        --scrollbar-track: rgba(60, 60, 67, 0.16);
+        --scrollbar-thumb: rgba(60, 60, 67, 0.42);
+        --log: #1f2328;
+        --log-muted: #78838e;
+        --match: #fff2a8;
+        --warn-bg: #fff4d7;
+        --error-bg: #ffe8e7;
+        --shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.1), 0 16px 44px rgba(0, 0, 0, 0.14), 0 36px 72px rgba(0, 0, 0, 0.1);
+        --float-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.1), 0 12px 32px rgba(0, 0, 0, 0.16);
+        --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        --font-mono: "SF Mono", Menlo, Monaco, Consolas, "Courier New", monospace;
+      }
+
+      [data-theme="dark"] {
+        color-scheme: dark;
+        --page-bg: #111214;
+        --page-text: #f5f5f7;
+        --muted: #a1a1a6;
+        --window: #1c1c1e;
+        --surface: #222326;
+        --surface-2: #292a2e;
+        --rail: #18191b;
+        --panel: #242529;
+        --pane: #202124;
+        --toolbar: rgba(35, 35, 38, 0.9);
+        --input: #2c2c2e;
+        --hover: rgba(255, 255, 255, 0.065);
+        --selected: rgba(10, 132, 255, 0.2);
+        --border: rgba(255, 255, 255, 0.09);
+        --strong-border: rgba(255, 255, 255, 0.18);
+        --accent: #0a84ff;
+        --accent-2: #409cff;
+        --danger: #ff453a;
+        --warning: #ff9f0a;
+        --success: #30d158;
+        --teal: #64d2ff;
+        --purple: #bf5af2;
+        --scrollbar-track: rgba(235, 235, 245, 0.12);
+        --scrollbar-thumb: rgba(235, 235, 245, 0.36);
+        --log: #edf0f2;
+        --log-muted: #949ba3;
+        --match: rgba(255, 214, 10, 0.25);
+        --warn-bg: rgba(255, 159, 10, 0.16);
+        --error-bg: rgba(255, 69, 58, 0.18);
+        --shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.07), 0 18px 48px rgba(0, 0, 0, 0.46), 0 42px 90px rgba(0, 0, 0, 0.34);
+        --float-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.08), 0 14px 34px rgba(0, 0, 0, 0.48);
+      }
+
+      * { box-sizing: border-box; }
+
+      html { scroll-behavior: smooth; }
+
+      body {
+        margin: 0;
+        background: linear-gradient(180deg, var(--page-bg), var(--window));
+        color: var(--page-text);
+        font-family: var(--font-ui);
+        font-size: 13px;
+      }
+
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+
+      button {
+        color: inherit;
+      }
+
+      .sprite {
+        position: absolute;
+        width: 0;
+        height: 0;
+        overflow: hidden;
+      }
+
+      .icon {
+        width: 16px;
+        height: 16px;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        fill: none;
+      }
+
+      .page {
+        width: min(1540px, calc(100vw - 48px));
+        margin: 0 auto;
+        padding: 28px 0 56px;
+      }
+
+      .header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 24px;
+        align-items: end;
+        margin-bottom: 20px;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: 26px;
+        line-height: 32px;
+        letter-spacing: 0;
+      }
+
+      h2 {
+        font-size: 19px;
+        letter-spacing: 0;
+      }
+
+      h3 {
+        font-size: 12px;
+        letter-spacing: 0;
+      }
+
+      .subtitle {
+        max-width: 820px;
+        margin-top: 6px;
+        color: var(--muted);
+        line-height: 1.4;
+      }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: flex-end;
+      }
+
+      .segments {
+        display: inline-flex;
+        gap: 2px;
+        padding: 3px;
+        border: 0.5px solid var(--border);
+        border-radius: 9px;
+        background: var(--toolbar);
+        backdrop-filter: saturate(180%) blur(18px);
+        -webkit-backdrop-filter: saturate(180%) blur(18px);
+      }
+
+      .segments button {
+        min-width: 72px;
+        height: 28px;
+        padding: 0 10px;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        cursor: default;
+      }
+
+      .segments button[aria-pressed="true"] {
+        background: var(--surface);
+        box-shadow: 0 0 0 0.5px var(--border), 0 1px 2px rgba(0, 0, 0, 0.08);
+      }
+
+      .nav {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding: 10px 0 14px;
+        margin-bottom: 18px;
+        background: linear-gradient(180deg, var(--page-bg), rgba(255, 255, 255, 0));
+      }
+
+      .nav a {
+        flex: 0 0 auto;
+        padding: 7px 10px;
+        border: 0.5px solid var(--border);
+        border-radius: 999px;
+        background: var(--toolbar);
+        color: var(--page-text);
+        text-decoration: none;
+      }
+
+      .section {
+        margin-top: 28px;
+      }
+
+      .section-title {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: baseline;
+        margin-bottom: 12px;
+      }
+
+      .section-title p {
+        color: var(--muted);
+      }
+
+      .window {
+        overflow: hidden;
+        border: 0.5px solid var(--border);
+        border-radius: 12px;
+        background: var(--window);
+        box-shadow: var(--shadow);
+      }
+
+      .main-window {
+        height: 860px;
+      }
+
+      .topbar {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 36px;
+        padding: 0 12px;
+        border-bottom: 0.5px solid var(--border);
+        background: var(--toolbar);
+        backdrop-filter: saturate(180%) blur(20px);
+        -webkit-backdrop-filter: saturate(180%) blur(20px);
+      }
+
+      .traffic-group {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 84px;
+      }
+
+      .traffic {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+      }
+
+      .red { background: #ff5f57; }
+      .yellow { background: #febc2e; }
+      .green { background: #28c840; }
+
+      .caption-buttons {
+        display: none;
+        gap: 3px;
+      }
+
+      .caption-buttons span {
+        display: grid;
+        place-items: center;
+        width: 32px;
+        height: 24px;
+        border-radius: 6px;
+        color: var(--muted);
+        background: var(--hover);
+      }
+
+      [data-platform="windows"] .traffic,
+      [data-platform="linux"] .traffic,
+      [data-platform="web"] .traffic {
+        display: none;
+      }
+
+      [data-platform="windows"] .caption-buttons,
+      [data-platform="linux"] .caption-buttons {
+        display: flex;
+      }
+
+      [data-platform="web"] .traffic-group {
+        display: none;
+      }
+
+      .command-stack {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        width: min(440px, calc(100% - 280px));
+      }
+
+      .command {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+        height: 28px;
+        padding: 0 10px;
+        border: 0.5px solid var(--strong-border);
+        border-radius: 8px;
+        background: var(--input);
+        color: var(--muted);
+        box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.035);
+      }
+
+      .shortcut {
+        margin-left: auto;
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .top-actions {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .icon-button {
+        display: inline-grid;
+        place-items: center;
+        flex: 0 0 auto;
+        width: 28px;
+        height: 28px;
+        border: 0;
+        border-radius: 7px;
+        background: transparent;
+        color: var(--muted);
+        cursor: default;
+      }
+
+      .icon-button:hover,
+      .icon-button.active {
+        background: var(--hover);
+        color: var(--page-text);
+      }
+
+      .icon-button.active {
+        background: var(--selected);
+        color: var(--accent-2);
+      }
+
+      .add-pane-toolbar {
+        width: 34px;
+        height: 28px;
+        border: 0.5px solid var(--border);
+        background: var(--surface);
+        color: var(--accent-2);
+        box-shadow: 0 0 0 0.5px var(--border), 0 2px 7px rgba(0, 0, 0, 0.08);
+      }
+
+      .icon-button.tight {
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+      }
+
+      .icon-button.edge {
+        width: 28px;
+        height: 28px;
+        color: var(--page-text);
+      }
+
+      .app-grid {
+        display: grid;
+        grid-template-columns: 48px minmax(0, 1fr);
+        height: calc(100% - 64px);
+        min-height: 0;
+      }
+
+      .activity {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 6px;
+        border-right: 0.5px solid var(--border);
+        background: var(--rail);
+      }
+
+      .activity .spacer {
+        flex: 1;
+      }
+
+      .workspace {
+        position: relative;
+        min-width: 0;
+        display: grid;
+        grid-template-columns: minmax(360px, 1fr) minmax(420px, 1.2fr) minmax(420px, 1.2fr);
+        min-height: 0;
+        overflow: hidden;
+        background: var(--surface);
+        --pane-header-height: 70px;
+      }
+
+      .pane {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        border-right: 0.5px solid var(--border);
+        background: var(--pane);
+        overflow: hidden;
+      }
+
+      .pane.active::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        z-index: 2;
+        height: 2px;
+        background: var(--accent);
+      }
+
+      .pane-shell {
+        flex: 0 0 var(--pane-header-height);
+        height: var(--pane-header-height);
+        min-height: 0;
+        border-bottom: 0.5px solid var(--border);
+        background: var(--surface);
+      }
+
+      .source-title {
+        position: relative;
+        display: grid;
+        grid-template-columns: 32px minmax(0, 1fr) 32px;
+        align-items: center;
+        height: 22px;
+        padding: 1px 8px;
+        border-bottom: 0.5px solid var(--border);
+      }
+
+      .source-title.file-source {
+        height: 46px;
+        border-bottom: 0;
+      }
+
+      .title-center {
+        min-width: 0;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        align-items: center;
+        font-weight: 700;
+        font-size: 13px;
+        text-align: center;
+      }
+
+      .center-label {
+        grid-column: 2;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .lead-icon {
+        grid-column: 1;
+        justify-self: end;
+        margin-right: 6px;
+      }
+
+      .trail-status {
+        grid-column: 3;
+        justify-self: start;
+        margin-left: 6px;
+      }
+
+      .live-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--success);
+        box-shadow: 0 0 0 3px rgba(52, 199, 89, 0.14);
+      }
+
+      .file-focus {
+        display: grid;
+        grid-template-columns: 30px minmax(0, 1fr) 30px;
+        align-items: center;
+        height: 24px;
+      }
+
+      .file-name {
+        min-width: 0;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        align-items: center;
+        padding: 0 8px;
+        color: var(--page-text);
+        font-size: 12px;
+        font-weight: 650;
+        white-space: nowrap;
+      }
+
+      .file-name span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .pane-tools {
+        position: relative;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        height: 24px;
+        padding: 0 8px 2px;
+      }
+
+      .pane-actions {
+        justify-self: end;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+      }
+
+      .pane-actions .icon-button {
+        width: 22px;
+        height: 22px;
+        border-radius: 6px;
+      }
+
+      .offset-link {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 22px;
+        padding: 0 8px;
+        border: 0;
+        border-radius: 7px;
+        background: transparent;
+        color: var(--page-text);
+        font-family: var(--font-mono);
+        font-size: 12px;
+        cursor: default;
+      }
+
+      .offset-link:hover,
+      .offset-link.active {
+        background: var(--hover);
+      }
+
+      .log {
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+        background:
+          linear-gradient(90deg, rgba(128, 128, 128, 0.11) 0, rgba(128, 128, 128, 0.11) 54px, transparent 54px),
+          var(--pane);
+        color: var(--log);
+        font-family: var(--font-mono);
+        font-size: 12px;
+        line-height: 20px;
+      }
+
+      .pane-y-scroll,
+      .pane-x-scroll,
+      .workspace-x-scroll {
+        position: absolute;
+        z-index: 8;
+        border-radius: 999px;
+        background: var(--scrollbar-track);
+        pointer-events: none;
+      }
+
+      .pane-y-scroll {
+        top: calc(var(--pane-header-height) + 8px);
+        right: 4px;
+        bottom: 18px;
+        width: 8px;
+      }
+
+      .pane-y-scroll span {
+        display: block;
+        width: 100%;
+        height: 34%;
+        margin-top: 112px;
+        border-radius: inherit;
+        background: var(--scrollbar-thumb);
+      }
+
+      .pane-x-scroll {
+        left: 62px;
+        right: 14px;
+        bottom: 12px;
+        height: 8px;
+      }
+
+      .pane-x-scroll span,
+      .workspace-x-scroll span {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: var(--scrollbar-thumb);
+      }
+
+      .pane-x-scroll span {
+        width: 42%;
+        margin-left: 22%;
+      }
+
+      .workspace-x-scroll {
+        left: 12px;
+        right: 12px;
+        bottom: 4px;
+        height: 7px;
+      }
+
+      .workspace-x-scroll span {
+        width: 38%;
+        margin-left: 31%;
+      }
+
+      .line {
+        display: grid;
+        grid-template-columns: 54px 168px 58px minmax(340px, 1fr);
+        min-width: 780px;
+        white-space: nowrap;
+      }
+
+      .line:nth-child(even) {
+        background: rgba(128, 128, 128, 0.035);
+      }
+
+      .ln {
+        padding-right: 8px;
+        color: var(--log-muted);
+        text-align: right;
+      }
+
+      .time { color: var(--teal); }
+      .info { color: var(--accent-2); font-weight: 700; }
+      .warn { color: var(--warning); font-weight: 700; }
+      .error { color: var(--danger); font-weight: 700; }
+      .line.warn-row { background: var(--warn-bg); }
+      .line.error-row { background: var(--error-bg); }
+      .match { padding: 1px 3px; border-radius: 4px; background: var(--match); }
+      .highlight { padding: 1px 3px; border-radius: 4px; background: rgba(175, 82, 222, 0.16); color: var(--purple); }
+
+      .status {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+        height: 28px;
+        padding: 0 10px;
+        border-top: 0.5px solid var(--border);
+        background: var(--toolbar);
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .floating {
+        position: absolute;
+        z-index: 10;
+        border: 0.5px solid var(--border);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.82);
+        box-shadow: var(--float-shadow);
+        backdrop-filter: saturate(180%) blur(20px);
+        -webkit-backdrop-filter: saturate(180%) blur(20px);
+      }
+
+      [data-theme="dark"] .floating {
+        background: rgba(36, 37, 41, 0.86);
+      }
+
+      .pane-search-popover {
+        top: calc(var(--pane-header-height) + 8px);
+        right: 12px;
+        width: min(390px, calc(100% - 24px));
+        padding: 8px;
+      }
+
+      .offset-popover {
+        left: 14px;
+        top: calc(var(--pane-header-height) + 8px);
+        width: 312px;
+        padding: 10px;
+      }
+
+      .popover-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .field {
+        min-width: 0;
+        flex: 1;
+        height: 28px;
+        padding: 0 8px;
+        border: 0.5px solid var(--border);
+        border-radius: 6px;
+        background: var(--input);
+        color: var(--page-text);
+      }
+
+      .mode-group {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        padding: 2px;
+        border: 0.5px solid var(--border);
+        border-radius: 7px;
+        background: var(--input);
+      }
+
+      .mode {
+        display: grid;
+        place-items: center;
+        min-width: 26px;
+        height: 22px;
+        padding: 0 5px;
+        border: 0;
+        border-radius: 5px;
+        background: transparent;
+        color: var(--muted);
+        font-weight: 750;
+      }
+
+      .mode.active {
+        background: var(--selected);
+        color: var(--accent-2);
+        box-shadow: inset 0 0 0 1px var(--accent);
+      }
+
+      .offset-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 6px;
+        margin-top: 8px;
+      }
+
+      .number-cell label {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--muted);
+        font-size: 10px;
+      }
+
+      .number-cell input {
+        width: 100%;
+        height: 28px;
+        padding: 0 6px;
+        border: 0.5px solid var(--border);
+        border-radius: 6px;
+        background: var(--input);
+        color: var(--page-text);
+        text-align: right;
+      }
+
+      .mini-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 10px;
+      }
+
+      .text-button,
+      .primary-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        height: 28px;
+        padding: 0 10px;
+        border: 0.5px solid var(--border);
+        border-radius: 7px;
+        background: var(--surface);
+        color: var(--page-text);
+      }
+
+      .primary-button {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: #fff;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        min-height: 18px;
+        padding: 2px 6px;
+        border-radius: 5px;
+        background: var(--hover);
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 650;
+      }
+
+      .tag.live { color: var(--success); background: rgba(52, 199, 89, 0.12); }
+      .tag.warn { color: var(--warning); background: rgba(255, 149, 0, 0.12); }
+      .tag.error { color: var(--danger); background: rgba(255, 59, 48, 0.12); }
+      .tag.info { color: var(--accent-2); background: var(--selected); }
+
+      .panel-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .option-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .mock-card {
+        overflow: hidden;
+        border: 0.5px solid var(--border);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.32);
+      }
+
+      [data-theme="dark"] .mock-card {
+        background: rgba(255, 255, 255, 0.035);
+      }
+
+      .mock-card-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+        min-height: 42px;
+        padding: 10px 12px;
+        border-bottom: 0.5px solid var(--border);
+        background: var(--toolbar);
+      }
+
+      .mock-card-body {
+        padding: 12px;
+      }
+
+      .option-mock {
+        position: relative;
+        height: 148px;
+        overflow: hidden;
+        border: 0.5px solid var(--border);
+        border-radius: 8px;
+        background: var(--surface);
+      }
+
+      .option-topbar {
+        height: 30px;
+        border-bottom: 0.5px solid var(--border);
+        background: var(--toolbar);
+      }
+
+      .option-pane-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        height: 118px;
+      }
+
+      .option-pane {
+        position: relative;
+        border-right: 0.5px solid var(--border);
+      }
+
+      .option-pane::before {
+        content: "";
+        display: block;
+        height: 26px;
+        border-bottom: 0.5px solid var(--border);
+        background: var(--surface-2);
+      }
+
+      .option-plus {
+        position: absolute;
+        display: grid;
+        place-items: center;
+        width: 34px;
+        height: 30px;
+        border: 0.5px solid var(--border);
+        border-radius: 8px;
+        background: var(--surface);
+        color: var(--accent-2);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+      }
+
+      .option-toolbar-plus {
+        top: 4px;
+        left: calc(50% + 160px);
+      }
+
+      .option-endcap-plus {
+        top: 32px;
+        right: 8px;
+        width: 42px;
+        height: 34px;
+      }
+
+      .option-rail-plus {
+        right: 10px;
+        top: 74px;
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+      }
+
+      .option-splitter-plus {
+        right: 35%;
+        top: 46px;
+        width: 38px;
+        height: 34px;
+      }
+
+      .expanded-shell {
+        display: grid;
+        grid-template-columns: 48px 300px minmax(0, 1fr);
+        height: 420px;
+        overflow: hidden;
+        border: 0.5px solid var(--border);
+        border-radius: 8px;
+        background: var(--surface);
+      }
+
+      .side-panel {
+        min-width: 0;
+        border-right: 0.5px solid var(--border);
+        background: var(--panel);
+        overflow: hidden;
+      }
+
+      .panel-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 38px;
+        padding: 0 10px 0 12px;
+        border-bottom: 0.5px solid var(--border);
+      }
+
+      .panel-body {
+        padding: 10px;
+      }
+
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 30px;
+        padding: 6px 7px;
+        border-radius: 7px;
+      }
+
+      .row.active {
+        background: var(--selected);
+      }
+
+      .row-icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 auto;
+        width: 22px;
+        height: 22px;
+        border-radius: 6px;
+        background: var(--hover);
+        color: var(--muted);
+      }
+
+      .row-main {
+        min-width: 0;
+        flex: 1;
+      }
+
+      .row-title {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .row-meta {
+        color: var(--muted);
+        font-size: 11px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .rule {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 6px;
+        align-items: center;
+        margin-top: 7px;
+      }
+
+      .rule.disabled {
+        opacity: 0.55;
+      }
+
+      .panel-card {
+        margin-top: 10px;
+        padding: 9px;
+        border: 0.5px solid var(--border);
+        border-radius: 8px;
+        background: var(--surface);
+      }
+
+      .panel-card h3 {
+        margin-bottom: 8px;
+      }
+
+      .menu,
+      .dialog {
+        border: 0.5px solid var(--border);
+        border-radius: 12px;
+        background: var(--panel);
+        box-shadow: var(--float-shadow);
+        overflow: hidden;
+      }
+
+      .menu {
+        padding: 6px;
+      }
+
+      .menu-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: center;
+        min-height: 28px;
+        padding: 5px 8px;
+        border-radius: 7px;
+      }
+
+      .menu-row.active {
+        background: var(--selected);
+      }
+
+      .dialog-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 14px;
+        border-bottom: 0.5px solid var(--border);
+        background: var(--toolbar);
+      }
+
+      .dialog-body {
+        padding: 14px;
+      }
+
+      .dialog-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        padding: 12px 14px;
+        border-top: 0.5px solid var(--border);
+        background: var(--toolbar);
+      }
+
+      .dialog-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .settings-grid {
+        display: grid;
+        grid-template-columns: 54px 220px minmax(0, 1fr);
+        height: 540px;
+      }
+
+      .settings-list {
+        border-right: 0.5px solid var(--border);
+        background: var(--panel);
+        padding: 10px;
+      }
+
+      .settings-content {
+        background: var(--surface);
+        padding: 14px;
+      }
+
+      .setting-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+        min-height: 34px;
+        border-bottom: 0.5px solid var(--border);
+      }
+
+      .empty {
+        display: grid;
+        place-items: center;
+        height: 420px;
+        border: 1px dashed var(--strong-border);
+        border-radius: 8px;
+        background: var(--surface);
+        text-align: center;
+      }
+
+      .drop {
+        display: grid;
+        place-items: center;
+        width: 84px;
+        height: 84px;
+        margin: 0 auto 14px;
+        border: 1px dashed var(--accent);
+        border-radius: 18px;
+        background: var(--selected);
+        color: var(--accent-2);
+      }
+
+      .mobile-note {
+        display: none;
+      }
+
+      @media (max-width: 1180px) {
+        .page { width: min(100vw - 24px, 1540px); }
+        .header,
+        .panel-grid,
+        .option-grid,
+        .dialog-grid {
+          grid-template-columns: 1fr;
+        }
+        .main-window { height: 940px; }
+        .workspace {
+          grid-template-columns: minmax(360px, 1fr) minmax(420px, 1fr) minmax(420px, 1fr);
+          overflow-x: auto;
+        }
+        .command-stack {
+          width: min(440px, calc(100% - 120px));
+        }
+      }
+    </style>
+  </head>
+  <body data-theme="light" data-platform="macos">
+    <svg class="sprite" aria-hidden="true">
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></symbol>
+      <symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 5h16l-6 7v5l-4 2v-7z"/></symbol>
+      <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 4a8 8 0 0 0 0 16h1.5a1.8 1.8 0 0 0 1.2-3.1 1.5 1.5 0 0 1 1-2.6H17a3 3 0 0 0 3-3A7.4 7.4 0 0 0 12 4z"/><path d="M8 10h.01M10.5 7.5h.01M14 7.5h.01M16 10h.01"/></symbol>
+      <symbol id="i-files" viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v5h5"/><path d="M4 7v14h3"/></symbol>
+      <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4z"/></symbol>
+      <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9 7 7M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M7 7l10 10M17 7 7 17"/></symbol>
+      <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+      <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+      <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 6h7l2 2h9v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+      <symbol id="i-file" viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v5h5"/></symbol>
+      <symbol id="i-sync" viewBox="0 0 24 24"><path d="M20 7v5h-5"/><path d="M4 17v-5h5"/><path d="M18 12a6 6 0 0 0-10-4.5L4 12M6 12a6 6 0 0 0 10 4.5l4-4.5"/></symbol>
+      <symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="7" ry="3"/><path d="M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5"/><path d="M5 11v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></symbol>
+      <symbol id="i-terminal" viewBox="0 0 24 24"><path d="m5 7 5 5-5 5"/><path d="M12 17h7"/></symbol>
+      <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2.8 20h18.4z"/><path d="M12 9v5M12 17h.01"/></symbol>
+    </svg>
+
+    <div class="page">
+      <header class="header">
+        <div>
+          <h1>Crosslog Draft Layout Mockups</h1>
+          <p class="subtitle">A compact pane-first direction based on the hand-drawn layout: collapsed activity rail, local pane controls, inline directory navigation, and lightweight popovers.</p>
+        </div>
+        <div class="controls">
+          <div class="segments" aria-label="Theme">
+            <button type="button" data-theme-button="light" aria-pressed="true">Light</button>
+            <button type="button" data-theme-button="dark" aria-pressed="false">Dark</button>
+          </div>
+          <div class="segments" aria-label="Platform">
+            <button type="button" data-platform-button="macos" aria-pressed="true">macOS</button>
+            <button type="button" data-platform-button="windows" aria-pressed="false">Windows</button>
+            <button type="button" data-platform-button="linux" aria-pressed="false">Linux</button>
+            <button type="button" data-platform-button="web" aria-pressed="false">Web</button>
+          </div>
+        </div>
+      </header>
+
+      <nav class="nav" aria-label="Mockup sections">
+        <a href="#workspace">Workspace</a>
+        <a href="#add-pane-options">Add Pane Options</a>
+        <a href="#panels">Panels</a>
+        <a href="#dialogs">Dialogs</a>
+        <a href="#settings">Settings</a>
+        <a href="#empty">Empty</a>
+      </nav>
+
+      <section id="workspace" class="section">
+        <div class="section-title">
+          <div>
+            <h2>Main Workspace</h2>
+            <p>Collapsed left rail, pane-local source controls, pane search popover, and pane time offset menu.</p>
+          </div>
+          <p class="platform-note">Current platform: macOS Desktop</p>
+        </div>
+
+        <div class="window main-window">
+          <div class="topbar">
+            <div class="traffic-group">
+              <span class="traffic red"></span>
+              <span class="traffic yellow"></span>
+              <span class="traffic green"></span>
+              <span class="caption-buttons"><span>-</span><span>[]</span><span>x</span></span>
+            </div>
+            <div class="command-stack">
+              <div class="command"><svg class="icon"><use href="#i-search"/></svg><span>Command or workspace search</span><span class="shortcut">Cmd K</span></div>
+              <button class="icon-button active" title="Synchronize scrolling" aria-label="Synchronize scrolling"><svg class="icon"><use href="#i-sync"/></svg></button>
+              <button class="icon-button add-pane-toolbar" title="Add Log Pane" aria-label="Add Log Pane"><svg class="icon"><use href="#i-plus"/></svg></button>
+            </div>
+            <div class="top-actions"></div>
+          </div>
+
+          <div class="app-grid">
+            <aside class="activity" aria-label="Activity">
+              <button class="icon-button active" title="Directory Search" aria-label="Directory Search"><svg class="icon"><use href="#i-search"/></svg></button>
+              <button class="icon-button" title="Filters" aria-label="Filters"><svg class="icon"><use href="#i-filter"/></svg></button>
+              <button class="icon-button" title="Highlights" aria-label="Highlights"><svg class="icon"><use href="#i-palette"/></svg></button>
+              <button class="icon-button" title="Work Directories" aria-label="Work Directories"><svg class="icon"><use href="#i-files"/></svg></button>
+              <button class="icon-button" title="Saved Templates" aria-label="Saved Templates"><svg class="icon"><use href="#i-bookmark"/></svg></button>
+              <div class="spacer"></div>
+              <button class="icon-button" title="Settings" aria-label="Settings"><svg class="icon"><use href="#i-gear"/></svg></button>
+            </aside>
+
+            <main class="workspace" aria-label="Log workspace">
+              <section class="pane active" aria-label="File log pane">
+                <div class="pane-shell">
+                  <div class="source-title file-source">
+                    <span></span>
+                    <div class="title-center"><span class="center-label">idea.log</span><span class="live-dot trail-status" aria-label="Live"></span></div>
+                    <button class="icon-button" title="Close pane" aria-label="Close idea pane"><svg class="icon"><use href="#i-x"/></svg></button>
+                  </div>
+                  <div class="pane-tools">
+                    <button class="offset-link active" title="Set time offset" aria-label="Set time offset for idea log">+00:00:00.000</button>
+                    <div class="pane-actions"><button class="icon-button" title="Find in idea.log" aria-label="Find in idea log"><svg class="icon"><use href="#i-search"/></svg></button></div>
+                  </div>
+                </div>
+                <div class="floating offset-popover" role="dialog" aria-label="Time offset popover">
+                  <div class="popover-row">
+                    <svg class="icon"><use href="#i-sync"/></svg>
+                    <strong>Time Offset</strong>
+                    <span class="row-meta" style="margin-left:auto;">idea.log</span>
+                  </div>
+                  <div class="offset-grid">
+                    <div class="number-cell"><label>Days</label><input value="0" /></div>
+                    <div class="number-cell"><label>Hours</label><input value="0" /></div>
+                    <div class="number-cell"><label>Min</label><input value="0" /></div>
+                    <div class="number-cell"><label>Sec</label><input value="0" /></div>
+                    <div class="number-cell"><label>Ms</label><input value="0" /></div>
+                  </div>
+                  <div class="mini-actions"><button class="text-button">Reset</button><button class="primary-button">Apply</button></div>
+                </div>
+                <div class="log">
+                  <div class="line"><span class="ln">12018</span><span class="time">2026-06-09 11:15:13.859</span><span class="info">INFO</span><span>Project opened workspace=Crosslog source=local</span></div>
+                  <div class="line"><span class="ln">12019</span><span class="time">2026-06-09 11:15:13.908</span><span class="info">INFO</span><span>Index snapshot ready modules=12 duration=48ms</span></div>
+                  <div class="line warn-row"><span class="ln">12020</span><span class="time">2026-06-09 11:15:13.944</span><span class="warn">WARN</span><span>Slow file watcher event queue depth=140</span></div>
+                  <div class="line"><span class="ln">12021</span><span class="time">2026-06-09 11:15:13.981</span><span class="info">INFO</span><span>Log stream appended bytes=8192 source=idea.log</span></div>
+                  <div class="line"><span class="ln">12022</span><span class="time">2026-06-09 11:15:14.015</span><span class="info">INFO</span><span>Sync anchor selected pane=idea.log timestamp=11:15:13.859</span></div>
+                  <div class="line error-row"><span class="ln">12023</span><span class="time">2026-06-09 11:15:14.101</span><span class="error">ERROR</span><span>Request failed trace=981f status=<span class="match">503</span> retryable=true</span></div>
+                </div>
+              </section>
+
+              <section class="pane" aria-label="First directory log pane">
+                <div class="pane-shell">
+                  <div class="source-title">
+                    <span></span>
+                    <div class="title-center"><svg class="icon lead-icon"><use href="#i-folder"/></svg><span class="center-label">First Directory</span></div>
+                    <button class="icon-button" title="Close pane" aria-label="Close first directory pane"><svg class="icon"><use href="#i-x"/></svg></button>
+                  </div>
+                  <div class="file-focus">
+                    <button class="icon-button edge" title="Previous log file" aria-label="Previous log file"><svg class="icon" style="width:22px;height:22px;"><use href="#i-chevron-left"/></svg></button>
+                    <div class="file-name"><svg class="icon lead-icon"><use href="#i-file"/></svg><span class="center-label">daemon-10770.log</span><span class="live-dot trail-status" aria-label="Live"></span></div>
+                    <button class="icon-button edge" title="Next log file" aria-label="Next log file"><svg class="icon" style="width:22px;height:22px;"><use href="#i-chevron-right"/></svg></button>
+                  </div>
+                  <div class="pane-tools">
+                    <button class="offset-link" title="Set time offset" aria-label="Set time offset for daemon 10770">+00:01:00.000</button>
+                    <div class="pane-actions"><button class="icon-button active" title="Find in daemon-10770.log" aria-label="Find in daemon 10770"><svg class="icon"><use href="#i-search"/></svg></button></div>
+                  </div>
+                </div>
+                <div class="floating pane-search-popover" role="dialog" aria-label="Pane search popover">
+                  <div class="popover-row">
+                    <div class="command" style="height:30px;"><svg class="icon"><use href="#i-search"/></svg><span>Search</span></div>
+                    <button class="icon-button tight" title="Previous result" aria-label="Previous result"><svg class="icon"><use href="#i-chevron-left"/></svg></button>
+                    <button class="icon-button tight active" title="Next result" aria-label="Next result"><svg class="icon"><use href="#i-chevron-right"/></svg></button>
+                    <div class="mode-group">
+                      <button class="mode" title="Match case" aria-label="Match case">Aa</button>
+                      <button class="mode active" title="Use regular expression" aria-label="Use regular expression">.*</button>
+                    </div>
+                    <span class="tag info">4/12</span>
+                  </div>
+                </div>
+                <div class="log">
+                  <div class="line"><span class="ln">5710</span><span class="time">2026-06-09 11:15:18.256</span><span class="info">INFO</span><span>daemon connected pid=10770 port=63342 workspace=Crosslog</span></div>
+                  <div class="line warn-row"><span class="ln">5711</span><span class="time">2026-06-09 11:15:18.301</span><span class="warn">WARN</span><span>Retry policy entered key=<span class="match">timeout</span> attempt=2</span></div>
+                  <div class="line"><span class="ln">5712</span><span class="time">2026-06-09 11:15:18.344</span><span class="info">INFO</span><span>Workspace search indexed files=46 elapsed=232ms</span></div>
+                  <div class="line error-row"><span class="ln">5713</span><span class="time">2026-06-09 11:15:18.402</span><span class="error">ERROR</span><span><span class="highlight">daemon</span> failed to parse response trace=981f status=503</span></div>
+                  <div class="line"><span class="ln">5714</span><span class="time">2026-06-09 11:15:18.450</span><span class="info">INFO</span><span>Rotated candidate ignored because selected file stays fixed</span></div>
+                </div>
+                <div class="pane-x-scroll" aria-hidden="true"><span></span></div>
+              </section>
+
+              <section class="pane" aria-label="Second directory log pane">
+                <div class="pane-shell">
+                  <div class="source-title">
+                    <span></span>
+                    <div class="title-center"><svg class="icon lead-icon"><use href="#i-folder"/></svg><span class="center-label">Second Directory</span></div>
+                    <button class="icon-button" title="Close pane" aria-label="Close second directory pane"><svg class="icon"><use href="#i-x"/></svg></button>
+                  </div>
+                  <div class="file-focus">
+                    <button class="icon-button edge" title="Previous log file" aria-label="Previous log file"><svg class="icon" style="width:22px;height:22px;"><use href="#i-chevron-left"/></svg></button>
+                    <div class="file-name"><svg class="icon lead-icon"><use href="#i-file"/></svg><span class="center-label">daemon-5365.log</span></div>
+                    <button class="icon-button edge" title="Next log file" aria-label="Next log file"><svg class="icon" style="width:22px;height:22px;"><use href="#i-chevron-right"/></svg></button>
+                  </div>
+                  <div class="pane-tools">
+                    <button class="offset-link" title="Set time offset" aria-label="Set time offset for daemon 5365">-00:00:02.400</button>
+                    <div class="pane-actions">
+                      <button class="icon-button" title="Find in daemon-5365.log" aria-label="Find in daemon 5365"><svg class="icon"><use href="#i-search"/></svg></button>
+                    </div>
+                  </div>
+                </div>
+                <div class="log">
+                  <div class="line"><span class="ln">4402</span><span class="time">2026-06-09 11:15:35.256</span><span class="info">INFO</span><span>daemon connected pid=5365 port=63343 workspace=Crosslog</span></div>
+                  <div class="line"><span class="ln">4403</span><span class="time">2026-06-09 11:15:35.301</span><span class="info">INFO</span><span>Received sync target timestamp=11:15:18.256 offset=-2400ms</span></div>
+                  <div class="line warn-row"><span class="ln">4404</span><span class="time">2026-06-09 11:15:35.337</span><span class="warn">WARN</span><span>Untimed line excluded from anchor calculation</span></div>
+                  <div class="line error-row"><span class="ln">4405</span><span class="time">2026-06-09 11:15:35.400</span><span class="error">ERROR</span><span>Same trace observed trace=981f status=<span class="match">503</span></span></div>
+                  <div class="line"><span class="ln">4406</span><span class="time">2026-06-09 11:15:35.441</span><span class="info">INFO</span><span>Directory file list refreshed files=18 newest=daemon-5367.log</span></div>
+                </div>
+                <div class="pane-y-scroll" aria-hidden="true"><span></span></div>
+              </section>
+
+              <div class="workspace-x-scroll" aria-hidden="true"><span></span></div>
+            </main>
+          </div>
+
+          <div class="status"><span>3 panes, sync on, active: daemon-10770.log</span><span>2 live sources, 1 inactive file, 12 search matches</span></div>
+        </div>
+      </section>
+
+      <section id="add-pane-options" class="section">
+        <div class="section-title">
+          <div>
+            <h2>Add Pane Placement Options</h2>
+            <p>Four safer placements for a larger Add Log Pane target, separated from close, search, and file navigation controls.</p>
+          </div>
+        </div>
+        <div class="option-grid">
+          <div class="mock-card">
+            <div class="mock-card-head"><strong>Option A: Topbar</strong><span class="tag info">Recommended</span></div>
+            <div class="mock-card-body">
+              <div class="option-mock">
+                <div class="option-topbar"></div>
+                <div class="option-pane-row"><div class="option-pane"></div><div class="option-pane"></div><div class="option-pane"></div></div>
+                <div class="option-plus option-toolbar-plus"><svg class="icon"><use href="#i-plus"/></svg></div>
+              </div>
+              <p class="subtitle">Best target safety. It is global, isolated, and works for keyboard shortcuts.</p>
+            </div>
+          </div>
+          <div class="mock-card">
+            <div class="mock-card-head"><strong>Option B: Header Endcap</strong><span class="tag">Browser-like</span></div>
+            <div class="mock-card-body">
+              <div class="option-mock">
+                <div class="option-topbar"></div>
+                <div class="option-pane-row"><div class="option-pane"></div><div class="option-pane"></div><div class="option-pane"></div></div>
+                <div class="option-plus option-endcap-plus"><svg class="icon"><use href="#i-plus"/></svg></div>
+              </div>
+              <p class="subtitle">Close to the rightmost pane, but only consumes header-height space.</p>
+            </div>
+          </div>
+          <div class="mock-card">
+            <div class="mock-card-head"><strong>Option C: Floating End Rail</strong><span class="tag">Large</span></div>
+            <div class="mock-card-body">
+              <div class="option-mock">
+                <div class="option-topbar"></div>
+                <div class="option-pane-row"><div class="option-pane"></div><div class="option-pane"></div><div class="option-pane"></div></div>
+                <div class="option-plus option-rail-plus"><svg class="icon"><use href="#i-plus"/></svg></div>
+              </div>
+              <p class="subtitle">Largest hit target. It floats near the pane edge and can appear on hover.</p>
+            </div>
+          </div>
+          <div class="mock-card">
+            <div class="mock-card-head"><strong>Option D: Splitter Button</strong><span class="tag">Local</span></div>
+            <div class="mock-card-body">
+              <div class="option-mock">
+                <div class="option-topbar"></div>
+                <div class="option-pane-row"><div class="option-pane"></div><div class="option-pane"></div><div class="option-pane"></div></div>
+                <div class="option-plus option-splitter-plus"><svg class="icon"><use href="#i-plus"/></svg></div>
+              </div>
+              <p class="subtitle">Adds near the split point. Good for precise pane insertion, less discoverable.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="panels" class="section">
+        <div class="section-title">
+          <div>
+            <h2>Expanded Activity Panels</h2>
+            <p>The rail expands into one focused panel at a time; sources and sets are separate tools.</p>
+          </div>
+        </div>
+        <div class="panel-grid">
+          <div class="mock-card">
+            <div class="mock-card-head"><strong>Directory Search</strong><button class="icon-button active" title="Refresh directories" aria-label="Refresh directories"><svg class="icon"><use href="#i-sync"/></svg></button></div>
+            <div class="mock-card-body">
+              <div class="expanded-shell">
+                <aside class="activity"><button class="icon-button active"><svg class="icon"><use href="#i-search"/></svg></button><button class="icon-button"><svg class="icon"><use href="#i-filter"/></svg></button><button class="icon-button"><svg class="icon"><use href="#i-palette"/></svg></button><div class="spacer"></div><button class="icon-button"><svg class="icon"><use href="#i-gear"/></svg></button></aside>
+                <aside class="side-panel">
+                  <div class="panel-head"><h3>Directory Search</h3><button class="icon-button" title="Search"><svg class="icon"><use href="#i-search"/></svg></button></div>
+                  <div class="panel-body">
+                    <div class="popover-row"><input class="field" value="trace=981f|status=503" /><div class="mode-group"><button class="mode">Aa</button><button class="mode active">.*</button></div></div>
+                    <div class="panel-card">
+                      <div class="row active"><span class="row-icon">1</span><div class="row-main"><div class="row-title">daemon-10770.log:5713</div><div class="row-meta">daemon failed to parse response trace=981f</div></div></div>
+                      <div class="row"><span class="row-icon">2</span><div class="row-main"><div class="row-title">daemon-5365.log:4405</div><div class="row-meta">same trace observed status=503</div></div></div>
+                    </div>
+                  </div>
+                </aside>
+                <main class="settings-content"><h2>Results</h2><p class="subtitle">Result rows open in the active pane or a new pane.</p></main>
+              </div>
+            </div>
+          </div>
+
+          <div class="mock-card">
+            <div class="mock-card-head"><strong>Filters</strong><button class="icon-button active" title="Add filter" aria-label="Add filter"><svg class="icon"><use href="#i-plus"/></svg></button></div>
+            <div class="mock-card-body">
+              <div class="panel-card">
+                <h3>Positive Filters</h3>
+                <div class="rule"><input class="field" value="ERROR" /><span class="mode-group"><button class="mode active" title="Match case">Aa</button><button class="mode" title="Regex">.*</button><button class="mode active" title="Use rule">Use</button></span></div>
+                <div class="rule"><input class="field" value="timeout|refused|503" /><span class="mode-group"><button class="mode" title="Match case">Aa</button><button class="mode active" title="Regex">.*</button><button class="mode active" title="Use rule">Use</button></span></div>
+              </div>
+              <div class="panel-card">
+                <h3>Negative Filters</h3>
+                <div class="rule"><input class="field" value="healthcheck" /><span class="mode-group"><button class="mode" title="Match case">Aa</button><button class="mode" title="Regex">.*</button><button class="mode active" title="Use rule">Use</button></span></div>
+                <div class="rule disabled"><input class="field" value="debug probe" /><span class="mode-group"><button class="mode active" title="Match case">Aa</button><button class="mode" title="Regex">.*</button><button class="mode" title="Rule disabled">Use</button></span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mock-card">
+            <div class="mock-card-head"><strong>Highlights</strong><button class="icon-button active" title="Add highlight" aria-label="Add highlight"><svg class="icon"><use href="#i-plus"/></svg></button></div>
+            <div class="mock-card-body">
+              <div class="rule"><input class="field" value="ERROR|FATAL" /><span class="mode-group"><button class="mode active">.*</button><button class="mode active">Aa</button><button class="mode active">Use</button></span></div>
+              <div class="rule"><input class="field" value="WARN" /><span class="mode-group"><button class="mode">.*</button><button class="mode">Aa</button><button class="mode active">Use</button></span></div>
+              <div class="rule"><input class="field" value="request_id=[a-z0-9]+" /><span class="mode-group"><button class="mode active">.*</button><button class="mode">Aa</button><button class="mode active">Use</button></span></div>
+              <div class="panel-card"><div class="row"><span class="tag error">ERROR</span><span class="tag warn">WARN</span><span class="tag info">request_id</span></div></div>
+            </div>
+          </div>
+
+          <div class="mock-card">
+            <div class="mock-card-head"><strong>Work Directories</strong><button class="icon-button active" title="Open directory" aria-label="Open directory"><svg class="icon"><use href="#i-folder"/></svg></button></div>
+            <div class="mock-card-body">
+              <div class="row active"><span class="row-icon"><svg class="icon"><use href="#i-folder"/></svg></span><div class="row-main"><div class="row-title">First Directory</div><div class="row-meta">daemon-10770.log selected, 22 files</div></div><span class="tag live">Live</span></div>
+              <div class="row"><span class="row-icon"><svg class="icon"><use href="#i-folder"/></svg></span><div class="row-main"><div class="row-title">Second Directory</div><div class="row-meta">daemon-5365.log selected, 18 files</div></div></div>
+              <div class="row"><span class="row-icon"><svg class="icon"><use href="#i-alert"/></svg></span><div class="row-main"><div class="row-title">Archived Logs</div><div class="row-meta">2 missing files from restored session</div></div><span class="tag warn">Missing</span></div>
+            </div>
+          </div>
+
+          <div class="mock-card">
+            <div class="mock-card-head"><strong>Saved Templates</strong><button class="icon-button active" title="Save template" aria-label="Save template"><svg class="icon"><use href="#i-plus"/></svg></button></div>
+            <div class="mock-card-body">
+              <div class="row active"><span class="row-icon"><svg class="icon"><use href="#i-bookmark"/></svg></span><div class="row-main"><div class="row-title">Production Errors</div><div class="row-meta">2 filters, 3 highlights, all panes</div></div></div>
+              <div class="row"><span class="row-icon"><svg class="icon"><use href="#i-palette"/></svg></span><div class="row-main"><div class="row-title">Daemon Startup</div><div class="row-meta">startup, port, pid patterns</div></div></div>
+              <div class="row"><span class="row-icon"><svg class="icon"><use href="#i-filter"/></svg></span><div class="row-main"><div class="row-title">Request Trace</div><div class="row-meta">trace IDs and request IDs</div></div></div>
+            </div>
+          </div>
+
+          <div class="mock-card">
+            <div class="mock-card-head"><strong>Source Details</strong><button class="icon-button" title="More" aria-label="More"><svg class="icon"><use href="#i-terminal"/></svg></button></div>
+            <div class="mock-card-body">
+              <div class="setting-row"><span>Sort directory files by</span><span class="tag">Creation time</span></div>
+              <div class="setting-row"><span>Encoding</span><span class="tag">UTF-8</span></div>
+              <div class="setting-row"><span>Deleted file behavior</span><span class="tag">Keep content</span></div>
+              <div class="setting-row"><span>Follow appended lines</span><span class="tag live">On</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="dialogs" class="section">
+        <div class="section-title">
+          <div>
+            <h2>Menus and Dialogs</h2>
+            <p>Every interaction is anchored to the pane, selected text, activity rail, or settings gear.</p>
+          </div>
+        </div>
+        <div class="dialog-grid">
+          <div class="mock-card">
+            <div class="mock-card-head"><strong>Open Source Menu</strong><span class="row-meta">Pane folder icon</span></div>
+            <div class="mock-card-body">
+              <div class="menu">
+                <div class="menu-row active"><span>Open File...</span><span>Cmd O</span></div>
+                <div class="menu-row"><span>Open Directory...</span><span></span></div>
+                <div class="menu-row"><span>Replace Source in This Pane</span><span></span></div>
+                <div class="menu-row"><span>Reveal Current Source</span><span></span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mock-card">
+            <div class="mock-card-head"><strong>Selected Text Menu</strong><span class="row-meta">Right click log text</span></div>
+            <div class="mock-card-body">
+              <div class="menu">
+                <div class="menu-row"><span>Copy</span><span>Cmd C</span></div>
+                <div class="menu-row active"><span>Add Positive Filter</span><span>status=503</span></div>
+                <div class="menu-row"><span>Add Negative Filter</span><span>status=503</span></div>
+                <div class="menu-row"><span>Highlight Selection</span><span>&gt;</span></div>
+                <div class="menu-row"><span>Search Selection in Pane</span><span>Cmd F</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mock-card">
+            <div class="mock-card-head"><strong>Highlight Quick Menu</strong><span class="row-meta">Selected text</span></div>
+            <div class="mock-card-body">
+              <div class="menu">
+                <div class="menu-row active"><span>Error Highlight</span><span class="tag error">Red</span></div>
+                <div class="menu-row"><span>Warning Highlight</span><span class="tag warn">Yellow</span></div>
+                <div class="menu-row"><span>Trace Highlight</span><span class="tag info">Blue</span></div>
+                <div class="menu-row"><span>Create New Highlight...</span><span></span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mock-card">
+            <div class="mock-card-head"><strong>Add Filter Sheet</strong><span class="row-meta">Rail plus or context menu</span></div>
+            <div class="mock-card-body">
+              <div class="dialog">
+                <div class="dialog-head"><strong>Add Filter</strong><span class="tag info">Active pane</span></div>
+                <div class="dialog-body">
+                  <div class="popover-row"><input class="field" value="status=503" /><div class="mode-group"><button class="mode">Aa</button><button class="mode">.*</button><button class="mode active">Use</button></div></div>
+                  <div class="mini-actions" style="justify-content:flex-start;"><button class="text-button">Positive</button><button class="text-button">Negative</button></div>
+                </div>
+                <div class="dialog-actions"><button class="text-button">Cancel</button><button class="primary-button">Add</button></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mock-card">
+            <div class="mock-card-head"><strong>Directory Removed Alert</strong><span class="row-meta">Watcher event</span></div>
+            <div class="mock-card-body">
+              <div class="dialog">
+                <div class="dialog-head"><strong>Source Not Available</strong><span class="tag warn">Missing</span></div>
+                <div class="dialog-body">
+                  <p class="subtitle" style="margin-top:0;">Loaded content stays visible. New appended lines are paused until the source is restored or replaced.</p>
+                </div>
+                <div class="dialog-actions"><button class="text-button">Keep Pane</button><button class="primary-button">Replace Source</button></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mock-card">
+            <div class="mock-card-head"><strong>Invalid Regex Popover</strong><span class="row-meta">Pane search</span></div>
+            <div class="mock-card-body">
+              <div class="dialog">
+                <div class="dialog-head"><strong>Search Pattern Error</strong><span class="tag error">Regex</span></div>
+                <div class="dialog-body">
+                  <div class="popover-row"><input class="field" value="trace=(" /><div class="mode-group"><button class="mode">Aa</button><button class="mode active">.*</button></div></div>
+                  <p class="subtitle">Unclosed group at character 7.</p>
+                </div>
+                <div class="dialog-actions"><button class="primary-button">Fix Pattern</button></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mock-card">
+            <div class="mock-card-head"><strong>Encoding Sheet</strong><span class="row-meta">Pane menu</span></div>
+            <div class="mock-card-body">
+              <div class="dialog">
+                <div class="dialog-head"><strong>Select Encoding</strong><span class="row-meta">legacy.log</span></div>
+                <div class="dialog-body">
+                  <select class="field"><option>UTF-8</option><option>Windows-1251</option><option>UTF-16 LE</option></select>
+                  <div class="panel-card"><div class="row-meta">Preview updates before applying.</div></div>
+                </div>
+                <div class="dialog-actions"><button class="text-button">Cancel</button><button class="primary-button">Apply</button></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mock-card">
+            <div class="mock-card-head"><strong>Command Palette</strong><span class="row-meta">Cmd K</span></div>
+            <div class="mock-card-body">
+              <div class="dialog">
+                <div class="dialog-body">
+                  <div class="command" style="width:100%;"><svg class="icon"><use href="#i-search"/></svg><span>Open first daemon log</span></div>
+                  <div class="panel-card">
+                    <div class="row active"><span class="row-icon"><svg class="icon"><use href="#i-file"/></svg></span><div class="row-main"><div class="row-title">Open daemon-10770.log in new pane</div><div class="row-meta">First Directory</div></div></div>
+                    <div class="row"><span class="row-icon"><svg class="icon"><use href="#i-filter"/></svg></span><div class="row-main"><div class="row-title">Apply Production Errors template</div><div class="row-meta">Saved Templates</div></div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="settings" class="section">
+        <div class="section-title">
+          <div>
+            <h2>Settings Window</h2>
+            <p>Opened from the rail gear; platform chrome changes, but settings structure stays shared.</p>
+          </div>
+        </div>
+        <div class="window">
+          <div class="topbar">
+            <div class="traffic-group"><span class="traffic red"></span><span class="traffic yellow"></span><span class="traffic green"></span><span class="caption-buttons"><span>-</span><span>[]</span><span>x</span></span></div>
+            <div class="command-stack"><div class="command"><svg class="icon"><use href="#i-gear"/></svg><span>Settings</span></div></div>
+            <div class="top-actions"><button class="icon-button" title="Close settings" aria-label="Close settings"><svg class="icon"><use href="#i-x"/></svg></button></div>
+          </div>
+          <div class="settings-grid">
+            <aside class="activity">
+              <button class="icon-button active" title="General"><svg class="icon"><use href="#i-gear"/></svg></button>
+              <button class="icon-button" title="Logs"><svg class="icon"><use href="#i-file"/></svg></button>
+              <button class="icon-button" title="Filters"><svg class="icon"><use href="#i-filter"/></svg></button>
+              <button class="icon-button" title="Highlights"><svg class="icon"><use href="#i-palette"/></svg></button>
+              <button class="icon-button" title="Storage"><svg class="icon"><use href="#i-database"/></svg></button>
+            </aside>
+            <aside class="settings-list">
+              <div class="row active"><div class="row-main"><div class="row-title">General</div><div class="row-meta">Theme, startup, session</div></div></div>
+              <div class="row"><div class="row-main"><div class="row-title">Logs</div><div class="row-meta">Encoding, limits, watching</div></div></div>
+              <div class="row"><div class="row-main"><div class="row-title">Time</div><div class="row-meta">Timestamp formats, sync</div></div></div>
+              <div class="row"><div class="row-main"><div class="row-title">Filters</div><div class="row-meta">Defaults and templates</div></div></div>
+              <div class="row"><div class="row-main"><div class="row-title">Web</div><div class="row-meta">Browser capabilities</div></div></div>
+            </aside>
+            <main class="settings-content">
+              <h2>General</h2>
+              <div class="panel-card">
+                <div class="setting-row"><span>Restore session on launch</span><span class="tag live">On</span></div>
+                <div class="setting-row"><span>Default appearance</span><span class="tag">System</span></div>
+                <div class="setting-row"><span>Default pane width</span><span class="tag">520 px</span></div>
+                <div class="setting-row"><span>Synchronize scrolling by default</span><span class="tag live">On</span></div>
+              </div>
+              <div class="panel-card">
+                <h3>Logs</h3>
+                <div class="setting-row"><span>Maximum opened file size</span><span class="tag">20 MB</span></div>
+                <div class="setting-row"><span>Default encoding</span><span class="tag">Auto detect</span></div>
+                <div class="setting-row"><span>Directory sort strategy</span><span class="tag">Creation time</span></div>
+              </div>
+              <div class="panel-card">
+                <h3>Timestamp Formats</h3>
+                <div class="rule"><input class="field" value="yyyy-MM-dd HH:mm:ss.SSS" /><span class="mode-group"><button class="mode active">Use</button></span></div>
+                <div class="rule"><input class="field" value="HH:mm:ss,SSS" /><span class="mode-group"><button class="mode">Use</button></span></div>
+              </div>
+            </main>
+          </div>
+        </div>
+      </section>
+
+      <section id="empty" class="section">
+        <div class="section-title">
+          <div>
+            <h2>Empty Workspace</h2>
+            <p>First launch keeps the same rail and pane slot model; source opening remains local.</p>
+          </div>
+        </div>
+        <div class="window">
+          <div class="topbar">
+            <div class="traffic-group"><span class="traffic red"></span><span class="traffic yellow"></span><span class="traffic green"></span><span class="caption-buttons"><span>-</span><span>[]</span><span>x</span></span></div>
+            <div class="command-stack"><div class="command"><svg class="icon"><use href="#i-search"/></svg><span>Command or workspace search</span><span class="shortcut">Cmd K</span></div><button class="icon-button active"><svg class="icon"><use href="#i-sync"/></svg></button></div>
+            <div class="top-actions"></div>
+          </div>
+          <div class="app-grid" style="height:420px;">
+            <aside class="activity">
+              <button class="icon-button active"><svg class="icon"><use href="#i-search"/></svg></button>
+              <button class="icon-button"><svg class="icon"><use href="#i-filter"/></svg></button>
+              <button class="icon-button"><svg class="icon"><use href="#i-palette"/></svg></button>
+              <button class="icon-button"><svg class="icon"><use href="#i-files"/></svg></button>
+              <button class="icon-button"><svg class="icon"><use href="#i-bookmark"/></svg></button>
+              <div class="spacer"></div>
+              <button class="icon-button"><svg class="icon"><use href="#i-gear"/></svg></button>
+            </aside>
+            <div class="empty">
+              <div>
+                <div class="drop"><svg class="icon" style="width:34px;height:34px;"><use href="#i-folder"/></svg></div>
+                <h2>Drop logs here</h2>
+                <p class="subtitle" style="margin:8px auto 14px;">Open a file or directory into the first pane.</p>
+                <button class="icon-button active" title="Open source for first pane" aria-label="Open source for first pane"><svg class="icon"><use href="#i-folder"/></svg></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const body = document.body;
+      const platformLabels = {
+        macos: "macOS Desktop",
+        windows: "Windows Desktop",
+        linux: "Linux Desktop",
+        web: "Web",
+      };
+
+      function press(selector, value) {
+        document.querySelectorAll(selector).forEach((button) => {
+          const key = button.dataset.themeButton || button.dataset.platformButton;
+          button.setAttribute("aria-pressed", String(key === value));
+        });
+      }
+
+      document.querySelectorAll("[data-theme-button]").forEach((button) => {
+        button.addEventListener("click", () => {
+          body.dataset.theme = button.dataset.themeButton;
+          press("[data-theme-button]", button.dataset.themeButton);
+        });
+      });
+
+      document.querySelectorAll("[data-platform-button]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const platform = button.dataset.platformButton;
+          body.dataset.platform = platform;
+          press("[data-platform-button]", platform);
+          document.querySelectorAll(".platform-note").forEach((node) => {
+            node.textContent = "Current platform: " + platformLabels[platform];
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
