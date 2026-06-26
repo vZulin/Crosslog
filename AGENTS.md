@@ -1,8 +1,17 @@
 # Crosslog Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-06-15
+Auto-generated from all feature plans. Last updated: 2026-06-27
 
 ## Active Technologies
+- TypeScript 5.x for shared UI/domain code; React 19; Rust 1.77+ stable for
+  Tauri 2 adapters; Node.js 22 in CI; pnpm 9.15.4 via Corepack.
+- Current UI/runtime stack remains React, Vite, Zustand, TanStack Virtual,
+  Tauri 2, Vitest, Playwright, WebdriverIO, Rust `notify`, `encoding_rs`, and
+  `chardetng`; `lucide-react` is only a conditional icon dependency for the
+  redesign if implementation review justifies it. (002-redesign-activity-rail)
+- Browser session state remains in IndexedDB; Desktop session snapshots remain
+  in the application data directory; no state is written beside opened logs.
+  (002-redesign-activity-rail)
 
 - TypeScript 5.x for shared domain/UI and Web shell; Rust stable compatible with
   Tauri 2 for Desktop adapters; Node.js active LTS for tooling.
@@ -55,6 +64,9 @@ scripts/
 - Preserve expected test results unless the underlying requirement changes.
 
 ## Recent Changes
+- 002-redesign-activity-rail: Planned the Activity Rail UI redesign using the
+  current shared React/Tauri stack, Figma mockup audit, UI contract updates, and
+  required Windows/macOS/Linux UI/E2E CI gates.
 
 - 001-multi-log-analysis: Added Crosslog MVP planning for shared Web/Desktop
   log analysis, Tauri 2 Desktop adapters, React UI, strict test gates, and
