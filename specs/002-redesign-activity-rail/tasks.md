@@ -17,14 +17,14 @@
 
 **Purpose**: Capture the Figma audit and create reusable test scaffolding before implementation starts.
 
-- [ ] T001 [P] Create the Figma audit artifact for node `11:3` in `specs/002-redesign-activity-rail/figma-audit.md`
-- [ ] T002 [P] Create the UI test reuse and migration matrix in `specs/002-redesign-activity-rail/test-reuse-audit.md`
-- [ ] T003 [P] Record the final local-SVG icon strategy and rejected dependency alternatives in `specs/002-redesign-activity-rail/icon-strategy.md`
-- [ ] T004 [P] Add shared shell render helpers for component tests in `packages/ui/tests/app-shell/renderRedesignedShell.tsx`
-- [ ] T005 [P] Add redesigned shell Playwright helpers in `apps/web/tests/ui/helpers/redesigned-shell.ts`
-- [ ] T006 [P] Add redesigned shell WebdriverIO helpers in `apps/desktop/tests/ui/helpers/redesigned-shell.ts`
-- [ ] T007 [P] Add redesigned shell XCTest assertion helpers in `apps/desktop/tests/ui/macos/RedesignedShellAssertions.swift`
-- [ ] T008 [P] Add shared UI selector constants in `packages/ui/src/app-shell/testIds.ts`
+- [X] T001 [P] Create the Figma audit artifact for node `11:3` in `specs/002-redesign-activity-rail/figma-audit.md`
+- [X] T002 [P] Create the UI test reuse and migration matrix in `specs/002-redesign-activity-rail/test-reuse-audit.md`
+- [X] T003 [P] Record the final local-SVG icon strategy and rejected dependency alternatives in `specs/002-redesign-activity-rail/icon-strategy.md`
+- [X] T004 [P] Add shared shell render helpers for component tests in `packages/ui/tests/app-shell/renderRedesignedShell.tsx`
+- [X] T005 [P] Add redesigned shell Playwright helpers in `apps/web/tests/ui/helpers/redesigned-shell.ts`
+- [X] T006 [P] Add redesigned shell WebdriverIO helpers in `apps/desktop/tests/ui/helpers/redesigned-shell.ts`
+- [X] T007 [P] Add redesigned shell XCTest assertion helpers in `apps/desktop/tests/ui/macos/RedesignedShellAssertions.swift`
+- [X] T008 [P] Add shared UI selector constants in `packages/ui/src/app-shell/testIds.ts`
 
 ---
 
