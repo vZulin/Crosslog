@@ -2,6 +2,7 @@ export * from "./app-shell/AppShell";
 export * from "./app-shell/ActivityRailShell";
 export * from "./app-shell/CapabilityLimitations";
 export * from "./app-shell/IconButton";
+export * from "./app-shell/IconPreview";
 export * from "./app-shell/Popover";
 export * from "./app-shell/activityRailItems";
 export * from "./app-shell/icons";

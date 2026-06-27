@@ -156,6 +156,10 @@ jobs:
       - name: Install Playwright browser
         run: corepack pnpm exec playwright install chromium
 
+      - name: Enable macOS UI automation
+        if: matrix.os == 'macos'
+        run: sudo /usr/sbin/DevToolsSecurity -enable
+
       - name: Run UI/E2E test script
         run: ${{ matrix.ui-command }}
 
