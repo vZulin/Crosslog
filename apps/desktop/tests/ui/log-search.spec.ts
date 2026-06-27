@@ -20,7 +20,7 @@ describe("Desktop log search", () => {
     const appSearch = await appPane.$(byTestId(redesignedShellTestIds.paneSearchPopover));
     await expect(appSearch).toBeExisting();
 
-    await setPaneSearchQuery(appSearch, "line ");
+    await setPaneSearchQuery(appSearch, "line");
     await expect(await appSearch.$(byTestId(redesignedShellTestIds.paneSearchMatchCount))).toHaveText(
       expect.stringContaining("1 of"),
     );
