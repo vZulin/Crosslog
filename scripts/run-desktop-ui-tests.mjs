@@ -1,7 +1,10 @@
-import { spawnSync } from "node:child_process";
-import { existsSync, lstatSync, readdirSync } from "node:fs";
+import { spawn, spawnSync } from "node:child_process";
+import { randomUUID } from "node:crypto";
+import { existsSync, lstatSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { createConnection } from "node:net";
 import { delimiter, join, resolve } from "node:path";
 import { platform } from "node:process";
+import { tmpdir } from "node:os";
 
 const repoRoot = process.cwd();
 const defaultMacosProjectPath = "apps/desktop/tests/ui/macos/CrosslogDesktopUITests.xcodeproj";
@@ -13,7 +16,10 @@ const defaultMacosAppBundleId = "dev.crosslog.desktop";
 if (platform === "darwin") {
   runMacosXCTestHarness();
 } else {
-  runWdio();
+  runWdioHarness().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
 }
 
 function runMacosXCTestHarness() {
@@ -155,8 +161,163 @@ function runBuiltMacosXCTestHarness(
   ], testEnvironment);
 }
 
-function runWdio() {
-  runCommand("corepack", ["pnpm", "exec", "wdio", "run", "wdio.conf.ts"]);
+async function runWdioHarness() {
+  const driverPort = Number.parseInt(process.env.CROSSLOG_TAURI_DRIVER_PORT ?? "4444", 10);
+  const baseEnvironment = { ...process.env, PATH: pathWithCargo() };
+
+  if (!Number.isInteger(driverPort) || driverPort <= 0 || driverPort > 65_535) {
+    console.error(`CROSSLOG_TAURI_DRIVER_PORT must be a valid TCP port: ${process.env.CROSSLOG_TAURI_DRIVER_PORT}`);
+    process.exit(1);
+  }
+
+  ensureTauriDriverAvailable(baseEnvironment);
+  const appPath = prepareWdioApplication();
+  const actionsPath = join(tmpdir(), `crosslog-ui-actions-${randomUUID()}.txt`);
+  writeFileSync(actionsPath, "", "utf8");
+
+  const wdioEnvironment = {
+    ...baseEnvironment,
+    CROSSLOG_TAURI_APP_PATH: appPath,
+    CROSSLOG_TAURI_DRIVER_PORT: String(driverPort),
+    CROSSLOG_UI_TEST: "1",
+    CROSSLOG_UI_TEST_ACTIONS_PATH: actionsPath,
+  };
+  const driver = startTauriDriver(driverPort, wdioEnvironment);
+
+  try {
+    await waitForTcpPort(driverPort);
+    runCommand("corepack", ["pnpm", "exec", "wdio", "run", "wdio.conf.ts"], wdioEnvironment);
+  } finally {
+    driver.stop();
+    rmSync(actionsPath, { force: true });
+  }
+}
+
+function prepareWdioApplication() {
+  const configuredApplicationPath = getOptionalPath("CROSSLOG_TAURI_APP_PATH");
+
+  if (configuredApplicationPath) {
+    return configuredApplicationPath;
+  }
+
+  if (process.env.CROSSLOG_DESKTOP_UI_SKIP_APP_BUILD !== "true") {
+    runCommand(
+      "corepack",
+      ["pnpm", "--filter", "@crosslog/desktop", "tauri", "build", "--debug", "--no-bundle"],
+      { ...process.env, PATH: pathWithCargo(), CROSSLOG_UI_TEST: "1" },
+    );
+  }
+
+  const applicationPath = resolvePath(
+    join(
+      "apps",
+      "desktop",
+      "src-tauri",
+      "target",
+      "debug",
+      platform === "win32" ? "crosslog-desktop.exe" : "crosslog-desktop",
+    ),
+  );
+
+  if (!existsSync(applicationPath)) {
+    console.error(`Crosslog Desktop application does not exist: ${applicationPath}`);
+    process.exit(1);
+  }
+
+  return applicationPath;
+}
+
+function ensureTauriDriverAvailable(env) {
+  const result = spawnSync(process.env.CROSSLOG_TAURI_DRIVER_PATH ?? "tauri-driver", ["--help"], {
+    cwd: repoRoot,
+    env,
+    encoding: "utf8",
+  });
+
+  if ((result.status ?? 1) === 0) {
+    return;
+  }
+
+  console.error(
+    [
+      "tauri-driver is required for Windows/Linux Desktop UI tests.",
+      "Install it before running corepack pnpm test:ui:desktop:",
+      "  cargo install tauri-driver --locked",
+    ].join("\n"),
+  );
+  process.exit(1);
+}
+
+function startTauriDriver(port, env) {
+  let stopping = false;
+  const driverProcess = spawn(process.env.CROSSLOG_TAURI_DRIVER_PATH ?? "tauri-driver", ["--port", String(port)], {
+    cwd: repoRoot,
+    env,
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+
+  driverProcess.stdout?.on("data", (chunk) => process.stdout.write(chunk));
+  driverProcess.stderr?.on("data", (chunk) => process.stderr.write(chunk));
+  driverProcess.on("error", (error) => {
+    if (!stopping) {
+      console.error(`Failed to run tauri-driver: ${error.message}`);
+    }
+  });
+  driverProcess.on("exit", (code, signal) => {
+    if (stopping) {
+      return;
+    }
+
+    if (code !== null && code !== 0) {
+      console.error(`tauri-driver exited with code ${code}`);
+    } else if (signal) {
+      console.error(`tauri-driver exited after signal ${signal}`);
+    }
+  });
+
+  return {
+    stop() {
+      if (driverProcess.exitCode !== null || driverProcess.killed) {
+        return;
+      }
+
+      stopping = true;
+      driverProcess.kill();
+    },
+  };
+}
+
+async function waitForTcpPort(port) {
+  const deadline = Date.now() + 10_000;
+  let lastError = null;
+
+  while (Date.now() < deadline) {
+    try {
+      await probeTcpPort(port);
+      return;
+    } catch (error) {
+      lastError = error;
+      await new Promise((resolvePromise) => setTimeout(resolvePromise, 100));
+    }
+  }
+
+  console.error(`Timed out waiting for tauri-driver on 127.0.0.1:${port}: ${lastError?.message ?? "unknown error"}`);
+  process.exit(1);
+}
+
+function probeTcpPort(port) {
+  return new Promise((resolvePromise, rejectPromise) => {
+    const socket = createConnection({ host: "127.0.0.1", port });
+    socket.once("connect", () => {
+      socket.end();
+      resolvePromise();
+    });
+    socket.once("error", rejectPromise);
+    socket.setTimeout(1_000, () => {
+      socket.destroy();
+      rejectPromise(new Error("connection timed out"));
+    });
+  });
 }
 
 function prepareMacosAppBundle() {
@@ -291,8 +452,14 @@ function runCommand(command, args, env = process.env) {
   const result = spawnSync(command, args, {
     cwd: repoRoot,
     env,
+    shell: platform === "win32" && command === "corepack",
     stdio: "inherit",
   });
+
+  if (result.error) {
+    console.error(`Failed to run ${command}: ${result.error.message}`);
+    process.exit(1);
+  }
 
   const status = result.status ?? 1;
 
