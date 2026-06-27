@@ -3,10 +3,9 @@ import XCTest
 final class LogTextCopyUITests: CrosslogUITests {
     func testCopyCommandIsAvailablePerPane() {
         let app = launchApplication()
+        openSampleLogs(in: app)
 
-        app.buttons["Open logs"].click()
-        app.buttons["Copy selected text from app.log"].click()
-
-        XCTAssertTrue(app.staticTexts["Copied"].waitForExistence(timeout: 5))
+        performUiTestAction(.copyFirstPane)
+        waitForUiTestTitle("copied=app.log", in: app)
     }
 }

@@ -25,6 +25,7 @@ export interface LogPaneProps {
   readonly onSearchCaseSensitiveChange?: (paneId: string, enabled: boolean) => void;
   readonly onPreviousSearchMatch?: (paneId: string) => void;
   readonly onNextSearchMatch?: (paneId: string) => void;
+  readonly onCopied?: (title: string) => void;
 }
 
 export function LogPane({
@@ -44,6 +45,7 @@ export function LogPane({
   onSearchCaseSensitiveChange,
   onPreviousSearchMatch,
   onNextSearchMatch,
+  onCopied,
 }: LogPaneProps) {
   const activeSearchMatch =
     pane.searchState.currentMatchIndex === null
@@ -71,7 +73,7 @@ export function LogPane({
         onNavigateDirectory={onNavigateDirectory}
       />
       <div role="toolbar" aria-label={`Pane tools for ${pane.title}`}>
-        <LogTextSelection title={pane.title} lines={lines} />
+        <LogTextSelection title={pane.title} lines={lines} onCopied={onCopied} />
         <PaneSearchControls
           title={pane.title}
           searchState={pane.searchState}

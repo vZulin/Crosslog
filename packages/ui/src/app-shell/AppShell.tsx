@@ -1,6 +1,6 @@
 import React from "react";
 import type { CrosslogPlatform } from "@crosslog/platform";
-import type { DirectorySourceRef, DragDropSource, FileSourceRef } from "@crosslog/platform";
+import type { DirectorySourceRef, DragDropSource, FileSourceRef, UiTestAction } from "@crosslog/platform";
 import {
   createLogPane,
   createLogPaneState,
@@ -43,6 +43,8 @@ export interface AppShellProps {
 export function AppShell({ platform }: AppShellProps) {
   const [state, dispatch] = React.useReducer(logPaneReducer, createLogPaneState());
   const [fileSources, setFileSources] = React.useState<FileSourceMap>(() => createInitialFileSources(platform.kind));
+  const [uiTestEnabled, setUiTestEnabled] = React.useState(false);
+  const [uiTestCopiedPaneTitle, setUiTestCopiedPaneTitle] = React.useState<string | null>(null);
   const liveAppendCounter = React.useRef(1);
   const [directorySource, dispatchDirectorySource] = React.useReducer(
     directorySourceReducer,
@@ -155,6 +157,40 @@ export function AppShell({ platform }: AppShellProps) {
       searchState: searchStates[entry.pane.id] ?? emptySearchState,
     },
   }));
+  const unsupportedPaneCount = excludedPaneIds.length;
+  const activePane = state.panes.find((pane) => pane.id === state.activePaneId) ?? null;
+  const activePaneTitle = panes.find((entry) => entry.pane.id === state.activePaneId)?.pane.title ?? null;
+  const activeFileSource = activePane?.sourceRef ? fileSources[activePane.sourceRef] : null;
+  const lifecycleActionsDisabled = !activeFileSource;
+
+  React.useEffect(() => {
+    let active = true;
+
+    void platform.uiTestBridge?.isEnabled().then((enabled) => {
+      if (active) {
+        setUiTestEnabled(enabled);
+      }
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [platform.uiTestBridge]);
+
+  React.useEffect(() => {
+    if (!uiTestEnabled) {
+      return;
+    }
+
+    void platform.uiTestBridge?.publishShellState({
+      status: panes.length === 0 ? "empty" : "logs",
+      paneCount: panes.length,
+      paneTitles: panes.map((entry) => entry.pane.title),
+      activePaneTitle,
+      synchronizationEnabled,
+      copiedPaneTitle: uiTestCopiedPaneTitle,
+    });
+  }, [activePaneTitle, panes, platform.uiTestBridge, synchronizationEnabled, uiTestCopiedPaneTitle, uiTestEnabled]);
 
   React.useEffect(() => {
     paneData.forEach((entry) => setPaneSearchLines(entry.pane.id, entry.lines));
@@ -187,18 +223,13 @@ export function AppShell({ platform }: AppShellProps) {
     setPlanResult(plan.targets, plan.excludedPaneIds);
   };
 
-  const handleSynchronizationEnabledChange = (enabled: boolean) => {
+  const handleSynchronizationEnabledChange = React.useCallback((enabled: boolean) => {
     setSynchronizationEnabled(enabled);
 
     if (!enabled) {
       setPlanResult([], []);
     }
-  };
-
-  const unsupportedPaneCount = excludedPaneIds.length;
-  const activePane = state.panes.find((pane) => pane.id === state.activePaneId) ?? null;
-  const activeFileSource = activePane?.sourceRef ? fileSources[activePane.sourceRef] : null;
-  const lifecycleActionsDisabled = !activeFileSource;
+  }, [setPlanResult, setSynchronizationEnabled]);
 
   const handleAppendLiveLine = () => {
     if (!activeFileSource) {
@@ -236,6 +267,61 @@ export function AppShell({ platform }: AppShellProps) {
       ],
     });
   };
+
+  const firstPaneTitle = panes[0]?.pane.title ?? null;
+  const executeUiTestAction = React.useCallback(
+    (action: UiTestAction) => {
+      switch (action) {
+        case "openSampleLogs":
+          if (!clickUiTestActionControl("openSampleLogs") && state.panes.length === 0) {
+            samplePanes.forEach((pane) => dispatch({ type: "addPane", pane }));
+          }
+          break;
+        case "copyFirstPane":
+          if (firstPaneTitle) {
+            clickElementByAriaLabel(`Copy selected text from ${firstPaneTitle}`);
+          }
+          break;
+        case "toggleSynchronization":
+          if (!clickUiTestActionControl("toggleSynchronization")) {
+            handleSynchronizationEnabledChange(!synchronizationEnabled);
+          }
+          break;
+      }
+    },
+    [firstPaneTitle, handleSynchronizationEnabledChange, state.panes.length, synchronizationEnabled],
+  );
+
+  React.useEffect(() => {
+    if (!uiTestEnabled || !platform.uiTestBridge) {
+      return;
+    }
+
+    let disposed = false;
+    let consuming = false;
+    const consume = () => {
+      if (consuming) {
+        return;
+      }
+
+      consuming = true;
+      void platform.uiTestBridge?.consumePendingAction().then((action) => {
+        if (!disposed && action) {
+          executeUiTestAction(action);
+        }
+      }).finally(() => {
+        consuming = false;
+      });
+    };
+
+    consume();
+    const intervalId = globalThis.setInterval(consume, uiTestActionPollIntervalMs);
+
+    return () => {
+      disposed = true;
+      globalThis.clearInterval(intervalId);
+    };
+  }, [executeUiTestAction, platform.uiTestBridge, uiTestEnabled]);
 
   const openFileSource = async (sourceRef: FileSourceRef) => {
     const result = await platform.fileAccess.openFileReadOnly(sourceRef, defaultFileOpenPolicy);
@@ -333,6 +419,7 @@ export function AppShell({ platform }: AppShellProps) {
           <h1>Crosslog</h1>
           <button
             type="button"
+            data-ui-test-action="openSampleLogs"
             onClick={() => {
               samplePanes.forEach((pane) => dispatch({ type: "addPane", pane }));
             }}
@@ -430,6 +517,7 @@ export function AppShell({ platform }: AppShellProps) {
             onSearchCaseSensitiveChange={setSearchCaseSensitive}
             onPreviousSearchMatch={selectPreviousSearchMatch}
             onNextSearchMatch={selectNextSearchMatch}
+            onCopied={setUiTestCopiedPaneTitle}
           />
         </>
       )}
@@ -512,6 +600,37 @@ const browserDirectoryEntries = [
     name: "nested",
   },
 ];
+
+const uiTestActionPollIntervalMs = 100;
+
+function clickUiTestActionControl(action: UiTestAction): boolean {
+  if (typeof document === "undefined") {
+    return false;
+  }
+
+  return clickElement(document.querySelector<HTMLElement>(`[data-ui-test-action="${action}"]`));
+}
+
+function clickElementByAriaLabel(label: string): boolean {
+  if (typeof document === "undefined") {
+    return false;
+  }
+
+  const element = Array.from(document.querySelectorAll<HTMLElement>("button,input")).find(
+    (candidate) => candidate.getAttribute("aria-label") === label,
+  );
+
+  return clickElement(element ?? null);
+}
+
+function clickElement(element: HTMLElement | null): boolean {
+  if (!element) {
+    return false;
+  }
+
+  element.click();
+  return true;
+}
 
 function createAddedPane(nextPaneNumber: number) {
   return {

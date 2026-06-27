@@ -3,12 +3,9 @@ import XCTest
 final class MultiPaneLayoutUITests: CrosslogUITests {
     func testMultiPaneLayoutIsAvailable() {
         let app = launchApplication()
+        openSampleLogs(in: app)
 
-        app.buttons["Open logs"].click()
-
-        XCTAssertTrue(app.staticTexts["app.log"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.staticTexts["service.log"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.staticTexts["latest.log"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.buttons["Split active pane"].waitForExistence(timeout: 5))
+        waitForUiTestTitle("files=app.log,service.log,app-2026-06-16.log", in: app)
+        waitForUiTestTitle("active=app-2026-06-16.log", in: app)
     }
 }

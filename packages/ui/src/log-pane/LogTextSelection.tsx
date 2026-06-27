@@ -9,6 +9,7 @@ export interface LogTextSelectionProps {
   readonly lines: readonly string[];
   readonly selectedLineIndexes?: readonly number[];
   readonly clipboard?: ClipboardWriter;
+  readonly onCopied?: (title: string) => void;
 }
 
 export function formatSelectedLogText(lines: readonly string[], selectedLineIndexes?: readonly number[]): string {
@@ -41,6 +42,7 @@ export function LogTextSelection({
   lines,
   selectedLineIndexes,
   clipboard,
+  onCopied,
 }: LogTextSelectionProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -49,6 +51,7 @@ export function LogTextSelection({
     void copySelectedLogText(lines, selectedLineIndexes, clipboard).then(() => {
       setCopied(true);
       setMenuOpen(false);
+      onCopied?.(title);
     });
   };
 

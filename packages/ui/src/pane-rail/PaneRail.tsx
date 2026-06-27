@@ -28,6 +28,7 @@ export interface PaneRailProps {
   readonly onSearchCaseSensitiveChange?: (paneId: string, enabled: boolean) => void;
   readonly onPreviousSearchMatch?: (paneId: string) => void;
   readonly onNextSearchMatch?: (paneId: string) => void;
+  readonly onCopied?: (title: string) => void;
 }
 
 export function PaneRail({
@@ -46,6 +47,7 @@ export function PaneRail({
   onSearchCaseSensitiveChange,
   onPreviousSearchMatch,
   onNextSearchMatch,
+  onCopied,
 }: PaneRailProps) {
   return (
     <section aria-label="Log panes" data-testid="pane-rail" style={{ display: "flex", overflowX: "auto" }}>
@@ -68,6 +70,7 @@ export function PaneRail({
             onSearchCaseSensitiveChange={onSearchCaseSensitiveChange}
             onPreviousSearchMatch={onPreviousSearchMatch}
             onNextSearchMatch={onNextSearchMatch}
+            onCopied={onCopied}
           />
           {index < panes.length - 1 ? (
             <PaneResizer

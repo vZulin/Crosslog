@@ -3,10 +3,9 @@ import XCTest
 final class SynchronizedScrollingUITests: CrosslogUITests {
     func testSynchronizationToggleIsAvailable() {
         let app = launchApplication()
+        openSampleLogs(in: app)
 
-        app.buttons["Open logs"].click()
-
-        XCTAssertTrue(app.checkBoxes["Synchronize by time"].waitForExistence(timeout: 5))
-        app.checkBoxes["Synchronize by time"].click()
+        performUiTestAction(.toggleSynchronization)
+        waitForUiTestTitle("sync=off", in: app)
     }
 }

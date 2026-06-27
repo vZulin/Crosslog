@@ -1,3 +1,4 @@
+use crate::commands::ui_test::ui_test_mode_enabled;
 use serde_json::Value;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -20,16 +21,28 @@ pub enum SessionStoreError {
 
 #[tauri::command]
 pub fn load_last_valid_session(app: AppHandle) -> Result<Option<Value>, String> {
+    if ui_test_mode_enabled() {
+        return Ok(None);
+    }
+
     read_last_valid_session_from_dir(&session_dir(&app)?).map_err(|error| error.to_string())
 }
 
 #[tauri::command]
 pub fn write_session_snapshot(app: AppHandle, session: Value) -> Result<(), String> {
+    if ui_test_mode_enabled() {
+        return Ok(());
+    }
+
     write_session_snapshot_to_dir(&session_dir(&app)?, &session).map_err(|error| error.to_string())
 }
 
 #[tauri::command]
 pub fn recover_session(app: AppHandle) -> Result<Option<Value>, String> {
+    if ui_test_mode_enabled() {
+        return Ok(None);
+    }
+
     recover_session_from_dir(&session_dir(&app)?).map_err(|error| error.to_string())
 }
 

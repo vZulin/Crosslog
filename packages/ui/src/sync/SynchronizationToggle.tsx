@@ -11,6 +11,7 @@ export function SynchronizationToggle({ enabled, onEnabledChange }: Synchronizat
       <input
         type="checkbox"
         aria-label="Synchronize by time"
+        data-ui-test-action="toggleSynchronization"
         checked={enabled}
         onChange={(event) => onEnabledChange(event.currentTarget.checked)}
       />
