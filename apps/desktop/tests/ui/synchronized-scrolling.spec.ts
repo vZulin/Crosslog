@@ -16,22 +16,24 @@ describe("Desktop synchronized scrolling", () => {
 
     const topbar = await $(byTestId(redesignedShellTestIds.topbar));
     const statusBar = await $(byTestId(redesignedShellTestIds.statusBar));
+    const statusSummary = await statusBar.$('[role="status"]');
     const syncToggle = await topbar.$('[aria-label="Synchronize by time"]');
     await expect(syncToggle).toBeExisting();
+    await expect(statusSummary).toBeExisting();
     await expect(await syncToggle.isSelected()).toBe(true);
     await expect(await topbar.getText()).toContain("Sync on");
-    await expect(await statusBar.getAttribute("data-sync-enabled")).toBe("true");
-    await expect(await statusBar.getAttribute("data-active-source")).toBe("app-2026-06-16.log");
+    await expect(await statusSummary.getAttribute("data-sync-enabled")).toBe("true");
+    await expect(await statusSummary.getAttribute("data-active-source")).toBe("app-2026-06-16.log");
 
     const panes = await $$('[data-testid="log-pane"]');
     await clickElementWithJavaScript(await panes[0].$('[data-line-number="3"]'));
     await expect(await panes[0].$('[data-testid="pane-header"]').getAttribute("aria-current")).toBe("true");
-    await expect(await statusBar.getAttribute("data-active-source")).toBe("app.log");
+    await expect(await statusSummary.getAttribute("data-active-source")).toBe("app.log");
     await expect(await panes[1].$('[data-line-number="3"]').getAttribute("data-sync-target")).toBe("true");
 
     enqueueDesktopUiTestAction("toggleSynchronization");
     await waitForUiTestTitleFragment("sync=off");
-    await expect(await statusBar.getAttribute("data-sync-enabled")).toBe("false");
+    await expect(await statusSummary.getAttribute("data-sync-enabled")).toBe("false");
     await browser.waitUntil(async () => (await topbar.getText()).includes("Sync off"), {
       interval: 250,
       timeout: 5_000,
