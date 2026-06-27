@@ -1,6 +1,7 @@
-import { expect } from "@wdio/globals";
+import { $, $$, browser, expect } from "@wdio/globals";
 import {
   clickElementWithJavaScript,
+  getRedesignedShell,
   openSampleLogsWithUiBridge,
   waitForDesktopShell,
 } from "./helpers/redesigned-shell";
@@ -8,12 +9,35 @@ import {
 describe("Desktop multi-pane layout", () => {
   it("opens and manages multiple log panes", async () => {
     await waitForDesktopShell();
+    const shell = getRedesignedShell();
+
+    await expect(shell.shell).toBeExisting();
+    await expect(shell.topbar).toBeExisting();
+    await expect(shell.commandField).toBeExisting();
+    await expect(shell.activityRail).toBeExisting();
+    await expect(shell.paneWorkspace).toBeExisting();
+
     await openSampleLogsWithUiBridge();
 
-    await expect($('[data-testid="pane-rail"]')).toBeExisting();
+    await expect(shell.paneWorkspace).toBeExisting();
+    expect(await shell.statusBar.getText()).toContain("3 panes");
     await expect($('aria/app.log')).toBeExisting();
     await expect($('aria/service.log')).toBeExisting();
-    await clickElementWithJavaScript(await $("aria/Split active pane"));
+
+    await clickElementWithJavaScript(await shell.topbar.$('[data-testid="topbar-add-pane"]'));
     await expect($$('[data-testid="log-pane"]')).toBeElementsArrayOfSize(4);
+
+    await clickElementWithJavaScript(await $("aria/Split active pane"));
+    await expect($$('[data-testid="log-pane"]')).toBeElementsArrayOfSize(5);
+
+    await browser.execute((selector: string) => {
+      const workspace = document.querySelector<HTMLElement>(selector);
+
+      if (workspace) {
+        workspace.scrollLeft = 120;
+        workspace.dispatchEvent(new Event("scroll", { bubbles: true }));
+      }
+    }, '[data-testid="pane-workspace"]');
+    await expect(shell.workspaceScrollbar).toBeExisting();
   });
 });

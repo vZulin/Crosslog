@@ -25,6 +25,8 @@ import {
   type SessionDirectorySource,
   type SessionFileSource,
 } from "@crosslog/core";
+import { ActivityRail } from "./ActivityRail";
+import { ActivityRailShell } from "./ActivityRailShell";
 import { CapabilityLimitations } from "./CapabilityLimitations";
 import { FuturePaneToolbarSlot } from "../log-pane/FuturePaneToolbarSlot";
 import type { ClipboardWriter } from "../log-pane/LogTextSelection";
@@ -32,8 +34,10 @@ import { PaneRail } from "../pane-rail/PaneRail";
 import { usePaneSearchStore } from "../search/usePaneSearchStore";
 import { SessionRecoveryBanner } from "../session/SessionRecoveryBanner";
 import { useSessionRestore, useSessionSnapshotWriter } from "../session/useSessionRestore";
-import { SynchronizationToggle } from "../sync/SynchronizationToggle";
+import { StatusBar } from "./StatusBar";
 import { TimestampConfigError } from "../sync/TimestampConfigError";
+import { Topbar } from "./Topbar";
+import { redesignedShellTestIds } from "./testIds";
 import { getPaneOffset, useSynchronizationStore } from "../sync/useSynchronizationStore";
 import { useFileLifecycleEvents, type FileSourceMap } from "../log-pane/useFileLifecycleEvents";
 
@@ -195,6 +199,7 @@ export function AppShell({ platform }: AppShellProps) {
       synchronizationEnabled,
       copiedPaneTitle: uiTestCopiedPaneTitle,
       sessionSnapshotStatus,
+      redesignedRegions: getPublishedRedesignedRegions(panes.length),
     });
   }, [
     activePaneTitle,
@@ -424,121 +429,178 @@ export function AppShell({ platform }: AppShellProps) {
     void platform.dragDropSource.mapDroppedSources(event.nativeEvent).then(openDroppedSources);
   };
 
+  const handleOpenSampleLogs = () => {
+    samplePanes.forEach((pane) => dispatch({ type: "addPane", pane }));
+  };
+
+  const handleAddPane = () => {
+    dispatch({ type: "addPane", pane: createAddedPane(state.nextPaneNumber) });
+  };
+
+  const handleSplitPane = () => {
+    dispatch({ type: "splitPane" });
+  };
+
+  const handleOpenEmptyDirectory = () => {
+    dispatchDirectorySource({ type: "refreshFiles", files: [] });
+    dispatch({
+      type: "addPane",
+      pane: {
+        id: "pane-empty-directory",
+        title: "logs/empty",
+        sourceRef: "source-directory",
+        width: 520,
+        status: "empty",
+      },
+    });
+  };
+
+  const handleDiscoverNewerDirectoryFile = () => {
+    dispatchDirectorySource({
+      type: "refreshFiles",
+      files: [newerDirectoryFile, ...directorySource.files],
+    });
+  };
+
+  const handleOpenSourcesFromRail = () => {
+    if (state.panes.length === 0) {
+      handleOpenSampleLogs();
+      return;
+    }
+
+    handleAddPane();
+  };
+
+  const statusMessage =
+    unsupportedPaneCount > 0 ? `${unsupportedPaneCount} untimed pane excluded` : null;
+  const paneWorkspace =
+    state.panes.length === 0 ? (
+      <section className="crosslog-empty-workspace" aria-label="Empty workspace">
+        <h1>Crosslog</h1>
+        <button type="button" data-ui-test-action="openSampleLogs" onClick={handleOpenSampleLogs}>
+          Open logs
+        </button>
+        {platform.kind === "web" ? (
+          <>
+            <label>
+              Open browser files
+              <input
+                aria-label="Open browser files"
+                multiple
+                type="file"
+                onChange={handleBrowserFileInput}
+              />
+            </label>
+            <button type="button" onClick={handleOpenBrowserDirectory}>
+              Open browser directory
+            </button>
+          </>
+        ) : null}
+        <button type="button" onClick={handleOpenEmptyDirectory}>
+          Open empty directory
+        </button>
+        <p>{platform.kind === "web" ? "Web workspace" : "Desktop workspace"}</p>
+      </section>
+    ) : (
+      <>
+        <div className="crosslog-workspace-actions" role="toolbar" aria-label="Workspace tools">
+          <button type="button" onClick={handleDiscoverNewerDirectoryFile}>
+            Discover newer directory file
+          </button>
+          <button type="button" disabled={lifecycleActionsDisabled} onClick={handleAppendLiveLine}>
+            Append live line
+          </button>
+          <button type="button" disabled={lifecycleActionsDisabled} onClick={handleDeleteActiveFile}>
+            Delete active file
+          </button>
+          <button type="button" disabled={lifecycleActionsDisabled} onClick={handleReplaceActiveFile}>
+            Replace active file
+          </button>
+        </div>
+        <PaneRail
+          panes={panes}
+          onClosePane={(paneId) => dispatch({ type: "closePane", paneId })}
+          onActivatePane={(paneId) => dispatch({ type: "setActivePane", paneId })}
+          onResizePane={(leftPaneId, delta) => dispatch({ type: "resizePane", leftPaneId, delta })}
+          onHorizontalScroll={(paneId, scrollLeft) =>
+            dispatch({ type: "setHorizontalScroll", paneId, scrollLeft })
+          }
+          onNavigateDirectory={(_paneId, direction) => dispatchDirectorySource({ type: "navigate", direction })}
+          onTimeAnchorChange={handleAnchorChange}
+          onTimeOffsetChange={setPaneOffset}
+          onSearchQueryChange={setSearchQuery}
+          onSearchRegexModeChange={(paneId, enabled) => setSearchMode(paneId, enabled ? "regex" : "text")}
+          onSearchCaseSensitiveChange={setSearchCaseSensitive}
+          onPreviousSearchMatch={selectPreviousSearchMatch}
+          onNextSearchMatch={selectNextSearchMatch}
+          onCopied={setUiTestCopiedPaneTitle}
+          clipboard={uiTestEnabled ? uiTestClipboardWriter : undefined}
+        />
+      </>
+    );
+
   return (
-    <main aria-label="Crosslog workspace">
-      <SessionRecoveryBanner message={restoreState.message} />
-      <CapabilityLimitations limitations={platform.capabilities.limitations} />
-      {state.panes.length === 0 ? (
-        <section aria-label="Empty workspace" onDragOver={(event) => event.preventDefault()} onDrop={handleDrop}>
-          <h1>Crosslog</h1>
-          <button
-            type="button"
-            data-ui-test-action="openSampleLogs"
-            onClick={() => {
-              samplePanes.forEach((pane) => dispatch({ type: "addPane", pane }));
-            }}
-          >
-            Open logs
-          </button>
-          {platform.kind === "web" ? (
-            <>
-              <label>
-                Open browser files
-                <input
-                  aria-label="Open browser files"
-                  multiple
-                  type="file"
-                  onChange={handleBrowserFileInput}
-                />
-              </label>
-              <button type="button" onClick={handleOpenBrowserDirectory}>
-                Open browser directory
-              </button>
-            </>
-          ) : null}
-          <button
-            type="button"
-            onClick={() => {
-              dispatchDirectorySource({ type: "refreshFiles", files: [] });
-              dispatch({
-                type: "addPane",
-                pane: {
-                  id: "pane-empty-directory",
-                  title: "logs/empty",
-                  sourceRef: "source-directory",
-                  width: 520,
-                  status: "empty",
-                },
-              });
-            }}
-          >
-            Open empty directory
-          </button>
-          <p>{platform.kind === "web" ? "Web workspace" : "Desktop workspace"}</p>
-        </section>
-      ) : (
+    <ActivityRailShell
+      activityRail={
+        <ActivityRail
+          onOpenSources={handleOpenSourcesFromRail}
+          onSearch={() => undefined}
+          onSettings={() => undefined}
+        />
+      }
+      onDragOver={(event) => event.preventDefault()}
+      onDrop={handleDrop}
+      paneWorkspace={paneWorkspace}
+      statusBar={
+        <StatusBar
+          activeSourceLabel={activePaneTitle}
+          message={statusMessage}
+          paneCount={state.panes.length}
+          syncEnabled={synchronizationEnabled}
+        />
+      }
+      systemBanners={
         <>
-          <div
-            role="toolbar"
-            aria-label="Global tools"
-            onDragOver={(event) => event.preventDefault()}
-            onDrop={handleDrop}
-          >
-            <SynchronizationToggle
-              enabled={synchronizationEnabled}
-              onEnabledChange={handleSynchronizationEnabledChange}
-            />
-            <button
-              type="button"
-              onClick={() =>
-                dispatchDirectorySource({
-                  type: "refreshFiles",
-                  files: [newerDirectoryFile, ...directorySource.files],
-                })
-              }
-            >
-              Discover newer directory file
-            </button>
-            {unsupportedPaneCount > 0 ? (
-              <span aria-live="polite">{unsupportedPaneCount} untimed pane excluded</span>
-            ) : null}
-            <button type="button" disabled={lifecycleActionsDisabled} onClick={handleAppendLiveLine}>
-              Append live line
-            </button>
-            <button type="button" disabled={lifecycleActionsDisabled} onClick={handleDeleteActiveFile}>
-              Delete active file
-            </button>
-            <button type="button" disabled={lifecycleActionsDisabled} onClick={handleReplaceActiveFile}>
-              Replace active file
-            </button>
-          </div>
+          <SessionRecoveryBanner message={restoreState.message} />
+          <CapabilityLimitations limitations={platform.capabilities.limitations} />
           <TimestampConfigError message={null} />
-          <PaneRail
-            panes={panes}
-            onAddPane={() => dispatch({ type: "addPane", pane: createAddedPane(state.nextPaneNumber) })}
-            onSplitPane={() => dispatch({ type: "splitPane" })}
-            onClosePane={(paneId) => dispatch({ type: "closePane", paneId })}
-            onActivatePane={(paneId) => dispatch({ type: "setActivePane", paneId })}
-            onResizePane={(leftPaneId, delta) => dispatch({ type: "resizePane", leftPaneId, delta })}
-            onHorizontalScroll={(paneId, scrollLeft) =>
-              dispatch({ type: "setHorizontalScroll", paneId, scrollLeft })
-            }
-            onNavigateDirectory={(_paneId, direction) => dispatchDirectorySource({ type: "navigate", direction })}
-            onTimeAnchorChange={handleAnchorChange}
-            onTimeOffsetChange={setPaneOffset}
-            onSearchQueryChange={setSearchQuery}
-            onSearchRegexModeChange={(paneId, enabled) => setSearchMode(paneId, enabled ? "regex" : "text")}
-            onSearchCaseSensitiveChange={setSearchCaseSensitive}
-            onPreviousSearchMatch={selectPreviousSearchMatch}
-            onNextSearchMatch={selectNextSearchMatch}
-            onCopied={setUiTestCopiedPaneTitle}
-            clipboard={uiTestEnabled ? uiTestClipboardWriter : undefined}
-          />
+          <FuturePaneToolbarSlot />
         </>
-      )}
-      <FuturePaneToolbarSlot />
-    </main>
+      }
+      topbar={
+        <Topbar
+          canSplitPane={state.panes.length > 0}
+          syncEnabled={synchronizationEnabled}
+          onAddPane={handleAddPane}
+          onSplitPane={handleSplitPane}
+          onSyncEnabledChange={handleSynchronizationEnabledChange}
+        />
+      }
+    />
   );
+}
+
+function getPublishedRedesignedRegions(paneCount: number): readonly string[] {
+  const persistentRegions = [
+    redesignedShellTestIds.crosslogShell,
+    redesignedShellTestIds.topbar,
+    redesignedShellTestIds.commandField,
+    redesignedShellTestIds.activityRail,
+    redesignedShellTestIds.paneWorkspace,
+    redesignedShellTestIds.statusBar,
+  ];
+
+  if (paneCount === 0) {
+    return persistentRegions;
+  }
+
+  return [
+    ...persistentRegions,
+    redesignedShellTestIds.workspaceScrollbar,
+    redesignedShellTestIds.logPane,
+    redesignedShellTestIds.paneHeader,
+    redesignedShellTestIds.logViewport,
+  ];
 }
 
 const samplePanes = [
@@ -650,7 +712,7 @@ function clickElement(element: HTMLElement | null): boolean {
 function createAddedPane(nextPaneNumber: number) {
   return {
     title: `adhoc-${nextPaneNumber}.log`,
-    sourceRef: `source-adhoc-${nextPaneNumber}`,
+    sourceRef: null,
     width: 480,
     status: "ready" as const,
   };

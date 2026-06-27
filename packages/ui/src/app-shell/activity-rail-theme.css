@@ -27,6 +27,17 @@
   --crosslog-statusbar-height: 27px;
 }
 
+html,
+body,
+#root {
+  block-size: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--crosslog-shell-bg);
+}
+
 .crosslog-shell {
   display: grid;
   grid-template:
@@ -34,6 +45,7 @@
     "rail workspace" minmax(0, 1fr)
     "status status" var(--crosslog-statusbar-height)
     / var(--crosslog-rail-width) minmax(0, 1fr);
+  block-size: 100%;
   min-block-size: 100%;
   overflow: hidden;
   border-radius: var(--crosslog-window-radius);
@@ -60,7 +72,8 @@
   grid-area: workspace;
   min-width: 0;
   min-height: 0;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   background: var(--crosslog-surface);
 }
 
@@ -111,4 +124,263 @@
   background: var(--crosslog-surface);
   box-shadow: 0 12px 32px rgb(29 29 31 / 16%);
   color: var(--crosslog-text);
+}
+
+.crosslog-sr-only {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.crosslog-topbar {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  block-size: 100%;
+  padding-inline: 10px;
+}
+
+.crosslog-command-field {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  block-size: 25px;
+  border: 1px solid var(--crosslog-border);
+  border-radius: var(--crosslog-control-radius);
+  background: var(--crosslog-surface);
+  color: var(--crosslog-muted-text);
+  padding-inline: 8px;
+}
+
+.crosslog-command-field__input {
+  min-width: 0;
+  inline-size: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--crosslog-text);
+  font: inherit;
+}
+
+.crosslog-topbar__actions,
+.crosslog-pane-creation {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.crosslog-topbar__sync label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--crosslog-muted-text);
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+.crosslog-split-button {
+  block-size: 27px;
+  border: 1px solid var(--crosslog-border);
+  border-radius: var(--crosslog-control-radius);
+  background: var(--crosslog-surface);
+  color: var(--crosslog-muted-text);
+  font: inherit;
+  padding-inline: 8px;
+}
+
+.crosslog-split-button:not(:disabled) {
+  cursor: pointer;
+}
+
+.crosslog-split-button:not(:disabled):hover {
+  background: var(--crosslog-accent-surface);
+  color: var(--crosslog-accent);
+}
+
+.crosslog-activity-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding-block: 8px;
+}
+
+.crosslog-pane-workspace {
+  min-block-size: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.crosslog-pane-workspace__content {
+  flex: 1 1 auto;
+  display: flex;
+  min-block-size: 0;
+}
+
+.crosslog-pane-workspace__scrollbar {
+  flex: 0 0 10px;
+  margin: 0 10px 6px;
+  border-radius: 999px;
+  background: var(--crosslog-scrollbar-track);
+}
+
+.crosslog-pane-workspace__scrollbar-thumb {
+  inline-size: clamp(48px, 30%, 160px);
+  block-size: 100%;
+  border-radius: inherit;
+  background: var(--crosslog-scrollbar-thumb);
+}
+
+.crosslog-log-pane {
+  flex: 0 0 auto;
+  min-inline-size: 320px;
+  min-block-size: 100%;
+  display: flex;
+  flex-direction: column;
+  border-inline-end: 1px solid var(--crosslog-border);
+  background: var(--crosslog-surface);
+}
+
+.crosslog-log-pane[data-active="true"] {
+  box-shadow: inset 0 2px 0 var(--crosslog-accent);
+}
+
+.crosslog-pane-header {
+  min-block-size: var(--crosslog-pane-header-height);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-block-end: 1px solid var(--crosslog-border);
+  background: var(--crosslog-toolbar-surface);
+}
+
+.crosslog-pane-header__identity {
+  min-width: 0;
+}
+
+.crosslog-pane-header__title,
+.crosslog-pane-header__directory,
+.crosslog-status-bar__active-source {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.crosslog-pane-header__title {
+  margin: 0;
+  color: var(--crosslog-text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.crosslog-pane-header__directory {
+  color: var(--crosslog-muted-text);
+  font-size: 11px;
+}
+
+.crosslog-pane-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-block-end: 1px solid var(--crosslog-border);
+}
+
+.crosslog-log-scroller {
+  flex: 1 1 auto;
+  min-block-size: 0;
+}
+
+.crosslog-log-viewport {
+  margin: 0;
+  padding: 8px 12px;
+  font-family: var(--crosslog-font-log);
+  font-size: 12px;
+}
+
+.crosslog-pane-status {
+  padding: 4px 8px;
+  border-block-start: 1px solid var(--crosslog-border);
+  color: var(--crosslog-muted-text);
+  font-size: 11px;
+}
+
+.crosslog-workspace-actions {
+  position: sticky;
+  inset-inline-start: 0;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  padding: 6px 8px;
+  border-block-end: 1px solid var(--crosslog-border);
+  background: var(--crosslog-surface);
+}
+
+.crosslog-empty-workspace {
+  min-block-size: 100%;
+  display: grid;
+  place-content: center;
+  gap: 10px;
+  padding: 24px;
+  text-align: center;
+}
+
+.crosslog-empty-workspace h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.crosslog-status-bar {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  block-size: 100%;
+  min-width: 0;
+  padding-inline: 10px;
+  color: var(--crosslog-muted-text);
+  font-size: 12px;
+}
+
+.crosslog-status-bar__message {
+  color: var(--crosslog-warning-text);
+}
+
+@media (max-width: 720px) {
+  .crosslog-topbar {
+    grid-template-columns: minmax(120px, 1fr) auto;
+    gap: 4px;
+    padding-inline: 6px;
+  }
+
+  .crosslog-topbar__sync label {
+    max-inline-size: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .crosslog-split-button {
+    padding-inline: 6px;
+  }
+
+  .crosslog-status-bar {
+    grid-template-columns: auto auto minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .crosslog-status-bar__message {
+    display: none;
+  }
 }

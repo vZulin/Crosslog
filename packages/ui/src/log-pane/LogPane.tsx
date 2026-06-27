@@ -7,6 +7,7 @@ import { VirtualLogViewport } from "./VirtualLogViewport";
 import { DeletedFileStatus } from "./DeletedFileStatus";
 import { TimeOffsetEditor } from "../sync/TimeOffsetEditor";
 import { PaneSearchControls } from "../search/PaneSearchControls";
+import { redesignedShellTestIds } from "../app-shell/testIds";
 
 export interface LogPaneProps {
   readonly pane: LogPaneModel;
@@ -56,13 +57,13 @@ export function LogPane({
 
   return (
     <article
+      className="crosslog-log-pane"
       aria-label={`Log pane ${pane.title}`}
-      data-testid="log-pane"
+      data-testid={redesignedShellTestIds.logPane}
+      id={redesignedShellTestIds.logPane}
       data-active={pane.active}
       style={{
-        flex: `0 0 ${pane.width}px`,
-        minWidth: `${pane.width}px`,
-        borderInlineEnd: "1px solid #c8ced8",
+        inlineSize: `${pane.width}px`,
       }}
       onFocus={() => onActivate(pane.id)}
       onClick={() => onActivate(pane.id)}
@@ -74,7 +75,7 @@ export function LogPane({
         onClose={() => onClose(pane.id)}
         onNavigateDirectory={onNavigateDirectory}
       />
-      <div role="toolbar" aria-label={`Pane tools for ${pane.title}`}>
+      <div className="crosslog-pane-tools" role="toolbar" aria-label={`Pane tools for ${pane.title}`}>
         <LogTextSelection title={pane.title} lines={lines} onCopied={onCopied} clipboard={clipboard} />
         <PaneSearchControls
           title={pane.title}
@@ -109,7 +110,7 @@ export function LogPane({
       </HorizontalLogScroller>
       {pane.status === "deleted" ? <DeletedFileStatus title={pane.title} /> : null}
       {pane.syncEnabled ? null : <p>Synchronization disabled for this pane</p>}
-      <footer>{pane.status}</footer>
+      <footer className="crosslog-pane-status">{pane.status}</footer>
     </article>
   );
 }

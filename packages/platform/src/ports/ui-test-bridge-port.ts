@@ -6,6 +6,7 @@ export interface UiTestShellState {
   readonly synchronizationEnabled: boolean;
   readonly copiedPaneTitle: string | null;
   readonly sessionSnapshotStatus: "idle" | "pending" | "written" | "error";
+  readonly redesignedRegions: readonly string[];
 }
 
 export type UiTestAction = "openSampleLogs" | "copyFirstPane" | "toggleSynchronization";

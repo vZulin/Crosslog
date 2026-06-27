@@ -1,5 +1,6 @@
 import React from "react";
 import type { SearchMatch } from "@crosslog/core";
+import { redesignedShellTestIds } from "../app-shell/testIds";
 
 export interface VisibleLogLine {
   readonly lineNumber: number;
@@ -56,7 +57,12 @@ export function VirtualLogViewport({
   );
 
   return (
-    <ol aria-label={`Virtual log viewport for ${title}`} data-testid="virtual-log-viewport">
+    <ol
+      aria-label={`Virtual log viewport for ${title}`}
+      className="crosslog-log-viewport"
+      data-testid={redesignedShellTestIds.logViewport}
+      id={redesignedShellTestIds.logViewport}
+    >
       {visibleLines.map((line) => (
         <li
           key={line.lineNumber}

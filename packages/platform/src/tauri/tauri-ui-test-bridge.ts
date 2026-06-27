@@ -37,6 +37,7 @@ export function formatUiTestShellState(state: UiTestShellState): string {
     `copied=${state.copiedPaneTitle ?? "none"}`,
     `active=${state.activePaneTitle ?? "none"}`,
     `files=${state.paneTitles.length > 0 ? state.paneTitles.join(",") : "none"}`,
+    `regions=${state.redesignedRegions.length > 0 ? state.redesignedRegions.join(",") : "none"}`,
   ].join(";");
 }
 

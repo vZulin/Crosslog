@@ -60,25 +60,25 @@
 
 ### Tests for User Story 1
 
-- [ ] T022 [P] [US1] Add component tests for topbar, activity rail, pane workspace, and status bar regions in `packages/ui/tests/app-shell/redesigned-workspace.test.tsx`
-- [ ] T023 [P] [US1] Update Web multi-pane UI test for redesigned shell regions in `apps/web/tests/ui/multi-pane-layout.spec.ts`
-- [ ] T024 [P] [US1] Update Desktop WDIO multi-pane UI test for redesigned shell regions in `apps/desktop/tests/ui/multi-pane-layout.spec.ts`
-- [ ] T025 [P] [US1] Update macOS multi-pane UI test for redesigned shell regions in `apps/desktop/tests/ui/macos/MultiPaneLayoutUITests.swift`
-- [ ] T026 [P] [US1] Add responsive no-overlap shell test for long labels in `packages/ui/tests/app-shell/redesigned-shell-responsive.test.tsx`
+- [X] T022 [P] [US1] Add component tests for topbar, activity rail, pane workspace, and status bar regions in `packages/ui/tests/app-shell/redesigned-workspace.test.tsx`
+- [X] T023 [P] [US1] Update Web multi-pane UI test for redesigned shell regions in `apps/web/tests/ui/multi-pane-layout.spec.ts`
+- [X] T024 [P] [US1] Update Desktop WDIO multi-pane UI test for redesigned shell regions in `apps/desktop/tests/ui/multi-pane-layout.spec.ts`
+- [X] T025 [P] [US1] Update macOS multi-pane UI test for redesigned shell regions in `apps/desktop/tests/ui/macos/MultiPaneLayoutUITests.swift`
+- [X] T026 [P] [US1] Add responsive no-overlap shell test for long labels in `packages/ui/tests/app-shell/redesigned-shell-responsive.test.tsx`
 
 ### Implementation for User Story 1
 
-- [ ] T027 [US1] Implement the topbar command field, sync button slot, and add-pane button slot in `packages/ui/src/app-shell/Topbar.tsx`
-- [ ] T028 [US1] Implement the activity rail with MVP and future-unavailable actions in `packages/ui/src/app-shell/ActivityRail.tsx`
-- [ ] T029 [US1] Implement the redesigned status bar summary in `packages/ui/src/app-shell/StatusBar.tsx`
-- [ ] T030 [US1] Implement the redesigned pane workspace container and workspace scrollbar in `packages/ui/src/pane-rail/PaneWorkspace.tsx`
-- [ ] T031 [US1] Update pane rail rendering to use the redesigned pane workspace in `packages/ui/src/pane-rail/PaneRail.tsx`
-- [ ] T032 [US1] Update `AppShell` to compose the redesigned topbar, activity rail, pane workspace, and status bar in `packages/ui/src/app-shell/AppShell.tsx`
-- [ ] T033 [US1] Update empty workspace layout to keep the central open action inside the redesigned shell in `packages/ui/src/app-shell/AppShell.tsx`
-- [ ] T034 [US1] Update Web shell CSS import or root class wiring for the redesigned shell in `apps/web/src/App.tsx`
-- [ ] T035 [US1] Update Desktop shell CSS import or root class wiring for the redesigned shell in `apps/desktop/src/App.tsx`
-- [ ] T036 [US1] Run the local US1 gate with `bash scripts/macos/test.sh`
-- [ ] T037 [US1] Run the local US1 UI gate with `bash scripts/macos/test-ui.sh`
+- [X] T027 [US1] Implement the topbar command field, sync button slot, and add-pane button slot in `packages/ui/src/app-shell/Topbar.tsx`
+- [X] T028 [US1] Implement the activity rail with MVP and future-unavailable actions in `packages/ui/src/app-shell/ActivityRail.tsx`
+- [X] T029 [US1] Implement the redesigned status bar summary in `packages/ui/src/app-shell/StatusBar.tsx`
+- [X] T030 [US1] Implement the redesigned pane workspace container and workspace scrollbar in `packages/ui/src/pane-rail/PaneWorkspace.tsx`
+- [X] T031 [US1] Update pane rail rendering to use the redesigned pane workspace in `packages/ui/src/pane-rail/PaneRail.tsx`
+- [X] T032 [US1] Update `AppShell` to compose the redesigned topbar, activity rail, pane workspace, and status bar in `packages/ui/src/app-shell/AppShell.tsx`
+- [X] T033 [US1] Update empty workspace layout to keep the central open action inside the redesigned shell in `packages/ui/src/app-shell/AppShell.tsx`
+- [X] T034 [US1] Update Web shell CSS import or root class wiring for the redesigned shell in `apps/web/src/App.tsx`
+- [X] T035 [US1] Update Desktop shell CSS import or root class wiring for the redesigned shell in `apps/desktop/src/App.tsx`
+- [X] T036 [US1] Run the local US1 gate with `bash scripts/macos/test.sh`
+- [X] T037 [US1] Run the local US1 UI gate with `bash scripts/macos/test-ui.sh`
 
 **Checkpoint**: User Story 1 is independently functional and demoable.
 

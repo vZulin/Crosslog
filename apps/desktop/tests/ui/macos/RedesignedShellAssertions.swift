@@ -19,7 +19,7 @@ enum RedesignedShellAssertions {
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
-        [
+        let expectedRegions = [
             crosslogShell,
             topbar,
             commandField,
@@ -29,10 +29,12 @@ enum RedesignedShellAssertions {
             logPane,
             paneHeader,
             statusBar,
-        ].forEach { identifier in
+        ]
+
+        expectedRegions.forEach { identifier in
             XCTAssertTrue(
-                element(matching: identifier, in: app).waitForExistence(timeout: timeout),
-                "Expected redesigned shell region '\(identifier)' to exist",
+                waitForUiTestTitleFragment("regions=", containing: identifier, in: app, timeout: timeout),
+                "Expected redesigned shell region '\(identifier)' to be published",
                 file: file,
                 line: line
             )
@@ -45,9 +47,9 @@ enum RedesignedShellAssertions {
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
-        XCTAssertEqual(
-            app.descendants(matching: .any).matching(identifier: logPane).count,
-            expectedCount,
+        XCTAssertTrue(
+            waitForUiTestTitleFragment("panes=\(expectedCount)", in: app, timeout: 5),
+            "Expected redesigned shell pane count \(expectedCount)",
             file: file,
             line: line
         )
@@ -59,13 +61,62 @@ enum RedesignedShellAssertions {
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
-        let status = element(matching: statusBar, in: app)
-        XCTAssertTrue(status.waitForExistence(timeout: 5), file: file, line: line)
-        XCTAssertTrue(status.label.contains(text), file: file, line: line)
+        XCTAssertTrue(
+            waitForUiTestTitleStatus(text, in: app),
+            "Expected redesigned status to contain '\(text)'",
+            file: file,
+            line: line
+        )
     }
 
-    private static func element(matching identifier: String, in app: XCUIApplication) -> XCUIElement {
-        app.descendants(matching: .any).matching(identifier: identifier).firstMatch
+    private static func waitForUiTestTitleStatus(
+        _ statusText: String,
+        in app: XCUIApplication,
+        timeout: TimeInterval = 5
+    ) -> Bool {
+        let mappedFragment: String
+
+        switch statusText {
+        case "0 panes":
+            mappedFragment = "panes=0"
+        case "1 pane":
+            mappedFragment = "panes=1"
+        case "Sync on":
+            mappedFragment = "sync=on"
+        case "Sync off":
+            mappedFragment = "sync=off"
+        default:
+            if statusText.hasSuffix(" panes") {
+                mappedFragment = "panes=\(statusText.replacingOccurrences(of: " panes", with: ""))"
+            } else {
+                mappedFragment = statusText
+            }
+        }
+
+        return waitForUiTestTitleFragment(mappedFragment, in: app, timeout: timeout)
+    }
+
+    private static func waitForUiTestTitleFragment(
+        _ fragment: String,
+        containing containedFragment: String? = nil,
+        in app: XCUIApplication,
+        timeout: TimeInterval
+    ) -> Bool {
+        let deadline = Date().addingTimeInterval(timeout)
+        let window = app.windows.firstMatch
+
+        while Date() < deadline {
+            let title = window.title
+            let containsFragment = title.contains(fragment)
+            let containsNestedFragment = containedFragment.map { title.contains($0) } ?? true
+
+            if window.exists, containsFragment, containsNestedFragment {
+                return true
+            }
+
+            RunLoop.current.run(until: Date().addingTimeInterval(0.1))
+        }
+
+        return false
     }
 }
-

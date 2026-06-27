@@ -29,6 +29,7 @@ export function HorizontalLogScroller({
   return (
     <div
       ref={scrollRef}
+      className="crosslog-log-scroller"
       role="region"
       aria-label={`Horizontal log scroller for ${title}`}
       onScroll={handleScroll}

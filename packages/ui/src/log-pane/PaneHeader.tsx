@@ -4,6 +4,7 @@ import { getCurrentDirectoryFile } from "@crosslog/core";
 import { ClosePaneButton } from "./ClosePaneButton";
 import { DirectoryNavigator } from "./DirectoryNavigator";
 import { EmptyDirectoryStatus } from "./EmptyDirectoryStatus";
+import { redesignedShellTestIds } from "../app-shell/testIds";
 
 export interface PaneHeaderProps {
   readonly paneId: string;
@@ -27,10 +28,24 @@ export function PaneHeader({
   const nextFile = directorySource
     ? directorySource.files.find((entry) => entry.identity.value === directorySource.navigationIndex.nextFileId) ?? null
     : null;
+  const displayTitle = selectedFile?.name ?? title;
 
   return (
-    <header>
-      <h2>{selectedFile?.name ?? title}</h2>
+    <header
+      className="crosslog-pane-header"
+      data-testid={redesignedShellTestIds.paneHeader}
+      id={redesignedShellTestIds.paneHeader}
+    >
+      <div className="crosslog-pane-header__identity">
+        <h2 className="crosslog-pane-header__title" title={displayTitle}>
+          {displayTitle}
+        </h2>
+        {directorySource ? (
+          <span className="crosslog-pane-header__directory" title={directorySource.displayName}>
+            {directorySource.displayName}
+          </span>
+        ) : null}
+      </div>
       {directorySource ? (
         directorySource.files.length === 0 ? (
           <EmptyDirectoryStatus directoryName={directorySource.displayName} />
@@ -45,7 +60,11 @@ export function PaneHeader({
           />
         )
       ) : null}
-      <ClosePaneButton title={selectedFile?.name ?? title} onClose={onClose} />
+      <ClosePaneButton
+        testId={redesignedShellTestIds.paneHeaderClose}
+        title={displayTitle}
+        onClose={onClose}
+      />
     </header>
   );
 }

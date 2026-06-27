@@ -1,4 +1,5 @@
 import React from "react";
+import { redesignedShellTestIds } from "../app-shell/testIds";
 
 export interface DirectoryNavigatorProps {
   readonly directoryName: string;
@@ -26,6 +27,7 @@ export function DirectoryNavigator({
       <button
         type="button"
         aria-label={`Previous file in ${directoryName}`}
+        data-testid={redesignedShellTestIds.paneHeaderDirectoryPrevious}
         disabled={!previousFileName}
         onClick={onPrevious}
       >
@@ -34,6 +36,7 @@ export function DirectoryNavigator({
       <button
         type="button"
         aria-label={`Next file in ${directoryName}`}
+        data-testid={redesignedShellTestIds.paneHeaderDirectoryNext}
         disabled={!nextFileName}
         onClick={onNext}
       >

@@ -3,7 +3,7 @@ import {
   redesignedShellStructuralTestIds,
   redesignedShellTestIds,
   type RedesignedShellTestId,
-} from "@crosslog/ui/app-shell/testIds";
+} from "@crosslog/ui";
 
 export interface RedesignedShellLocators {
   readonly shell: Locator;
@@ -42,4 +42,3 @@ export async function expectRedesignedShellRegions(page: Page): Promise<void> {
 export function byTestId(page: Page, testId: RedesignedShellTestId): Locator {
   return page.getByTestId(testId);
 }
-

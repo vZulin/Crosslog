@@ -1,6 +1,7 @@
 import React from "react";
 import type { CrosslogPlatform } from "@crosslog/platform";
 import { AppShell, IconPreview } from "@crosslog/ui";
+import "@crosslog/ui/app-shell/activity-rail-theme.css";
 
 export interface AppProps {
   readonly platform: CrosslogPlatform;

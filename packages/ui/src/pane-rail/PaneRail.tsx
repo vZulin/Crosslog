@@ -2,8 +2,8 @@ import React from "react";
 import type { DirectorySource, LogPane as LogPaneModel } from "@crosslog/core";
 import { LogPane } from "../log-pane/LogPane";
 import type { ClipboardWriter } from "../log-pane/LogTextSelection";
-import { AddPaneButton } from "./AddPaneButton";
 import { PaneResizer } from "./PaneResizer";
+import { PaneWorkspace } from "./PaneWorkspace";
 
 export interface PaneRailPane {
   readonly pane: LogPaneModel;
@@ -15,8 +15,6 @@ export interface PaneRailPane {
 
 export interface PaneRailProps {
   readonly panes: readonly PaneRailPane[];
-  readonly onAddPane: () => void;
-  readonly onSplitPane: () => void;
   readonly onClosePane: (paneId: string) => void;
   readonly onActivatePane: (paneId: string) => void;
   readonly onResizePane: (leftPaneId: string, delta: number) => void;
@@ -35,8 +33,6 @@ export interface PaneRailProps {
 
 export function PaneRail({
   panes,
-  onAddPane,
-  onSplitPane,
   onClosePane,
   onActivatePane,
   onResizePane,
@@ -53,7 +49,7 @@ export function PaneRail({
   clipboard,
 }: PaneRailProps) {
   return (
-    <section aria-label="Log panes" data-testid="pane-rail" style={{ display: "flex", overflowX: "auto" }}>
+    <PaneWorkspace>
       {panes.map((entry, index) => (
         <React.Fragment key={entry.pane.id}>
           <LogPane
@@ -84,7 +80,6 @@ export function PaneRail({
           ) : null}
         </React.Fragment>
       ))}
-      <AddPaneButton canSplit={panes.length > 0} onAddPane={onAddPane} onSplitPane={onSplitPane} />
-    </section>
+    </PaneWorkspace>
   );
 }

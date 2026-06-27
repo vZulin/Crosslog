@@ -4,7 +4,7 @@ import {
   redesignedShellStructuralTestIds,
   redesignedShellTestIds,
   type RedesignedShellTestId,
-} from "@crosslog/ui/app-shell/testIds";
+} from "@crosslog/ui";
 
 export function redesignedShellSelectors() {
   return {

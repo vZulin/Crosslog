@@ -31,6 +31,7 @@ export function ActivityRailShell({
       aria-label="Crosslog workspace"
       className={classes}
       data-testid={redesignedShellTestIds.crosslogShell}
+      id={redesignedShellTestIds.crosslogShell}
       onDragOver={onDragOver}
       onDrop={onDrop}
     >
@@ -39,6 +40,7 @@ export function ActivityRailShell({
         aria-label="Topbar"
         className="crosslog-shell__topbar"
         data-testid={redesignedShellTestIds.topbar}
+        id={redesignedShellTestIds.topbar}
       >
         {topbar}
       </section>
@@ -46,6 +48,7 @@ export function ActivityRailShell({
         aria-label="Activity rail"
         className="crosslog-shell__rail"
         data-testid={redesignedShellTestIds.activityRail}
+        id={redesignedShellTestIds.activityRail}
       >
         {activityRail}
       </nav>
@@ -53,6 +56,7 @@ export function ActivityRailShell({
         aria-label="Pane workspace"
         className="crosslog-shell__workspace"
         data-testid={redesignedShellTestIds.paneWorkspace}
+        id={redesignedShellTestIds.paneWorkspace}
       >
         {paneWorkspace}
       </section>
@@ -61,6 +65,7 @@ export function ActivityRailShell({
         aria-label="Workspace status"
         className="crosslog-shell__status"
         data-testid={redesignedShellTestIds.statusBar}
+        id={redesignedShellTestIds.statusBar}
       >
         {statusBar}
       </footer>

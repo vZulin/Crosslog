@@ -5,8 +5,8 @@ import { createLogPane } from "@crosslog/core";
 import { PaneRail } from "../../src/pane-rail/PaneRail";
 
 describe("pane rail layout", () => {
-  it("renders ordered panes and creation controls", () => {
-    const { getByLabelText, getAllByTestId } = render(
+  it("renders ordered panes inside the redesigned workspace", () => {
+    const { getAllByTestId, getByTestId } = render(
       <PaneRail
         panes={[
           { pane: createLogPane({ id: "pane-a", title: "app.log", status: "ready" }), lines: ["line a"] },
@@ -15,8 +15,6 @@ describe("pane rail layout", () => {
             lines: ["line b"],
           },
         ]}
-        onAddPane={vi.fn()}
-        onSplitPane={vi.fn()}
         onClosePane={vi.fn()}
         onActivatePane={vi.fn()}
         onResizePane={vi.fn()}
@@ -25,8 +23,7 @@ describe("pane rail layout", () => {
     );
 
     expect(getAllByTestId("log-pane")).toHaveLength(2);
-    expect(getByLabelText("Add pane")).toBeTruthy();
-    expect(getByLabelText("Split active pane")).toBeTruthy();
+    expect(getByTestId("workspace-scrollbar")).toBeTruthy();
   });
 
   it("routes close, resize, and horizontal scroll events", () => {
@@ -42,8 +39,6 @@ describe("pane rail layout", () => {
             lines: ["line b"],
           },
         ]}
-        onAddPane={vi.fn()}
-        onSplitPane={vi.fn()}
         onClosePane={onClosePane}
         onActivatePane={vi.fn()}
         onResizePane={onResizePane}

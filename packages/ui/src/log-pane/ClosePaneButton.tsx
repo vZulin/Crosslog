@@ -3,11 +3,12 @@ import React from "react";
 export interface ClosePaneButtonProps {
   readonly title: string;
   readonly onClose: () => void;
+  readonly testId?: string;
 }
 
-export function ClosePaneButton({ title, onClose }: ClosePaneButtonProps) {
+export function ClosePaneButton({ testId, title, onClose }: ClosePaneButtonProps) {
   return (
-    <button type="button" aria-label={`Close pane ${title}`} onClick={onClose}>
+    <button data-testid={testId} type="button" aria-label={`Close pane ${title}`} onClick={onClose}>
       x
     </button>
   );
