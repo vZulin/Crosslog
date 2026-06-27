@@ -19,6 +19,9 @@ export const redesignedShellTestIds = {
   paneHeaderClose: "pane-header-close",
   paneHeaderSearch: "pane-header-search",
   paneHeaderOffset: "pane-header-offset",
+  paneHeaderDirectoryTitle: "pane-header-directory-title",
+  paneHeaderSelectedFile: "pane-header-selected-file",
+  paneHeaderEmptyDirectory: "pane-header-empty-directory",
   paneHeaderDirectoryPrevious: "pane-header-directory-previous",
   paneHeaderDirectoryNext: "pane-header-directory-next",
   logViewport: "log-viewport",
@@ -56,4 +59,3 @@ export const redesignedShellStructuralTestIds = [
   redesignedShellTestIds.timeOffsetPopover,
   redesignedShellTestIds.statusBar,
 ] as const satisfies readonly RedesignedShellTestId[];
-

@@ -35,40 +35,65 @@ export function PaneHeader({
   const nextFile = directorySource
     ? directorySource.files.find((entry) => entry.identity.value === directorySource.navigationIndex.nextFileId) ?? null
     : null;
-  const displayTitle = selectedFile?.name ?? title;
+  const displayTitle = directorySource ? selectedFile?.name ?? directorySource.displayName : title;
+  const headerLabel = directorySource
+    ? selectedFile
+      ? `${directorySource.displayName}, selected file ${selectedFile.name}`
+      : `${directorySource.displayName}, empty directory`
+    : displayTitle;
+  const identityClassName = [
+    "crosslog-pane-header__identity",
+    directorySource ? "crosslog-pane-header__identity--directory" : null,
+  ].filter(Boolean).join(" ");
 
   return (
     <header
       aria-current={active ? "true" : undefined}
-      aria-label={`${displayTitle}${active ? " active pane" : ""}`}
+      aria-label={`${headerLabel}${active ? " active pane" : ""}`}
       className="crosslog-pane-header"
       data-active={active ? "true" : "false"}
       data-testid={redesignedShellTestIds.paneHeader}
       id={redesignedShellTestIds.paneHeader}
     >
-      <div className="crosslog-pane-header__identity">
-        <h2 className="crosslog-pane-header__title" title={displayTitle}>
-          {displayTitle}
-        </h2>
+      <div className={identityClassName}>
         {directorySource ? (
-          <span className="crosslog-pane-header__directory" title={directorySource.displayName}>
-            {directorySource.displayName}
-          </span>
-        ) : null}
-      </div>
-      {directorySource ? (
-        directorySource.files.length === 0 ? (
-          <EmptyDirectoryStatus directoryName={directorySource.displayName} />
+          <>
+            <span
+              className="crosslog-pane-header__directory"
+              data-testid={redesignedShellTestIds.paneHeaderDirectoryTitle}
+              title={directorySource.displayName}
+            >
+              {directorySource.displayName}
+            </span>
+            <h2
+              className={[
+                "crosslog-pane-header__title",
+                selectedFile ? "crosslog-pane-header__selected-file" : null,
+              ].filter(Boolean).join(" ")}
+              data-testid={selectedFile ? redesignedShellTestIds.paneHeaderSelectedFile : undefined}
+              title={displayTitle}
+            >
+              {displayTitle}
+            </h2>
+            {directorySource.files.length === 0 ? (
+              <EmptyDirectoryStatus directoryName={directorySource.displayName} />
+            ) : null}
+          </>
         ) : (
-          <DirectoryNavigator
-            directoryName={directorySource.displayName}
-            selectedFileName={selectedFile?.name ?? null}
-            previousFileName={previousFile?.name ?? null}
-            nextFileName={nextFile?.name ?? null}
-            onPrevious={() => onNavigateDirectory?.(paneId, "previous")}
-            onNext={() => onNavigateDirectory?.(paneId, "next")}
-          />
-        )
+          <h2 className="crosslog-pane-header__title" title={displayTitle}>
+            {displayTitle}
+          </h2>
+        )}
+      </div>
+      {directorySource && directorySource.files.length > 0 ? (
+        <DirectoryNavigator
+          directoryName={directorySource.displayName}
+          selectedFileName={selectedFile?.name ?? null}
+          previousFileName={previousFile?.name ?? null}
+          nextFileName={nextFile?.name ?? null}
+          onPrevious={() => onNavigateDirectory?.(paneId, "previous")}
+          onNext={() => onNavigateDirectory?.(paneId, "next")}
+        />
       ) : null}
       <div className="crosslog-pane-header__actions">
         <IconButton

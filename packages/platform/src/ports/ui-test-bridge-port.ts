@@ -9,6 +9,12 @@ export interface UiTestShellState {
   readonly copiedPaneTitle: string | null;
   readonly sessionSnapshotStatus: "idle" | "pending" | "written" | "error";
   readonly redesignedRegions: readonly string[];
+  readonly directoryName: string | null;
+  readonly directorySelectedFileTitle: string | null;
+  readonly directoryPreviousAvailable: boolean;
+  readonly directoryNextAvailable: boolean;
+  readonly directoryFileCount: number;
+  readonly directoryEmptyVisible: boolean;
 }
 
 export type UiTestAction =
@@ -16,7 +22,10 @@ export type UiTestAction =
   | "copyFirstPane"
   | "toggleSynchronization"
   | "openActivePaneSearch"
-  | "setActivePaneInvalidSearch";
+  | "setActivePaneInvalidSearch"
+  | "navigatePreviousDirectoryFile"
+  | "navigateNextDirectoryFile"
+  | "discoverNewerDirectoryFile";
 
 export interface UiTestBridge {
   readonly isEnabled: () => Promise<boolean>;

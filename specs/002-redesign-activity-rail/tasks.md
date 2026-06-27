@@ -148,21 +148,21 @@
 
 ### Tests for User Story 4
 
-- [ ] T062 [P] [US4] Add component tests for redesigned directory pane headers in `packages/ui/tests/log-pane/directory-pane-header.test.tsx`
-- [ ] T063 [P] [US4] Update Web directory navigation UI test for redesigned pane headers in `apps/web/tests/ui/directory-navigation.spec.ts`
-- [ ] T064 [P] [US4] Update Desktop WDIO directory navigation UI test for redesigned pane headers in `apps/desktop/tests/ui/directory-navigation.spec.ts`
-- [ ] T065 [P] [US4] Add macOS directory navigation UI test for redesigned pane headers in `apps/desktop/tests/ui/macos/DirectoryNavigationUITests.swift`
-- [ ] T066 [P] [US4] Update empty-directory UI tests for redesigned pane headers in `apps/web/tests/ui/empty-directory.spec.ts`
-- [ ] T067 [P] [US4] Update Desktop empty-directory UI tests for redesigned pane headers in `apps/desktop/tests/ui/empty-directory.spec.ts`
+- [X] T062 [P] [US4] Add component tests for redesigned directory pane headers in `packages/ui/tests/log-pane/directory-pane-header.test.tsx`
+- [X] T063 [P] [US4] Update Web directory navigation UI test for redesigned pane headers in `apps/web/tests/ui/directory-navigation.spec.ts`
+- [X] T064 [P] [US4] Update Desktop WDIO directory navigation UI test for redesigned pane headers in `apps/desktop/tests/ui/directory-navigation.spec.ts`
+- [X] T065 [P] [US4] Add macOS directory navigation UI test for redesigned pane headers in `apps/desktop/tests/ui/macos/DirectoryNavigationUITests.swift`
+- [X] T066 [P] [US4] Update empty-directory UI tests for redesigned pane headers in `apps/web/tests/ui/empty-directory.spec.ts`
+- [X] T067 [P] [US4] Update Desktop empty-directory UI tests for redesigned pane headers in `apps/desktop/tests/ui/empty-directory.spec.ts`
 
 ### Implementation for User Story 4
 
-- [ ] T068 [US4] Redesign directory title and selected-file rendering in `packages/ui/src/log-pane/PaneHeader.tsx`
-- [ ] T069 [US4] Redesign previous/next directory controls as icon buttons in `packages/ui/src/log-pane/DirectoryNavigator.tsx`
-- [ ] T070 [US4] Preserve empty-directory status inside the redesigned pane header area in `packages/ui/src/log-pane/EmptyDirectoryStatus.tsx`
-- [ ] T071 [US4] Update pane header truncation behavior for long directory and file names in `packages/ui/src/log-pane/PaneHeader.tsx`
-- [ ] T072 [US4] Run the local US4 gate with `bash scripts/macos/test.sh`
-- [ ] T073 [US4] Run the local US4 UI gate with `bash scripts/macos/test-ui.sh`
+- [X] T068 [US4] Redesign directory title and selected-file rendering in `packages/ui/src/log-pane/PaneHeader.tsx`
+- [X] T069 [US4] Redesign previous/next directory controls as icon buttons in `packages/ui/src/log-pane/DirectoryNavigator.tsx`
+- [X] T070 [US4] Preserve empty-directory status inside the redesigned pane header area in `packages/ui/src/log-pane/EmptyDirectoryStatus.tsx`
+- [X] T071 [US4] Update pane header truncation behavior for long directory and file names in `packages/ui/src/log-pane/PaneHeader.tsx`
+- [X] T072 [US4] Run the local US4 gate with `bash scripts/macos/test.sh`
+- [X] T073 [US4] Run the local US4 UI gate with `bash scripts/macos/test-ui.sh`
 
 **Checkpoint**: User Story 4 is independently functional and directory behavior remains requirement-driven.
 

@@ -178,6 +178,10 @@ export function AppShell({ platform }: AppShellProps) {
     : null;
   const openSearchState = openSearchPaneId ? searchStates[openSearchPaneId] ?? emptySearchState : null;
   const paneSearchStatus = openSearchPaneId ? (openSearchState?.error ? "error" : "open") : "closed";
+  const publishedDirectorySource = panes.find((entry) => entry.directorySource)?.directorySource ?? null;
+  const publishedDirectorySelectedFile = publishedDirectorySource
+    ? getCurrentDirectoryFile(publishedDirectorySource)
+    : null;
 
   React.useEffect(() => {
     if (openSearchPaneId && !state.panes.some((pane) => pane.id === openSearchPaneId)) {
@@ -215,6 +219,12 @@ export function AppShell({ platform }: AppShellProps) {
       copiedPaneTitle: uiTestCopiedPaneTitle,
       sessionSnapshotStatus,
       redesignedRegions: getPublishedRedesignedRegions(panes.length, openSearchPaneId !== null),
+      directoryName: publishedDirectorySource?.displayName ?? null,
+      directorySelectedFileTitle: publishedDirectorySelectedFile?.name ?? null,
+      directoryPreviousAvailable: Boolean(publishedDirectorySource?.navigationIndex.previousFileId),
+      directoryNextAvailable: Boolean(publishedDirectorySource?.navigationIndex.nextFileId),
+      directoryFileCount: publishedDirectorySource?.files.length ?? 0,
+      directoryEmptyVisible: publishedDirectorySource?.files.length === 0,
     });
   }, [
     activePaneTitle,
@@ -223,6 +233,8 @@ export function AppShell({ platform }: AppShellProps) {
     panes,
     paneSearchStatus,
     platform.uiTestBridge,
+    publishedDirectorySelectedFile,
+    publishedDirectorySource,
     sessionSnapshotStatus,
     synchronizationEnabled,
     uiTestCopiedPaneTitle,
@@ -359,9 +371,22 @@ export function AppShell({ platform }: AppShellProps) {
           }
           break;
         }
+        case "navigatePreviousDirectoryFile":
+          dispatchDirectorySource({ type: "navigate", direction: "previous" });
+          break;
+        case "navigateNextDirectoryFile":
+          dispatchDirectorySource({ type: "navigate", direction: "next" });
+          break;
+        case "discoverNewerDirectoryFile":
+          dispatchDirectorySource({
+            type: "refreshFiles",
+            files: [newerDirectoryFile, ...directorySource.files],
+          });
+          break;
       }
     },
     [
+      directorySource.files,
       firstPaneTitle,
       handleSynchronizationEnabledChange,
       requestActivePaneSearch,

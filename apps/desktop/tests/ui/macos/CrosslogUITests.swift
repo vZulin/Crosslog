@@ -7,6 +7,9 @@ enum CrosslogUITestAction: String {
     case toggleSynchronization
     case openActivePaneSearch
     case setActivePaneInvalidSearch
+    case navigatePreviousDirectoryFile
+    case navigateNextDirectoryFile
+    case discoverNewerDirectoryFile
 }
 
 class CrosslogUITests: XCTestCase {

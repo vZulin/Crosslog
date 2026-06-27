@@ -73,7 +73,10 @@ export function enqueueDesktopUiTestAction(
     | "copyFirstPane"
     | "toggleSynchronization"
     | "openActivePaneSearch"
-    | "setActivePaneInvalidSearch",
+    | "setActivePaneInvalidSearch"
+    | "navigatePreviousDirectoryFile"
+    | "navigateNextDirectoryFile"
+    | "discoverNewerDirectoryFile",
 ): void {
   const actionsPath = process.env.CROSSLOG_UI_TEST_ACTIONS_PATH;
 

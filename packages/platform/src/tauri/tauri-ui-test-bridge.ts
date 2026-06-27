@@ -39,6 +39,12 @@ export function formatUiTestShellState(state: UiTestShellState): string {
     `copied=${state.copiedPaneTitle ?? "none"}`,
     `active=${state.activePaneTitle ?? "none"}`,
     `files=${state.paneTitles.length > 0 ? state.paneTitles.join(",") : "none"}`,
+    `directory=${state.directoryName ?? "none"}`,
+    `directoryFile=${state.directorySelectedFileTitle ?? "none"}`,
+    `directoryPrevious=${state.directoryPreviousAvailable ? "on" : "off"}`,
+    `directoryNext=${state.directoryNextAvailable ? "on" : "off"}`,
+    `directoryFiles=${state.directoryFileCount}`,
+    `emptyDirectory=${state.directoryEmptyVisible ? "on" : "off"}`,
     `regions=${state.redesignedRegions.length > 0 ? state.redesignedRegions.join(",") : "none"}`,
   ].join(";");
 }
@@ -50,6 +56,9 @@ function parseUiTestAction(action: string | null): UiTestAction | null {
     case "toggleSynchronization":
     case "openActivePaneSearch":
     case "setActivePaneInvalidSearch":
+    case "navigatePreviousDirectoryFile":
+    case "navigateNextDirectoryFile":
+    case "discoverNewerDirectoryFile":
       return action;
     default:
       return null;

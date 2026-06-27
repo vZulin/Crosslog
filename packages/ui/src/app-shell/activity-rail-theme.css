@@ -281,10 +281,13 @@ body {
 
 .crosslog-pane-header__identity {
   min-width: 0;
+  display: grid;
+  gap: 2px;
 }
 
 .crosslog-pane-header__title,
 .crosslog-pane-header__directory,
+.crosslog-empty-directory-status,
 .crosslog-status-bar__active-source {
   display: block;
   min-width: 0;
@@ -301,6 +304,22 @@ body {
 }
 
 .crosslog-pane-header__directory {
+  color: var(--crosslog-muted-text);
+  font-size: 11px;
+}
+
+.crosslog-pane-header__selected-file {
+  color: var(--crosslog-text);
+}
+
+.crosslog-directory-navigator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.crosslog-empty-directory-status {
+  margin: 0;
   color: var(--crosslog-muted-text);
   font-size: 11px;
 }
