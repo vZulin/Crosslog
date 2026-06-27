@@ -5,7 +5,7 @@ import { LogTextSelection, type ClipboardWriter } from "./LogTextSelection";
 import { PaneHeader } from "./PaneHeader";
 import { VirtualLogViewport } from "./VirtualLogViewport";
 import { DeletedFileStatus } from "./DeletedFileStatus";
-import { TimeOffsetEditor } from "../sync/TimeOffsetEditor";
+import { TimeOffsetPopover } from "../sync/TimeOffsetPopover";
 import { PaneSearchPopover } from "../search/PaneSearchPopover";
 import { redesignedShellTestIds } from "../app-shell/testIds";
 
@@ -27,8 +27,10 @@ export interface LogPaneProps {
   readonly onPreviousSearchMatch?: (paneId: string) => void;
   readonly onNextSearchMatch?: (paneId: string) => void;
   readonly searchOpen?: boolean;
+  readonly timeOffsetOpen?: boolean;
   readonly searchFocusRequestSequence?: number;
   readonly onSearchOpenChange?: (paneId: string, open: boolean) => void;
+  readonly onTimeOffsetOpenChange?: (paneId: string, open: boolean) => void;
   readonly onCopied?: (title: string) => void;
   readonly clipboard?: ClipboardWriter;
 }
@@ -51,8 +53,10 @@ export function LogPane({
   onPreviousSearchMatch,
   onNextSearchMatch,
   searchOpen = false,
+  timeOffsetOpen = false,
   searchFocusRequestSequence = 0,
   onSearchOpenChange,
+  onTimeOffsetOpenChange,
   onCopied,
   clipboard,
 }: LogPaneProps) {
@@ -78,12 +82,20 @@ export function LogPane({
         active={pane.active}
         paneId={pane.id}
         title={pane.title}
+        timeOffset={pane.timeOffset}
         searchOpen={searchOpen}
+        timeOffsetOpen={timeOffsetOpen}
         directorySource={directorySource}
         onClose={() => onClose(pane.id)}
         onOpenSearch={() => {
           onActivate(pane.id);
+          onTimeOffsetOpenChange?.(pane.id, false);
           onSearchOpenChange?.(pane.id, true);
+        }}
+        onOpenTimeOffset={() => {
+          onActivate(pane.id);
+          onSearchOpenChange?.(pane.id, false);
+          onTimeOffsetOpenChange?.(pane.id, true);
         }}
         onNavigateDirectory={onNavigateDirectory}
       />
@@ -100,13 +112,16 @@ export function LogPane({
           onClose={() => onSearchOpenChange?.(pane.id, false)}
         />
       ) : null}
-      <div className="crosslog-pane-tools" role="toolbar" aria-label={`Pane tools for ${pane.title}`}>
-        <LogTextSelection title={pane.title} lines={lines} onCopied={onCopied} clipboard={clipboard} />
-        <TimeOffsetEditor
+      {timeOffsetOpen ? (
+        <TimeOffsetPopover
           title={pane.title}
           value={pane.timeOffset}
-          onChange={(offset) => onTimeOffsetChange?.(pane.id, offset)}
+          onApply={(offset) => onTimeOffsetChange?.(pane.id, offset)}
+          onClose={() => onTimeOffsetOpenChange?.(pane.id, false)}
         />
+      ) : null}
+      <div className="crosslog-pane-tools" role="toolbar" aria-label={`Pane tools for ${pane.title}`}>
+        <LogTextSelection title={pane.title} lines={lines} onCopied={onCopied} clipboard={clipboard} />
       </div>
       <HorizontalLogScroller
         title={pane.title}

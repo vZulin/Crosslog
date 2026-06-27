@@ -54,3 +54,24 @@ export function normalizeTimeOffset(offset: TimeOffset): TimeOffset {
 export function applyTimeOffset(timestamp: Date, offset: TimeOffset): Date {
   return new Date(timestamp.getTime() + timeOffsetToMilliseconds(offset));
 }
+
+export function formatTimeOffset(offset: TimeOffset): string {
+  const normalized = normalizeTimeOffset(offset);
+  const totalMilliseconds = timeOffsetToMilliseconds(normalized);
+
+  if (totalMilliseconds === 0) {
+    return "0 ms";
+  }
+
+  const parts = ([
+    ["d", normalized.days],
+    ["h", normalized.hours],
+    ["m", normalized.minutes],
+    ["s", normalized.seconds],
+    ["ms", normalized.milliseconds],
+  ] as const)
+    .filter(([, value]) => value !== 0)
+    .map(([unit, value]) => `${Math.abs(value)}${unit}`);
+
+  return `${totalMilliseconds < 0 ? "-" : "+"}${parts.join(" ")}`;
+}

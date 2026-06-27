@@ -6,6 +6,9 @@ export interface UiTestShellState {
   readonly synchronizationEnabled: boolean;
   readonly paneSearchStatus: "closed" | "open" | "error";
   readonly paneSearchPaneTitle: string | null;
+  readonly timeOffsetPopoverStatus: "closed" | "open";
+  readonly timeOffsetPaneTitle: string | null;
+  readonly activePaneOffsetLabel: string | null;
   readonly copiedPaneTitle: string | null;
   readonly sessionSnapshotStatus: "idle" | "pending" | "written" | "error";
   readonly redesignedRegions: readonly string[];
@@ -26,7 +29,9 @@ export type UiTestAction =
   | "openEmptyDirectory"
   | "navigatePreviousDirectoryFile"
   | "navigateNextDirectoryFile"
-  | "discoverNewerDirectoryFile";
+  | "discoverNewerDirectoryFile"
+  | "openActivePaneTimeOffset"
+  | "setActivePaneTimeOffset";
 
 export interface UiTestBridge {
   readonly isEnabled: () => Promise<boolean>;

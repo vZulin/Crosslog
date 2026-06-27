@@ -1,6 +1,6 @@
 import React from "react";
-import type { DirectorySource } from "@crosslog/core";
-import { getCurrentDirectoryFile } from "@crosslog/core";
+import type { DirectorySource, TimeOffset } from "@crosslog/core";
+import { formatTimeOffset, getCurrentDirectoryFile } from "@crosslog/core";
 import { ClosePaneButton } from "./ClosePaneButton";
 import { DirectoryNavigator } from "./DirectoryNavigator";
 import { EmptyDirectoryStatus } from "./EmptyDirectoryStatus";
@@ -11,10 +11,13 @@ export interface PaneHeaderProps {
   readonly paneId: string;
   readonly title: string;
   readonly active: boolean;
+  readonly timeOffset: TimeOffset;
   readonly searchOpen?: boolean;
+  readonly timeOffsetOpen?: boolean;
   readonly directorySource?: DirectorySource;
   readonly onClose: () => void;
   readonly onOpenSearch?: () => void;
+  readonly onOpenTimeOffset?: () => void;
   readonly onNavigateDirectory?: (paneId: string, direction: "previous" | "next") => void;
 }
 
@@ -22,10 +25,13 @@ export function PaneHeader({
   active,
   paneId,
   title,
+  timeOffset,
   searchOpen = false,
+  timeOffsetOpen = false,
   directorySource,
   onClose,
   onOpenSearch,
+  onOpenTimeOffset,
   onNavigateDirectory,
 }: PaneHeaderProps) {
   const selectedFile = directorySource ? getCurrentDirectoryFile(directorySource) : null;
@@ -45,6 +51,7 @@ export function PaneHeader({
     "crosslog-pane-header__identity",
     directorySource ? "crosslog-pane-header__identity--directory" : null,
   ].filter(Boolean).join(" ");
+  const offsetLabel = formatTimeOffset(timeOffset);
 
   return (
     <header
@@ -96,6 +103,17 @@ export function PaneHeader({
         />
       ) : null}
       <div className="crosslog-pane-header__actions">
+        <button
+          aria-expanded={timeOffsetOpen}
+          aria-haspopup="dialog"
+          aria-label={`Time offset for ${displayTitle}: ${offsetLabel}`}
+          className="crosslog-pane-header__offset-tag"
+          data-testid={redesignedShellTestIds.paneHeaderOffset}
+          onClick={onOpenTimeOffset}
+          type="button"
+        >
+          Offset {offsetLabel}
+        </button>
         <IconButton
           aria-expanded={searchOpen}
           aria-haspopup="dialog"

@@ -26,6 +26,7 @@ export * from "./pane-rail/PaneResizer";
 export * from "./pane-rail/PaneWorkspace";
 export * from "./sync/SynchronizationToggle";
 export * from "./sync/TimeOffsetEditor";
+export * from "./sync/TimeOffsetPopover";
 export * from "./sync/TimestampConfigError";
 export * from "./sync/useSynchronizationStore";
 export * from "./search/PaneSearchPopover";

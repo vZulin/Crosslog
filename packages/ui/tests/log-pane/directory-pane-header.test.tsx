@@ -12,6 +12,7 @@ describe("directory pane header", () => {
         active={true}
         paneId="pane-directory"
         title="latest.log"
+        timeOffset={zeroOffset}
         directorySource={createDirectorySource({
           id: "source-directory",
           directoryIdentity: { value: "source-directory", platform: "web" },
@@ -39,6 +40,7 @@ describe("directory pane header", () => {
         active={false}
         paneId="pane-directory"
         title="latest.log"
+        timeOffset={zeroOffset}
         directorySource={createDirectorySource({
           id: "source-directory",
           directoryIdentity: { value: "source-directory", platform: "web" },
@@ -66,6 +68,7 @@ describe("directory pane header", () => {
         active={false}
         paneId="pane-directory"
         title="latest.log"
+        timeOffset={zeroOffset}
         directorySource={createDirectorySource({
           id: "source-directory",
           directoryIdentity: { value: "source-directory", platform: "web" },
@@ -98,6 +101,7 @@ describe("directory pane header", () => {
         active={false}
         paneId="pane-directory"
         title="logs/empty"
+        timeOffset={zeroOffset}
         directorySource={createDirectorySource({
           id: "source-directory",
           directoryIdentity: { value: "source-directory", platform: "web" },
@@ -140,3 +144,5 @@ function createDirectoryFiles() {
     }),
   ];
 }
+
+const zeroOffset = { days: 0, hours: 0, minutes: 0, seconds: 0, milliseconds: 0 };

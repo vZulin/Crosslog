@@ -176,21 +176,21 @@
 
 ### Tests for User Story 5
 
-- [ ] T074 [P] [US5] Add component tests for the Time Offset popover apply and invalid-input behavior in `packages/ui/tests/sync/time-offset-popover.test.tsx`
-- [ ] T075 [P] [US5] Add shared time-offset formatting tests for header tags in `packages/core/tests/sync/time-offset-format.test.ts`
-- [ ] T076 [P] [US5] Add Web UI test for time offset popover behavior in `apps/web/tests/ui/time-offset-popover.spec.ts`
-- [ ] T077 [P] [US5] Add Desktop WDIO UI test for time offset popover behavior in `apps/desktop/tests/ui/time-offset-popover.spec.ts`
-- [ ] T078 [P] [US5] Add macOS UI test for time offset popover behavior in `apps/desktop/tests/ui/macos/TimeOffsetUITests.swift`
+- [X] T074 [P] [US5] Add component tests for the Time Offset popover apply and invalid-input behavior in `packages/ui/tests/sync/time-offset-popover.test.tsx`
+- [X] T075 [P] [US5] Add shared time-offset formatting tests for header tags in `packages/core/tests/sync/time-offset-format.test.ts`
+- [X] T076 [P] [US5] Add Web UI test for time offset popover behavior in `apps/web/tests/ui/time-offset-popover.spec.ts`
+- [X] T077 [P] [US5] Add Desktop WDIO UI test for time offset popover behavior in `apps/desktop/tests/ui/time-offset-popover.spec.ts`
+- [X] T078 [P] [US5] Add macOS UI test for time offset popover behavior in `apps/desktop/tests/ui/macos/TimeOffsetUITests.swift`
 
 ### Implementation for User Story 5
 
-- [ ] T079 [US5] Add reusable offset formatting helper in `packages/core/src/sync/time-offset.ts`
-- [ ] T080 [US5] Implement the redesigned Time Offset popover with draft/apply validation in `packages/ui/src/sync/TimeOffsetPopover.tsx`
-- [ ] T081 [US5] Replace inline time offset editor with pane-header offset tag and popover wiring in `packages/ui/src/log-pane/LogPane.tsx`
-- [ ] T082 [US5] Add pane-header offset tag rendering and popover anchor state in `packages/ui/src/log-pane/PaneHeader.tsx`
-- [ ] T083 [US5] Preserve per-pane offset store updates from the redesigned popover in `packages/ui/src/app-shell/AppShell.tsx`
-- [ ] T084 [US5] Run the local US5 gate with `bash scripts/macos/test.sh`
-- [ ] T085 [US5] Run the local US5 UI gate with `bash scripts/macos/test-ui.sh`
+- [X] T079 [US5] Add reusable offset formatting helper in `packages/core/src/sync/time-offset.ts`
+- [X] T080 [US5] Implement the redesigned Time Offset popover with draft/apply validation in `packages/ui/src/sync/TimeOffsetPopover.tsx`
+- [X] T081 [US5] Replace inline time offset editor with pane-header offset tag and popover wiring in `packages/ui/src/log-pane/LogPane.tsx`
+- [X] T082 [US5] Add pane-header offset tag rendering and popover anchor state in `packages/ui/src/log-pane/PaneHeader.tsx`
+- [X] T083 [US5] Preserve per-pane offset store updates from the redesigned popover in `packages/ui/src/app-shell/AppShell.tsx`
+- [X] T084 [US5] Run the local US5 gate with `bash scripts/macos/test.sh`
+- [X] T085 [US5] Run the local US5 UI gate with `bash scripts/macos/test-ui.sh`
 
 **Checkpoint**: User Story 5 is independently functional and offset behavior remains per-pane.
 

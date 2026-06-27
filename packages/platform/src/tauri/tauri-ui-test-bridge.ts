@@ -35,6 +35,9 @@ export function formatUiTestShellState(state: UiTestShellState): string {
     `sync=${state.synchronizationEnabled ? "on" : "off"}`,
     `search=${state.paneSearchStatus}`,
     `searchPane=${state.paneSearchPaneTitle ?? "none"}`,
+    `timeOffset=${state.timeOffsetPopoverStatus}`,
+    `timeOffsetPane=${state.timeOffsetPaneTitle ?? "none"}`,
+    `activeOffset=${state.activePaneOffsetLabel ?? "none"}`,
     `session=${state.sessionSnapshotStatus}`,
     `copied=${state.copiedPaneTitle ?? "none"}`,
     `active=${state.activePaneTitle ?? "none"}`,
@@ -60,6 +63,8 @@ function parseUiTestAction(action: string | null): UiTestAction | null {
     case "navigatePreviousDirectoryFile":
     case "navigateNextDirectoryFile":
     case "discoverNewerDirectoryFile":
+    case "openActivePaneTimeOffset":
+    case "setActivePaneTimeOffset":
       return action;
     default:
       return null;

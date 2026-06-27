@@ -10,6 +10,8 @@ enum CrosslogUITestAction: String {
     case navigatePreviousDirectoryFile
     case navigateNextDirectoryFile
     case discoverNewerDirectoryFile
+    case openActivePaneTimeOffset
+    case setActivePaneTimeOffset
 }
 
 class CrosslogUITests: XCTestCase {

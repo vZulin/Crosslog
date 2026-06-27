@@ -328,6 +328,38 @@ body {
   display: flex;
   align-items: center;
   gap: 4px;
+  min-width: 0;
+}
+
+.crosslog-pane-header__offset-tag {
+  max-inline-size: 112px;
+  min-block-size: 27px;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--crosslog-border);
+  border-radius: var(--crosslog-pill-radius);
+  background: var(--crosslog-surface);
+  color: var(--crosslog-muted-text);
+  font: inherit;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-inline: 8px;
+}
+
+.crosslog-pane-header__offset-tag:not(:disabled) {
+  cursor: pointer;
+}
+
+.crosslog-pane-header__offset-tag:hover,
+.crosslog-pane-header__offset-tag[aria-expanded="true"] {
+  background: var(--crosslog-accent-surface);
+  color: var(--crosslog-accent);
+}
+
+.crosslog-pane-header__offset-tag:focus-visible {
+  outline: 2px solid var(--crosslog-accent);
+  outline-offset: 2px;
 }
 
 .crosslog-pane-tools {
@@ -342,6 +374,76 @@ body {
 .crosslog-pane-search-popover {
   inset-block-start: calc(var(--crosslog-pane-header-height) - 2px);
   inset-inline-start: 8px;
+}
+
+.crosslog-time-offset-popover {
+  inset-block-start: calc(var(--crosslog-pane-header-height) - 2px);
+  inset-inline-start: 8px;
+}
+
+.crosslog-time-offset-popover__content {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+}
+
+.crosslog-time-offset-popover__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.crosslog-time-offset-popover__field {
+  display: grid;
+  gap: 4px;
+  color: var(--crosslog-muted-text);
+  font-size: 12px;
+}
+
+.crosslog-time-offset-popover__field input {
+  min-inline-size: 0;
+  border: 1px solid var(--crosslog-border);
+  border-radius: var(--crosslog-control-radius);
+  padding: 5px 7px;
+  color: var(--crosslog-text);
+  font: inherit;
+}
+
+.crosslog-time-offset-popover__field input[aria-invalid="true"] {
+  border-color: var(--crosslog-error-text);
+}
+
+.crosslog-time-offset-popover__error {
+  color: var(--crosslog-error-text);
+  font-size: 12px;
+}
+
+.crosslog-time-offset-popover__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.crosslog-time-offset-popover__apply,
+.crosslog-time-offset-popover__close {
+  min-block-size: 27px;
+  border: 1px solid var(--crosslog-border);
+  border-radius: var(--crosslog-control-radius);
+  background: var(--crosslog-surface);
+  color: var(--crosslog-muted-text);
+  font: inherit;
+  padding-inline: 10px;
+}
+
+.crosslog-time-offset-popover__apply:not(:disabled),
+.crosslog-time-offset-popover__close:not(:disabled) {
+  cursor: pointer;
+}
+
+.crosslog-time-offset-popover__apply:not(:disabled):hover,
+.crosslog-time-offset-popover__close:not(:disabled):hover {
+  background: var(--crosslog-accent-surface);
+  color: var(--crosslog-accent);
 }
 
 .crosslog-pane-search-popover__content {

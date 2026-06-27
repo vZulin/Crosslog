@@ -77,7 +77,9 @@ export function enqueueDesktopUiTestAction(
     | "openEmptyDirectory"
     | "navigatePreviousDirectoryFile"
     | "navigateNextDirectoryFile"
-    | "discoverNewerDirectoryFile",
+    | "discoverNewerDirectoryFile"
+    | "openActivePaneTimeOffset"
+    | "setActivePaneTimeOffset",
 ): void {
   const actionsPath = process.env.CROSSLOG_UI_TEST_ACTIONS_PATH;
 

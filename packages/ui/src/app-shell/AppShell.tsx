@@ -16,6 +16,7 @@ import {
   defaultTimestampFormats,
   directorySourceReducer,
   emptySearchState,
+  formatTimeOffset,
   getCurrentDirectoryFile,
   logPaneReducer,
   restoreLogPaneStateFromSession,
@@ -55,6 +56,7 @@ export function AppShell({ platform }: AppShellProps) {
   const [uiTestEnabled, setUiTestEnabled] = React.useState(false);
   const [uiTestCopiedPaneTitle, setUiTestCopiedPaneTitle] = React.useState<string | null>(null);
   const [openSearchPaneId, setOpenSearchPaneId] = React.useState<string | null>(null);
+  const [openTimeOffsetPaneId, setOpenTimeOffsetPaneId] = React.useState<string | null>(null);
   const [searchFocusRequestSequence, setSearchFocusRequestSequence] = React.useState(0);
   const liveAppendCounter = React.useRef(1);
   const [directorySource, dispatchDirectorySource] = React.useReducer(
@@ -176,8 +178,14 @@ export function AppShell({ platform }: AppShellProps) {
   const openSearchPane = openSearchPaneId
     ? panes.find((entry) => entry.pane.id === openSearchPaneId) ?? null
     : null;
+  const openTimeOffsetPane = openTimeOffsetPaneId
+    ? panes.find((entry) => entry.pane.id === openTimeOffsetPaneId) ?? null
+    : null;
   const openSearchState = openSearchPaneId ? searchStates[openSearchPaneId] ?? emptySearchState : null;
   const paneSearchStatus = openSearchPaneId ? (openSearchState?.error ? "error" : "open") : "closed";
+  const timeOffsetPopoverStatus = openTimeOffsetPaneId ? "open" : "closed";
+  const activePaneEntry = panes.find((entry) => entry.pane.id === state.activePaneId) ?? null;
+  const activePaneOffsetLabel = activePaneEntry ? formatTimeOffset(activePaneEntry.pane.timeOffset) : null;
   const publishedDirectorySource = panes.find((entry) => entry.directorySource)?.directorySource ?? null;
   const publishedDirectorySelectedFile = publishedDirectorySource
     ? getCurrentDirectoryFile(publishedDirectorySource)
@@ -188,6 +196,12 @@ export function AppShell({ platform }: AppShellProps) {
       setOpenSearchPaneId(null);
     }
   }, [openSearchPaneId, state.panes]);
+
+  React.useEffect(() => {
+    if (openTimeOffsetPaneId && !state.panes.some((pane) => pane.id === openTimeOffsetPaneId)) {
+      setOpenTimeOffsetPaneId(null);
+    }
+  }, [openTimeOffsetPaneId, state.panes]);
 
   React.useEffect(() => {
     let active = true;
@@ -216,9 +230,16 @@ export function AppShell({ platform }: AppShellProps) {
       synchronizationEnabled,
       paneSearchStatus,
       paneSearchPaneTitle: openSearchPane?.pane.title ?? null,
+      timeOffsetPopoverStatus,
+      timeOffsetPaneTitle: openTimeOffsetPane?.pane.title ?? null,
+      activePaneOffsetLabel,
       copiedPaneTitle: uiTestCopiedPaneTitle,
       sessionSnapshotStatus,
-      redesignedRegions: getPublishedRedesignedRegions(panes.length, openSearchPaneId !== null),
+      redesignedRegions: getPublishedRedesignedRegions(
+        panes.length,
+        openSearchPaneId !== null,
+        openTimeOffsetPaneId !== null,
+      ),
       directoryName: publishedDirectorySource?.displayName ?? null,
       directorySelectedFileTitle: publishedDirectorySelectedFile?.name ?? null,
       directoryPreviousAvailable: Boolean(publishedDirectorySource?.navigationIndex.previousFileId),
@@ -230,13 +251,17 @@ export function AppShell({ platform }: AppShellProps) {
     activePaneTitle,
     openSearchPane,
     openSearchPaneId,
+    openTimeOffsetPane,
+    openTimeOffsetPaneId,
     panes,
+    activePaneOffsetLabel,
     paneSearchStatus,
     platform.uiTestBridge,
     publishedDirectorySelectedFile,
     publishedDirectorySource,
     sessionSnapshotStatus,
     synchronizationEnabled,
+    timeOffsetPopoverStatus,
     uiTestCopiedPaneTitle,
     uiTestEnabled,
   ]);
@@ -283,6 +308,18 @@ export function AppShell({ platform }: AppShellProps) {
   const handleSearchOpenChange = React.useCallback((paneId: string, open: boolean) => {
     setOpenSearchPaneId((currentPaneId) => {
       if (open) {
+        setOpenTimeOffsetPaneId(null);
+        return paneId;
+      }
+
+      return currentPaneId === paneId ? null : currentPaneId;
+    });
+  }, []);
+
+  const handleTimeOffsetOpenChange = React.useCallback((paneId: string, open: boolean) => {
+    setOpenTimeOffsetPaneId((currentPaneId) => {
+      if (open) {
+        setOpenSearchPaneId(null);
         return paneId;
       }
 
@@ -298,7 +335,19 @@ export function AppShell({ platform }: AppShellProps) {
     }
 
     setOpenSearchPaneId(paneId);
+    setOpenTimeOffsetPaneId(null);
     setSearchFocusRequestSequence((current) => current + 1);
+  }, [state.activePaneId, state.panes]);
+
+  const requestActivePaneTimeOffset = React.useCallback(() => {
+    const paneId = state.activePaneId ?? state.panes[0]?.id ?? null;
+
+    if (!paneId) {
+      return;
+    }
+
+    setOpenSearchPaneId(null);
+    setOpenTimeOffsetPaneId(paneId);
   }, [state.activePaneId, state.panes]);
 
   const handleAppendLiveLine = () => {
@@ -365,6 +414,7 @@ export function AppShell({ platform }: AppShellProps) {
 
           if (paneId) {
             setOpenSearchPaneId(paneId);
+            setOpenTimeOffsetPaneId(null);
             setSearchFocusRequestSequence((current) => current + 1);
             setSearchMode(paneId, "regex");
             setSearchQuery(paneId, "[broken");
@@ -396,6 +446,24 @@ export function AppShell({ platform }: AppShellProps) {
             files: [newerDirectoryFile, ...directorySource.files],
           });
           break;
+        case "openActivePaneTimeOffset":
+          requestActivePaneTimeOffset();
+          break;
+        case "setActivePaneTimeOffset": {
+          const paneId = state.activePaneId ?? state.panes[0]?.id ?? null;
+
+          if (paneId) {
+            setPaneOffset(paneId, {
+              days: 0,
+              hours: 0,
+              minutes: 1,
+              seconds: 0,
+              milliseconds: 0,
+            });
+            setOpenTimeOffsetPaneId(null);
+          }
+          break;
+        }
       }
     },
     [
@@ -403,6 +471,8 @@ export function AppShell({ platform }: AppShellProps) {
       firstPaneTitle,
       handleSynchronizationEnabledChange,
       requestActivePaneSearch,
+      requestActivePaneTimeOffset,
+      setPaneOffset,
       setSearchMode,
       setSearchQuery,
       state.activePaneId,
@@ -636,8 +706,10 @@ export function AppShell({ platform }: AppShellProps) {
           onPreviousSearchMatch={selectPreviousSearchMatch}
           onNextSearchMatch={selectNextSearchMatch}
           openSearchPaneId={openSearchPaneId}
+          openTimeOffsetPaneId={openTimeOffsetPaneId}
           searchFocusRequestSequence={searchFocusRequestSequence}
           onSearchOpenChange={handleSearchOpenChange}
+          onTimeOffsetOpenChange={handleTimeOffsetOpenChange}
           onCopied={setUiTestCopiedPaneTitle}
           clipboard={uiTestEnabled ? uiTestClipboardWriter : undefined}
         />
@@ -686,7 +758,11 @@ export function AppShell({ platform }: AppShellProps) {
   );
 }
 
-function getPublishedRedesignedRegions(paneCount: number, searchOpen: boolean): readonly string[] {
+function getPublishedRedesignedRegions(
+  paneCount: number,
+  searchOpen: boolean,
+  timeOffsetOpen: boolean,
+): readonly string[] {
   const persistentRegions = [
     redesignedShellTestIds.crosslogShell,
     redesignedShellTestIds.topbar,
@@ -708,9 +784,11 @@ function getPublishedRedesignedRegions(paneCount: number, searchOpen: boolean): 
     redesignedShellTestIds.logViewport,
   ];
 
-  return searchOpen
-    ? [...nonEmptyRegions, redesignedShellTestIds.paneSearchPopover]
-    : nonEmptyRegions;
+  return [
+    ...nonEmptyRegions,
+    ...(searchOpen ? [redesignedShellTestIds.paneSearchPopover] : []),
+    ...(timeOffsetOpen ? [redesignedShellTestIds.timeOffsetPopover] : []),
+  ];
 }
 
 const samplePanes = [
