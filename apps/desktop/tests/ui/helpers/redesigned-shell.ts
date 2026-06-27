@@ -55,6 +55,24 @@ export async function openSampleLogsWithUiBridge(): Promise<void> {
   await expect(browser.$$(redesignedShellSelectors().logPane)).toBeElementsArrayOfSize(3);
 }
 
+export async function getLogPaneByTitle(title: string): Promise<WebdriverIO.Element> {
+  const pane = await browser.$(
+    `${byTestId(redesignedShellTestIds.logPane)}[aria-label=${JSON.stringify(`Log pane ${title}`)}]`,
+  );
+
+  await pane.waitForExist();
+  return pane;
+}
+
+export async function activateLogPaneByTitle(title: string): Promise<WebdriverIO.Element> {
+  const pane = await getLogPaneByTitle(title);
+
+  await clickElementWithJavaScript(pane);
+  await expect(pane).toHaveAttribute("data-active", "true");
+  await waitForUiTestTitleFragment(`active=${title}`);
+  return pane;
+}
+
 export async function waitForSessionSnapshotWritten(): Promise<void> {
   await waitForUiTestTitleFragment("session=written");
 }
