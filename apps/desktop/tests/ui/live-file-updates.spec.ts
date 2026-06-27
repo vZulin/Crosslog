@@ -19,18 +19,21 @@ describe("Desktop live file updates", () => {
     const appPane = await activateLogPaneByTitle("app.log");
     const appHeader = await appPane.$(byTestId(redesignedShellTestIds.paneHeader));
     await waitForUiTestTitleFragment("lifecycle=app.log:live");
-    await expect(await appHeader.$(byTestId(redesignedShellTestIds.paneHeaderLive))).toHaveText("Live");
+    await expectElementTextContent(await appHeader.$(byTestId(redesignedShellTestIds.paneHeaderLive)), "Live");
 
     enqueueDesktopUiTestAction("appendActiveFile");
     await waitForUiTestTitleFragment("lifecycle=app.log:live");
     await expect(await appPane.$("code*=live appended line")).toBeExisting();
-    await expect(await appHeader.$(byTestId(redesignedShellTestIds.paneHeaderLive))).toHaveText("Live");
+    await expectElementTextContent(await appHeader.$(byTestId(redesignedShellTestIds.paneHeaderLive)), "Live");
 
     enqueueDesktopUiTestAction("deleteActiveFile");
     await waitForUiTestTitleFragment("lifecycle=app.log:deleted");
     const deletedAppPane = await getLogPaneByTitle("app.log");
     const deletedAppHeader = await deletedAppPane.$(byTestId(redesignedShellTestIds.paneHeader));
-    await expect(await deletedAppHeader.$(byTestId(redesignedShellTestIds.paneHeaderDeleted))).toHaveText("Deleted");
+    await expectElementTextContent(
+      await deletedAppHeader.$(byTestId(redesignedShellTestIds.paneHeaderDeleted)),
+      "Deleted",
+    );
     await expectElementTextContent(
       await deletedAppPane.$(byTestId(redesignedShellTestIds.paneDeletedStatus)),
       "app.log was deleted. Loaded content is retained.",
@@ -46,7 +49,10 @@ describe("Desktop live file updates", () => {
     await waitForUiTestTitleFragment("lifecycle=app.log:replaced");
     const replacedAppPane = await getLogPaneByTitle("app.log");
     const replacedAppHeader = await replacedAppPane.$(byTestId(redesignedShellTestIds.paneHeader));
-    await expect(await replacedAppHeader.$(byTestId(redesignedShellTestIds.paneHeaderReplaced))).toHaveText("Replaced");
+    await expectElementTextContent(
+      await replacedAppHeader.$(byTestId(redesignedShellTestIds.paneHeaderReplaced)),
+      "Replaced",
+    );
     await expect(await replacedAppPane.$("code*=replacement file started")).toBeExisting();
     await expect(await searchPopover.$(byTestId(redesignedShellTestIds.paneSearchMatchCount))).toHaveText("0 of 0");
   });
