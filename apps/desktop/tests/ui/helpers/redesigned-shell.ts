@@ -74,6 +74,7 @@ export function enqueueDesktopUiTestAction(
     | "toggleSynchronization"
     | "openActivePaneSearch"
     | "setActivePaneInvalidSearch"
+    | "openEmptyDirectory"
     | "navigatePreviousDirectoryFile"
     | "navigateNextDirectoryFile"
     | "discoverNewerDirectoryFile",

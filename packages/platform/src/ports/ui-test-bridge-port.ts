@@ -23,6 +23,7 @@ export type UiTestAction =
   | "toggleSynchronization"
   | "openActivePaneSearch"
   | "setActivePaneInvalidSearch"
+  | "openEmptyDirectory"
   | "navigatePreviousDirectoryFile"
   | "navigateNextDirectoryFile"
   | "discoverNewerDirectoryFile";

@@ -56,6 +56,7 @@ function parseUiTestAction(action: string | null): UiTestAction | null {
     case "toggleSynchronization":
     case "openActivePaneSearch":
     case "setActivePaneInvalidSearch":
+    case "openEmptyDirectory":
     case "navigatePreviousDirectoryFile":
     case "navigateNextDirectoryFile":
     case "discoverNewerDirectoryFile":

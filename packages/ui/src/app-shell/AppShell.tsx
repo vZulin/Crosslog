@@ -371,6 +371,19 @@ export function AppShell({ platform }: AppShellProps) {
           }
           break;
         }
+        case "openEmptyDirectory":
+          dispatchDirectorySource({ type: "refreshFiles", files: [] });
+          dispatch({
+            type: "addPane",
+            pane: {
+              id: "pane-empty-directory",
+              title: "logs/empty",
+              sourceRef: "source-directory",
+              width: 520,
+              status: "empty",
+            },
+          });
+          break;
         case "navigatePreviousDirectoryFile":
           dispatchDirectorySource({ type: "navigate", direction: "previous" });
           break;
