@@ -107,7 +107,7 @@ export function AppShell({ platform }: AppShellProps) {
     [directorySource, fileSources, state.panes],
   );
 
-  useSessionSnapshotWriter(
+  const sessionSnapshotStatus = useSessionSnapshotWriter(
     platform.sessionStore,
     sessionSnapshot,
     restoreState.status === "ready" && state.panes.length > 0,
@@ -189,8 +189,17 @@ export function AppShell({ platform }: AppShellProps) {
       activePaneTitle,
       synchronizationEnabled,
       copiedPaneTitle: uiTestCopiedPaneTitle,
+      sessionSnapshotStatus,
     });
-  }, [activePaneTitle, panes, platform.uiTestBridge, synchronizationEnabled, uiTestCopiedPaneTitle, uiTestEnabled]);
+  }, [
+    activePaneTitle,
+    panes,
+    platform.uiTestBridge,
+    sessionSnapshotStatus,
+    synchronizationEnabled,
+    uiTestCopiedPaneTitle,
+    uiTestEnabled,
+  ]);
 
   React.useEffect(() => {
     paneData.forEach((entry) => setPaneSearchLines(entry.pane.id, entry.lines));

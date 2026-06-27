@@ -1,10 +1,10 @@
 import { expect } from "@wdio/globals";
-import { waitForDesktopShell } from "./helpers/redesigned-shell";
+import { openSampleLogsWithUiBridge, waitForDesktopShell } from "./helpers/redesigned-shell";
 
 describe("Desktop log search", () => {
   it("searches full pane content and isolates pane search state", async () => {
     await waitForDesktopShell();
-    await $("button=Open logs").click();
+    await openSampleLogsWithUiBridge();
 
     const panes = await $$('[data-testid="log-pane"]');
     const appPane = panes[0];

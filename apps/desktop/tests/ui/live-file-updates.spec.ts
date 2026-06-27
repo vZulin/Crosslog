@@ -1,10 +1,10 @@
 import { expect } from "@wdio/globals";
-import { waitForDesktopShell } from "./helpers/redesigned-shell";
+import { openSampleLogsWithUiBridge, waitForDesktopShell } from "./helpers/redesigned-shell";
 
 describe("Desktop live file updates", () => {
   it("appends, retains deleted content, and treats replacement as pane-local", async () => {
     await waitForDesktopShell();
-    await $("button=Open logs").click();
+    await openSampleLogsWithUiBridge();
 
     const appPane = (await $$('[data-testid="log-pane"]'))[0];
     await appPane.click();

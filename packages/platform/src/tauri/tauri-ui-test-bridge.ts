@@ -14,7 +14,9 @@ export class TauriUiTestBridge implements UiTestBridge {
       return;
     }
 
-    await invoke("publish_ui_test_state", { state: formatUiTestShellState(state) });
+    const formattedState = formatUiTestShellState(state);
+    document.title = `Crosslog UI Test | ${formattedState}`;
+    await invoke("publish_ui_test_state", { state: formattedState });
   }
 
   async consumePendingAction(): Promise<UiTestAction | null> {
@@ -31,6 +33,7 @@ export function formatUiTestShellState(state: UiTestShellState): string {
     `state=${state.status}`,
     `panes=${state.paneCount}`,
     `sync=${state.synchronizationEnabled ? "on" : "off"}`,
+    `session=${state.sessionSnapshotStatus}`,
     `copied=${state.copiedPaneTitle ?? "none"}`,
     `active=${state.activePaneTitle ?? "none"}`,
     `files=${state.paneTitles.length > 0 ? state.paneTitles.join(",") : "none"}`,

@@ -1,10 +1,10 @@
 import { expect } from "@wdio/globals";
-import { waitForDesktopShell } from "./helpers/redesigned-shell";
+import { openSampleLogsWithUiBridge, waitForDesktopShell } from "./helpers/redesigned-shell";
 
 describe("Desktop directory navigation", () => {
   it("navigates directory files without auto-switching on refresh", async () => {
     await waitForDesktopShell();
-    await $("button=Open logs").click();
+    await openSampleLogsWithUiBridge();
 
     await expect($("aria/app-2026-06-16.log")).toBeExisting();
     await expect($("aria/Previous file in logs/2026")).toBeDisabled();
