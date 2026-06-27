@@ -38,7 +38,13 @@ export function getRedesignedShell() {
 }
 
 export async function waitForDesktopShell(): Promise<void> {
-  await expect(browser.$("main")).toBeExisting();
+  const shellSelector = byTestId(redesignedShellTestIds.crosslogShell);
+
+  await browser.waitUntil(async () => browser.$(shellSelector).isExisting(), {
+    interval: 250,
+    timeout: 20_000,
+    timeoutMsg: `Crosslog shell did not mount: ${shellSelector}`,
+  });
 }
 
 export async function expectRedesignedShellRegions(): Promise<void> {

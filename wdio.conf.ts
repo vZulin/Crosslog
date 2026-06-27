@@ -20,7 +20,6 @@ export const config = {
   reporters: ["spec"],
   capabilities: [
     {
-      browserName: "wry",
       "tauri:options": {
         application: tauriApplicationPath
       }
