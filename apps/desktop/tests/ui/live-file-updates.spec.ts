@@ -1,4 +1,4 @@
-import { expect } from "@wdio/globals";
+import { browser, expect } from "@wdio/globals";
 import { redesignedShellTestIds } from "@crosslog/ui";
 import {
   activateLogPaneByTitle,
@@ -28,13 +28,16 @@ describe("Desktop live file updates", () => {
 
     enqueueDesktopUiTestAction("deleteActiveFile");
     await waitForUiTestTitleFragment("lifecycle=app.log:deleted");
-    await expect(await appHeader.$(byTestId(redesignedShellTestIds.paneHeaderDeleted))).toHaveText("Deleted");
-    await expect(await appPane.$(byTestId(redesignedShellTestIds.paneDeletedStatus))).toHaveText(
+    const deletedAppPane = await getLogPaneByTitle("app.log");
+    const deletedAppHeader = await deletedAppPane.$(byTestId(redesignedShellTestIds.paneHeader));
+    await expect(await deletedAppHeader.$(byTestId(redesignedShellTestIds.paneHeaderDeleted))).toHaveText("Deleted");
+    await expectElementTextContent(
+      await deletedAppPane.$(byTestId(redesignedShellTestIds.paneDeletedStatus)),
       "app.log was deleted. Loaded content is retained.",
     );
 
-    await clickElementWithJavaScript(await appPane.$(byTestId(redesignedShellTestIds.paneHeaderSearch)));
-    const searchPopover = await appPane.$(byTestId(redesignedShellTestIds.paneSearchPopover));
+    await clickElementWithJavaScript(await deletedAppPane.$(byTestId(redesignedShellTestIds.paneHeaderSearch)));
+    const searchPopover = await deletedAppPane.$(byTestId(redesignedShellTestIds.paneSearchPopover));
     await searchPopover.$(byTestId(redesignedShellTestIds.paneSearchField)).setValue("live appended line");
     await expect(await searchPopover.$(byTestId(redesignedShellTestIds.paneSearchMatchCount))).toHaveText("1 of 1");
 
@@ -48,3 +51,19 @@ describe("Desktop live file updates", () => {
     await expect(await searchPopover.$(byTestId(redesignedShellTestIds.paneSearchMatchCount))).toHaveText("0 of 0");
   });
 });
+
+async function expectElementTextContent(element: WebdriverIO.Element, expectedText: string): Promise<void> {
+  await element.waitForExist();
+  await browser.waitUntil(
+    async () => {
+      const textContent = await browser.execute((target: HTMLElement) => target.textContent?.trim() ?? "", element);
+
+      return textContent === expectedText;
+    },
+    {
+      interval: 250,
+      timeout: 5_000,
+      timeoutMsg: `Expected element textContent to equal: ${expectedText}`,
+    },
+  );
+}
