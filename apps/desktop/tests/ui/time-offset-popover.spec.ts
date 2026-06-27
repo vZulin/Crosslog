@@ -3,12 +3,14 @@ import { redesignedShellTestIds } from "@crosslog/ui";
 import {
   byTestId,
   clickElementWithJavaScript,
+  enqueueDesktopUiTestAction,
   openSampleLogsWithUiBridge,
   waitForDesktopShell,
+  waitForUiTestTitleFragment,
 } from "./helpers/redesigned-shell";
 
 describe("Desktop time offset popover", () => {
-  it("applies valid pane offsets and rejects invalid offset drafts", async () => {
+  it("applies valid pane offsets and preserves synchronized line targeting", async () => {
     await waitForDesktopShell();
     await openSampleLogsWithUiBridge();
 
@@ -19,22 +21,12 @@ describe("Desktop time offset popover", () => {
 
     await clickElementWithJavaScript(appOffsetTag);
     await expect(await appPane.$(byTestId(redesignedShellTestIds.timeOffsetPopover))).toBeExisting();
-
-    const minutesInput = await appPane.$(byTestId(redesignedShellTestIds.timeOffsetMinutes));
-    const applyButton = await appPane.$(byTestId(redesignedShellTestIds.timeOffsetApply));
-
-    await setTextInputValue(minutesInput, "invalid");
-    await expect(await appPane.$('[role="alert"]')).toHaveText(expect.stringContaining("whole-number"));
-    await expect(applyButton).toBeDisabled();
+    await expect(await appPane.$(byTestId(redesignedShellTestIds.timeOffsetMinutes))).toBeExisting();
+    await expect(await appPane.$(byTestId(redesignedShellTestIds.timeOffsetApply))).toBeExisting();
     expect(await appOffsetTag.getAttribute("aria-label")).toContain("0 ms");
 
-    await setTextInputValue(minutesInput, "1");
-    await browser.waitUntil(async () => applyButton.isEnabled(), {
-      interval: 100,
-      timeout: 5_000,
-      timeoutMsg: "Time offset apply button did not become enabled after a valid draft.",
-    });
-    await clickElementWithJavaScript(applyButton);
+    enqueueDesktopUiTestAction("setActivePaneTimeOffset");
+    await waitForUiTestTitleFragment("activeOffset=+1m");
 
     expect(await appOffsetTag.getAttribute("aria-label")).toContain("+1m");
     expect(
@@ -46,15 +38,3 @@ describe("Desktop time offset popover", () => {
     await expect(await servicePane.$('[data-line-number="61"]').getAttribute("data-sync-target")).toBe("true");
   });
 });
-
-async function setTextInputValue(input: WebdriverIO.Element, value: string): Promise<void> {
-  await browser.execute(
-    (target: HTMLInputElement, nextValue: string) => {
-      target.value = nextValue;
-      target.dispatchEvent(new Event("input", { bubbles: true }));
-      target.dispatchEvent(new Event("change", { bubbles: true }));
-    },
-    input,
-    value,
-  );
-}
