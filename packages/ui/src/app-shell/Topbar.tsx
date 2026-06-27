@@ -19,6 +19,9 @@ export function Topbar({
   onSplitPane,
   onSyncEnabledChange,
 }: TopbarProps) {
+  const syncStateId = `${redesignedShellTestIds.topbarSync}-state`;
+  const syncStateLabel = syncEnabled ? "Sync on" : "Sync off";
+
   return (
     <div className="crosslog-topbar">
       <label className="crosslog-command-field">
@@ -35,7 +38,18 @@ export function Topbar({
       </label>
       <div className="crosslog-topbar__actions">
         <div className="crosslog-topbar__sync" data-testid={redesignedShellTestIds.topbarSync}>
-          <SynchronizationToggle enabled={syncEnabled} onEnabledChange={onSyncEnabledChange} />
+          <SynchronizationToggle
+            describedBy={syncStateId}
+            enabled={syncEnabled}
+            onEnabledChange={onSyncEnabledChange}
+          />
+          <span
+            aria-live="polite"
+            className="crosslog-topbar__sync-state"
+            id={syncStateId}
+          >
+            {syncStateLabel}
+          </span>
         </div>
         <AddPaneButton
           addPaneTestId={redesignedShellTestIds.topbarAddPane}

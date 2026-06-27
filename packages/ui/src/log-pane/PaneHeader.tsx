@@ -9,12 +9,14 @@ import { redesignedShellTestIds } from "../app-shell/testIds";
 export interface PaneHeaderProps {
   readonly paneId: string;
   readonly title: string;
+  readonly active: boolean;
   readonly directorySource?: DirectorySource;
   readonly onClose: () => void;
   readonly onNavigateDirectory?: (paneId: string, direction: "previous" | "next") => void;
 }
 
 export function PaneHeader({
+  active,
   paneId,
   title,
   directorySource,
@@ -32,7 +34,10 @@ export function PaneHeader({
 
   return (
     <header
+      aria-current={active ? "true" : undefined}
+      aria-label={`${displayTitle}${active ? " active pane" : ""}`}
       className="crosslog-pane-header"
+      data-active={active ? "true" : "false"}
       data-testid={redesignedShellTestIds.paneHeader}
       id={redesignedShellTestIds.paneHeader}
     >

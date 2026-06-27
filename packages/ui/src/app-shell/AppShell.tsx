@@ -472,7 +472,9 @@ export function AppShell({ platform }: AppShellProps) {
   };
 
   const statusMessage =
-    unsupportedPaneCount > 0 ? `${unsupportedPaneCount} untimed pane excluded` : null;
+    unsupportedPaneCount > 0
+      ? `${unsupportedPaneCount} untimed ${unsupportedPaneCount === 1 ? "pane" : "panes"} excluded`
+      : null;
   const paneWorkspace =
     state.panes.length === 0 ? (
       <section className="crosslog-empty-workspace" aria-label="Empty workspace">

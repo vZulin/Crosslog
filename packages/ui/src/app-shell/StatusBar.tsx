@@ -14,11 +14,21 @@ export function StatusBar({
   syncEnabled,
 }: StatusBarProps) {
   const activeLabel = activeSourceLabel ?? "None";
+  const paneCountLabel = `${paneCount} ${paneCount === 1 ? "pane" : "panes"}`;
+  const syncLabel = syncEnabled ? "Sync on" : "Sync off";
+  const accessibleSummary = `${paneCountLabel}, ${syncLabel}, active source ${activeLabel}`;
 
   return (
-    <div aria-live="polite" className="crosslog-status-bar" role="status">
-      <span>{paneCount} {paneCount === 1 ? "pane" : "panes"}</span>
-      <span>{syncEnabled ? "Sync on" : "Sync off"}</span>
+    <div
+      aria-label={accessibleSummary}
+      aria-live="polite"
+      className="crosslog-status-bar"
+      data-active-source={activeLabel}
+      data-sync-enabled={syncEnabled ? "true" : "false"}
+      role="status"
+    >
+      <span>{paneCountLabel}</span>
+      <span>{syncLabel}</span>
       <span className="crosslog-status-bar__active-source" title={activeLabel}>
         Active: {activeLabel}
       </span>

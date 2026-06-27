@@ -92,20 +92,20 @@
 
 ### Tests for User Story 2
 
-- [ ] T038 [P] [US2] Add component tests for topbar sync state and active-pane status summary in `packages/ui/tests/sync/redesigned-sync-controls.test.tsx`
-- [ ] T039 [P] [US2] Update Web synchronized scrolling UI test for topbar sync control in `apps/web/tests/ui/synchronized-scrolling.spec.ts`
-- [ ] T040 [P] [US2] Update Desktop WDIO synchronized scrolling UI test for topbar sync control in `apps/desktop/tests/ui/synchronized-scrolling.spec.ts`
-- [ ] T041 [P] [US2] Update macOS synchronized scrolling UI test for topbar sync control in `apps/desktop/tests/ui/macos/SynchronizedScrollingUITests.swift`
+- [X] T038 [P] [US2] Add component tests for topbar sync state and active-pane status summary in `packages/ui/tests/sync/redesigned-sync-controls.test.tsx`
+- [X] T039 [P] [US2] Update Web synchronized scrolling UI test for topbar sync control in `apps/web/tests/ui/synchronized-scrolling.spec.ts`
+- [X] T040 [P] [US2] Update Desktop WDIO synchronized scrolling UI test for topbar sync control in `apps/desktop/tests/ui/synchronized-scrolling.spec.ts`
+- [X] T041 [P] [US2] Update macOS synchronized scrolling UI test for topbar sync control in `apps/desktop/tests/ui/macos/SynchronizedScrollingUITests.swift`
 
 ### Implementation for User Story 2
 
-- [ ] T042 [US2] Wire topbar synchronization state to the existing synchronization store in `packages/ui/src/app-shell/Topbar.tsx`
-- [ ] T043 [US2] Add active pane visual and accessibility state to pane headers in `packages/ui/src/log-pane/PaneHeader.tsx`
-- [ ] T044 [US2] Update status bar synchronization and active source summary wiring in `packages/ui/src/app-shell/StatusBar.tsx`
-- [ ] T045 [US2] Update `AppShell` active-pane and sync summary props for the redesigned status bar in `packages/ui/src/app-shell/AppShell.tsx`
-- [ ] T046 [US2] Preserve untimed-pane exclusion messaging in the redesigned topbar or status region in `packages/ui/src/app-shell/AppShell.tsx`
-- [ ] T047 [US2] Run the local US2 gate with `bash scripts/macos/test.sh`
-- [ ] T048 [US2] Run the local US2 UI gate with `bash scripts/macos/test-ui.sh`
+- [X] T042 [US2] Wire topbar synchronization state to the existing synchronization store in `packages/ui/src/app-shell/Topbar.tsx`
+- [X] T043 [US2] Add active pane visual and accessibility state to pane headers in `packages/ui/src/log-pane/PaneHeader.tsx`
+- [X] T044 [US2] Update status bar synchronization and active source summary wiring in `packages/ui/src/app-shell/StatusBar.tsx`
+- [X] T045 [US2] Update `AppShell` active-pane and sync summary props for the redesigned status bar in `packages/ui/src/app-shell/AppShell.tsx`
+- [X] T046 [US2] Preserve untimed-pane exclusion messaging in the redesigned topbar or status region in `packages/ui/src/app-shell/AppShell.tsx`
+- [X] T047 [US2] Run the local US2 gate with `bash scripts/macos/test.sh`
+- [X] T048 [US2] Run the local US2 UI gate with `bash scripts/macos/test-ui.sh`
 
 **Checkpoint**: User Story 2 is independently functional and does not regress User Story 1.
 

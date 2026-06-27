@@ -69,6 +69,7 @@ export function LogPane({
       onClick={() => onActivate(pane.id)}
     >
       <PaneHeader
+        active={pane.active}
         paneId={pane.id}
         title={pane.title}
         directorySource={directorySource}

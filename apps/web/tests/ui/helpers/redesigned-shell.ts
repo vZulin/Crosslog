@@ -35,7 +35,7 @@ export function getRedesignedShell(page: Page): RedesignedShellLocators {
 
 export async function expectRedesignedShellRegions(page: Page): Promise<void> {
   for (const testId of redesignedShellStructuralTestIds) {
-    await expect(byTestId(page, testId)).toBeVisible();
+    await expect(byTestId(page, testId).first()).toBeVisible();
   }
 }
 

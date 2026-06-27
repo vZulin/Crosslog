@@ -183,6 +183,19 @@ body {
   font-size: 12px;
 }
 
+.crosslog-topbar__sync {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.crosslog-topbar__sync-state {
+  color: var(--crosslog-muted-text);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
 .crosslog-split-button {
   block-size: 27px;
   border: 1px solid var(--crosslog-border);
@@ -259,6 +272,10 @@ body {
   padding: 6px 8px;
   border-block-end: 1px solid var(--crosslog-border);
   background: var(--crosslog-toolbar-surface);
+}
+
+.crosslog-pane-header[data-active="true"] {
+  box-shadow: inset 0 2px 0 var(--crosslog-accent);
 }
 
 .crosslog-pane-header__identity {
