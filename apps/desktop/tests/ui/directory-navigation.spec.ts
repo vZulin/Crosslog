@@ -36,24 +36,10 @@ describe("Desktop directory navigation", () => {
   });
 });
 
-async function directoryHeaderField(testId: RedesignedShellTestId): Promise<WebdriverIO.Element> {
-  const header = await directoryHeader();
-
-  return header.$(byTestId(testId));
+function directoryHeaderField(testId: RedesignedShellTestId): WebdriverIO.Element {
+  return $(byTestId(testId));
 }
 
 function directoryButton(label: string): WebdriverIO.Element {
   return $(`button[aria-label="${label}"]`);
-}
-
-async function directoryHeader(): Promise<WebdriverIO.Element> {
-  const headers = await $$(byTestId(redesignedShellTestIds.paneHeader));
-
-  for (const header of headers) {
-    if ((await header.getText()).includes("logs/2026")) {
-      return header;
-    }
-  }
-
-  throw new Error("Directory pane header for logs/2026 was not found.");
 }

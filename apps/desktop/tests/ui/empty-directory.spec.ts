@@ -7,10 +7,10 @@ describe("Desktop empty directory", () => {
     await waitForDesktopShell();
     await $("button=Open empty directory").click();
 
-    const paneHeader = await $(byTestId(redesignedShellTestIds.paneHeader));
-
-    await expect(paneHeader.$('[role="status"]')).toHaveText("No top-level log files in logs/2026");
-    await expect(paneHeader.$$(byTestId(redesignedShellTestIds.paneHeaderDirectoryPrevious))).toBeElementsArrayOfSize(0);
-    await expect(paneHeader.$$(byTestId(redesignedShellTestIds.paneHeaderDirectoryNext))).toBeElementsArrayOfSize(0);
+    await expect($(byTestId(redesignedShellTestIds.paneHeaderEmptyDirectory))).toHaveText(
+      "No top-level log files in logs/2026",
+    );
+    await expect($$(byTestId(redesignedShellTestIds.paneHeaderDirectoryPrevious))).toBeElementsArrayOfSize(0);
+    await expect($$(byTestId(redesignedShellTestIds.paneHeaderDirectoryNext))).toBeElementsArrayOfSize(0);
   });
 });
