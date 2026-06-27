@@ -1,4 +1,4 @@
-import { expect } from "@wdio/globals";
+import { browser, expect } from "@wdio/globals";
 import { redesignedShellTestIds } from "@crosslog/ui";
 import {
   byTestId,
@@ -52,7 +52,17 @@ describe("Desktop log search", () => {
 async function setPaneSearchQuery(searchPopover: WebdriverIO.Element, query: string): Promise<void> {
   const searchField = await searchPopover.$(byTestId(redesignedShellTestIds.paneSearchField));
 
-  await searchField.clearValue();
-  await searchField.setValue(query);
+  await searchField.waitForExist();
+  await browser.execute(
+    (target: HTMLInputElement, nextQuery: string) => {
+      const valueSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+
+      valueSetter?.call(target, nextQuery);
+      target.dispatchEvent(new Event("input", { bubbles: true }));
+      target.dispatchEvent(new Event("change", { bubbles: true }));
+    },
+    searchField,
+    query,
+  );
   await expect(searchField).toHaveValue(query);
 }
