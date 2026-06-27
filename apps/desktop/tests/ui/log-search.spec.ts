@@ -43,7 +43,7 @@ describe("Desktop log search", () => {
     await expect(await appPane.$$(byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(0);
 
     await activatePane(appPane);
-    await clickElementWithJavaScript(await $(byTestId(redesignedShellTestIds.commandField)));
+    await focusElementWithJavaScript(await $(byTestId(redesignedShellTestIds.commandField)));
     await expect(await appPane.$('[aria-label="Pane search for app.log"]')).toBeExisting();
   });
 });
@@ -60,6 +60,11 @@ async function getLogPaneByTitle(title: string): Promise<WebdriverIO.Element> {
 async function activatePane(pane: WebdriverIO.Element): Promise<void> {
   await clickElementWithJavaScript(pane);
   await expect(pane).toHaveAttribute("data-active", "true");
+}
+
+async function focusElementWithJavaScript(element: WebdriverIO.Element): Promise<void> {
+  await element.waitForExist();
+  await browser.execute((target: HTMLElement) => target.focus(), element);
 }
 
 async function setPaneSearchQuery(searchPopover: WebdriverIO.Element, query: string): Promise<void> {
