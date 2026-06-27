@@ -1,7 +1,7 @@
 import React from "react";
 import type { DirectorySource, LogPane as LogPaneModel } from "@crosslog/core";
 import { HorizontalLogScroller } from "./HorizontalLogScroller";
-import { LogTextSelection } from "./LogTextSelection";
+import { LogTextSelection, type ClipboardWriter } from "./LogTextSelection";
 import { PaneHeader } from "./PaneHeader";
 import { VirtualLogViewport } from "./VirtualLogViewport";
 import { DeletedFileStatus } from "./DeletedFileStatus";
@@ -26,6 +26,7 @@ export interface LogPaneProps {
   readonly onPreviousSearchMatch?: (paneId: string) => void;
   readonly onNextSearchMatch?: (paneId: string) => void;
   readonly onCopied?: (title: string) => void;
+  readonly clipboard?: ClipboardWriter;
 }
 
 export function LogPane({
@@ -46,6 +47,7 @@ export function LogPane({
   onPreviousSearchMatch,
   onNextSearchMatch,
   onCopied,
+  clipboard,
 }: LogPaneProps) {
   const activeSearchMatch =
     pane.searchState.currentMatchIndex === null
@@ -73,7 +75,7 @@ export function LogPane({
         onNavigateDirectory={onNavigateDirectory}
       />
       <div role="toolbar" aria-label={`Pane tools for ${pane.title}`}>
-        <LogTextSelection title={pane.title} lines={lines} onCopied={onCopied} />
+        <LogTextSelection title={pane.title} lines={lines} onCopied={onCopied} clipboard={clipboard} />
         <PaneSearchControls
           title={pane.title}
           searchState={pane.searchState}

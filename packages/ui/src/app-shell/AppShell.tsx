@@ -27,6 +27,7 @@ import {
 } from "@crosslog/core";
 import { CapabilityLimitations } from "./CapabilityLimitations";
 import { FuturePaneToolbarSlot } from "../log-pane/FuturePaneToolbarSlot";
+import type { ClipboardWriter } from "../log-pane/LogTextSelection";
 import { PaneRail } from "../pane-rail/PaneRail";
 import { usePaneSearchStore } from "../search/usePaneSearchStore";
 import { SessionRecoveryBanner } from "../session/SessionRecoveryBanner";
@@ -39,6 +40,10 @@ import { useFileLifecycleEvents, type FileSourceMap } from "../log-pane/useFileL
 export interface AppShellProps {
   readonly platform: CrosslogPlatform;
 }
+
+const uiTestClipboardWriter: ClipboardWriter = {
+  writeText: async () => undefined,
+};
 
 export function AppShell({ platform }: AppShellProps) {
   const [state, dispatch] = React.useReducer(logPaneReducer, createLogPaneState());
@@ -527,6 +532,7 @@ export function AppShell({ platform }: AppShellProps) {
             onPreviousSearchMatch={selectPreviousSearchMatch}
             onNextSearchMatch={selectNextSearchMatch}
             onCopied={setUiTestCopiedPaneTitle}
+            clipboard={uiTestEnabled ? uiTestClipboardWriter : undefined}
           />
         </>
       )}

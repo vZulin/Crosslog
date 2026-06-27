@@ -1,6 +1,7 @@
 import React from "react";
 import type { DirectorySource, LogPane as LogPaneModel } from "@crosslog/core";
 import { LogPane } from "../log-pane/LogPane";
+import type { ClipboardWriter } from "../log-pane/LogTextSelection";
 import { AddPaneButton } from "./AddPaneButton";
 import { PaneResizer } from "./PaneResizer";
 
@@ -29,6 +30,7 @@ export interface PaneRailProps {
   readonly onPreviousSearchMatch?: (paneId: string) => void;
   readonly onNextSearchMatch?: (paneId: string) => void;
   readonly onCopied?: (title: string) => void;
+  readonly clipboard?: ClipboardWriter;
 }
 
 export function PaneRail({
@@ -48,6 +50,7 @@ export function PaneRail({
   onPreviousSearchMatch,
   onNextSearchMatch,
   onCopied,
+  clipboard,
 }: PaneRailProps) {
   return (
     <section aria-label="Log panes" data-testid="pane-rail" style={{ display: "flex", overflowX: "auto" }}>
@@ -71,6 +74,7 @@ export function PaneRail({
             onPreviousSearchMatch={onPreviousSearchMatch}
             onNextSearchMatch={onNextSearchMatch}
             onCopied={onCopied}
+            clipboard={clipboard}
           />
           {index < panes.length - 1 ? (
             <PaneResizer
