@@ -1,8 +1,9 @@
-import { browser, expect } from "@wdio/globals";
+import { expect } from "@wdio/globals";
+import { waitForDesktopShell } from "./helpers/redesigned-shell";
 
 describe("Desktop empty directory", () => {
   it("shows empty-directory status for directories without top-level files", async () => {
-    await browser.url("/");
+    await waitForDesktopShell();
     await $("button=Open empty directory").click();
 
     await expect($("aria/Empty directory logs/2026")).toHaveText("No top-level log files in logs/2026");

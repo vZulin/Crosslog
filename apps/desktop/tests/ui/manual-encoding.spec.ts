@@ -1,9 +1,7 @@
-import { browser, expect } from "@wdio/globals";
+import { waitForDesktopShell } from "./helpers/redesigned-shell";
 
 describe("Desktop manual encoding", () => {
   it("keeps the shell available for encoding workflows", async () => {
-    await browser.url("/");
-    await expect($("main")).toBeExisting();
+    await waitForDesktopShell();
   });
 });
-

@@ -1,8 +1,9 @@
 import { browser, expect } from "@wdio/globals";
+import { waitForDesktopShell } from "./helpers/redesigned-shell";
 
 describe("Desktop session restore", () => {
   it("restores pane layout after restart without requiring scroll state", async () => {
-    await browser.url("/");
+    await waitForDesktopShell();
     await $("button=Open logs").click();
     await expect($("h2=app.log")).toBeExisting();
 

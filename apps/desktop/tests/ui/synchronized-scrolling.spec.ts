@@ -1,8 +1,9 @@
-import { browser, expect } from "@wdio/globals";
+import { expect } from "@wdio/globals";
+import { waitForDesktopShell } from "./helpers/redesigned-shell";
 
 describe("Desktop synchronized scrolling", () => {
   it("synchronizes timestamped panes and supports disabling synchronization", async () => {
-    await browser.url("/");
+    await waitForDesktopShell();
     await $("button=Open logs").click();
 
     const syncToggle = await $('[aria-label="Synchronize by time"]');

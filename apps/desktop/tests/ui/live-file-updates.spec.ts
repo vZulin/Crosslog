@@ -1,8 +1,9 @@
-import { browser, expect } from "@wdio/globals";
+import { expect } from "@wdio/globals";
+import { waitForDesktopShell } from "./helpers/redesigned-shell";
 
 describe("Desktop live file updates", () => {
   it("appends, retains deleted content, and treats replacement as pane-local", async () => {
-    await browser.url("/");
+    await waitForDesktopShell();
     await $("button=Open logs").click();
 
     const appPane = (await $$('[data-testid="log-pane"]'))[0];

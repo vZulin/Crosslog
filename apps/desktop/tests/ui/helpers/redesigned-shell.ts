@@ -37,6 +37,10 @@ export function getRedesignedShell() {
   };
 }
 
+export async function waitForDesktopShell(): Promise<void> {
+  await expect(browser.$("main")).toBeExisting();
+}
+
 export async function expectRedesignedShellRegions(): Promise<void> {
   for (const testId of redesignedShellStructuralTestIds) {
     await expect(browser.$(byTestId(testId))).toBeExisting();
@@ -46,4 +50,3 @@ export async function expectRedesignedShellRegions(): Promise<void> {
 export function byTestId(testId: RedesignedShellTestId): string {
   return `[data-testid="${testId}"]`;
 }
-

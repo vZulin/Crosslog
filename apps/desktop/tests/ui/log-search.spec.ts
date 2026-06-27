@@ -1,8 +1,9 @@
-import { browser, expect } from "@wdio/globals";
+import { expect } from "@wdio/globals";
+import { waitForDesktopShell } from "./helpers/redesigned-shell";
 
 describe("Desktop log search", () => {
   it("searches full pane content and isolates pane search state", async () => {
-    await browser.url("/");
+    await waitForDesktopShell();
     await $("button=Open logs").click();
 
     const panes = await $$('[data-testid="log-pane"]');
