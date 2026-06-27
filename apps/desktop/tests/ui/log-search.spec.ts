@@ -20,7 +20,7 @@ describe("Desktop log search", () => {
     const appSearch = await appPane.$(byTestId(redesignedShellTestIds.paneSearchPopover));
     await expect(appSearch).toBeExisting();
 
-    await appSearch.$(byTestId(redesignedShellTestIds.paneSearchField)).setValue("line ");
+    await setPaneSearchQuery(appSearch, "line ");
     await expect(await appSearch.$(byTestId(redesignedShellTestIds.paneSearchMatchCount))).toHaveText(
       expect.stringContaining("1 of"),
     );
@@ -29,13 +29,13 @@ describe("Desktop log search", () => {
       expect.stringContaining("2 of"),
     );
 
-    await appSearch.$(byTestId(redesignedShellTestIds.paneSearchField)).setValue("line 180 token=outside-viewport");
+    await setPaneSearchQuery(appSearch, "line 180 token=outside-viewport");
     await expect(await appSearch.$(byTestId(redesignedShellTestIds.paneSearchMatchCount))).toHaveText("1 of 1");
     await expect(await appPane.$('[data-search-match="true"][data-line-number="181"]')).toBeExisting();
     await expect(await servicePane.$$(byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(0);
 
     await clickElementWithJavaScript(await appSearch.$(byTestId(redesignedShellTestIds.paneSearchRegex)));
-    await appSearch.$(byTestId(redesignedShellTestIds.paneSearchField)).setValue("[broken");
+    await setPaneSearchQuery(appSearch, "[broken");
     await expect(await appSearch.$('[role="alert"]')).toHaveText(expect.stringContaining("Invalid regular expression"));
 
     await clickElementWithJavaScript(servicePane);
@@ -48,3 +48,11 @@ describe("Desktop log search", () => {
     await expect(await appPane.$('[aria-label="Pane search for app.log"]')).toBeExisting();
   });
 });
+
+async function setPaneSearchQuery(searchPopover: WebdriverIO.Element, query: string): Promise<void> {
+  const searchField = await searchPopover.$(byTestId(redesignedShellTestIds.paneSearchField));
+
+  await searchField.clearValue();
+  await searchField.setValue(query);
+  await expect(searchField).toHaveValue(query);
+}
