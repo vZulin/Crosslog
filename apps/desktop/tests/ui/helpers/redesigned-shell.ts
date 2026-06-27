@@ -38,12 +38,12 @@ export function getRedesignedShell() {
 }
 
 export async function waitForDesktopShell(): Promise<void> {
-  const shellSelector = byTestId(redesignedShellTestIds.crosslogShell);
+  const workspaceSelector = 'main[aria-label="Crosslog workspace"]';
 
-  await browser.waitUntil(async () => browser.$(shellSelector).isExisting(), {
+  await browser.waitUntil(async () => browser.$(workspaceSelector).isExisting(), {
     interval: 250,
     timeout: 20_000,
-    timeoutMsg: `Crosslog shell did not mount: ${shellSelector}`,
+    timeoutMsg: `Crosslog desktop workspace did not mount: ${workspaceSelector}`,
   });
 }
 
