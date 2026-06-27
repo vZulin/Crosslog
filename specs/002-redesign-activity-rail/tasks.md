@@ -204,22 +204,22 @@
 
 ### Tests for User Story 6
 
-- [ ] T086 [P] [US6] Add component tests for live/deleted/replaced indicators in `packages/ui/tests/log-pane/pane-lifecycle-header.test.tsx`
-- [ ] T087 [P] [US6] Update Web live-update or unsupported-monitoring UI tests for redesigned indicators in `apps/web/tests/ui/unsupported-monitoring.spec.ts`
-- [ ] T088 [P] [US6] Update Desktop WDIO live file update UI tests for redesigned indicators in `apps/desktop/tests/ui/live-file-updates.spec.ts`
-- [ ] T089 [P] [US6] Add macOS live file state UI test for redesigned indicators in `apps/desktop/tests/ui/macos/LiveFileStateUITests.swift`
-- [ ] T090 [P] [US6] Update log text copy UI tests to use redesigned pane regions in `apps/web/tests/ui/log-text-copy.spec.ts`
-- [ ] T091 [P] [US6] Update Desktop log text copy UI tests to use redesigned pane regions in `apps/desktop/tests/ui/log-text-copy.spec.ts`
+- [X] T086 [P] [US6] Add component tests for live/deleted/replaced indicators in `packages/ui/tests/log-pane/pane-lifecycle-header.test.tsx`
+- [X] T087 [P] [US6] Update Web live-update or unsupported-monitoring UI tests for redesigned indicators in `apps/web/tests/ui/unsupported-monitoring.spec.ts`
+- [X] T088 [P] [US6] Update Desktop WDIO live file update UI tests for redesigned indicators in `apps/desktop/tests/ui/live-file-updates.spec.ts`
+- [X] T089 [P] [US6] Add macOS live file state UI test for redesigned indicators in `apps/desktop/tests/ui/macos/LiveFileStateUITests.swift`
+- [X] T090 [P] [US6] Update log text copy UI tests to use redesigned pane regions in `apps/web/tests/ui/log-text-copy.spec.ts`
+- [X] T091 [P] [US6] Update Desktop log text copy UI tests to use redesigned pane regions in `apps/desktop/tests/ui/log-text-copy.spec.ts`
 
 ### Implementation for User Story 6
 
-- [ ] T092 [US6] Add live/deleted/replaced/status indicator rendering to pane headers in `packages/ui/src/log-pane/PaneHeader.tsx`
-- [ ] T093 [US6] Redesign deleted-file status presentation without hiding loaded content in `packages/ui/src/log-pane/DeletedFileStatus.tsx`
-- [ ] T094 [US6] Preserve lifecycle event handling with redesigned header status props in `packages/ui/src/log-pane/useFileLifecycleEvents.ts`
-- [ ] T095 [US6] Preserve log text selection and context menu behavior inside redesigned pane workspace in `packages/ui/src/log-pane/LogTextSelection.tsx`
-- [ ] T096 [US6] Update inert log row rendering styles without using HTML injection in `packages/ui/src/log-pane/VirtualLogViewport.tsx`
-- [ ] T097 [US6] Run the local US6 gate with `bash scripts/macos/test.sh`
-- [ ] T098 [US6] Run the local US6 UI gate with `bash scripts/macos/test-ui.sh`
+- [X] T092 [US6] Add live/deleted/replaced/status indicator rendering to pane headers in `packages/ui/src/log-pane/PaneHeader.tsx`
+- [X] T093 [US6] Redesign deleted-file status presentation without hiding loaded content in `packages/ui/src/log-pane/DeletedFileStatus.tsx`
+- [X] T094 [US6] Preserve lifecycle event handling with redesigned header status props in `packages/ui/src/log-pane/useFileLifecycleEvents.ts`
+- [X] T095 [US6] Preserve log text selection and context menu behavior inside redesigned pane workspace in `packages/ui/src/log-pane/LogTextSelection.tsx`
+- [X] T096 [US6] Update inert log row rendering styles without using HTML injection in `packages/ui/src/log-pane/VirtualLogViewport.tsx`
+- [X] T097 [US6] Run the local US6 gate with `bash scripts/macos/test.sh`
+- [X] T098 [US6] Run the local US6 UI gate with `bash scripts/macos/test-ui.sh`
 
 **Checkpoint**: User Story 6 is independently functional and live/error states remain pane-local.
 

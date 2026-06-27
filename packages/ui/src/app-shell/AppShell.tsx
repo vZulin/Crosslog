@@ -40,7 +40,11 @@ import { TimestampConfigError } from "../sync/TimestampConfigError";
 import { Topbar } from "./Topbar";
 import { redesignedShellTestIds } from "./testIds";
 import { getPaneOffset, useSynchronizationStore } from "../sync/useSynchronizationStore";
-import { useFileLifecycleEvents, type FileSourceMap } from "../log-pane/useFileLifecycleEvents";
+import {
+  getPaneHeaderLifecycleState,
+  useFileLifecycleEvents,
+  type FileSourceMap,
+} from "../log-pane/useFileLifecycleEvents";
 
 export interface AppShellProps {
   readonly platform: CrosslogPlatform;
@@ -141,7 +145,9 @@ export function AppShell({ platform }: AppShellProps) {
         const recognizedLines = lines.map((line, index) => timestampService.recognizeLine(index + 1, line, pane.id));
         const status = fileSource?.deleted
           ? ("deleted" as const)
-          : fileSource?.watchState === "unsupported"
+          : fileSource?.readError || fileSource?.watchState === "failed"
+            ? ("error" as const)
+            : fileSource?.watchState === "unsupported"
             ? pane.status
             : pane.sourceRef === directorySource.id && directorySource.files.length === 0
               ? ("empty" as const)
@@ -159,6 +165,7 @@ export function AppShell({ platform }: AppShellProps) {
           timestamps: recognizedLines.map((line) => line.timestamp),
           synchronizationTargetLineNumber: syncTargets[pane.id] ?? null,
           directorySource: pane.sourceRef === directorySource.id ? directorySource : undefined,
+          lifecycleState: getPaneHeaderLifecycleState(fileSource),
         };
       }),
     [directorySource, fileSources, state.panes, syncOffsets, syncTargets, synchronizationEnabled, timestampService],
@@ -190,6 +197,7 @@ export function AppShell({ platform }: AppShellProps) {
   const publishedDirectorySelectedFile = publishedDirectorySource
     ? getCurrentDirectoryFile(publishedDirectorySource)
     : null;
+  const publishedFileLifecycleSummary = formatFileLifecycleSummary(Object.values(fileSources));
 
   React.useEffect(() => {
     if (openSearchPaneId && !state.panes.some((pane) => pane.id === openSearchPaneId)) {
@@ -246,6 +254,7 @@ export function AppShell({ platform }: AppShellProps) {
       directoryNextAvailable: Boolean(publishedDirectorySource?.navigationIndex.nextFileId),
       directoryFileCount: publishedDirectorySource?.files.length ?? 0,
       directoryEmptyVisible: publishedDirectorySource?.files.length === 0,
+      fileLifecycleSummary: publishedFileLifecycleSummary,
     });
   }, [
     activePaneTitle,
@@ -259,6 +268,7 @@ export function AppShell({ platform }: AppShellProps) {
     platform.uiTestBridge,
     publishedDirectorySelectedFile,
     publishedDirectorySource,
+    publishedFileLifecycleSummary,
     sessionSnapshotStatus,
     synchronizationEnabled,
     timeOffsetPopoverStatus,
@@ -350,16 +360,75 @@ export function AppShell({ platform }: AppShellProps) {
     setOpenTimeOffsetPaneId(paneId);
   }, [state.activePaneId, state.panes]);
 
+  const getFileLifecycleTarget = React.useCallback(() => {
+    if (activeFileSource && activePane) {
+      return { paneId: activePane.id, source: activeFileSource };
+    }
+
+    const firstFilePane = state.panes.find((pane) => pane.sourceRef && fileSources[pane.sourceRef]);
+
+    if (!firstFilePane?.sourceRef) {
+      return null;
+    }
+
+    return {
+      paneId: firstFilePane.id,
+      source: fileSources[firstFilePane.sourceRef],
+    };
+  }, [activeFileSource, activePane, fileSources, state.panes]);
+
+  const publishAppendForSource = React.useCallback((source: FileSource) => {
+    publishFileLifecycleEvent({
+      type: "FileAppended",
+      sourceId: source.id,
+      lines: [`2026-06-16T09:05:00.000Z ${source.displayName} live appended line ${liveAppendCounter.current++}`],
+    });
+  }, [publishFileLifecycleEvent]);
+
+  const publishReplacementForSource = React.useCallback((source: FileSource) => {
+    publishFileLifecycleEvent({
+      type: "FileReplaced",
+      sourceId: source.id,
+      identity: `${source.fileIdentity.value}:replacement:${Date.now()}`,
+      sizeBytes: 96,
+      lines: [
+        `2026-06-16T09:06:00.000Z ${source.displayName} replacement file started`,
+        `2026-06-16T09:06:01.000Z ${source.displayName} replacement file ready`,
+      ],
+    });
+  }, [publishFileLifecycleEvent]);
+
+  const handleFileLifecycleTestAction = React.useCallback(
+    (action: "append" | "delete" | "replace") => {
+      const target = getFileLifecycleTarget();
+
+      if (!target) {
+        return;
+      }
+
+      dispatch({ type: "setActivePane", paneId: target.paneId });
+
+      if (action === "append") {
+        publishAppendForSource(target.source);
+        return;
+      }
+
+      if (action === "delete") {
+        publishFileLifecycleEvent({ type: "FileDeleted", sourceId: target.source.id });
+        return;
+      }
+
+      publishReplacementForSource(target.source);
+    },
+    [getFileLifecycleTarget, publishAppendForSource, publishFileLifecycleEvent, publishReplacementForSource],
+  );
+
   const handleAppendLiveLine = () => {
     if (!activeFileSource) {
       return;
     }
 
-    publishFileLifecycleEvent({
-      type: "FileAppended",
-      sourceId: activeFileSource.id,
-      lines: [`2026-06-16T09:05:00.000Z ${activeFileSource.displayName} live appended line ${liveAppendCounter.current++}`],
-    });
+    publishAppendForSource(activeFileSource);
   };
 
   const handleDeleteActiveFile = () => {
@@ -375,16 +444,7 @@ export function AppShell({ platform }: AppShellProps) {
       return;
     }
 
-    publishFileLifecycleEvent({
-      type: "FileReplaced",
-      sourceId: activeFileSource.id,
-      identity: `${activeFileSource.fileIdentity.value}:replacement:${Date.now()}`,
-      sizeBytes: 96,
-      lines: [
-        `2026-06-16T09:06:00.000Z ${activeFileSource.displayName} replacement file started`,
-        `2026-06-16T09:06:01.000Z ${activeFileSource.displayName} replacement file ready`,
-      ],
-    });
+    publishReplacementForSource(activeFileSource);
   };
 
   const firstPaneTitle = panes[0]?.pane.title ?? null;
@@ -464,11 +524,21 @@ export function AppShell({ platform }: AppShellProps) {
           }
           break;
         }
+        case "appendActiveFile":
+          handleFileLifecycleTestAction("append");
+          break;
+        case "deleteActiveFile":
+          handleFileLifecycleTestAction("delete");
+          break;
+        case "replaceActiveFile":
+          handleFileLifecycleTestAction("replace");
+          break;
       }
     },
     [
       directorySource.files,
       firstPaneTitle,
+      handleFileLifecycleTestAction,
       handleSynchronizationEnabledChange,
       requestActivePaneSearch,
       requestActivePaneTimeOffset,
@@ -789,6 +859,37 @@ function getPublishedRedesignedRegions(
     ...(searchOpen ? [redesignedShellTestIds.paneSearchPopover] : []),
     ...(timeOffsetOpen ? [redesignedShellTestIds.timeOffsetPopover] : []),
   ];
+}
+
+function formatFileLifecycleSummary(fileSources: readonly FileSource[]): string {
+  if (fileSources.length === 0) {
+    return "none";
+  }
+
+  return fileSources
+    .map((source) => `${source.displayName}:${getFileLifecycleKind(source)}`)
+    .sort()
+    .join(",");
+}
+
+function getFileLifecycleKind(source: FileSource): "live" | "deleted" | "replaced" | "unsupported" | "error" {
+  if (source.readError || source.watchState === "failed") {
+    return "error";
+  }
+
+  if (source.deleted) {
+    return "deleted";
+  }
+
+  if (source.replaced) {
+    return "replaced";
+  }
+
+  if (source.watchState === "unsupported") {
+    return "unsupported";
+  }
+
+  return "live";
 }
 
 const samplePanes = [

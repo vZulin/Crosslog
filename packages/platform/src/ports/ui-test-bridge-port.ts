@@ -18,6 +18,7 @@ export interface UiTestShellState {
   readonly directoryNextAvailable: boolean;
   readonly directoryFileCount: number;
   readonly directoryEmptyVisible: boolean;
+  readonly fileLifecycleSummary: string;
 }
 
 export type UiTestAction =
@@ -31,7 +32,10 @@ export type UiTestAction =
   | "navigateNextDirectoryFile"
   | "discoverNewerDirectoryFile"
   | "openActivePaneTimeOffset"
-  | "setActivePaneTimeOffset";
+  | "setActivePaneTimeOffset"
+  | "appendActiveFile"
+  | "deleteActiveFile"
+  | "replaceActiveFile";
 
 export interface UiTestBridge {
   readonly isEnabled: () => Promise<boolean>;

@@ -48,6 +48,7 @@ export function formatUiTestShellState(state: UiTestShellState): string {
     `directoryNext=${state.directoryNextAvailable ? "on" : "off"}`,
     `directoryFiles=${state.directoryFileCount}`,
     `emptyDirectory=${state.directoryEmptyVisible ? "on" : "off"}`,
+    `lifecycle=${state.fileLifecycleSummary}`,
     `regions=${state.redesignedRegions.length > 0 ? state.redesignedRegions.join(",") : "none"}`,
   ].join(";");
 }
@@ -65,6 +66,9 @@ function parseUiTestAction(action: string | null): UiTestAction | null {
     case "discoverNewerDirectoryFile":
     case "openActivePaneTimeOffset":
     case "setActivePaneTimeOffset":
+    case "appendActiveFile":
+    case "deleteActiveFile":
+    case "replaceActiveFile":
       return action;
     default:
       return null;

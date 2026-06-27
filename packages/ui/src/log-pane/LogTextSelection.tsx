@@ -57,16 +57,29 @@ export function LogTextSelection({
 
   return (
     <div
+      aria-label={`Log text actions for ${title}`}
+      className="crosslog-log-text-selection"
       onContextMenu={(event) => {
         event.preventDefault();
         setMenuOpen(true);
       }}
+      role="group"
     >
-      <button type="button" aria-label={`Copy selected text from ${title}`} onClick={copy}>
+      <button
+        aria-label={`Copy selected text from ${title}`}
+        className="crosslog-log-text-selection__copy"
+        type="button"
+        onClick={copy}
+      >
         Copy
       </button>
       {menuOpen ? (
-        <button type="button" role="menuitem" onClick={copy}>
+        <button
+          className="crosslog-log-text-selection__menuitem"
+          type="button"
+          role="menuitem"
+          onClick={copy}
+        >
           Copy selected text
         </button>
       ) : null}

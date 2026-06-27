@@ -8,6 +8,8 @@ export interface VisibleLogLine {
   readonly timestamp: Date | null;
 }
 
+export type LogLineSeverity = "trace" | "debug" | "info" | "warn" | "error" | "fatal" | "unknown";
+
 export interface VirtualLogViewportProps {
   readonly title: string;
   readonly lines: readonly string[];
@@ -63,19 +65,48 @@ export function VirtualLogViewport({
       data-testid={redesignedShellTestIds.logViewport}
       id={redesignedShellTestIds.logViewport}
     >
-      {visibleLines.map((line) => (
-        <li
-          key={line.lineNumber}
-          data-line-number={line.lineNumber}
-          data-search-match={searchMatchLineNumbers.has(line.lineNumber) ? "true" : "false"}
-          data-active-search-match={line.lineNumber === activeSearchMatchLineNumber ? "true" : "false"}
-          data-sync-target={line.lineNumber === synchronizationTargetLineNumber ? "true" : "false"}
-          onClick={() => onTimeAnchorChange?.(line.lineNumber, line.timestamp)}
-        >
-          <span>{line.lineNumber}</span>
-          <code>{line.text}</code>
-        </li>
-      ))}
+      {visibleLines.map((line) => {
+        const severity = inferLogLineSeverity(line.text);
+
+        return (
+          <li
+            className="crosslog-log-viewport__row"
+            key={line.lineNumber}
+            data-line-number={line.lineNumber}
+            data-severity={severity}
+            data-search-match={searchMatchLineNumbers.has(line.lineNumber) ? "true" : "false"}
+            data-active-search-match={line.lineNumber === activeSearchMatchLineNumber ? "true" : "false"}
+            data-sync-target={line.lineNumber === synchronizationTargetLineNumber ? "true" : "false"}
+            onClick={() => onTimeAnchorChange?.(line.lineNumber, line.timestamp)}
+          >
+            <span className="crosslog-log-viewport__line-number">{line.lineNumber}</span>
+            <code className="crosslog-log-viewport__line-text">{line.text}</code>
+          </li>
+        );
+      })}
     </ol>
   );
+}
+
+export function inferLogLineSeverity(text: string): LogLineSeverity {
+  const match = /\b(trace|debug|info|warn|warning|error|err|fatal)\b/i.exec(text);
+
+  switch (match?.[1]?.toLowerCase()) {
+    case "trace":
+      return "trace";
+    case "debug":
+      return "debug";
+    case "info":
+      return "info";
+    case "warn":
+    case "warning":
+      return "warn";
+    case "error":
+    case "err":
+      return "error";
+    case "fatal":
+      return "fatal";
+    default:
+      return "unknown";
+  }
 }

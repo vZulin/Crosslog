@@ -4,6 +4,7 @@ import { formatTimeOffset, getCurrentDirectoryFile } from "@crosslog/core";
 import { ClosePaneButton } from "./ClosePaneButton";
 import { DirectoryNavigator } from "./DirectoryNavigator";
 import { EmptyDirectoryStatus } from "./EmptyDirectoryStatus";
+import type { PaneHeaderLifecycleState } from "./useFileLifecycleEvents";
 import { IconButton } from "../app-shell/IconButton";
 import { redesignedShellTestIds } from "../app-shell/testIds";
 
@@ -15,6 +16,7 @@ export interface PaneHeaderProps {
   readonly searchOpen?: boolean;
   readonly timeOffsetOpen?: boolean;
   readonly directorySource?: DirectorySource;
+  readonly lifecycleState?: PaneHeaderLifecycleState;
   readonly onClose: () => void;
   readonly onOpenSearch?: () => void;
   readonly onOpenTimeOffset?: () => void;
@@ -29,6 +31,7 @@ export function PaneHeader({
   searchOpen = false,
   timeOffsetOpen = false,
   directorySource,
+  lifecycleState,
   onClose,
   onOpenSearch,
   onOpenTimeOffset,
@@ -52,11 +55,16 @@ export function PaneHeader({
     directorySource ? "crosslog-pane-header__identity--directory" : null,
   ].filter(Boolean).join(" ");
   const offsetLabel = formatTimeOffset(timeOffset);
+  const lifecycleIndicators = getLifecycleIndicators(lifecycleState);
+  const lifecycleLabel =
+    lifecycleIndicators.length > 0
+      ? `, file state ${lifecycleIndicators.map((indicator) => indicator.label).join(", ")}`
+      : "";
 
   return (
     <header
       aria-current={active ? "true" : undefined}
-      aria-label={`${headerLabel}${active ? " active pane" : ""}`}
+      aria-label={`${headerLabel}${active ? " active pane" : ""}${lifecycleLabel}`}
       className="crosslog-pane-header"
       data-active={active ? "true" : "false"}
       data-testid={redesignedShellTestIds.paneHeader}
@@ -92,6 +100,25 @@ export function PaneHeader({
           </h2>
         )}
       </div>
+      {lifecycleIndicators.length > 0 ? (
+        <div
+          aria-label={`File state for ${displayTitle}: ${lifecycleIndicators.map((indicator) => indicator.label).join(", ")}`}
+          className="crosslog-pane-header__lifecycle"
+          data-testid={redesignedShellTestIds.paneHeaderLifecycle}
+          role="status"
+        >
+          {lifecycleIndicators.map((indicator) => (
+            <span
+              className={`crosslog-pane-header__lifecycle-badge crosslog-pane-header__lifecycle-badge--${indicator.kind}`}
+              data-testid={indicator.testId}
+              key={indicator.kind}
+              title={indicator.description}
+            >
+              {indicator.label}
+            </span>
+          ))}
+        </div>
+      ) : null}
       {directorySource && directorySource.files.length > 0 ? (
         <DirectoryNavigator
           directoryName={directorySource.displayName}
@@ -131,4 +158,68 @@ export function PaneHeader({
       </div>
     </header>
   );
+}
+
+interface LifecycleIndicator {
+  readonly kind: "live" | "deleted" | "replaced" | "unsupported" | "error";
+  readonly label: string;
+  readonly description: string;
+  readonly testId: string;
+}
+
+function getLifecycleIndicators(
+  lifecycleState: PaneHeaderLifecycleState | undefined,
+): readonly LifecycleIndicator[] {
+  if (!lifecycleState) {
+    return [];
+  }
+
+  const indicators: LifecycleIndicator[] = [];
+
+  if (lifecycleState.errorMessage) {
+    indicators.push({
+      kind: "error",
+      label: "Error",
+      description: lifecycleState.errorMessage,
+      testId: redesignedShellTestIds.paneHeaderError,
+    });
+  }
+
+  if (lifecycleState.deleted) {
+    indicators.push({
+      kind: "deleted",
+      label: "Deleted",
+      description: "Loaded content is retained.",
+      testId: redesignedShellTestIds.paneHeaderDeleted,
+    });
+  }
+
+  if (lifecycleState.replaced) {
+    indicators.push({
+      kind: "replaced",
+      label: "Replaced",
+      description: "Replacement content is shown in this pane.",
+      testId: redesignedShellTestIds.paneHeaderReplaced,
+    });
+  }
+
+  if (lifecycleState.monitoringUnsupported) {
+    indicators.push({
+      kind: "unsupported",
+      label: "Monitoring unavailable",
+      description: "This platform cannot watch the file for changes.",
+      testId: redesignedShellTestIds.paneHeaderMonitoringUnsupported,
+    });
+  }
+
+  if (lifecycleState.live) {
+    indicators.push({
+      kind: "live",
+      label: "Live",
+      description: "Live updates are active.",
+      testId: redesignedShellTestIds.paneHeaderLive,
+    });
+  }
+
+  return indicators;
 }

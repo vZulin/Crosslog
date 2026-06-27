@@ -2,6 +2,7 @@ import React from "react";
 import type { DirectorySource, LogPane as LogPaneModel } from "@crosslog/core";
 import { LogPane } from "../log-pane/LogPane";
 import type { ClipboardWriter } from "../log-pane/LogTextSelection";
+import type { PaneHeaderLifecycleState } from "../log-pane/useFileLifecycleEvents";
 import { PaneResizer } from "./PaneResizer";
 import { PaneWorkspace } from "./PaneWorkspace";
 
@@ -10,6 +11,7 @@ export interface PaneRailPane {
   readonly lines: readonly string[];
   readonly timestamps?: readonly (Date | null)[];
   readonly directorySource?: DirectorySource;
+  readonly lifecycleState?: PaneHeaderLifecycleState;
   readonly synchronizationTargetLineNumber?: number | null;
 }
 
@@ -67,6 +69,7 @@ export function PaneRail({
             lines={entry.lines}
             timestamps={entry.timestamps}
             directorySource={entry.directorySource}
+            lifecycleState={entry.lifecycleState}
             synchronizationTargetLineNumber={entry.synchronizationTargetLineNumber}
             onClose={onClosePane}
             onActivate={onActivatePane}

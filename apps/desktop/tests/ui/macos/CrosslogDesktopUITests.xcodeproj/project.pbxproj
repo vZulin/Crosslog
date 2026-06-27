@@ -15,6 +15,7 @@
 		300000000000000000000006 /* RedesignedShellAssertions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000006 /* RedesignedShellAssertions.swift */; };
 		300000000000000000000007 /* SynchronizedScrollingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000007 /* SynchronizedScrollingUITests.swift */; };
 		30000000000000000000000A /* PaneSearchUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000A /* PaneSearchUITests.swift */; };
+		30000000000000000000000B /* LiveFileStateUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000B /* LiveFileStateUITests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -36,6 +37,7 @@
 		200000000000000000000006 /* RedesignedShellAssertions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RedesignedShellAssertions.swift; sourceTree = "<group>"; };
 		200000000000000000000007 /* SynchronizedScrollingUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynchronizedScrollingUITests.swift; sourceTree = "<group>"; };
 		20000000000000000000000A /* PaneSearchUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaneSearchUITests.swift; sourceTree = "<group>"; };
+		20000000000000000000000B /* LiveFileStateUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveFileStateUITests.swift; sourceTree = "<group>"; };
 		200000000000000000000008 /* CrosslogUITestHost.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CrosslogUITestHost.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		200000000000000000000009 /* CrosslogDesktopUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CrosslogDesktopUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -81,6 +83,7 @@
 				200000000000000000000002 /* CrosslogUITests.swift */,
 				200000000000000000000003 /* EmptyStateUITests.swift */,
 				200000000000000000000004 /* LogTextCopyUITests.swift */,
+				20000000000000000000000B /* LiveFileStateUITests.swift */,
 				200000000000000000000005 /* MultiPaneLayoutUITests.swift */,
 				20000000000000000000000A /* PaneSearchUITests.swift */,
 				200000000000000000000006 /* RedesignedShellAssertions.swift */,
@@ -207,6 +210,7 @@
 				300000000000000000000002 /* CrosslogUITests.swift in Sources */,
 				300000000000000000000003 /* EmptyStateUITests.swift in Sources */,
 				300000000000000000000004 /* LogTextCopyUITests.swift in Sources */,
+				30000000000000000000000B /* LiveFileStateUITests.swift in Sources */,
 				300000000000000000000005 /* MultiPaneLayoutUITests.swift in Sources */,
 				30000000000000000000000A /* PaneSearchUITests.swift in Sources */,
 				300000000000000000000006 /* RedesignedShellAssertions.swift in Sources */,

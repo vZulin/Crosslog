@@ -8,12 +8,14 @@ import { DeletedFileStatus } from "./DeletedFileStatus";
 import { TimeOffsetPopover } from "../sync/TimeOffsetPopover";
 import { PaneSearchPopover } from "../search/PaneSearchPopover";
 import { redesignedShellTestIds } from "../app-shell/testIds";
+import type { PaneHeaderLifecycleState } from "./useFileLifecycleEvents";
 
 export interface LogPaneProps {
   readonly pane: LogPaneModel;
   readonly lines: readonly string[];
   readonly timestamps?: readonly (Date | null)[];
   readonly directorySource?: DirectorySource;
+  readonly lifecycleState?: PaneHeaderLifecycleState;
   readonly synchronizationTargetLineNumber?: number | null;
   readonly onClose: (paneId: string) => void;
   readonly onActivate: (paneId: string) => void;
@@ -40,6 +42,7 @@ export function LogPane({
   lines,
   timestamps,
   directorySource,
+  lifecycleState,
   synchronizationTargetLineNumber,
   onClose,
   onActivate,
@@ -86,6 +89,7 @@ export function LogPane({
         searchOpen={searchOpen}
         timeOffsetOpen={timeOffsetOpen}
         directorySource={directorySource}
+        lifecycleState={lifecycleState}
         onClose={() => onClose(pane.id)}
         onOpenSearch={() => {
           onActivate(pane.id);

@@ -12,6 +12,9 @@ enum CrosslogUITestAction: String {
     case discoverNewerDirectoryFile
     case openActivePaneTimeOffset
     case setActivePaneTimeOffset
+    case appendActiveFile
+    case deleteActiveFile
+    case replaceActiveFile
 }
 
 class CrosslogUITests: XCTestCase {

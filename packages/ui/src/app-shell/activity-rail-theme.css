@@ -267,7 +267,7 @@ body {
 .crosslog-pane-header {
   min-block-size: var(--crosslog-pane-header-height);
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
   align-items: center;
   gap: 8px;
   padding: 6px 8px;
@@ -324,6 +324,55 @@ body {
   font-size: 11px;
 }
 
+.crosslog-pane-header__lifecycle {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+  min-width: 0;
+}
+
+.crosslog-pane-header__lifecycle-badge {
+  max-inline-size: 112px;
+  min-block-size: 19px;
+  display: inline-flex;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid var(--crosslog-border);
+  border-radius: var(--crosslog-pill-radius);
+  background: var(--crosslog-surface);
+  color: var(--crosslog-muted-text);
+  font-size: 11px;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-inline: 7px;
+}
+
+.crosslog-pane-header__lifecycle-badge--live {
+  border-color: rgb(52 199 89 / 45%);
+  color: #248a3d;
+}
+
+.crosslog-pane-header__lifecycle-badge--deleted,
+.crosslog-pane-header__lifecycle-badge--unsupported {
+  border-color: rgb(154 101 0 / 35%);
+  background: var(--crosslog-warning-surface);
+  color: var(--crosslog-warning-text);
+}
+
+.crosslog-pane-header__lifecycle-badge--replaced {
+  border-color: rgb(0 122 255 / 35%);
+  background: var(--crosslog-accent-surface);
+  color: var(--crosslog-accent);
+}
+
+.crosslog-pane-header__lifecycle-badge--error {
+  border-color: rgb(255 59 48 / 35%);
+  background: var(--crosslog-error-surface);
+  color: var(--crosslog-error-text);
+}
+
 .crosslog-pane-header__actions {
   display: flex;
   align-items: center;
@@ -369,6 +418,35 @@ body {
   gap: 6px;
   padding: 6px 8px;
   border-block-end: 1px solid var(--crosslog-border);
+}
+
+.crosslog-log-text-selection {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.crosslog-log-text-selection__copy,
+.crosslog-log-text-selection__menuitem {
+  min-block-size: 27px;
+  border: 1px solid var(--crosslog-border);
+  border-radius: var(--crosslog-control-radius);
+  background: var(--crosslog-surface);
+  color: var(--crosslog-muted-text);
+  font: inherit;
+  padding-inline: 8px;
+}
+
+.crosslog-log-text-selection__copy:not(:disabled),
+.crosslog-log-text-selection__menuitem:not(:disabled) {
+  cursor: pointer;
+}
+
+.crosslog-log-text-selection__copy:hover,
+.crosslog-log-text-selection__menuitem:hover {
+  background: var(--crosslog-accent-surface);
+  color: var(--crosslog-accent);
 }
 
 .crosslog-pane-search-popover {
@@ -503,6 +581,54 @@ body {
   margin: 0;
   padding: 8px 12px;
   font-family: var(--crosslog-font-log);
+  font-size: 12px;
+}
+
+.crosslog-log-viewport__row {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 10px;
+  min-width: max-content;
+  color: var(--crosslog-text);
+}
+
+.crosslog-log-viewport__row[data-search-match="true"] {
+  background: var(--crosslog-warning-surface);
+}
+
+.crosslog-log-viewport__row[data-active-search-match="true"],
+.crosslog-log-viewport__row[data-sync-target="true"] {
+  outline: 1px solid var(--crosslog-accent);
+  outline-offset: 1px;
+}
+
+.crosslog-log-viewport__row[data-severity="warn"] .crosslog-log-viewport__line-text {
+  color: var(--crosslog-warning-text);
+}
+
+.crosslog-log-viewport__row[data-severity="error"] .crosslog-log-viewport__line-text,
+.crosslog-log-viewport__row[data-severity="fatal"] .crosslog-log-viewport__line-text {
+  color: var(--crosslog-error-text);
+}
+
+.crosslog-log-viewport__line-number {
+  color: var(--crosslog-line-number-text);
+  text-align: end;
+  user-select: none;
+}
+
+.crosslog-log-viewport__line-text {
+  min-width: 0;
+  color: inherit;
+  white-space: pre;
+}
+
+.crosslog-pane-deleted-status {
+  margin: 0;
+  padding: 6px 8px;
+  border-block-start: 1px solid var(--crosslog-border);
+  background: var(--crosslog-warning-surface);
+  color: var(--crosslog-warning-text);
   font-size: 12px;
 }
 
