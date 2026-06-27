@@ -4,14 +4,17 @@ import { getCurrentDirectoryFile } from "@crosslog/core";
 import { ClosePaneButton } from "./ClosePaneButton";
 import { DirectoryNavigator } from "./DirectoryNavigator";
 import { EmptyDirectoryStatus } from "./EmptyDirectoryStatus";
+import { IconButton } from "../app-shell/IconButton";
 import { redesignedShellTestIds } from "../app-shell/testIds";
 
 export interface PaneHeaderProps {
   readonly paneId: string;
   readonly title: string;
   readonly active: boolean;
+  readonly searchOpen?: boolean;
   readonly directorySource?: DirectorySource;
   readonly onClose: () => void;
+  readonly onOpenSearch?: () => void;
   readonly onNavigateDirectory?: (paneId: string, direction: "previous" | "next") => void;
 }
 
@@ -19,8 +22,10 @@ export function PaneHeader({
   active,
   paneId,
   title,
+  searchOpen = false,
   directorySource,
   onClose,
+  onOpenSearch,
   onNavigateDirectory,
 }: PaneHeaderProps) {
   const selectedFile = directorySource ? getCurrentDirectoryFile(directorySource) : null;
@@ -65,11 +70,22 @@ export function PaneHeader({
           />
         )
       ) : null}
-      <ClosePaneButton
-        testId={redesignedShellTestIds.paneHeaderClose}
-        title={displayTitle}
-        onClose={onClose}
-      />
+      <div className="crosslog-pane-header__actions">
+        <IconButton
+          aria-expanded={searchOpen}
+          aria-haspopup="dialog"
+          icon="search"
+          label={`Search in ${displayTitle}`}
+          onClick={onOpenSearch}
+          pressed={searchOpen}
+          testId={redesignedShellTestIds.paneHeaderSearch}
+        />
+        <ClosePaneButton
+          testId={redesignedShellTestIds.paneHeaderClose}
+          title={displayTitle}
+          onClose={onClose}
+        />
+      </div>
     </header>
   );
 }

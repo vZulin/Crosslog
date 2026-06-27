@@ -1,5 +1,11 @@
 import { expect } from "@wdio/globals";
-import { openSampleLogsWithUiBridge, waitForDesktopShell } from "./helpers/redesigned-shell";
+import { redesignedShellTestIds } from "@crosslog/ui";
+import {
+  byTestId,
+  clickElementWithJavaScript,
+  openSampleLogsWithUiBridge,
+  waitForDesktopShell,
+} from "./helpers/redesigned-shell";
 
 describe("Desktop live file updates", () => {
   it("appends, retains deleted content, and treats replacement as pane-local", async () => {
@@ -14,11 +20,13 @@ describe("Desktop live file updates", () => {
     await $("button=Delete active file").click();
     await expect(await appPane.$("p*=app.log was deleted. Loaded content is retained.")).toBeExisting();
 
-    await appPane.$('[aria-label="Search app.log"]').setValue("live appended line");
-    await expect(await appPane.$("span=1 of 1")).toBeExisting();
+    await clickElementWithJavaScript(await appPane.$(byTestId(redesignedShellTestIds.paneHeaderSearch)));
+    const searchPopover = await appPane.$(byTestId(redesignedShellTestIds.paneSearchPopover));
+    await searchPopover.$(byTestId(redesignedShellTestIds.paneSearchField)).setValue("live appended line");
+    await expect(await searchPopover.$(byTestId(redesignedShellTestIds.paneSearchMatchCount))).toHaveText("1 of 1");
 
     await $("button=Replace active file").click();
     await expect(await appPane.$("code*=replacement file started")).toBeExisting();
-    await expect(await appPane.$$("span=1 of 1")).toHaveLength(0);
+    await expect(await searchPopover.$(byTestId(redesignedShellTestIds.paneSearchMatchCount))).toHaveText("0 of 0");
   });
 });

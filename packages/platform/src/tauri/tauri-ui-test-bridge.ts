@@ -33,6 +33,8 @@ export function formatUiTestShellState(state: UiTestShellState): string {
     `state=${state.status}`,
     `panes=${state.paneCount}`,
     `sync=${state.synchronizationEnabled ? "on" : "off"}`,
+    `search=${state.paneSearchStatus}`,
+    `searchPane=${state.paneSearchPaneTitle ?? "none"}`,
     `session=${state.sessionSnapshotStatus}`,
     `copied=${state.copiedPaneTitle ?? "none"}`,
     `active=${state.activePaneTitle ?? "none"}`,
@@ -46,6 +48,8 @@ function parseUiTestAction(action: string | null): UiTestAction | null {
     case "openSampleLogs":
     case "copyFirstPane":
     case "toggleSynchronization":
+    case "openActivePaneSearch":
+    case "setActivePaneInvalidSearch":
       return action;
     default:
       return null;

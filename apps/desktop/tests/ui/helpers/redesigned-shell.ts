@@ -67,7 +67,14 @@ export async function waitForUiTestTitleFragment(fragment: string, timeout = 15_
   });
 }
 
-export function enqueueDesktopUiTestAction(action: "openSampleLogs" | "copyFirstPane" | "toggleSynchronization"): void {
+export function enqueueDesktopUiTestAction(
+  action:
+    | "openSampleLogs"
+    | "copyFirstPane"
+    | "toggleSynchronization"
+    | "openActivePaneSearch"
+    | "setActivePaneInvalidSearch",
+): void {
   const actionsPath = process.env.CROSSLOG_UI_TEST_ACTIONS_PATH;
 
   if (!actionsPath) {

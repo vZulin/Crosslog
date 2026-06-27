@@ -251,6 +251,7 @@ body {
 
 .crosslog-log-pane {
   flex: 0 0 auto;
+  position: relative;
   min-inline-size: 320px;
   min-block-size: 100%;
   display: flex;
@@ -304,6 +305,12 @@ body {
   font-size: 11px;
 }
 
+.crosslog-pane-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .crosslog-pane-tools {
   display: flex;
   flex-wrap: wrap;
@@ -311,6 +318,59 @@ body {
   gap: 6px;
   padding: 6px 8px;
   border-block-end: 1px solid var(--crosslog-border);
+}
+
+.crosslog-pane-search-popover {
+  inset-block-start: calc(var(--crosslog-pane-header-height) - 2px);
+  inset-inline-start: 8px;
+}
+
+.crosslog-pane-search-popover__content {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+}
+
+.crosslog-pane-search-popover__field {
+  display: grid;
+  gap: 4px;
+  color: var(--crosslog-muted-text);
+  font-size: 12px;
+}
+
+.crosslog-pane-search-popover__field input {
+  min-inline-size: 0;
+  border: 1px solid var(--crosslog-border);
+  border-radius: var(--crosslog-control-radius);
+  padding: 5px 7px;
+  color: var(--crosslog-text);
+  font: inherit;
+}
+
+.crosslog-pane-search-popover__match-count {
+  color: var(--crosslog-muted-text);
+  font-size: 12px;
+}
+
+.crosslog-pane-search-popover__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.crosslog-pane-search-popover__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-block-size: 27px;
+  color: var(--crosslog-muted-text);
+  font-size: 12px;
+}
+
+.crosslog-pane-search-popover__error {
+  color: var(--crosslog-error-text);
+  font-size: 12px;
 }
 
 .crosslog-log-scroller {

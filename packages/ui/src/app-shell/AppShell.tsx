@@ -54,6 +54,8 @@ export function AppShell({ platform }: AppShellProps) {
   const [fileSources, setFileSources] = React.useState<FileSourceMap>(() => createInitialFileSources(platform.kind));
   const [uiTestEnabled, setUiTestEnabled] = React.useState(false);
   const [uiTestCopiedPaneTitle, setUiTestCopiedPaneTitle] = React.useState<string | null>(null);
+  const [openSearchPaneId, setOpenSearchPaneId] = React.useState<string | null>(null);
+  const [searchFocusRequestSequence, setSearchFocusRequestSequence] = React.useState(0);
   const liveAppendCounter = React.useRef(1);
   const [directorySource, dispatchDirectorySource] = React.useReducer(
     directorySourceReducer,
@@ -171,6 +173,17 @@ export function AppShell({ platform }: AppShellProps) {
   const activePaneTitle = panes.find((entry) => entry.pane.id === state.activePaneId)?.pane.title ?? null;
   const activeFileSource = activePane?.sourceRef ? fileSources[activePane.sourceRef] : null;
   const lifecycleActionsDisabled = !activeFileSource;
+  const openSearchPane = openSearchPaneId
+    ? panes.find((entry) => entry.pane.id === openSearchPaneId) ?? null
+    : null;
+  const openSearchState = openSearchPaneId ? searchStates[openSearchPaneId] ?? emptySearchState : null;
+  const paneSearchStatus = openSearchPaneId ? (openSearchState?.error ? "error" : "open") : "closed";
+
+  React.useEffect(() => {
+    if (openSearchPaneId && !state.panes.some((pane) => pane.id === openSearchPaneId)) {
+      setOpenSearchPaneId(null);
+    }
+  }, [openSearchPaneId, state.panes]);
 
   React.useEffect(() => {
     let active = true;
@@ -197,13 +210,18 @@ export function AppShell({ platform }: AppShellProps) {
       paneTitles: panes.map((entry) => entry.pane.title),
       activePaneTitle,
       synchronizationEnabled,
+      paneSearchStatus,
+      paneSearchPaneTitle: openSearchPane?.pane.title ?? null,
       copiedPaneTitle: uiTestCopiedPaneTitle,
       sessionSnapshotStatus,
-      redesignedRegions: getPublishedRedesignedRegions(panes.length),
+      redesignedRegions: getPublishedRedesignedRegions(panes.length, openSearchPaneId !== null),
     });
   }, [
     activePaneTitle,
+    openSearchPane,
+    openSearchPaneId,
     panes,
+    paneSearchStatus,
     platform.uiTestBridge,
     sessionSnapshotStatus,
     synchronizationEnabled,
@@ -249,6 +267,27 @@ export function AppShell({ platform }: AppShellProps) {
       setPlanResult([], []);
     }
   }, [setPlanResult, setSynchronizationEnabled]);
+
+  const handleSearchOpenChange = React.useCallback((paneId: string, open: boolean) => {
+    setOpenSearchPaneId((currentPaneId) => {
+      if (open) {
+        return paneId;
+      }
+
+      return currentPaneId === paneId ? null : currentPaneId;
+    });
+  }, []);
+
+  const requestActivePaneSearch = React.useCallback(() => {
+    const paneId = state.activePaneId ?? state.panes[0]?.id ?? null;
+
+    if (!paneId) {
+      return;
+    }
+
+    setOpenSearchPaneId(paneId);
+    setSearchFocusRequestSequence((current) => current + 1);
+  }, [state.activePaneId, state.panes]);
 
   const handleAppendLiveLine = () => {
     if (!activeFileSource) {
@@ -306,9 +345,32 @@ export function AppShell({ platform }: AppShellProps) {
             handleSynchronizationEnabledChange(!synchronizationEnabled);
           }
           break;
+        case "openActivePaneSearch":
+          requestActivePaneSearch();
+          break;
+        case "setActivePaneInvalidSearch": {
+          const paneId = state.activePaneId ?? state.panes[0]?.id ?? null;
+
+          if (paneId) {
+            setOpenSearchPaneId(paneId);
+            setSearchFocusRequestSequence((current) => current + 1);
+            setSearchMode(paneId, "regex");
+            setSearchQuery(paneId, "[broken");
+          }
+          break;
+        }
       }
     },
-    [firstPaneTitle, handleSynchronizationEnabledChange, state.panes.length, synchronizationEnabled],
+    [
+      firstPaneTitle,
+      handleSynchronizationEnabledChange,
+      requestActivePaneSearch,
+      setSearchMode,
+      setSearchQuery,
+      state.activePaneId,
+      state.panes,
+      synchronizationEnabled,
+    ],
   );
 
   React.useEffect(() => {
@@ -535,6 +597,9 @@ export function AppShell({ platform }: AppShellProps) {
           onSearchCaseSensitiveChange={setSearchCaseSensitive}
           onPreviousSearchMatch={selectPreviousSearchMatch}
           onNextSearchMatch={selectNextSearchMatch}
+          openSearchPaneId={openSearchPaneId}
+          searchFocusRequestSequence={searchFocusRequestSequence}
+          onSearchOpenChange={handleSearchOpenChange}
           onCopied={setUiTestCopiedPaneTitle}
           clipboard={uiTestEnabled ? uiTestClipboardWriter : undefined}
         />
@@ -546,7 +611,7 @@ export function AppShell({ platform }: AppShellProps) {
       activityRail={
         <ActivityRail
           onOpenSources={handleOpenSourcesFromRail}
-          onSearch={() => undefined}
+          onSearch={requestActivePaneSearch}
           onSettings={() => undefined}
         />
       }
@@ -574,6 +639,7 @@ export function AppShell({ platform }: AppShellProps) {
           canSplitPane={state.panes.length > 0}
           syncEnabled={synchronizationEnabled}
           onAddPane={handleAddPane}
+          onCommandSearch={requestActivePaneSearch}
           onSplitPane={handleSplitPane}
           onSyncEnabledChange={handleSynchronizationEnabledChange}
         />
@@ -582,7 +648,7 @@ export function AppShell({ platform }: AppShellProps) {
   );
 }
 
-function getPublishedRedesignedRegions(paneCount: number): readonly string[] {
+function getPublishedRedesignedRegions(paneCount: number, searchOpen: boolean): readonly string[] {
   const persistentRegions = [
     redesignedShellTestIds.crosslogShell,
     redesignedShellTestIds.topbar,
@@ -596,13 +662,17 @@ function getPublishedRedesignedRegions(paneCount: number): readonly string[] {
     return persistentRegions;
   }
 
-  return [
+  const nonEmptyRegions = [
     ...persistentRegions,
     redesignedShellTestIds.workspaceScrollbar,
     redesignedShellTestIds.logPane,
     redesignedShellTestIds.paneHeader,
     redesignedShellTestIds.logViewport,
   ];
+
+  return searchOpen
+    ? [...nonEmptyRegions, redesignedShellTestIds.paneSearchPopover]
+    : nonEmptyRegions;
 }
 
 const samplePanes = [

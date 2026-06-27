@@ -5,6 +5,8 @@ enum CrosslogUITestAction: String {
     case openSampleLogs
     case copyFirstPane
     case toggleSynchronization
+    case openActivePaneSearch
+    case setActivePaneInvalidSearch
 }
 
 class CrosslogUITests: XCTestCase {

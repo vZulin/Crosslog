@@ -27,6 +27,9 @@ export interface PaneRailProps {
   readonly onSearchCaseSensitiveChange?: (paneId: string, enabled: boolean) => void;
   readonly onPreviousSearchMatch?: (paneId: string) => void;
   readonly onNextSearchMatch?: (paneId: string) => void;
+  readonly openSearchPaneId?: string | null;
+  readonly searchFocusRequestSequence?: number;
+  readonly onSearchOpenChange?: (paneId: string, open: boolean) => void;
   readonly onCopied?: (title: string) => void;
   readonly clipboard?: ClipboardWriter;
 }
@@ -45,6 +48,9 @@ export function PaneRail({
   onSearchCaseSensitiveChange,
   onPreviousSearchMatch,
   onNextSearchMatch,
+  openSearchPaneId = null,
+  searchFocusRequestSequence = 0,
+  onSearchOpenChange,
   onCopied,
   clipboard,
 }: PaneRailProps) {
@@ -69,6 +75,11 @@ export function PaneRail({
             onSearchCaseSensitiveChange={onSearchCaseSensitiveChange}
             onPreviousSearchMatch={onPreviousSearchMatch}
             onNextSearchMatch={onNextSearchMatch}
+            searchOpen={openSearchPaneId === entry.pane.id}
+            searchFocusRequestSequence={
+              openSearchPaneId === entry.pane.id ? searchFocusRequestSequence : 0
+            }
+            onSearchOpenChange={onSearchOpenChange}
             onCopied={onCopied}
             clipboard={clipboard}
           />

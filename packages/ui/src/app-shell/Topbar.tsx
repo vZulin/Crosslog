@@ -10,12 +10,14 @@ export interface TopbarProps {
   readonly onSyncEnabledChange: (enabled: boolean) => void;
   readonly onAddPane: () => void;
   readonly onSplitPane: () => void;
+  readonly onCommandSearch?: () => void;
 }
 
 export function Topbar({
   canSplitPane,
   syncEnabled,
   onAddPane,
+  onCommandSearch,
   onSplitPane,
   onSyncEnabledChange,
 }: TopbarProps) {
@@ -32,6 +34,13 @@ export function Topbar({
           className="crosslog-command-field__input"
           data-testid={redesignedShellTestIds.commandField}
           id={redesignedShellTestIds.commandField}
+          onFocus={onCommandSearch}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              onCommandSearch?.();
+            }
+          }}
           placeholder="Command or workspace search"
           type="search"
         />

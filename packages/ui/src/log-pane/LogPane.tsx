@@ -6,7 +6,7 @@ import { PaneHeader } from "./PaneHeader";
 import { VirtualLogViewport } from "./VirtualLogViewport";
 import { DeletedFileStatus } from "./DeletedFileStatus";
 import { TimeOffsetEditor } from "../sync/TimeOffsetEditor";
-import { PaneSearchControls } from "../search/PaneSearchControls";
+import { PaneSearchPopover } from "../search/PaneSearchPopover";
 import { redesignedShellTestIds } from "../app-shell/testIds";
 
 export interface LogPaneProps {
@@ -26,6 +26,9 @@ export interface LogPaneProps {
   readonly onSearchCaseSensitiveChange?: (paneId: string, enabled: boolean) => void;
   readonly onPreviousSearchMatch?: (paneId: string) => void;
   readonly onNextSearchMatch?: (paneId: string) => void;
+  readonly searchOpen?: boolean;
+  readonly searchFocusRequestSequence?: number;
+  readonly onSearchOpenChange?: (paneId: string, open: boolean) => void;
   readonly onCopied?: (title: string) => void;
   readonly clipboard?: ClipboardWriter;
 }
@@ -47,6 +50,9 @@ export function LogPane({
   onSearchCaseSensitiveChange,
   onPreviousSearchMatch,
   onNextSearchMatch,
+  searchOpen = false,
+  searchFocusRequestSequence = 0,
+  onSearchOpenChange,
   onCopied,
   clipboard,
 }: LogPaneProps) {
@@ -72,13 +78,18 @@ export function LogPane({
         active={pane.active}
         paneId={pane.id}
         title={pane.title}
+        searchOpen={searchOpen}
         directorySource={directorySource}
         onClose={() => onClose(pane.id)}
+        onOpenSearch={() => {
+          onActivate(pane.id);
+          onSearchOpenChange?.(pane.id, true);
+        }}
         onNavigateDirectory={onNavigateDirectory}
       />
-      <div className="crosslog-pane-tools" role="toolbar" aria-label={`Pane tools for ${pane.title}`}>
-        <LogTextSelection title={pane.title} lines={lines} onCopied={onCopied} clipboard={clipboard} />
-        <PaneSearchControls
+      {searchOpen ? (
+        <PaneSearchPopover
+          focusRequestSequence={searchFocusRequestSequence}
           title={pane.title}
           searchState={pane.searchState}
           onQueryChange={(query) => onSearchQueryChange?.(pane.id, query)}
@@ -86,7 +97,11 @@ export function LogPane({
           onCaseSensitiveChange={(enabled) => onSearchCaseSensitiveChange?.(pane.id, enabled)}
           onPreviousMatch={() => onPreviousSearchMatch?.(pane.id)}
           onNextMatch={() => onNextSearchMatch?.(pane.id)}
+          onClose={() => onSearchOpenChange?.(pane.id, false)}
         />
+      ) : null}
+      <div className="crosslog-pane-tools" role="toolbar" aria-label={`Pane tools for ${pane.title}`}>
+        <LogTextSelection title={pane.title} lines={lines} onCopied={onCopied} clipboard={clipboard} />
         <TimeOffsetEditor
           title={pane.title}
           value={pane.timeOffset}

@@ -119,22 +119,22 @@
 
 ### Tests for User Story 3
 
-- [ ] T049 [P] [US3] Add component tests for the redesigned pane search popover in `packages/ui/tests/search/pane-search-popover.test.tsx`
-- [ ] T050 [P] [US3] Add component tests for activity rail and command-field search focus in `packages/ui/tests/app-shell/search-entry-points.test.tsx`
-- [ ] T051 [P] [US3] Update Web pane search UI test for popover behavior in `apps/web/tests/ui/log-search.spec.ts`
-- [ ] T052 [P] [US3] Update Desktop WDIO pane search UI test for popover behavior in `apps/desktop/tests/ui/log-search.spec.ts`
-- [ ] T053 [P] [US3] Add macOS pane search UI test for popover behavior in `apps/desktop/tests/ui/macos/PaneSearchUITests.swift`
+- [X] T049 [P] [US3] Add component tests for the redesigned pane search popover in `packages/ui/tests/search/pane-search-popover.test.tsx`
+- [X] T050 [P] [US3] Add component tests for activity rail and command-field search focus in `packages/ui/tests/app-shell/search-entry-points.test.tsx`
+- [X] T051 [P] [US3] Update Web pane search UI test for popover behavior in `apps/web/tests/ui/log-search.spec.ts`
+- [X] T052 [P] [US3] Update Desktop WDIO pane search UI test for popover behavior in `apps/desktop/tests/ui/log-search.spec.ts`
+- [X] T053 [P] [US3] Add macOS pane search UI test for popover behavior in `apps/desktop/tests/ui/macos/PaneSearchUITests.swift`
 
 ### Implementation for User Story 3
 
-- [ ] T054 [US3] Implement the redesigned pane search popover in `packages/ui/src/search/PaneSearchPopover.tsx`
-- [ ] T055 [US3] Replace inline pane search controls with pane-header search action wiring in `packages/ui/src/log-pane/LogPane.tsx`
-- [ ] T056 [US3] Add pane-header search action and popover anchor state in `packages/ui/src/log-pane/PaneHeader.tsx`
-- [ ] T057 [US3] Wire activity rail search action to focus the active pane search in `packages/ui/src/app-shell/ActivityRail.tsx`
-- [ ] T058 [US3] Wire command field search action to focus the active pane search in `packages/ui/src/app-shell/Topbar.tsx`
-- [ ] T059 [US3] Export the redesigned search popover from `packages/ui/src/index.ts`
-- [ ] T060 [US3] Run the local US3 gate with `bash scripts/macos/test.sh`
-- [ ] T061 [US3] Run the local US3 UI gate with `bash scripts/macos/test-ui.sh`
+- [X] T054 [US3] Implement the redesigned pane search popover in `packages/ui/src/search/PaneSearchPopover.tsx`
+- [X] T055 [US3] Replace inline pane search controls with pane-header search action wiring in `packages/ui/src/log-pane/LogPane.tsx`
+- [X] T056 [US3] Add pane-header search action and popover anchor state in `packages/ui/src/log-pane/PaneHeader.tsx`
+- [X] T057 [US3] Wire activity rail search action to focus the active pane search in `packages/ui/src/app-shell/ActivityRail.tsx`
+- [X] T058 [US3] Wire command field search action to focus the active pane search in `packages/ui/src/app-shell/Topbar.tsx`
+- [X] T059 [US3] Export the redesigned search popover from `packages/ui/src/index.ts`
+- [X] T060 [US3] Run the local US3 gate with `bash scripts/macos/test.sh`
+- [X] T061 [US3] Run the local US3 UI gate with `bash scripts/macos/test-ui.sh`
 
 **Checkpoint**: User Story 3 is independently functional and search behavior remains per-pane.
 
