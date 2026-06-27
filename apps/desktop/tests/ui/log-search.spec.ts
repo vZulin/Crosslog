@@ -12,9 +12,8 @@ describe("Desktop log search", () => {
     await waitForDesktopShell();
     await openSampleLogsWithUiBridge();
 
-    const panes = await $$('[data-testid="log-pane"]');
-    const appPane = panes[0];
-    const servicePane = panes[1];
+    const appPane = await getLogPaneByTitle("app.log");
+    const servicePane = await getLogPaneByTitle("service.log");
 
     await clickElementWithJavaScript(await appPane.$(byTestId(redesignedShellTestIds.paneHeaderSearch)));
     const appSearch = await appPane.$(byTestId(redesignedShellTestIds.paneSearchPopover));
@@ -38,16 +37,30 @@ describe("Desktop log search", () => {
     await setPaneSearchQuery(appSearch, "[broken");
     await expect(await appSearch.$('[role="alert"]')).toHaveText(expect.stringContaining("Invalid regular expression"));
 
-    await clickElementWithJavaScript(servicePane);
+    await activatePane(servicePane);
     await clickElementWithJavaScript(await $(byTestId(redesignedShellTestIds.activityRailSearch)));
     await expect(await servicePane.$('[aria-label="Pane search for service.log"]')).toBeExisting();
     await expect(await appPane.$$(byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(0);
 
-    await clickElementWithJavaScript(appPane);
+    await activatePane(appPane);
     await clickElementWithJavaScript(await $(byTestId(redesignedShellTestIds.commandField)));
     await expect(await appPane.$('[aria-label="Pane search for app.log"]')).toBeExisting();
   });
 });
+
+async function getLogPaneByTitle(title: string): Promise<WebdriverIO.Element> {
+  const pane = await $(
+    `${byTestId(redesignedShellTestIds.logPane)}[aria-label=${JSON.stringify(`Log pane ${title}`)}]`,
+  );
+
+  await pane.waitForExist();
+  return pane;
+}
+
+async function activatePane(pane: WebdriverIO.Element): Promise<void> {
+  await clickElementWithJavaScript(pane);
+  await expect(pane).toHaveAttribute("data-active", "true");
+}
 
 async function setPaneSearchQuery(searchPopover: WebdriverIO.Element, query: string): Promise<void> {
   const searchField = await searchPopover.$(byTestId(redesignedShellTestIds.paneSearchField));
