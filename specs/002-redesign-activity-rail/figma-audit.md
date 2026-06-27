@@ -2,9 +2,11 @@
 
 **Feature**: Crosslog Activity Rail Redesign  
 **Figma file**: Crosslog Log Viewer UI Design  
+**Figma file key**: `ElnRrprtGhFDaM9YpHHsWr`
 **Frame**: Screen / Draft Layout - Activity Rail  
 **Node**: 11:3  
-**Figma URL**: Provided by the requester during implementation.  
+**Figma URL**: Derivable from the file key and node above; no requester URL is
+required for follow-up access.
 **Audit source**: Figma MCP design context, existing research notes, and design contracts.
 
 ## Frame Inventory
@@ -23,8 +25,8 @@ Mandatory visible regions:
   panes and a visible workspace-level scrollbar near the bottom.
 - Log panes: three 444px-wide panes with per-pane header, close action, search
   action, offset tag, and log viewport.
-- Directory pane headers: directory title, selected file title, previous/next
-  controls, and file/folder icons.
+- Directory pane headers: directory title, selected file title, optional
+  selected-file live dot, previous/next controls, and file/folder icons.
 - Search popover: pane-local search field, previous/next controls, case toggle,
   regex toggle, and match count.
 - Time offset popover: pane label, day/hour/min/sec/ms inputs, and apply button.
@@ -86,14 +88,14 @@ Pane headers:
 
 - File panes show a file title, live dot where applicable, offset tag, close
   action, and search action.
-- Directory panes show directory title, selected file, previous/next controls,
-  offset tag, close action, and search action.
+- Directory panes show directory title, selected file, optional selected-file
+  live dot, previous/next controls, offset tag, close action, and search action.
 - Active pane is indicated by a blue top border.
 
 Popovers:
 
-- Time offset popover is anchored over the first pane and includes days, hours,
-  minutes, seconds, milliseconds, and apply.
+- Time offset popover is anchored to the log pane that invoked it and includes
+  days, hours, minutes, seconds, milliseconds, and apply.
 - Pane search popover is anchored near the pane header and includes plain query,
   previous/next, case, regex, and match count controls.
 
@@ -112,7 +114,8 @@ Required local icon module coverage:
   that rendering.
 - Topbar: sync, add pane, command search.
 - Activity rail: search, filter, palette, files, bookmark, settings.
-- Pane header: close, find/search, file, folder, previous, next, live dot.
+- Pane header: close, find/search, file, folder, previous, next, live dot,
+  time offset.
 - Popovers: time offset, pane search, previous result, next result.
 
 Figma MCP asset URLs are short-lived inspection outputs and must not be used as
@@ -144,4 +147,3 @@ runtime application assets.
   regions where semantics are insufficient.
 - Treat all log text, command field input, search input, and copied text as inert
   text.
-

@@ -1,0 +1,114 @@
+:root {
+  --crosslog-shell-bg: #f5f5f7;
+  --crosslog-surface: #ffffff;
+  --crosslog-toolbar-surface: #fafafa;
+  --crosslog-rail-surface: #f0f0f3;
+  --crosslog-border: #d9d9df;
+  --crosslog-scrollbar-track: #dcdde1;
+  --crosslog-scrollbar-thumb: #a6a9af;
+  --crosslog-accent: #007aff;
+  --crosslog-accent-surface: #d9ebff;
+  --crosslog-text: #1d1d1f;
+  --crosslog-muted-text: #6e6e73;
+  --crosslog-line-number-text: #8e8e93;
+  --crosslog-warning-surface: #fff4d7;
+  --crosslog-warning-text: #9a6500;
+  --crosslog-error-surface: #ffe5e5;
+  --crosslog-error-text: #ff3b30;
+  --crosslog-font-ui: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --crosslog-font-log: "Roboto Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --crosslog-window-radius: 12px;
+  --crosslog-control-radius: 7px;
+  --crosslog-pill-radius: 10px;
+  --crosslog-topbar-height: 35px;
+  --crosslog-rail-width: 40px;
+  --crosslog-pane-width: 444px;
+  --crosslog-pane-header-height: 55px;
+  --crosslog-statusbar-height: 27px;
+}
+
+.crosslog-shell {
+  display: grid;
+  grid-template:
+    "topbar topbar" var(--crosslog-topbar-height)
+    "rail workspace" minmax(0, 1fr)
+    "status status" var(--crosslog-statusbar-height)
+    / var(--crosslog-rail-width) minmax(0, 1fr);
+  min-block-size: 100%;
+  overflow: hidden;
+  border-radius: var(--crosslog-window-radius);
+  background: var(--crosslog-shell-bg);
+  color: var(--crosslog-text);
+  font-family: var(--crosslog-font-ui);
+}
+
+.crosslog-shell__topbar {
+  grid-area: topbar;
+  min-width: 0;
+  border-block-end: 1px solid var(--crosslog-border);
+  background: var(--crosslog-toolbar-surface);
+}
+
+.crosslog-shell__rail {
+  grid-area: rail;
+  min-height: 0;
+  border-inline-end: 1px solid var(--crosslog-border);
+  background: var(--crosslog-rail-surface);
+}
+
+.crosslog-shell__workspace {
+  grid-area: workspace;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--crosslog-surface);
+}
+
+.crosslog-shell__status {
+  grid-area: status;
+  min-width: 0;
+  border-block-start: 1px solid var(--crosslog-border);
+  background: var(--crosslog-rail-surface);
+}
+
+.crosslog-icon-button {
+  inline-size: 27px;
+  block-size: 27px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: var(--crosslog-control-radius);
+  background: transparent;
+  color: var(--crosslog-muted-text);
+}
+
+.crosslog-icon-button:not(:disabled) {
+  cursor: pointer;
+}
+
+.crosslog-icon-button:not(:disabled):hover,
+.crosslog-icon-button[data-active="true"] {
+  background: var(--crosslog-accent-surface);
+  color: var(--crosslog-accent);
+}
+
+.crosslog-icon-button:focus-visible {
+  outline: 2px solid var(--crosslog-accent);
+  outline-offset: 2px;
+}
+
+.crosslog-icon-button:disabled {
+  opacity: 0.45;
+}
+
+.crosslog-popover {
+  position: absolute;
+  z-index: 20;
+  min-inline-size: 220px;
+  max-inline-size: min(360px, calc(100vw - 32px));
+  border: 1px solid var(--crosslog-border);
+  border-radius: var(--crosslog-control-radius);
+  background: var(--crosslog-surface);
+  box-shadow: 0 12px 32px rgb(29 29 31 / 16%);
+  color: var(--crosslog-text);
+}

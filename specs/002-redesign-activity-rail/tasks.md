@@ -34,19 +34,19 @@
 
 **CRITICAL**: No user story implementation should start until this phase is complete.
 
-- [ ] T009 Create design token CSS for the Activity Rail shell in `packages/ui/src/app-shell/activity-rail-theme.css`
-- [ ] T010 [P] Implement reviewed local SVG icon components in `packages/ui/src/app-shell/icons.tsx`
-- [ ] T011 [P] Implement the reusable icon button primitive with accessible labels in `packages/ui/src/app-shell/IconButton.tsx`
-- [ ] T012 [P] Implement the base popover primitive used by search and offset editors in `packages/ui/src/app-shell/Popover.tsx`
-- [ ] T013 [P] Define activity rail item state and future-action guard helpers in `packages/ui/src/app-shell/activityRailItems.ts`
-- [ ] T014 Implement the top-level shell layout component in `packages/ui/src/app-shell/ActivityRailShell.tsx`
-- [ ] T015 Export redesigned shell primitives from `packages/ui/src/index.ts`
-- [ ] T016 Update macOS Desktop UI execution so `corepack pnpm test:ui:desktop` and `bash scripts/macos/test-ui.sh` run a real XCTest/Accessibility harness through `scripts/run-desktop-ui-tests.mjs`
-- [ ] T017 Update the GitHub Actions workflow with Windows/macOS/Linux UI/E2E matrix jobs in `.github/workflows/ci.yml`
-- [ ] T018 [P] Add CI-specific Linux UI prerequisites for Desktop UI tests in `.github/workflows/ci.yml`
-- [ ] T019 [P] Add shell accessibility component tests for icon-only controls in `packages/ui/tests/app-shell/icon-button-accessibility.test.tsx`
-- [ ] T020 [P] Add future Activity Rail guard tests in `packages/ui/tests/app-shell/activity-rail-future-actions.test.tsx`
-- [ ] T021 Run the local foundational automated gate with `bash scripts/macos/test.sh`
+- [X] T009 Create design token CSS for the Activity Rail shell in `packages/ui/src/app-shell/activity-rail-theme.css`
+- [X] T010 [P] Implement reviewed local SVG icon components in `packages/ui/src/app-shell/icons.tsx`
+- [X] T011 [P] Implement the reusable icon button primitive with accessible labels in `packages/ui/src/app-shell/IconButton.tsx`
+- [X] T012 [P] Implement the base popover primitive used by search and offset editors in `packages/ui/src/app-shell/Popover.tsx`
+- [X] T013 [P] Define activity rail item state and future-action guard helpers in `packages/ui/src/app-shell/activityRailItems.ts`
+- [X] T014 Implement the top-level shell layout component in `packages/ui/src/app-shell/ActivityRailShell.tsx`
+- [X] T015 Export redesigned shell primitives from `packages/ui/src/index.ts`
+- [X] T016 Update macOS Desktop UI execution so `corepack pnpm test:ui:desktop` and `bash scripts/macos/test-ui.sh` run a real XCTest/Accessibility harness through `scripts/run-desktop-ui-tests.mjs`
+- [X] T017 Update the GitHub Actions workflow with Windows/macOS/Linux UI/E2E matrix jobs in `.github/workflows/ci.yml`
+- [X] T018 [P] Add CI-specific Linux UI prerequisites for Desktop UI tests in `.github/workflows/ci.yml`
+- [X] T019 [P] Add shell accessibility component tests for icon-only controls in `packages/ui/tests/app-shell/icon-button-accessibility.test.tsx`
+- [X] T020 [P] Add future Activity Rail guard tests in `packages/ui/tests/app-shell/activity-rail-future-actions.test.tsx`
+- [X] T021 Run the local foundational automated gate with `bash scripts/macos/test.sh`
 
 **Checkpoint**: Redesigned shell primitives and OS UI/E2E gates are ready for story work.
 
