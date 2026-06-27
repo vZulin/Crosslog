@@ -12,9 +12,7 @@ describe("Desktop live file updates", () => {
     await expect(await appPane.$("code*=live appended line")).toBeExisting();
 
     await $("button=Delete active file").click();
-    await expect(await appPane.$('[role="status"]')).toHaveText(
-      expect.stringContaining("app.log was deleted. Loaded content is retained."),
-    );
+    await expect(await appPane.$("p*=app.log was deleted. Loaded content is retained.")).toBeExisting();
 
     await appPane.$('[aria-label="Search app.log"]').setValue("live appended line");
     await expect(await appPane.$("span=1 of 1")).toBeExisting();
