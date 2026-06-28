@@ -15,6 +15,12 @@ Auto-generated from all feature plans. Last updated: 2026-06-28
 - Activity Rail release readiness requires final viewport/no-overlap,
   accessibility, performance, local macOS, and GitHub Actions Windows/macOS/Linux
   automated plus UI/E2E validation. (002-redesign-activity-rail)
+- macOS UI design alignment keeps the existing React/Vite/Zustand/TanStack
+  Virtual/Tauri 2 stack with no new UI kit, parser, backend, or platform adapter
+  dependency. (003-macos-ui-design-alignment)
+- UI alignment reuses existing IndexedDB and Desktop application-data session
+  storage; pane widths remain persisted as desired widths while right-edge fill
+  widths are view-computed. (003-macos-ui-design-alignment)
 
 - TypeScript 5.x for shared domain/UI and Web shell; Rust stable compatible with
   Tauri 2 for Desktop adapters; Node.js active LTS for tooling.
@@ -71,6 +77,9 @@ scripts/
 - Preserve expected test results unless the underlying requirement changes.
 
 ## Recent Changes
+- 003-macos-ui-design-alignment: Planned the delta UI alignment for updated
+  mockups, including theme/platform shell variants, obsolete-control removal,
+  pane right-edge alignment, drag resize, compact popovers, and test migration.
 - 002-redesign-activity-rail: Completed final Activity Rail redesign polish with
   viewport/no-overlap coverage, accessibility assertions, usability walkthrough
   protocol, performance reference methodology, local macOS gates, and required

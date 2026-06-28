@@ -1,856 +1,781 @@
-# Crosslog Full UI Design
+# Crosslog UI Design
 
 ## Purpose
 
-This document defines the target Crosslog user interface for the complete
-product, not only the MVP. It covers the shared Web/Desktop experience,
-macOS-native desktop behavior, light and dark themes, multi-log viewing,
-time synchronization, per-pane search, directory-wide search, filters,
-highlight templates, settings, menus, popovers, sheets, and dialogs.
+This document defines the target Crosslog interface for the Activity Rail
+redesign. It replaces the older inspector/sidebar-heavy design with the layout
+shown in `docs/mockups/crosslog-macos-redesign-mockups.html` and keeps the UI
+aligned with `crosslog-requirement-specification.md`.
 
-The design keeps log content as the primary surface. Controls are dense,
-predictable, and close to the workflow, because users will keep this app open
-during troubleshooting sessions and compare long technical text repeatedly.
+The product is a dense log analysis tool. The main screen must prioritize log
+text, side-by-side comparison, synchronized navigation, and fast per-pane
+actions. Controls should appear close to the pane or workflow that owns them.
+The UI must not add product features that are outside the current requirements
+unless they are explicitly feature-gated as future surfaces.
 
-## Design Direction
+## Design Sources
 
-### Alternatives Considered
+- `docs/mockups/crosslog-macos-redesign-mockups.html`
+  - `Screen / Empty Workspace - Light`
+  - `Screen / Draft Layout - Activity Rail`
+  - `Screen / Draft Layout - Left Panel Open`
+  - Standalone `Pane Search Popover`
+  - Standalone `Time Offset Popover`
+- `docs/mockups/crosslog-current-implementation-mockup.html`
+  - Used only as the before-state reference.
+- `crosslog-requirement-specification.md`
+  - Defines MVP behavior for files, directories, pane layout, search, sync,
+    offsets, session restore, performance, reliability, security, and platform
+    capability differences.
 
-1. **Single horizontal pane rail with floating tools**
-   - Strong for maximum log density and side-by-side comparison.
-   - Weak for advanced filter/search management because controls can become
-     scattered.
+## Scope
 
-2. **IDE-style shell with side panels**
-   - Strong for complex tools: filters, highlights, directory search, source
-     browsing, and saved presets.
-   - Weak if every panel is visible at once, because it reduces log width.
+### MVP UI
 
-3. **Tabbed workspace**
-   - Strong for many unrelated investigations.
-   - Weak for Crosslog's primary value: simultaneous visual comparison.
+The MVP UI must support:
 
-### Recommendation
+- Opening files and directories.
+- Empty workspace open/drop flow.
+- Multiple log panes.
+- Directory panes with current file name and previous/next file controls.
+- Drag resizing between panes.
+- Independent horizontal scrolling per pane.
+- Per-pane search with text, regex, and case-sensitive modes.
+- Per-pane time offset.
+- Synchronized scrolling by timestamp.
+- Live appended lines on Desktop.
+- File deletion and file rotation states.
+- Session restore for panes, order, sizes, sources, and selected directory file.
+- Light and dark themes.
+- macOS, Windows, Linux, and Web shell variants.
 
-Use an IDE-style shell with a horizontal pane rail as the main workspace and
-collapsible side panels for advanced workflows. This keeps the default view
-focused on log text while still giving full-power users persistent controls for
-filters, highlights, and directory search.
+### Future UI Surfaces
 
-The shell must use the same React component model across Desktop and Web. Native
-platform differences are expressed through capabilities, menus, file pickers,
-drag-and-drop behavior, and messaging.
+The activity rail includes final positions for future panels:
 
-## Shell Layout
+- Filters.
+- Highlight palette.
+- Bookmarks or saved investigations.
+- Directory-wide search panel.
+- Settings.
+
+Filters, highlighting, saved sets, recursive directory search, and SSH are not
+MVP features. Production UI must either hide these surfaces or show them as
+clearly unavailable until the matching requirement is implemented. The mockup
+defines their eventual placement, not permission to ship incomplete controls.
+
+## Core Principles
+
+1. **Log text is the primary surface.** The default screen is the usable
+   workspace, not a landing page or marketing-style hero.
+2. **Global controls stay sparse.** The topbar contains only command search,
+   sync, and add pane.
+3. **Pane controls are local.** Search, offset, directory navigation, close, and
+   active state live inside the pane header.
+4. **Advanced workflows are disclosed from the activity rail.** Side panels
+   open only when they add value to the current task.
+5. **Resizing behaves like an editor.** Panes are resized by dragging the
+   boundary between panes, not by plus/minus buttons.
+6. **No orphan space after the rightmost pane.** If pane content is narrower
+   than the workspace, the rightmost pane stretches or the layout distributes
+   space so its right edge reaches the application edge.
+7. **Themes are designed independently.** Dark mode is not a direct inversion
+   of light mode.
+8. **Logs are read-only and inert.** The UI must never execute or mutate log
+   content.
+
+## Explicit Removals From Current UI
+
+The following before-state controls must not appear in the redesigned product
+UI:
+
+- `Copy` button as a permanent pane toolbar row.
+- `Discover newer directory file`.
+- `Append live line`.
+- `Delete active file`.
+- `Replace active file`.
+- `Split` button in the topbar.
+- `Synchronize by time` checkbox text.
+- `Sync on` topbar text label.
+- Pane resize controls implemented as `-` and `+` buttons.
+- Per-pane `ready` footer.
+- Persistent workspace action toolbar above panes.
+
+Copy remains available through native text selection, keyboard shortcut, and
+context menu. File deletion, rotation, and live append are product states, not
+always-visible test controls.
+
+## Application Shell
 
 ### Desktop Window
 
-```text
-+----------------------------------------------------------------------------+
-| [traffic lights] Crosslog      [ Search or Command... ] [Sync] [Tools]      |
-+---------------+-----------------------------------------------+------------+
-| Sources       | Pane rail                                     | Inspectors |
-| Sessions      | +----------+----------+----------+    +       | Filters    |
-| Saved Sets    | | app.log  | api.log  | worker   |            | Highlights |
-| Recent        | | log text | log text | log text |            | Search     |
-|               | |          |          |          |            | Details    |
-+---------------+-----------------------------------------------+------------+
-| Status: 3 panes, sync on, 1 untimed pane excluded, watching 2 sources       |
-+----------------------------------------------------------------------------+
-```
+The target desktop shell uses a compact native-feeling window:
 
-### Web Shell
+| Element | Target |
+| --- | --- |
+| Window size in mockup | `1375 x 825.79 px` |
+| Window radius | `11.853 px` |
+| Window border | `0.988 px` |
+| Window shadow | `0 15.805px 47.414px rgba(0, 0, 0, 0.13)` in light mode |
+| Topbar height | `35.56 px` |
+| App body top | `35.56 px` |
+| Statusbar height | `27 px` |
+| Activity rail width | `40 px` |
 
-```text
-+----------------------------------------------------------------------------+
-| Crosslog              [ Search or Command... ] [Sync] [Open] [Settings]     |
-+---------------+-----------------------------------------------+------------+
-| Sources       | Pane rail                                     | Inspectors |
-| Sessions      | Same workspace behavior as Desktop            | Same tools |
-+---------------+-----------------------------------------------+------------+
-| Web limitations are shown only when they affect the current source.         |
-+----------------------------------------------------------------------------+
-```
+The topbar is also the desktop drag zone. Keep it visually quiet and avoid
+adding extra text labels or tool groups.
 
-### Regions
+### Platform Variants
 
-- **Title bar / global toolbar**: 52 px high on desktop, draggable on macOS.
-  Contains traffic lights, window title, command/search field, sync toggle,
-  pane layout controls, and global actions.
-- **Left sidebar**: 240 px default, resizable from 200-320 px. Contains Sources,
-  Recent, Sessions, and Saved Filter/Highlight Sets. Collapsible to an icon rail.
-- **Pane rail**: horizontal virtualized log workspace. Panes are resizable,
-  independently horizontally scrollable, and can overflow the window.
-- **Right inspector**: 320 px default, resizable from 280-460 px. Contains tabs
-  for Filters, Highlights, Directory Search, Details, and Problems.
-- **Status bar**: 28 px. Shows live source state, active pane, sync state,
-  selected timestamp, encoding, line count, and background work.
+The shared React UI must render platform-specific chrome while preserving the
+same product layout.
 
-## Main Toolbar
+| Platform | Shell chrome |
+| --- | --- |
+| macOS | Traffic lights at the top-left, integrated into the topbar. |
+| Windows | Hide traffic lights, show `Crosslog` title and Windows caption controls. |
+| Linux | Hide traffic lights, show `Crosslog` title and compact round caption controls. |
+| Web | Hide traffic lights, show title, remove desktop window shadow and radius. |
 
-The toolbar stays sparse and uses icons with tooltips. Text labels are reserved
-for ambiguous actions.
+Platform differences must not fork product behavior. Use capability adapters for
+file watching, directory picking, and persistence.
 
-| Control | Type | Shortcut | Behavior |
-| --- | --- | --- | --- |
-| Sidebar toggle | Icon button | `Cmd+B` | Shows/hides the source sidebar. |
-| Open source | Split button | `Cmd+O` | Opens file, directory, or SSH source. |
-| Command field | Search/command field | `Cmd+K` | Opens command palette and cross-workspace search. |
-| Find in active pane | Search mode | `Cmd+F` | Focuses active pane search. |
-| Synchronize scrolling | Toggle | `Cmd+Shift+L` | Enables/disables time sync globally. |
-| Add pane | Icon button | `Cmd+T` | Splits the rightmost pane. |
-| Inspector toggle | Icon button | `Cmd+Option+I` | Shows/hides right inspector. |
-| Settings | Icon button | `Cmd+,` | Opens Settings window/sheet. |
+## Topbar
 
-Desktop uses native application menus in addition to toolbar controls. Web shows
-equivalent actions in an application menu button.
+### Layout
 
-## Left Sidebar
+The topbar contains:
 
-### Sources
+1. Platform chrome.
+2. Center command field.
+3. Sync icon button.
+4. Add pane icon button.
 
-The Sources section shows opened sources and their capability state.
+Target dimensions:
 
-Row content:
+| Control | Target |
+| --- | --- |
+| Command field | `375.36 x 27.66 px` |
+| Command field radius | `6.915 px` |
+| Command field text | `11.853 px`, muted |
+| Sync button | `27 x 27 px`, active accent background |
+| Add pane button | `27 x 27 px` |
+| Button radius | `6.915 px` |
 
-- Source icon: file, folder, SSH host, warning, deleted, or watching.
-- Display name.
-- Secondary label: path, selected directory file, host, or limitation.
-- Small badges: `Live`, `Deleted`, `Rotated`, `Web`, `Untimed`, `Encoding`.
+The sync and add buttons must sit immediately to the right of the command
+field. Do not move them to the far-right edge of the window.
 
-Row interactions:
+### Behavior
 
-- Click selects the related pane.
-- Double click opens in a new pane if not already visible.
-- Drag into pane rail opens the source at that position.
-- Context menu: Reveal, Copy Path, Add to Pane, Close Source, Reload, Select
-  Encoding, Set Time Offset.
+- Command field opens command/workspace search.
+- Sync button toggles synchronized scrolling. It is active by default.
+- Add pane splits the rightmost pane as required by `UI-002` through `UI-004`.
+- Keyboard shortcuts:
+  - `Command+K` or `Ctrl+K`: command/workspace search.
+  - `Command+T` or `Ctrl+T`: add pane.
+  - `Command+Shift+L` or `Ctrl+Shift+L`: toggle synchronization.
 
-### Sessions
+## Activity Rail
 
-Shows recent and saved sessions. Session rows include pane count, source count,
-last opened time, and warning badges for missing sources. Restoring a session
-does not restore scroll positions.
+The activity rail is a `40 px` vertical strip below the topbar. Buttons are
+`27 x 27 px`, use monoline icons, and have subtle border/radius treatment.
 
-### Saved Sets
+Button order:
 
-Saved filter/highlight sets are visible from the left sidebar for fast global
-application. The right inspector is used for editing the selected set.
+1. Search.
+2. Filter.
+3. Palette.
+4. Files.
+5. Bookmark.
+6. Settings at the bottom.
 
-## Pane Rail
+Active button state uses the accent background and accent foreground. In the
+Left Panel Open mockup, Search is active because the Directory Search panel is
+open.
 
-The pane rail is the primary workspace. It must remain usable with many panes,
-wide log lines, and narrow windows.
+MVP gating:
 
-### Pane Anatomy
+- Search may open per-workspace or directory search only when the implemented
+  search scope exists.
+- Files opens the source workflow in MVP. If a full source browser is not
+  implemented yet, it opens the same Open Source picker or a compact recent
+  sources popover.
+- Filter, palette, and bookmark controls are future surfaces and must be hidden
+  or disabled until implemented.
+- Settings can open MVP settings if available; otherwise it must not be a dead
+  control.
 
-```text
-+----------------------------------------------------------+
-| title.log                      [Dir < >] [Find] [...] [x] |
-| /var/log/service/title.log, UTF-8, Live, +00:00:00        |
-+----------------------------------------------------------+
-| inline pane search / filter chips / active highlights     |
-+----------------------------------------------------------+
-| 12345  2026-06-16 09:01:15.122 INFO request accepted      |
-| 12346  2026-06-16 09:01:15.181 WARN retry scheduled       |
-| 12347  2026-06-16 09:01:15.222 ERROR upstream failed      |
-+----------------------------------------------------------+
-| 250,000 lines, 12 matches, synced to 09:01:15.222         |
-+----------------------------------------------------------+
-```
+## Empty Workspace
 
-Pane header:
+The empty workspace uses the same topbar height and rail as the active screen.
+It must show only the controls needed to start.
 
-- Primary title: file name or selected directory file.
-- Secondary title: path, directory name, host, encoding, live state.
-- Active pane indicator: subtle accent line at the top edge.
-- Directory navigation: previous/next buttons only for directory sources.
-- Pane menu: source actions, filter scope, offset, encoding, copy, close.
-- Close button: visible on hover/focus, always keyboard reachable.
+Target layout:
 
-Log viewport:
+| Element | Target |
+| --- | --- |
+| Empty window | `1056 x 596 px` in mockup |
+| Empty topbar | `35.56 px` |
+| Drop zone | `460 x 230 px` |
+| Drop zone radius | `12 px` |
+| Drop zone border | `1 px dashed` |
 
-- Uses `SF Mono`, `Menlo`, or platform monospace.
-- Virtualizes rows and applies filtering/highlighting only around the viewport
-  plus configured pre-processing buffer.
-- Shows line number, timestamp segment, severity segment, message text, and
-  optional match markers.
-- Renders log text as inert text. Links and terminal escape sequences are not
-  executable.
-- Maintains independent horizontal scrolling per pane.
+Content:
 
-### Pane States
+- Icon: folder/source icon in accent color.
+- Title: `Drop logs here`.
+- Supporting text: `Open a file or directory into the first pane.`
+- Primary action: `Open Source`.
 
-| State | Visual Treatment | Primary Action |
+Behavior:
+
+- Click `Open Source` opens the file/directory picker appropriate to the
+  platform.
+- Dropping files or directories opens the first pane.
+- Drag-over state highlights the drop zone without shifting layout.
+- Secondary panels and pane-specific controls stay hidden while no panes exist.
+
+## Pane Workspace
+
+The pane workspace starts after the activity rail. When the left panel is
+closed, it occupies the full remaining body width. When the left panel is open,
+it starts after the `260 px` panel.
+
+Target positions from the mockup:
+
+| State | Workspace left | Workspace width |
 | --- | --- | --- |
-| Ready | Normal header and content. | View and analyze. |
-| Loading | Header progress strip and skeleton rows. | Cancel open. |
-| Watching | Small live pulse badge, no noisy animation in content. | Pause follow. |
-| Deleted | Amber badge, content retained, live badge removed. | Reopen or close. |
-| Rotated | Blue info badge and toast; new file content loaded. | Show previous buffer if available. |
-| Empty directory | Centered compact state inside pane. | Choose another directory. |
-| Error | Red badge and concise message. | Retry, select encoding, or close. |
-| Memory-limited | Error sheet before load completes. | Increase limit or cancel. |
-| Untimed | Gray `Untimed` badge. | Configure timestamp format. |
+| Activity Rail screen | `40.03 px` | `1335.97 px` |
+| Left Panel Open screen | `300.01 px` | `1074.99 px` |
 
-## Search
-
-### Per-Pane Search
-
-Each pane has independent search state:
-
-- Plain text.
-- Regular expression.
-- Case sensitive mode.
-- Previous/next result navigation.
-- Result count and current index.
-- Invalid regex error scoped to that pane.
-- Live updates when appended lines match.
-
-The pane search field appears below the pane header when active and collapses to
-a compact chip when inactive.
-
-### Directory-Wide Search Panel
-
-Directory-wide search lives in the right inspector under the **Directory Search**
-tab. It searches all files in opened directory sources across all panes.
-
-Panel sections:
-
-- Query field with text/regex/case controls.
-- Scope selector: Active directory, all opened directories, selected sources.
-- File filters: name pattern, size range, modified range, encoding.
-- Result list grouped by source and file.
-- Result row: file name, line number, timestamp, excerpt, match highlight.
-- Navigation buttons: Open in current pane, Open in new pane, Reveal in source,
-  Copy result.
-
-Desktop can use filesystem watchers for fresh directory contents. Web must show
-capability messaging when automatic discovery is unavailable.
-
-## Filters
-
-Filters are managed in the right inspector under **Filters**. Filtering can be
-applied to the active pane, selected panes, or all panes.
-
-### Filter Model
-
-Filter set:
-
-- Name.
-- Scope: active pane, selected panes, all panes, or source pattern.
-- Positive rules: show lines matching at least one enabled positive rule.
-- Negative rules: hide lines matching any enabled negative rule.
-- Rule type: plain text or regex.
-- Case mode: case-insensitive or case-sensitive.
-- Match target: full line, timestamp, severity, message, source name.
-- Enabled state per rule.
-
-### Filter Panel Layout
+In production code, prefer a resilient flex/grid model over absolute Figma
+coordinates:
 
 ```text
-Filters
-[Set: Production Errors v] [Save] [...]
++----------+---------------------------------------------+
+| rail 40 | pane workspace                              |
++----------+---------------------------------------------+
 
-Scope
-( ) Active pane  ( ) Selected panes  (*) All panes
-
-Positive filters
-[+]  text  "ERROR"              [Aa] [.*] [on]
-[+]  regex "timeout|refused"    [Aa] [.*] [on]
-
-Negative filters
-[-]  text  "healthcheck"        [Aa] [.*] [on]
-
-Preview
-Shown: 12,420 of 250,000 lines, Hidden: 237,580
++----------+-------------+-------------------------------+
+| rail 40 | panel 260   | pane workspace                 |
++----------+-------------+-------------------------------+
 ```
 
-Interactions:
+### Pane Sizing
 
-- Adding a positive filter from selected log text is available from the text
-  selection popover and context menu.
-- Invalid regex shows inline validation before applying.
-- Applying a filter is immediate and reversible.
-- Empty positive filter list means all lines pass the positive phase.
-- Negative filters are applied after positive filters.
+- Default pane width: `444 px`.
+- Minimum pane width: enough to preserve header controls without overlap.
+- Pane height fills the workspace above the horizontal scrollbar/statusbar.
+- Panes are adjacent with no visible gap.
+- Boundaries between panes are draggable.
+- User-resized widths persist in session state.
+- Adding a pane splits the rightmost pane into two equal widths.
+- Closing a pane redistributes freed space among remaining panes.
+- If the total pane width is less than the workspace width, distribute or
+  stretch panes so the right edge of the rightmost pane aligns with the
+  workspace right edge.
+- If the total pane width exceeds the workspace width, use horizontal overflow.
 
-## Highlighting
+### Horizontal Scrollbar
 
-Highlight controls are placed below filters in the same right inspector tab
-group, matching the requirement that filters and highlight styles are managed
-together.
+The workspace scrollbar uses the target `7.902 px` height and rounded thumb.
+It appears only when pane content overflows horizontally. Individual log viewports
+also keep independent horizontal scrolling for long lines.
 
-### Built-In Highlight Templates
+## Log Pane
 
-Crosslog ships with five templates:
+### Anatomy
 
-1. **Errors and Warnings**: ERROR, FATAL, WARN.
-2. **HTTP Status**: 2xx, 3xx, 4xx, 5xx status patterns.
-3. **Latency**: duration values, slow thresholds, timeout patterns.
-4. **Identifiers**: request IDs, trace IDs, session IDs, correlation IDs.
-5. **Timestamps and Services**: timestamp segments and common service prefixes.
+```text
++------------------------------------------------+
+| active top border                              |
+|           [file or directory title]        [x] |
+| [prev] [current file / offset / find] [next]   |
++------------------------------------------------+
+| log viewport                                   |
+| line timestamp severity message                |
++------------------------------------------------+
+```
 
-### Highlight Rule Model
+Target dimensions:
 
-Rule fields:
+| Element | Target |
+| --- | --- |
+| Pane width | `444 px` |
+| Pane height in mockup | `732 px` |
+| Pane border | `0.988 px` |
+| Header height | `55 px` |
+| Active top border | about `1.976 px` |
+| Viewport top | `55 px` |
 
-- Name.
-- Pattern and type: text or regex.
-- Foreground color.
-- Background color.
-- Font style: regular, medium, bold, italic, underline.
-- Match target: full line, timestamp, severity, message, source name.
-- Priority when multiple rules match.
-- Enabled state.
+### File Pane Header
 
-### Quick Highlight Menu for Selected Text
+For a file source:
 
-When the user selects text in a log pane, show a compact floating popover near
-the selection.
+- Show file icon and file name centered in the header.
+- Show live dot near the file name when Desktop file watching is active.
+- Show close button at the top-right.
+- Show compact offset pill below the title.
+- Show pane find icon to the right of the offset pill.
+- Do not show directory previous/next controls.
 
-Actions:
+### Directory Pane Header
 
-- Copy.
-- Find in pane.
-- Filter include.
-- Filter exclude.
-- Highlight as...
-- Add timestamp format from selection.
+For a directory source:
 
-`Highlight as...` opens a submenu:
+- Show folder icon and directory name as the main title.
+- Show current selected file name below the directory name.
+- Show live dot near the current file name when watching applies.
+- Show previous and next file buttons at the lower left and lower right.
+- Disable previous/next when there is no file in that direction.
+- Do not automatically switch current file when newer files appear.
+- Recompute previous/next availability when directory contents change.
 
-- Error.
-- Warning.
-- Success.
-- Request ID.
-- Custom color...
-- Add to current template.
-- Create new template.
+This directly supports `DIR-004`, `DIR-005`, and `NAV-001` through `NAV-010`.
 
-The popover disappears on Escape, scrolling, clicking outside, or completing an
-action. It must not obscure the selected line when possible.
+### Header Controls
 
-## Context Menus
+| Control | Target | Behavior |
+| --- | --- | --- |
+| Close | `25 x 25 px` icon button | Closes the pane. |
+| Previous file | `27 x 27 px` icon button | Directory source only. |
+| Next file | `27 x 27 px` icon button | Directory source only. |
+| Offset tag | `140 x 15 px` pill | Toggles time offset popover. |
+| Find icon | `15 x 15 px` icon | Toggles pane search popover. |
+| Live dot | `8 x 8 px` | Indicates active live monitoring. |
 
-### Log Text Context Menu
+Spacing between the title, live dot, offset tag, and find icon must match the
+mockup proportions and must not collapse when titles change. Truncate titles
+with ellipsis instead of moving controls.
 
-- Copy.
-- Copy line.
-- Copy with line numbers.
-- Copy timestamp.
-- Find selection in pane.
-- Search selection in directories.
-- Include filter from selection.
-- Exclude filter from selection.
-- Highlight selection.
-- Add timestamp parser from selection.
-- Reveal source.
+## Log Viewport
 
-### Pane Header Context Menu
+The viewport uses compact monospace text and a structured row layout.
 
-- Rename pane label.
-- Set time offset.
-- Select encoding.
-- Reload source.
-- Open containing directory.
-- Duplicate pane.
-- Close pane.
-- Close other panes.
-- Disable sync for this pane.
-- Export visible lines.
+Target typography:
 
-### Source Sidebar Context Menu
+- Font family: `"Roboto Mono", "SF Mono", Menlo, Monaco, Consolas, monospace`.
+- Font size: `10.866 px` in the mockup baseline.
+- Line height: `15.805 px`.
+- Line number color: muted gray.
+- Timestamp color: accent blue.
+- `INFO` severity color: accent blue.
+- `WARN` severity color: warning text with warning row background.
+- `ERROR` severity color: error text with error row background.
 
-- Open in new pane.
-- Open in active pane.
-- Reveal in Finder / file manager.
-- Copy path.
-- Reload.
-- Select encoding.
-- Remove from workspace.
-- Stop watching.
+Structured row columns:
 
-## Time Synchronization and Offset
+1. Line number.
+2. Timestamp.
+3. Severity.
+4. Message.
 
-### Synchronization
+If a line cannot be parsed into structured fields, render the whole log line as
+inert monospace text while preserving line number and selection behavior.
 
-Global synchronization is enabled by default. The active pane becomes the time
-anchor after user scroll, search navigation, or directory navigation. Untimed
-panes are excluded and cannot drive synchronization.
+Performance:
 
-Visual feedback:
+- Row rendering must be virtualized.
+- Search must run over the full file content, not only visible rows.
+- Filtering and highlighting, when implemented later, must apply only to the
+  configured viewport buffer.
 
-- Active anchor pane has a subtle accent indicator.
-- Target panes show a short flash on the synchronized target row.
-- Untimed panes show `Untimed` in the header and an action to configure
-  timestamp formats.
-- Status bar shows `Sync on`, active timestamp, and excluded pane count.
+Safety:
 
-### Time Offset Dialog
+- Log text is inert text.
+- Escape sequences are not executed.
+- Links in logs are not auto-activated.
+- Opened files are read-only.
 
-Time offset is configured per pane from the pane menu or header badge.
+## Pane Search Popover
 
-Dialog fields:
+Pane search is a compact popover anchored to the pane that invoked it. It must
+not be globally fixed to the left or center pane.
 
-- Days.
-- Hours.
-- Minutes.
-- Seconds.
-- Milliseconds.
-- Sign selector: ahead / behind.
-- Preview: original timestamp, adjusted timestamp.
-- Apply to: active pane, panes from same source, selected panes.
+Target dimensions:
 
-The dialog is a sheet on desktop and a modal on Web. Reset is explicit and
-undoable through toast.
-
-## Opening Sources
-
-### Open Source Menu
-
-The Open split button contains:
-
-- Open File...
-- Open Files...
-- Open Directory...
-- Open Recent.
-- Open SSH Source...
-- Paste Path.
-- Drop files here.
-
-Desktop uses native file/directory pickers. Web uses browser file input,
-directory input when supported, and drag-and-drop. Unsupported options remain
-visible only when their limitation helps explain the platform behavior.
-
-### Open Directory Dialog
+| Element | Target |
+| --- | --- |
+| Popover | `351 x 37 px` |
+| Popover radius | `9.878 px` |
+| Search field | `170 x 25 px` |
+| Previous/next buttons | `27 x 27 px` |
+| Mode tags | `32 x 18 px` |
+| Count tag | `41 x 18 px` |
 
 Controls:
 
-- Directory picker.
-- Top-level files only notice.
-- Sort strategy: creation time, modified time, name.
-- Initial file: newest, oldest, choose manually.
-- Search directory after open toggle.
-- Open each selected file in separate pane toggle.
+- Search field.
+- Previous match.
+- Next match.
+- Case-sensitive toggle `Aa`.
+- Regex toggle `.*`.
+- Match count, for example `4/12`.
 
-### SSH Source Dialog
+Behavior:
 
-SSH is a future full-product capability. It should be designed now but disabled
-or hidden until implemented.
+- Click the pane find icon to show or hide the popover for that pane.
+- Opening search in another pane moves the popover to that pane.
+- `Command+F` or `Ctrl+F` opens search for the active pane.
+- `Enter` goes to the next match.
+- `Shift+Enter` goes to the previous match.
+- Invalid regex is displayed within the popover without affecting other panes.
+- `Escape` closes the popover and returns focus to the triggering control.
 
-Fields:
+## Time Offset Popover
 
-- Host alias from OpenSSH config.
-- Hostname.
-- Port.
-- Username.
-- Authentication method: OpenSSH config, key, password.
-- Remote path.
-- Test connection.
-- Open read-only.
+Time offset is a compact pane-scoped popover anchored to the offset tag that
+invoked it.
 
-Password prompts must use platform-secure input controls and never store
-passwords unless a platform credential store is explicitly supported.
+Target dimensions:
 
-## Dialogs and Sheets
+| Element | Target |
+| --- | --- |
+| Popover | `302.22 x 114.08 px` |
+| Popover radius | `9.739 px` |
+| Input | `50.644 x 25.322 px` |
+| Apply button | `50.644 x 25.322 px` |
 
-| Interaction | Desktop Pattern | Web Pattern |
-| --- | --- | --- |
-| First run onboarding | Centered modal | Centered modal |
-| Open file/directory | Native picker | Browser picker/dropzone |
-| File too large | Window sheet | Modal |
-| Encoding not detected | Window sheet | Modal |
-| Invalid timestamp config | Settings sheet with Problems tab | Modal/settings page |
-| Time offset | Window sheet | Modal |
-| Save filter/highlight set | Popover or sheet | Modal |
-| Delete saved set | Confirmation popover | Modal |
-| Import/export settings | Native picker | Download/upload |
-| SSH credentials | Secure sheet | Modal with browser limitations |
-| Session restore conflict | Window sheet | Modal |
+Content:
 
-### File Too Large
+- Title: `Time Offset`.
+- Source name, such as `idea.log`.
+- Fields: Days, Hours, Min, Sec, Ms.
+- Apply button.
 
-Message content:
+Behavior:
 
-- File name.
-- File size.
-- Current configured limit.
-- Actions: Increase limit once, Change settings, Cancel.
+- Click the offset tag to show or hide the popover for that pane.
+- Opening offset in another pane moves the popover to that pane.
+- Values are pane-local and participate in synchronized scrolling.
+- Apply validates all numeric fields before committing.
+- `Escape` closes without applying.
+- There is no persistent `Close` button in the target popover.
 
-The file must not be partially loaded after this dialog appears.
+## Left Panel: Directory Search
 
-### Encoding Not Detected
+The `Screen / Draft Layout - Left Panel Open` mockup defines the side panel
+pattern. Directory-wide search is a future feature in the requirements, so this
+panel is feature-gated until `SEARCH-DIR-001` through `SEARCH-DIR-003` are
+implemented.
 
-Message content:
+Target dimensions:
 
-- File name.
-- Preview rows rendered with candidate encoding.
-- Encoding selector.
-- Actions: Apply, Apply to source, Cancel.
+| Element | Target |
+| --- | --- |
+| Panel width | `260 px` |
+| Panel background | `#fbfbfd` light, `#25262a` dark |
+| Search field | `228 x 28 px` |
+| Result card | `228 x 91 px` |
+| Source row | `228 x 40 px` |
 
-### Session Recovery
+Content:
 
-When a recoverable session exists:
+- Title: `Directory Search`.
+- Search action icon.
+- Query field.
+- Case-sensitive tag `Aa`.
+- Regex tag `.*`.
+- Result card with file name, line number, and excerpt.
+- `Work directories` section.
+- Open directory sources with selected current file labels.
 
-- Show compact banner at top of workspace.
-- Actions: Restore, Start clean, Review sources.
-- Missing sources are listed in a sheet before restore completes.
+Behavior:
 
-## Settings
+- The active rail search button opens the panel.
+- The panel shifts the workspace right by `260 px`.
+- Results navigate to the matching directory file and line.
+- The panel must not steal independent per-pane search state.
 
-Settings use a native macOS Preferences window on Desktop and an in-app settings
-route/modal on Web. The same sections and labels are reused.
+## Statusbar
 
-### General
+The statusbar is a compact global readout at the bottom of the window.
 
-- Restore previous session on launch.
-- Confirm before closing many panes.
-- Default pane width.
-- Default directory sort strategy.
-- Recent source retention.
-- UI density: Comfortable, Compact.
+Target:
 
-### Appearance
+- Height: `27 px`.
+- Background: rail background.
+- Text size: about `10.858 px`.
+- Example text: `3 panes, sync on, active: daemon-10770.log`.
 
-- Theme: System, Light, Dark.
-- Accent color: System, Blue, Green, Orange, Purple, Custom.
-- Log font family.
-- Log font size.
-- Line height.
-- Show line numbers.
-- Show timestamp column.
-- Active pane indicator style.
+Use the statusbar for global state only:
 
-### Logs
+- Pane count.
+- Sync state.
+- Active pane/source.
+- Capability warning summary when needed.
+- Background work summary when needed.
 
-- Maximum file size, default 20 MB.
-- Pre-processing buffer size for filters/highlights.
-- Encodings and detection priority.
-- Live update behavior.
-- Log rotation behavior.
-- Treat opened logs as read-only reminder.
-
-### Timestamps
-
-- Timestamp format list.
-- Pattern.
-- Parser.
-- Test input.
-- First valid timestamp rule.
-- Import/export timestamp config.
-
-### Filters and Highlights
-
-- Default filter scope.
-- Built-in highlight template toggles.
-- Saved sets.
-- Import/export sets.
-- Rule conflict priority.
-
-### Search
-
-- Default search mode.
-- Case sensitivity default.
-- Directory search maximum files.
-- Directory search maximum result count.
-- Context lines around directory results.
-
-### Shortcuts
-
-Displays all shortcuts grouped by Workspace, Search, Filters, Highlights,
-Panes, Sources, and Settings. Shortcuts are editable only when the platform can
-support reliable shortcut customization.
-
-### Security
-
-- Read-only source policy.
-- SSH credential storage policy.
-- Disable link activation in logs.
-- Clear recent sources.
-- Clear saved sessions.
+Do not duplicate per-pane `ready` footers.
 
 ## Theme System
+
+Use design tokens that match the mockup. Dark mode must be designed
+independently from light mode.
 
 ### Light Theme
 
 ```css
 :root {
-  --crosslog-bg-window: #f5f5f7;
-  --crosslog-bg-content: #ffffff;
-  --crosslog-bg-sidebar: rgba(246, 246, 246, 0.78);
-  --crosslog-bg-toolbar: rgba(250, 250, 250, 0.82);
-  --crosslog-bg-pane: #ffffff;
-  --crosslog-bg-pane-active: #fbfdff;
-  --crosslog-bg-input: #ffffff;
-  --crosslog-bg-hover: rgba(0, 0, 0, 0.04);
-  --crosslog-bg-selected: rgba(0, 122, 255, 0.12);
-  --crosslog-text-primary: #1d1d1f;
-  --crosslog-text-secondary: #6e6e73;
-  --crosslog-text-muted: #8e8e93;
-  --crosslog-border-subtle: rgba(0, 0, 0, 0.08);
-  --crosslog-border-strong: rgba(0, 0, 0, 0.16);
+  --crosslog-screen-bg: #ececf1;
+  --crosslog-window-bg: #f5f5f7;
+  --crosslog-topbar-bg: #fafafa;
+  --crosslog-rail-bg: #f0f0f3;
+  --crosslog-pane-bg: #ffffff;
+  --crosslog-border: #d9d9df;
+  --crosslog-scroll-track: #dcdde1;
+  --crosslog-scroll-thumb: #a6a9af;
   --crosslog-accent: #007aff;
-  --crosslog-danger: #ff3b30;
-  --crosslog-warning: #ff9500;
-  --crosslog-success: #34c759;
-  --crosslog-log-info: #0a84ff;
-  --crosslog-log-warning-bg: #fff4d7;
-  --crosslog-log-error-bg: #ffe5e5;
-  --crosslog-log-match-bg: #fff2a8;
+  --crosslog-accent-bg: #d9ebff;
+  --crosslog-muted: #6e6e73;
+  --crosslog-line-number: #8e8e93;
+  --crosslog-text: #1d1d1f;
+  --crosslog-warn-bg: #fff4d7;
+  --crosslog-warn-text: #9a6500;
+  --crosslog-error-bg: #ffe5e5;
+  --crosslog-error-text: #ff3b30;
+  --crosslog-tag-bg: #f0f1f3;
 }
 ```
 
 ### Dark Theme
 
 ```css
-@media (prefers-color-scheme: dark) {
-  :root {
-    --crosslog-bg-window: #1c1c1e;
-    --crosslog-bg-content: #202124;
-    --crosslog-bg-sidebar: rgba(30, 30, 32, 0.78);
-    --crosslog-bg-toolbar: rgba(36, 36, 38, 0.84);
-    --crosslog-bg-pane: #242528;
-    --crosslog-bg-pane-active: #282b30;
-    --crosslog-bg-input: #2c2c2e;
-    --crosslog-bg-hover: rgba(255, 255, 255, 0.06);
-    --crosslog-bg-selected: rgba(10, 132, 255, 0.2);
-    --crosslog-text-primary: #f5f5f7;
-    --crosslog-text-secondary: #aeaeb2;
-    --crosslog-text-muted: #8e8e93;
-    --crosslog-border-subtle: rgba(255, 255, 255, 0.08);
-    --crosslog-border-strong: rgba(255, 255, 255, 0.16);
-    --crosslog-accent: #0a84ff;
-    --crosslog-danger: #ff453a;
-    --crosslog-warning: #ff9f0a;
-    --crosslog-success: #30d158;
-    --crosslog-log-info: #64d2ff;
-    --crosslog-log-warning-bg: rgba(255, 159, 10, 0.18);
-    --crosslog-log-error-bg: rgba(255, 69, 58, 0.18);
-    --crosslog-log-match-bg: rgba(255, 214, 10, 0.24);
-  }
+[data-theme="dark"] {
+  --crosslog-screen-bg: #111214;
+  --crosslog-window-bg: #1c1c1e;
+  --crosslog-topbar-bg: #25262a;
+  --crosslog-rail-bg: #1f2024;
+  --crosslog-pane-bg: #202124;
+  --crosslog-border: #3a3b40;
+  --crosslog-scroll-track: #34363c;
+  --crosslog-scroll-thumb: #6d7078;
+  --crosslog-accent: #0a84ff;
+  --crosslog-accent-bg: rgba(10, 132, 255, 0.24);
+  --crosslog-muted: #a1a1a6;
+  --crosslog-line-number: #8f949c;
+  --crosslog-text: #f5f5f7;
+  --crosslog-warn-bg: rgba(255, 159, 10, 0.18);
+  --crosslog-warn-text: #ffd60a;
+  --crosslog-error-bg: rgba(255, 69, 58, 0.2);
+  --crosslog-error-text: #ff453a;
+  --crosslog-tag-bg: #2c2d31;
 }
 ```
 
-Dark mode uses stronger background separation than light mode. It must not be a
-direct color inversion.
+## Typography
 
-## Typography and Density
+UI font:
 
-- UI font: `-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
-  "Helvetica Neue", Helvetica, Arial, sans-serif`.
-- Log font: `"SF Mono", Menlo, Monaco, "Courier New", monospace`.
-- Toolbar text: 13 px.
-- Sidebar row: 13 px, 30 px row height in comfortable density, 26 px in compact.
-- Pane header title: 13 px semibold.
-- Log text: 12-13 px, user configurable.
-- Status bar: 11 px.
+```css
+font-family: Inter, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+  "Helvetica Neue", Arial, sans-serif;
+```
 
-Do not scale type with viewport width. Use stable dimensions and responsive
-panel collapse rules instead.
+Log font:
 
-## Menus
+```css
+font-family: "Roboto Mono", "SF Mono", Menlo, Monaco, Consolas, monospace;
+```
+
+Rules:
+
+- Do not scale font size with viewport width.
+- Use stable dimensions for buttons, panes, headers, tags, and popovers.
+- Truncate long file and directory names.
+- Preserve text selection in log rows.
+- Avoid decorative typography. This is a technical utility.
+
+## Interaction Model
+
+### Pane Focus
+
+- Clicking a pane or any control inside it makes it active.
+- The active pane shows the accent top border.
+- The active pane becomes the time anchor when the user scrolls, searches, or
+  navigates directory files.
+
+### Synchronization
+
+- Synchronization is enabled by default.
+- Untimed panes are excluded from sync and cannot become the anchor.
+- Time offset is applied per pane before synchronization.
+- Sync target rows may flash with accent background without causing layout
+  shift.
+
+### File Deletion and Rotation
+
+- Deleted files keep their loaded content visible.
+- Deleted files stop receiving appended data.
+- The pane header shows a deleted status.
+- Replaced files with the same name are treated as new files.
+- Rotation must switch the opened pane to the new file when a watched file is
+  replaced by a new file with the same name.
+
+### Text Selection
+
+- Users can select log text.
+- Users can copy through keyboard shortcut and context menu.
+- Do not add a permanent `Copy` toolbar row.
+
+## Menus and Context Menus
+
+### Pane Header Context Menu
+
+- Set time offset.
+- Select encoding.
+- Reload source.
+- Open containing directory on Desktop.
+- Copy path.
+- Close pane.
+- Close other panes.
+
+### Log Text Context Menu
+
+- Copy.
+- Copy line.
+- Copy with line number.
+- Find selection in pane.
+- Search selection in directory panel when available.
 
 ### Desktop Application Menu
 
-File:
+Desktop should expose native menu equivalents for:
 
-- Open File...
-- Open Files...
-- Open Directory...
-- Open SSH Source...
-- Open Recent.
+- Open File.
+- Open Directory.
 - Close Pane.
-- Close Window.
-
-Edit:
-
-- Copy.
-- Copy Line.
-- Copy With Line Numbers.
 - Find.
 - Find Next.
 - Find Previous.
-
-View:
-
-- Toggle Sidebar.
-- Toggle Inspector.
-- Toggle Status Bar.
-- Compact Density.
-- Comfortable Density.
-- Light Theme.
-- Dark Theme.
-- System Theme.
-
-Navigate:
-
+- Toggle Synchronization.
+- Set Time Offset.
 - Next Pane.
 - Previous Pane.
 - Next Directory File.
 - Previous Directory File.
-- Go to Line...
-- Go to Timestamp...
+- Settings.
 
-Tools:
-
-- Synchronize Scrolling.
-- Set Time Offset...
-- Filters.
-- Highlights.
-- Directory Search.
-- Command Palette.
-
-Window:
-
-- Minimize.
-- Zoom.
-- New Window.
-- Bring All to Front.
-
-Help:
-
-- Keyboard Shortcuts.
-- Open Logs Safely.
-- Report Issue.
-
-### Web Application Menu
-
-The Web menu mirrors Desktop actions where possible and replaces native picker
-items with browser-safe actions.
-
-## Command Palette
-
-The command palette is opened by `Cmd+K` on macOS and `Ctrl+K` on Windows/Linux.
-It supports:
-
-- Opening files/directories.
-- Switching panes.
-- Running searches.
-- Applying saved filter/highlight sets.
-- Toggling sync.
-- Opening settings sections.
-- Jumping to line or timestamp.
-
-Results are grouped by Actions, Panes, Sources, Saved Sets, Settings, and
-Recent Sessions.
+Web should expose equivalent actions through in-app menus where native menus are
+not available.
 
 ## Keyboard Shortcuts
 
 | Shortcut | Action |
 | --- | --- |
-| `Cmd+O` | Open source. |
-| `Cmd+Shift+O` | Open directory. |
-| `Cmd+T` | Add pane. |
-| `Cmd+W` | Close active pane or window depending on focus. |
-| `Cmd+F` | Find in active pane. |
-| `Cmd+Shift+F` | Directory-wide search. |
-| `Cmd+G` | Next match. |
-| `Cmd+Shift+G` | Previous match. |
-| `Cmd+Shift+L` | Toggle synchronized scrolling. |
-| `Cmd+Option+T` | Set active pane time offset. |
-| `Cmd+Option+F` | Focus filters. |
-| `Cmd+Option+H` | Focus highlights. |
-| `Cmd+Option+I` | Toggle inspector. |
-| `Cmd+B` | Toggle sidebar. |
-| `Cmd+,` | Settings. |
-| `Cmd+/` | Keyboard shortcuts overlay. |
-| `Esc` | Dismiss popover, dialog, or search focus. |
+| `Command+O` / `Ctrl+O` | Open source. |
+| `Command+Shift+O` / `Ctrl+Shift+O` | Open directory. |
+| `Command+T` / `Ctrl+T` | Add pane. |
+| `Command+W` / `Ctrl+W` | Close active pane when focus is in the app. |
+| `Command+F` / `Ctrl+F` | Find in active pane. |
+| `Command+G` / `Ctrl+G` | Next search match. |
+| `Command+Shift+G` / `Ctrl+Shift+G` | Previous search match. |
+| `Command+Shift+L` / `Ctrl+Shift+L` | Toggle synchronized scrolling. |
+| `Command+Option+T` / `Ctrl+Alt+T` | Open active pane time offset. |
+| `Command+K` / `Ctrl+K` | Command/workspace search. |
+| `Escape` | Dismiss popover, panel, or dialog. |
 
-On Windows/Linux, replace `Cmd` with `Ctrl` unless the platform shell reserves
-the shortcut.
+## Settings
 
-## Responsive Behavior
+Settings should cover only implemented behavior in MVP:
 
-- Width below 980 px: left sidebar collapses automatically; inspector becomes a
-  slide-over panel.
-- Width below 760 px: pane rail keeps horizontal scrolling; each pane keeps a
-  minimum width of 420 px.
-- Height below 620 px: status bar remains visible, side panel content scrolls,
-  toolbar controls collapse into menus.
-- Web embedded mode: traffic lights are hidden; title bar spacing is adjusted.
+- Theme: System, Light, Dark.
+- Default pane width.
+- Maximum file size, default `20 MB`.
+- Encoding detection and manual encoding fallback.
+- Timestamp configuration file path and reload.
+- Directory sort strategy, default creation time with name fallback.
+- Session restore.
+- Confirm before closing many panes.
+
+Future settings for filters, highlights, directory-wide search, saved sets, and
+SSH must be added only with those features.
 
 ## Accessibility
 
-- All toolbar icon buttons require labels and tooltips.
-- All popovers and dialogs must trap focus while open and return focus to the
-  triggering control.
-- Log viewport supports keyboard line navigation and selection.
-- Search results announce count changes with polite live regions.
-- Filter and highlight validation errors are inline and announced.
-- Color is never the only indicator for severity, filter state, or sync state.
-- Highlight foreground/background combinations must pass contrast checks.
-- Large log panes preserve text selection semantics for copy operations.
+- Every icon button requires an accessible label and tooltip.
+- Popovers must return focus to the triggering control on close.
+- `Escape` closes the active popover.
+- Search result count changes use polite announcements.
+- Disabled previous/next directory controls expose disabled state.
+- Color is never the only state signal for severity, deletion, sync exclusion,
+  or active pane.
+- Pane resize separators are keyboard reachable and announce current width.
+- Log text remains selectable with native selection semantics.
 
 ## Motion
 
-- Panel open/close: 220-260 ms.
-- Hover/press feedback: 120-150 ms.
-- Sync target row flash: 600 ms fade, no layout shift.
-- Toasts: bottom-right on desktop, bottom-center on narrow Web.
-- Respect `prefers-reduced-motion` by removing slide/spring effects and keeping
-  opacity-only transitions.
+Use short, predictable feedback:
 
-## Security and Safety UX
+- Hover/press states: `120-150 ms`.
+- Popover open/close: `120-180 ms`.
+- Left panel open/close: `200-260 ms`.
+- Sync target row flash: up to `600 ms`, opacity/background only.
 
-- Opened logs are always read-only.
-- Log content is rendered as inert text.
-- Terminal escape sequences are visible as text or safely normalized.
-- SSH password entry is never persisted without explicit credential-store
-  support.
-- Export actions clearly show destination and content scope.
-- Web capability limitations are precise and contextual, not generic warnings.
+Respect `prefers-reduced-motion` by removing slide/spring effects and keeping
+opacity-only transitions.
 
-## Implementation Mapping
+## Component Mapping
 
-### Existing Components to Evolve
+### Components to Replace or Refactor
 
-- `AppShell`: add desktop/web shell chrome, sidebars, inspector, status bar,
-  command palette, settings entry point.
-- `PaneRail`: keep horizontal pane model, add drag insertion targets and stable
-  pane minimum widths.
-- `LogPane`: split pane header, pane search strip, viewport, pane footer/status.
-- `PaneHeader`: add source metadata, directory controls, pane menu, active sync
-  indicator.
-- `PaneSearchControls`: convert to collapsible pane search strip with mode
-  toggles and validation.
-- `TimeOffsetEditor`: move into a sheet/popover with preview and scope controls.
-- `FuturePaneToolbarSlot`: replace with real filter/highlight inspector entry
-  points when those features are implemented.
+- `AppShell`
+  - Owns platform chrome, topbar, activity rail, app body, statusbar, and theme
+    tokens.
+- `Topbar`
+  - Replaces old checkbox/text/split controls with command field, sync icon,
+    and add pane icon.
+- `ActivityRail`
+  - Owns vertical rail buttons and active panel state.
+- `PaneWorkspace`
+  - Owns pane sizing, drag boundaries, horizontal overflow, and right-edge
+    alignment.
+- `LogPane`
+  - Owns header, viewport, source state, and pane-local popover anchors.
+- `PaneHeader`
+  - Separates file and directory source layouts.
+- `PaneSearchPopover`
+  - Replaces vertical form-style search UI with the compact target popover.
+- `TimeOffsetPopover`
+  - Replaces sheet/form-style editor with compact pane-scoped popover.
+- `StatusBar`
+  - Keeps only global state.
 
-### New Component Groups
+### Components to Remove From Product UI
 
-- `app-shell/TitleToolbar`
-- `app-shell/SourceSidebar`
-- `app-shell/RightInspector`
-- `app-shell/StatusBar`
-- `command/CommandPalette`
-- `filters/FilterInspector`
-- `highlights/HighlightInspector`
-- `directory-search/DirectorySearchInspector`
-- `selection/LogSelectionPopover`
-- `settings/SettingsWindow`
-- `dialogs/OpenSourceDialog`
-- `dialogs/FileTooLargeDialog`
-- `dialogs/EncodingSelectionDialog`
-- `dialogs/TimeOffsetDialog`
-- `dialogs/SshSourceDialog`
+- Workspace test action toolbar.
+- Permanent pane copy toolbar.
+- Plus/minus resize separator buttons.
+- Per-pane ready footer.
+- Topbar split button.
+- Topbar synchronization checkbox and text label.
 
-## Acceptance Checklist
+### Feature-Gated Future Components
 
-- The first screen is the usable Crosslog workspace, not a landing page.
-- Empty state contains one primary open action and accepts drag-and-drop.
-- Multi-pane comparison remains the visual center of the app.
-- Filters and highlights are managed together in the inspector.
-- Five built-in highlight templates are present.
-- Positive and negative filters support text and regex.
-- Directory-wide search has a dedicated side panel.
-- Per-pane search remains independent.
-- Selected log text exposes a quick highlight/filter/copy menu.
-- Time offset is available per pane through a sheet/dialog.
-- Settings cover general, appearance, logs, timestamps, filters/highlights,
-  search, shortcuts, and security.
-- All major user interactions have menus, keyboard shortcuts, and feedback.
-- Desktop and Web use the same UI model with capability-specific affordances.
-- Light and dark themes are designed independently.
-- Log content remains inert and read-only.
+- `DirectorySearchPanel`.
+- `FilterPanel`.
+- `HighlightPalettePanel`.
+- `BookmarkPanel`.
+- `SshSourceDialog`.
+
+## Validation Checklist
+
+- Empty workspace matches the target topbar height and contains only the drop
+  zone plus `Open Source`.
+- Topbar search is compact and centered, with sync/add immediately to its right.
+- No obsolete current-implementation buttons are visible.
+- Activity rail is `40 px` wide and uses the target button order.
+- Directory panes show both directory name and current file name.
+- File panes show the file title and live dot spacing without overlap.
+- Offset and search popovers appear in the pane where they were invoked.
+- Pane resize is done by dragging boundaries, not by plus/minus buttons.
+- The right edge of the rightmost pane aligns with the workspace edge when
+  content does not overflow.
+- Horizontal overflow appears only when panes exceed workspace width.
+- Light and dark themes change the actual app UI, not only mockup chrome.
+- macOS, Windows, Linux, and Web variants render distinct shell chrome.
+- Search works over full file content and updates when new lines append.
+- Time offset fields support days, hours, minutes, seconds, and milliseconds.
+- Logs remain read-only and inert.
+- UI passes no-overlap checks for topbar, pane headers, popovers, left panel,
+  statusbar, and empty workspace.

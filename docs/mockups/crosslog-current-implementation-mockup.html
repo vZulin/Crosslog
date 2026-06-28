@@ -1,0 +1,1350 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Crosslog Current Implementation Mockup</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --page-bg: #e5e5ea;
+        --page-text: #1d1d1f;
+        --page-muted: #6e6e73;
+        --page-control-bg: rgba(250, 250, 250, 0.86);
+        --page-control-active: #ffffff;
+        --page-border: rgba(0, 0, 0, 0.09);
+        --font-ui: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      body[data-theme="dark"] {
+        color-scheme: dark;
+        --page-bg: #111214;
+        --page-text: #f5f5f7;
+        --page-muted: #a1a1a6;
+        --page-control-bg: rgba(38, 38, 40, 0.88);
+        --page-control-active: #2c2c2e;
+        --page-border: rgba(255, 255, 255, 0.09);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-width: 1440px;
+        min-height: 900px;
+        margin: 0;
+      }
+
+      body {
+        background: var(--page-bg);
+        color: var(--page-text);
+        font-family: var(--font-ui);
+        font-size: 13px;
+        line-height: 1.35;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button {
+        color: inherit;
+      }
+
+      h1,
+      h2,
+      p {
+        margin: 0;
+      }
+
+      .mockup-page {
+        width: 1440px;
+        margin: 0 auto;
+        padding: 24px 0 48px;
+      }
+
+      .catalog-header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 24px;
+        align-items: end;
+        margin-bottom: 18px;
+      }
+
+      h1 {
+        font-size: 26px;
+        line-height: 32px;
+      }
+
+      .subtitle {
+        max-width: 760px;
+        margin-top: 6px;
+        color: var(--page-muted);
+      }
+
+      .mockup-controls {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+
+      .segmented {
+        display: inline-flex;
+        gap: 2px;
+        padding: 3px;
+        border: 0.5px solid var(--page-border);
+        border-radius: 9px;
+        background: var(--page-control-bg);
+      }
+
+      .segmented button {
+        height: 28px;
+        min-width: 68px;
+        padding: 0 11px;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        cursor: pointer;
+      }
+
+      .segmented button[aria-pressed="true"] {
+        background: var(--page-control-active);
+        box-shadow: 0 0 0 0.5px var(--page-border), 0 1px 2px rgba(0, 0, 0, 0.08);
+      }
+
+      .variant {
+        margin-bottom: 36px;
+      }
+
+      .variant-title {
+        margin: 0 0 10px;
+        color: var(--page-text);
+        font-size: 15px;
+        font-weight: 600;
+        line-height: 20px;
+      }
+
+      .screen {
+        position: relative;
+        width: 1440px;
+        height: 900px;
+        overflow: hidden;
+        background: #ececf1;
+      }
+
+      .current-window {
+        position: absolute;
+        left: 32px;
+        top: 37px;
+        width: 1375px;
+        height: 826px;
+      }
+
+      .current-implementation {
+        --crosslog-shell-bg: #f5f5f7;
+        --crosslog-surface: #ffffff;
+        --crosslog-toolbar-surface: #fafafa;
+        --crosslog-rail-surface: #f0f0f3;
+        --crosslog-border: #d9d9df;
+        --crosslog-scrollbar-track: #dcdde1;
+        --crosslog-scrollbar-thumb: #a6a9af;
+        --crosslog-accent: #007aff;
+        --crosslog-accent-surface: #d9ebff;
+        --crosslog-text: #1d1d1f;
+        --crosslog-muted-text: #6e6e73;
+        --crosslog-line-number-text: #8e8e93;
+        --crosslog-warning-surface: #fff4d7;
+        --crosslog-warning-text: #9a6500;
+        --crosslog-error-surface: #ffe5e5;
+        --crosslog-error-text: #ff3b30;
+        --crosslog-font-ui: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        --crosslog-font-log: "Roboto Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+        --crosslog-window-radius: 12px;
+        --crosslog-control-radius: 7px;
+        --crosslog-pill-radius: 10px;
+        --crosslog-topbar-height: 35px;
+        --crosslog-rail-width: 40px;
+        --crosslog-pane-width: 444px;
+        --crosslog-pane-header-height: 55px;
+        --crosslog-statusbar-height: 27px;
+        height: 100%;
+      }
+
+      .crosslog-shell {
+        position: relative;
+        display: grid;
+        grid-template:
+          "topbar topbar" var(--crosslog-topbar-height)
+          "rail workspace" minmax(0, 1fr)
+          "status status" var(--crosslog-statusbar-height)
+          / var(--crosslog-rail-width) minmax(0, 1fr);
+        block-size: 100%;
+        min-block-size: 100%;
+        overflow: hidden;
+        border-radius: var(--crosslog-window-radius);
+        background: var(--crosslog-shell-bg);
+        color: var(--crosslog-text);
+        font-family: var(--crosslog-font-ui);
+      }
+
+      .crosslog-shell__topbar {
+        grid-area: topbar;
+        min-width: 0;
+        border-block-end: 1px solid var(--crosslog-border);
+        background: var(--crosslog-toolbar-surface);
+      }
+
+      .crosslog-shell__rail {
+        grid-area: rail;
+        min-height: 0;
+        border-inline-end: 1px solid var(--crosslog-border);
+        background: var(--crosslog-rail-surface);
+      }
+
+      .crosslog-shell__workspace {
+        grid-area: workspace;
+        min-width: 0;
+        min-height: 0;
+        overflow-x: auto;
+        overflow-y: hidden;
+        background: var(--crosslog-surface);
+      }
+
+      .crosslog-shell__banners {
+        grid-area: workspace;
+        z-index: 4;
+        align-self: start;
+        justify-self: stretch;
+        display: grid;
+        gap: 6px;
+        padding: 8px 12px;
+        pointer-events: none;
+      }
+
+      .crosslog-shell__status {
+        grid-area: status;
+        min-width: 0;
+        border-block-start: 1px solid var(--crosslog-border);
+        background: var(--crosslog-rail-surface);
+      }
+
+      .crosslog-capability-limitations {
+        max-inline-size: min(560px, 100%);
+        border: 1px solid rgb(154 101 0 / 35%);
+        border-radius: var(--crosslog-control-radius);
+        background: var(--crosslog-warning-surface);
+        color: var(--crosslog-warning-text);
+        box-shadow: 0 8px 20px rgb(29 29 31 / 10%);
+      }
+
+      .crosslog-capability-limitations__list {
+        display: grid;
+        gap: 3px;
+        margin: 0;
+        padding: 7px 10px;
+        list-style: none;
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
+      .crosslog-capability-limitations__item {
+        min-width: 0;
+        overflow-wrap: anywhere;
+      }
+
+      .crosslog-icon-button {
+        inline-size: 27px;
+        block-size: 27px;
+        display: inline-grid;
+        place-items: center;
+        border: 1px solid transparent;
+        border-radius: var(--crosslog-control-radius);
+        background: transparent;
+        color: var(--crosslog-muted-text);
+      }
+
+      .crosslog-icon-button:not(:disabled) {
+        cursor: pointer;
+      }
+
+      .crosslog-icon-button:not(:disabled):hover,
+      .crosslog-icon-button[data-active="true"] {
+        background: var(--crosslog-accent-surface);
+        color: var(--crosslog-accent);
+      }
+
+      .crosslog-icon-button:focus-visible {
+        outline: 2px solid var(--crosslog-accent);
+        outline-offset: 2px;
+      }
+
+      .crosslog-icon-button:disabled {
+        opacity: 0.45;
+      }
+
+      .crosslog-popover {
+        position: absolute;
+        z-index: 20;
+        min-inline-size: 220px;
+        max-inline-size: min(360px, calc(100vw - 32px));
+        border: 1px solid var(--crosslog-border);
+        border-radius: var(--crosslog-control-radius);
+        background: var(--crosslog-surface);
+        box-shadow: 0 12px 32px rgb(29 29 31 / 16%);
+        color: var(--crosslog-text);
+      }
+
+      .crosslog-sr-only {
+        position: absolute;
+        inline-size: 1px;
+        block-size: 1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+      }
+
+      .crosslog-topbar {
+        display: grid;
+        grid-template-columns: minmax(180px, 1fr) auto;
+        gap: 8px;
+        align-items: center;
+        block-size: 100%;
+        padding-inline: 10px;
+      }
+
+      .crosslog-command-field {
+        display: flex;
+        align-items: center;
+        min-width: 0;
+        block-size: 25px;
+        border: 1px solid var(--crosslog-border);
+        border-radius: var(--crosslog-control-radius);
+        background: var(--crosslog-surface);
+        color: var(--crosslog-muted-text);
+        padding-inline: 8px;
+      }
+
+      .crosslog-command-field__input {
+        min-width: 0;
+        inline-size: 100%;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        color: var(--crosslog-text);
+        font: inherit;
+      }
+
+      .crosslog-topbar__actions,
+      .crosslog-pane-creation {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+      }
+
+      .crosslog-topbar__sync label {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        color: var(--crosslog-muted-text);
+        white-space: nowrap;
+        font-size: 12px;
+      }
+
+      .crosslog-topbar__sync {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+      }
+
+      .crosslog-topbar__sync-state {
+        color: var(--crosslog-muted-text);
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
+      .crosslog-split-button {
+        block-size: 27px;
+        border: 1px solid var(--crosslog-border);
+        border-radius: var(--crosslog-control-radius);
+        background: var(--crosslog-surface);
+        color: var(--crosslog-muted-text);
+        font: inherit;
+        padding-inline: 8px;
+      }
+
+      .crosslog-split-button:not(:disabled) {
+        cursor: pointer;
+      }
+
+      .crosslog-split-button:not(:disabled):hover {
+        background: var(--crosslog-accent-surface);
+        color: var(--crosslog-accent);
+      }
+
+      .crosslog-activity-rail {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding-block: 8px;
+      }
+
+      .crosslog-pane-workspace {
+        min-block-size: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .crosslog-pane-workspace__content {
+        flex: 1 1 auto;
+        display: flex;
+        min-block-size: 0;
+      }
+
+      .crosslog-pane-workspace__scrollbar {
+        flex: 0 0 10px;
+        margin: 0 10px 6px;
+        border-radius: 999px;
+        background: var(--crosslog-scrollbar-track);
+      }
+
+      .crosslog-pane-workspace__scrollbar-thumb {
+        inline-size: clamp(48px, 30%, 160px);
+        block-size: 100%;
+        border-radius: inherit;
+        background: var(--crosslog-scrollbar-thumb);
+      }
+
+      .crosslog-log-pane {
+        flex: 0 0 auto;
+        position: relative;
+        min-inline-size: 320px;
+        min-block-size: 100%;
+        display: flex;
+        flex-direction: column;
+        border-inline-end: 1px solid var(--crosslog-border);
+        background: var(--crosslog-surface);
+      }
+
+      .crosslog-log-pane[data-active="true"] {
+        box-shadow: inset 0 2px 0 var(--crosslog-accent);
+      }
+
+      .crosslog-pane-header {
+        min-block-size: var(--crosslog-pane-header-height);
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto auto auto;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 8px;
+        border-block-end: 1px solid var(--crosslog-border);
+        background: var(--crosslog-toolbar-surface);
+      }
+
+      .crosslog-pane-header[data-active="true"] {
+        box-shadow: inset 0 2px 0 var(--crosslog-accent);
+      }
+
+      .crosslog-pane-header__identity {
+        min-width: 0;
+        display: grid;
+        gap: 2px;
+      }
+
+      .crosslog-pane-header__title,
+      .crosslog-pane-header__directory,
+      .crosslog-empty-directory-status,
+      .crosslog-status-bar__active-source {
+        display: block;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .crosslog-pane-header__title {
+        margin: 0;
+        color: var(--crosslog-text);
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .crosslog-pane-header__directory {
+        color: var(--crosslog-muted-text);
+        font-size: 11px;
+      }
+
+      .crosslog-pane-header__selected-file {
+        color: var(--crosslog-text);
+      }
+
+      .crosslog-directory-navigator {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .crosslog-empty-directory-status {
+        margin: 0;
+        color: var(--crosslog-muted-text);
+        font-size: 11px;
+      }
+
+      .crosslog-pane-header__lifecycle {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 4px;
+        min-width: 0;
+      }
+
+      .crosslog-pane-header__lifecycle-badge {
+        max-inline-size: 112px;
+        min-block-size: 19px;
+        display: inline-flex;
+        align-items: center;
+        overflow: hidden;
+        border: 1px solid var(--crosslog-border);
+        border-radius: var(--crosslog-pill-radius);
+        background: var(--crosslog-surface);
+        color: var(--crosslog-muted-text);
+        font-size: 11px;
+        line-height: 1;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        padding-inline: 7px;
+      }
+
+      .crosslog-pane-header__lifecycle-badge--live {
+        border-color: rgb(52 199 89 / 45%);
+        color: #248a3d;
+      }
+
+      .crosslog-pane-header__lifecycle-badge--deleted,
+      .crosslog-pane-header__lifecycle-badge--unsupported {
+        border-color: rgb(154 101 0 / 35%);
+        background: var(--crosslog-warning-surface);
+        color: var(--crosslog-warning-text);
+      }
+
+      .crosslog-pane-header__lifecycle-badge--replaced {
+        border-color: rgb(0 122 255 / 35%);
+        background: var(--crosslog-accent-surface);
+        color: var(--crosslog-accent);
+      }
+
+      .crosslog-pane-header__lifecycle-badge--error {
+        border-color: rgb(255 59 48 / 35%);
+        background: var(--crosslog-error-surface);
+        color: var(--crosslog-error-text);
+      }
+
+      .crosslog-pane-header__actions {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        min-width: 0;
+      }
+
+      .crosslog-pane-header__offset-tag {
+        max-inline-size: 112px;
+        min-block-size: 27px;
+        min-width: 0;
+        overflow: hidden;
+        border: 1px solid var(--crosslog-border);
+        border-radius: var(--crosslog-pill-radius);
+        background: var(--crosslog-surface);
+        color: var(--crosslog-muted-text);
+        font: inherit;
+        font-size: 11px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        padding-inline: 8px;
+      }
+
+      .crosslog-pane-header__offset-tag:not(:disabled) {
+        cursor: pointer;
+      }
+
+      .crosslog-pane-header__offset-tag:hover,
+      .crosslog-pane-header__offset-tag[aria-expanded="true"] {
+        background: var(--crosslog-accent-surface);
+        color: var(--crosslog-accent);
+      }
+
+      .crosslog-pane-header__offset-tag:focus-visible {
+        outline: 2px solid var(--crosslog-accent);
+        outline-offset: 2px;
+      }
+
+      .crosslog-pane-tools {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 8px;
+        border-block-end: 1px solid var(--crosslog-border);
+      }
+
+      .crosslog-log-text-selection {
+        display: inline-flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .crosslog-log-text-selection__copy,
+      .crosslog-log-text-selection__menuitem {
+        min-block-size: 27px;
+        border: 1px solid var(--crosslog-border);
+        border-radius: var(--crosslog-control-radius);
+        background: var(--crosslog-surface);
+        color: var(--crosslog-muted-text);
+        font: inherit;
+        padding-inline: 8px;
+      }
+
+      .crosslog-log-text-selection__copy:not(:disabled),
+      .crosslog-log-text-selection__menuitem:not(:disabled) {
+        cursor: pointer;
+      }
+
+      .crosslog-log-text-selection__copy:hover,
+      .crosslog-log-text-selection__menuitem:hover {
+        background: var(--crosslog-accent-surface);
+        color: var(--crosslog-accent);
+      }
+
+      .crosslog-pane-search-popover {
+        inset-block-start: calc(var(--crosslog-pane-header-height) - 2px);
+        inset-inline-start: 8px;
+      }
+
+      .crosslog-time-offset-popover {
+        inset-block-start: calc(var(--crosslog-pane-header-height) - 2px);
+        inset-inline-start: 8px;
+      }
+
+      .crosslog-time-offset-popover__content {
+        display: grid;
+        gap: 10px;
+        padding: 10px;
+      }
+
+      .crosslog-time-offset-popover__grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .crosslog-time-offset-popover__field {
+        display: grid;
+        gap: 4px;
+        color: var(--crosslog-muted-text);
+        font-size: 12px;
+      }
+
+      .crosslog-time-offset-popover__field input {
+        min-inline-size: 0;
+        border: 1px solid var(--crosslog-border);
+        border-radius: var(--crosslog-control-radius);
+        padding: 5px 7px;
+        color: var(--crosslog-text);
+        font: inherit;
+      }
+
+      .crosslog-time-offset-popover__field input[aria-invalid="true"] {
+        border-color: var(--crosslog-error-text);
+      }
+
+      .crosslog-time-offset-popover__error {
+        color: var(--crosslog-error-text);
+        font-size: 12px;
+      }
+
+      .crosslog-time-offset-popover__actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 6px;
+      }
+
+      .crosslog-time-offset-popover__apply,
+      .crosslog-time-offset-popover__close {
+        min-block-size: 27px;
+        border: 1px solid var(--crosslog-border);
+        border-radius: var(--crosslog-control-radius);
+        background: var(--crosslog-surface);
+        color: var(--crosslog-muted-text);
+        font: inherit;
+        padding-inline: 10px;
+      }
+
+      .crosslog-time-offset-popover__apply:not(:disabled),
+      .crosslog-time-offset-popover__close:not(:disabled) {
+        cursor: pointer;
+      }
+
+      .crosslog-time-offset-popover__apply:not(:disabled):hover,
+      .crosslog-time-offset-popover__close:not(:disabled):hover {
+        background: var(--crosslog-accent-surface);
+        color: var(--crosslog-accent);
+      }
+
+      .crosslog-pane-search-popover__content {
+        display: grid;
+        gap: 8px;
+        padding: 10px;
+      }
+
+      .crosslog-pane-search-popover__field {
+        display: grid;
+        gap: 4px;
+        color: var(--crosslog-muted-text);
+        font-size: 12px;
+      }
+
+      .crosslog-pane-search-popover__field input {
+        min-inline-size: 0;
+        border: 1px solid var(--crosslog-border);
+        border-radius: var(--crosslog-control-radius);
+        padding: 5px 7px;
+        color: var(--crosslog-text);
+        font: inherit;
+      }
+
+      .crosslog-pane-search-popover__match-count {
+        color: var(--crosslog-muted-text);
+        font-size: 12px;
+      }
+
+      .crosslog-pane-search-popover__actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .crosslog-pane-search-popover__toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        min-block-size: 27px;
+        color: var(--crosslog-muted-text);
+        font-size: 12px;
+      }
+
+      .crosslog-pane-search-popover__error {
+        color: var(--crosslog-error-text);
+        font-size: 12px;
+      }
+
+      .crosslog-log-scroller {
+        flex: 1 1 auto;
+        min-block-size: 0;
+      }
+
+      .crosslog-log-viewport {
+        margin: 0;
+        padding: 8px 12px;
+        font-family: var(--crosslog-font-log);
+        font-size: 12px;
+      }
+
+      .crosslog-log-viewport__row {
+        display: grid;
+        grid-template-columns: 52px minmax(0, 1fr);
+        gap: 10px;
+        min-width: max-content;
+        color: var(--crosslog-text);
+      }
+
+      .crosslog-log-viewport__row[data-search-match="true"] {
+        background: var(--crosslog-warning-surface);
+      }
+
+      .crosslog-log-viewport__row[data-active-search-match="true"],
+      .crosslog-log-viewport__row[data-sync-target="true"] {
+        outline: 1px solid var(--crosslog-accent);
+        outline-offset: 1px;
+      }
+
+      .crosslog-log-viewport__row[data-severity="warn"] .crosslog-log-viewport__line-text {
+        color: var(--crosslog-warning-text);
+      }
+
+      .crosslog-log-viewport__row[data-severity="error"] .crosslog-log-viewport__line-text,
+      .crosslog-log-viewport__row[data-severity="fatal"] .crosslog-log-viewport__line-text {
+        color: var(--crosslog-error-text);
+      }
+
+      .crosslog-log-viewport__line-number {
+        color: var(--crosslog-line-number-text);
+        text-align: end;
+        user-select: none;
+      }
+
+      .crosslog-log-viewport__line-text {
+        min-width: 0;
+        color: inherit;
+        white-space: pre;
+      }
+
+      .crosslog-pane-deleted-status {
+        margin: 0;
+        padding: 6px 8px;
+        border-block-start: 1px solid var(--crosslog-border);
+        background: var(--crosslog-warning-surface);
+        color: var(--crosslog-warning-text);
+        font-size: 12px;
+      }
+
+      .crosslog-pane-status {
+        padding: 4px 8px;
+        border-block-start: 1px solid var(--crosslog-border);
+        color: var(--crosslog-muted-text);
+        font-size: 11px;
+      }
+
+      .crosslog-workspace-actions {
+        position: sticky;
+        inset-inline-start: 0;
+        z-index: 1;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+        padding: 6px 8px;
+        border-block-end: 1px solid var(--crosslog-border);
+        background: var(--crosslog-surface);
+      }
+
+      .crosslog-empty-workspace {
+        min-block-size: 100%;
+        display: grid;
+        place-content: center;
+        gap: 10px;
+        padding: 24px;
+        text-align: center;
+      }
+
+      .crosslog-empty-workspace h1 {
+        margin: 0;
+        font-size: 24px;
+      }
+
+      .crosslog-status-bar {
+        display: grid;
+        grid-template-columns: auto auto minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 12px;
+        block-size: 100%;
+        min-width: 0;
+        padding-inline: 10px;
+        color: var(--crosslog-muted-text);
+        font-size: 12px;
+      }
+
+      .crosslog-status-bar__message {
+        color: var(--crosslog-warning-text);
+      }
+
+      .crosslog-symbols {
+        position: absolute;
+        width: 0;
+        height: 0;
+        overflow: hidden;
+      }
+
+      .crosslog-icon {
+        width: 18px;
+        height: 18px;
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 1.8;
+      }
+
+      [data-platform="web"] .desktop-only,
+      [data-platform="macos"] .web-only,
+      [data-platform="windows"] .web-only,
+      [data-platform="linux"] .web-only {
+        display: none;
+      }
+
+      .is-hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body data-theme="light" data-platform="macos">
+    <main class="mockup-page">
+      <header class="catalog-header">
+        <div>
+          <h1>Crosslog Current Implementation</h1>
+          <p class="subtitle">
+            Static before snapshot of the current React Activity Rail implementation, using the existing crosslog shell classes and component structure.
+          </p>
+        </div>
+        <div class="mockup-controls" aria-label="Mockup controls">
+          <div class="segmented" aria-label="Theme">
+            <button type="button" data-theme-button="light" aria-pressed="true">Light</button>
+            <button type="button" data-theme-button="dark" aria-pressed="false">Dark</button>
+          </div>
+          <div class="segmented" aria-label="Platform">
+            <button type="button" data-platform-button="macos" aria-pressed="true">macOS</button>
+            <button type="button" data-platform-button="windows" aria-pressed="false">Windows</button>
+            <button type="button" data-platform-button="linux" aria-pressed="false">Linux</button>
+            <button type="button" data-platform-button="web" aria-pressed="false">Web</button>
+          </div>
+        </div>
+      </header>
+
+      <section class="variant current-implementation" data-theme="light" data-platform="macos">
+        <h2 class="variant-title">Before: current implementation, sample logs open</h2>
+        <div class="screen">
+          <svg class="crosslog-symbols" aria-hidden="true">
+            <symbol id="icon-add-pane" viewBox="0 0 24 24">
+              <rect height="16" rx="2.5" width="16" x="4" y="4"></rect>
+              <path d="M12 8v8"></path>
+              <path d="M8 12h8"></path>
+            </symbol>
+            <symbol id="icon-bookmark" viewBox="0 0 24 24">
+              <path d="M7 5.5A2.5 2.5 0 0 1 9.5 3h5A2.5 2.5 0 0 1 17 5.5V21l-5-3-5 3Z"></path>
+            </symbol>
+            <symbol id="icon-close" viewBox="0 0 24 24">
+              <path d="m7 7 10 10"></path>
+              <path d="M17 7 7 17"></path>
+            </symbol>
+            <symbol id="icon-files" viewBox="0 0 24 24">
+              <path d="M7 7V4h10v13h-3"></path>
+              <path d="M4 7h10v13H4Z"></path>
+              <path d="M6.5 11h5"></path>
+              <path d="M6.5 15h5"></path>
+            </symbol>
+            <symbol id="icon-filter" viewBox="0 0 24 24">
+              <path d="M4 5h16"></path>
+              <path d="M7 12h10"></path>
+              <path d="M10 19h4"></path>
+            </symbol>
+            <symbol id="icon-next" viewBox="0 0 24 24">
+              <path d="m9 6 6 6-6 6"></path>
+            </symbol>
+            <symbol id="icon-palette" viewBox="0 0 24 24">
+              <path d="M12 3a9 9 0 0 0 0 18h1.5a1.8 1.8 0 0 0 1.2-3.15 1.8 1.8 0 0 1 1.2-3.15H17a4 4 0 0 0 4-4C21 6.45 17 3 12 3Z"></path>
+              <circle cx="8" cy="10" r="0.7"></circle>
+              <circle cx="11" cy="7.5" r="0.7"></circle>
+              <circle cx="15" cy="8.5" r="0.7"></circle>
+            </symbol>
+            <symbol id="icon-previous" viewBox="0 0 24 24">
+              <path d="m15 6-6 6 6 6"></path>
+            </symbol>
+            <symbol id="icon-search" viewBox="0 0 24 24">
+              <circle cx="10.5" cy="10.5" r="5.5"></circle>
+              <path d="m15 15 4 4"></path>
+            </symbol>
+            <symbol id="icon-settings" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M12 2.8v2.4"></path>
+              <path d="M12 18.8v2.4"></path>
+              <path d="m4.35 4.35 1.7 1.7"></path>
+              <path d="m17.95 17.95 1.7 1.7"></path>
+              <path d="M2.8 12h2.4"></path>
+              <path d="M18.8 12h2.4"></path>
+              <path d="m4.35 19.65 1.7-1.7"></path>
+              <path d="m17.95 6.05 1.7-1.7"></path>
+            </symbol>
+          </svg>
+
+          <div class="current-window">
+            <main aria-label="Crosslog workspace" class="crosslog-shell">
+              <aside aria-label="System notices" class="crosslog-shell__banners">
+                <section aria-label="Capability limitations" class="crosslog-capability-limitations web-only">
+                  <ul class="crosslog-capability-limitations__list">
+                    <li class="crosslog-capability-limitations__item">Browser sessions cannot monitor local filesystem changes.</li>
+                  </ul>
+                </section>
+              </aside>
+
+              <section aria-label="Topbar" class="crosslog-shell__topbar">
+                <div class="crosslog-topbar">
+                  <label class="crosslog-command-field">
+                    <svg class="crosslog-icon" aria-hidden="true"><use href="#icon-search"></use></svg>
+                    <span class="crosslog-sr-only">Command or workspace search</span>
+                    <input aria-label="Command or workspace search" class="crosslog-command-field__input" placeholder="Command or workspace search" type="search" />
+                  </label>
+                  <div class="crosslog-topbar__actions">
+                    <div class="crosslog-topbar__sync">
+                      <label>
+                        <input type="checkbox" aria-label="Synchronize by time" checked />
+                        Synchronize by time
+                      </label>
+                      <span aria-live="polite" class="crosslog-topbar__sync-state">Sync on</span>
+                    </div>
+                    <div class="crosslog-pane-creation" role="group" aria-label="Pane creation controls">
+                      <button class="crosslog-icon-button" type="button" aria-label="Add pane" title="Add pane">
+                        <svg class="crosslog-icon" aria-hidden="true"><use href="#icon-add-pane"></use></svg>
+                      </button>
+                      <button class="crosslog-split-button" type="button" aria-label="Split active pane">Split</button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <nav aria-label="Activity rail" class="crosslog-shell__rail">
+                <div class="crosslog-activity-rail">
+                  <button class="crosslog-icon-button" type="button" aria-label="Search logs" title="Search logs">
+                    <svg class="crosslog-icon" aria-hidden="true"><use href="#icon-search"></use></svg>
+                  </button>
+                  <button class="crosslog-icon-button" type="button" aria-label="Filters unavailable" title="Filtering is outside the MVP scope." disabled aria-disabled="true" data-unavailable="true">
+                    <svg class="crosslog-icon" aria-hidden="true"><use href="#icon-filter"></use></svg>
+                  </button>
+                  <button class="crosslog-icon-button" type="button" aria-label="Highlighting unavailable" title="User-configurable highlighting is outside the MVP scope." disabled aria-disabled="true" data-unavailable="true">
+                    <svg class="crosslog-icon" aria-hidden="true"><use href="#icon-palette"></use></svg>
+                  </button>
+                  <button class="crosslog-icon-button" type="button" aria-label="Open sources" title="Open sources">
+                    <svg class="crosslog-icon" aria-hidden="true"><use href="#icon-files"></use></svg>
+                  </button>
+                  <button class="crosslog-icon-button" type="button" aria-label="Bookmarks unavailable" title="Bookmarks and saved filters are outside the MVP scope." disabled aria-disabled="true" data-unavailable="true">
+                    <svg class="crosslog-icon" aria-hidden="true"><use href="#icon-bookmark"></use></svg>
+                  </button>
+                  <button class="crosslog-icon-button" type="button" aria-label="Settings" title="Settings">
+                    <svg class="crosslog-icon" aria-hidden="true"><use href="#icon-settings"></use></svg>
+                  </button>
+                </div>
+              </nav>
+
+              <section aria-label="Pane workspace" class="crosslog-shell__workspace">
+                <div class="crosslog-workspace-actions" role="toolbar" aria-label="Workspace tools">
+                  <button type="button">Discover newer directory file</button>
+                  <button type="button">Append live line</button>
+                  <button type="button">Delete active file</button>
+                  <button type="button">Replace active file</button>
+                </div>
+
+                <div class="crosslog-pane-workspace">
+                  <div class="crosslog-pane-workspace__content" data-testid="pane-rail">
+                    <article class="crosslog-log-pane" aria-label="Log pane app.log" data-pane-id="pane-app" data-active="true" style="inline-size: 520px;">
+                      <header aria-current="true" aria-label="app.log active pane" class="crosslog-pane-header" data-active="true">
+                        <div class="crosslog-pane-header__identity">
+                          <h2 class="crosslog-pane-header__title" title="app.log">app.log</h2>
+                        </div>
+                        <div aria-label="File state for app.log: Live" class="crosslog-pane-header__lifecycle desktop-only" role="status">
+                          <span class="crosslog-pane-header__lifecycle-badge crosslog-pane-header__lifecycle-badge--live" title="Live updates are active.">Live</span>
+                        </div>
+                        <div aria-label="File state for app.log: Monitoring unavailable" class="crosslog-pane-header__lifecycle web-only" role="status">
+                          <span class="crosslog-pane-header__lifecycle-badge crosslog-pane-header__lifecycle-badge--unsupported" title="This platform cannot watch the file for changes.">Monitoring unavailable</span>
+                        </div>
+                        <div class="crosslog-pane-header__actions">
+                          <button aria-expanded="false" aria-haspopup="dialog" aria-label="Time offset for app.log: +0000-00-00 00:00:00.000" class="crosslog-pane-header__offset-tag" data-offset-trigger="pane-app" type="button">Offset +0000-00-00 00:00:00.000</button>
+                          <button aria-expanded="false" aria-haspopup="dialog" aria-label="Search in app.log" class="crosslog-icon-button" data-search-trigger="pane-app" type="button" title="Search in app.log">
+                            <svg class="crosslog-icon" aria-hidden="true"><use href="#icon-search"></use></svg>
+                          </button>
+                          <button aria-label="Close pane app.log" class="crosslog-icon-button" type="button" title="Close pane app.log">
+                            <svg class="crosslog-icon" aria-hidden="true"><use href="#icon-close"></use></svg>
+                          </button>
+                        </div>
+                      </header>
+                      <section aria-label="Pane search for app.log" class="crosslog-popover crosslog-pane-search-popover is-hidden" data-popover-type="search" data-owner-pane="pane-app" role="dialog" tabindex="-1">
+                        <div class="crosslog-pane-search-popover__content">
+                          <label class="crosslog-pane-search-popover__field">
+                            <span>Search</span>
+                            <input aria-label="Search app.log" type="search" value="" />
+                          </label>
+                          <span aria-label="Search match count for app.log" class="crosslog-pane-search-popover__match-count">0 of 0</span>
+                          <div aria-label="Search actions for app.log" class="crosslog-pane-search-popover__actions" role="toolbar">
+                            <button class="crosslog-icon-button" type="button" aria-label="Previous search match in app.log" disabled>
+                              <svg class="crosslog-icon" aria-hidden="true"><use href="#icon-previous"></use></svg>
+                            </button>
+                            <button class="crosslog-icon-button" type="button" aria-label="Next search match in app.log" disabled>
+                              <svg class="crosslog-icon" aria-hidden="true"><use href="#icon-next"></use></svg>
+                            </button>
+                            <label class="crosslog-pane-search-popover__toggle">
+                              <input aria-label="Case-sensitive search for app.log" type="checkbox" />
+                              <span>Aa</span>
+                            </label>
+                            <label class="crosslog-pane-search-popover__toggle">
+                              <input aria-label="Regular expression search for app.log" type="checkbox" />
+                              <span>.*</span>
+                            </label>
+                          </div>
+                        </div>
+                      </section>
+                      <section aria-label="Time offset for app.log" class="crosslog-popover crosslog-time-offset-popover is-hidden" data-popover-type="time" data-owner-pane="pane-app" role="dialog" tabindex="-1">
+                        <div class="crosslog-time-offset-popover__content">
+                          <div class="crosslog-time-offset-popover__grid">
+                            <label class="crosslog-time-offset-popover__field"><span>Days</span><input aria-label="Days offset for app.log" inputmode="numeric" type="text" value="0" /></label>
+                            <label class="crosslog-time-offset-popover__field"><span>Hours</span><input aria-label="Hours offset for app.log" inputmode="numeric" type="text" value="0" /></label>
+                            <label class="crosslog-time-offset-popover__field"><span>Minutes</span><input aria-label="Minutes offset for app.log" inputmode="numeric" type="text" value="0" /></label>
+                            <label class="crosslog-time-offset-popover__field"><span>Seconds</span><input aria-label="Seconds offset for app.log" inputmode="numeric" type="text" value="0" /></label>
+                            <label class="crosslog-time-offset-popover__field"><span>Milliseconds</span><input aria-label="Milliseconds offset for app.log" inputmode="numeric" type="text" value="0" /></label>
+                          </div>
+                          <div class="crosslog-time-offset-popover__actions">
+                            <button class="crosslog-time-offset-popover__apply" type="button">Apply</button>
+                            <button class="crosslog-time-offset-popover__close" data-close-popover type="button">Close</button>
+                          </div>
+                        </div>
+                      </section>
+                      <div class="crosslog-pane-tools" role="toolbar" aria-label="Pane tools for app.log">
+                        <div aria-label="Log text actions for app.log" class="crosslog-log-text-selection" role="group">
+                          <button aria-label="Copy selected text from app.log" class="crosslog-log-text-selection__copy" type="button">Copy</button>
+                        </div>
+                      </div>
+                      <div class="crosslog-log-scroller">
+                        <pre class="crosslog-log-viewport" aria-label="Log lines for app.log"><span class="crosslog-log-viewport__row"><span class="crosslog-log-viewport__line-number">1</span><span class="crosslog-log-viewport__line-text">2026-06-16T09:00:00.000Z app.log boot sequence started with a deliberately long line for horizontal scrolling verification</span></span>
+<span class="crosslog-log-viewport__row"><span class="crosslog-log-viewport__line-number">2</span><span class="crosslog-log-viewport__line-text">2026-06-16T09:00:01.250Z app.log connected to upstream service</span></span>
+<span class="crosslog-log-viewport__row" data-search-match="true" data-active-search-match="true"><span class="crosslog-log-viewport__line-number">3</span><span class="crosslog-log-viewport__line-text">2026-06-16T09:00:02.500Z app.log processed request id=42 status=ok</span></span>
+<span class="crosslog-log-viewport__row"><span class="crosslog-log-viewport__line-number">4</span><span class="crosslog-log-viewport__line-text">2026-06-16T09:00:03.750Z app.log completed comparison sample</span></span>
+<span class="crosslog-log-viewport__row"><span class="crosslog-log-viewport__line-number">5</span><span class="crosslog-log-viewport__line-text">2026-06-16T09:00:04.000Z app.log line 5</span></span>
+<span class="crosslog-log-viewport__row"><span class="crosslog-log-viewport__line-number">6</span><span class="crosslog-log-viewport__line-text">2026-06-16T09:00:05.000Z app.log line 6</span></span>
+<span class="crosslog-log-viewport__row"><span class="crosslog-log-viewport__line-number">7</span><span class="crosslog-log-viewport__line-text">2026-06-16T09:00:06.000Z app.log line 7</span></span>
+<span class="crosslog-log-viewport__row"><span class="crosslog-log-viewport__line-number">8</span><span class="crosslog-log-viewport__line-text">2026-06-16T09:00:07.000Z app.log line 8</span></span>
+<span class="crosslog-log-viewport__row"><span class="crosslog-log-viewport__line-number">9</span><span class="crosslog-log-viewport__line-text">2026-06-16T09:00:08.000Z app.log line 9</span></span>
+<span class="crosslog-log-viewport__row"><span class="crosslog-log-viewport__line-number">10</span><span class="crosslog-log-viewport__line-text">2026-06-16T09:00:09.000Z app.log line 10</span></span></pre>
+                      </div>
+                      <footer class="crosslog-pane-status">ready</footer>
+                    </article>
+
+                    <div role="separator" aria-label="Resize boundary after app.log">
+                      <button type="button" aria-label="Move boundary after app.log left">-</button>
+                      <button type="button" aria-label="Move boundary after app.log right">+</button>
+                    </div>
+
+                    <article class="crosslog-log-pane" aria-label="Log pane service.log" data-pane-id="pane-service" data-active="false" style="inline-size: 520px;">
+                      <header aria-label="service.log" class="crosslog-pane-header" data-active="false">
+                        <div class="crosslog-pane-header__identity">
+                          <h2 class="crosslog-pane-header__title" title="service.log">service.log</h2>
+                        </div>
+                        <div aria-label="File state for service.log: Live" class="crosslog-pane-header__lifecycle desktop-only" role="status">
+                          <span class="crosslog-pane-header__lifecycle-badge crosslog-pane-header__lifecycle-badge--live" title="Live updates are active.">Live</span>
+                        </div>
+                        <div aria-label="File state for service.log: Monitoring unavailable" class="crosslog-pane-header__lifecycle web-only" role="status">
+                          <span class="crosslog-pane-header__lifecycle-badge crosslog-pane-header__lifecycle-badge--unsupported" title="This platform cannot watch the file for changes.">Monitoring unavailable</span>
+                        </div>
+                        <div class="crosslog-pane-header__actions">
+                          <button aria-expanded="false" aria-haspopup="dialog" aria-label="Time offset for service.log: +0000-00-00 00:00:00.000" class="crosslog-pane-header__offset-tag" data-offset-trigger="pane-service" type="button">Offset +0000-00-00 00:00:00.000</button>
+                          <button aria-expanded="false" aria-haspopup="dialog" aria-label="Search in service.log" class="crosslog-icon-button" data-search-trigger="pane-service" type="button" title="Search in service.log">
+                            <svg class="crosslog-icon" aria-hidden="true"><use href="#icon-search"></use></svg>
+                          </button>
+                          <button aria-label="Close pane service.log" class="crosslog-icon-button" type="button" title="Close pane service.log">
+                            <svg class="crosslog-icon" aria-hidden="true"><use href="#icon-close"></use></svg>
+                          </button>
+                        </div>
+                      </header>
+                      <section aria-label="Pane search for service.log" class="crosslog-popover crosslog-pane-search-popover is-hidden" data-popover-type="search" data-owner-pane="pane-service" role="dialog" tabindex="-1">
+                        <div class="crosslog-pane-search-popover__content">
+                          <label class="crosslog-pane-search-popover__field"><span>Search</span><input aria-label="Search service.log" type="search" value="" /></label>
+                          <span aria-label="Search match count for service.log" class="crosslog-pane-search-popover__match-count">0 of 0</span>
+                          <div aria-label="Search actions for service.log" class="crosslog-pane-search-popover__actions" role="toolbar">
+                            <button class="crosslog-icon-button" type="button" aria-label="Previous search match in service.log" disabled><svg class="crosslog-icon" aria-hidden="true"><use href="#icon-previous"></use></svg></button>
+                            <button class="crosslog-icon-button" type="button" aria-label="Next search match in service.log" disabled><svg class="crosslog-icon" aria-hidden="true"><use href="#icon-next"></use></svg></button>
+                            <label class="crosslog-pane-search-popover__toggle"><input aria-label="Case-sensitive search for service.log" type="checkbox" /><span>Aa</span></label>
+                            <label class="crosslog-pane-search-popover__toggle"><input aria-label="Regular expression search for service.log" type="checkbox" /><span>.*</span></label>
+                          </div>
+                        </div>
+                      </section>
+                      <section aria-label="Time offset for service.log" class="crosslog-popover crosslog-time-offset-popover is-hidden" data-popover-type="time" data-owner-pane="pane-service" role="dialog" tabindex="-1">
+                        <div class="crosslog-time-offset-popover__content">
+                          <div class="crosslog-time-offset-popover__grid">
+                            <label class="crosslog-time-offset-popover__field"><span>Days</span><input aria-label="Days offset for service.log" inputmode="numeric" type="text" value="0" /></label>
+                            <label class="crosslog-time-offset-popover__field"><span>Hours</span><input aria-label="Hours offset for service.log" inputmode="numeric" type="text" value="0" /></label>
+                            <label class="crosslog-time-offset-popover__field"><span>Minutes</span><input aria-label="Minutes offset for service.log" inputmode="numeric" type="text" value="0" /></label>
+                            <label class="crosslog-time-offset-popover__field"><span>Seconds</span><input aria-label="Seconds offset for service.log" inputmode="numeric" type="text" value="0" /></label>
+                            <label class="crosslog-time-offset-popover__field"><span>Milliseconds</span><input aria-label="Milliseconds offset for service.log" inputmode="numeric" type="text" value="0" /></label>
+                          </div>
+                          <div class="crosslog-time-offset-popover__actions">
+                            <button class="crosslog-time-offset-popover__apply" type="button">Apply</button>
+                            <button class="crosslog-time-offset-popover__close" data-close-popover type="button">Close</button>
+                          </div>
+                        </div>
+                      </section>
+                      <div class="crosslog-pane-tools" role="toolbar" aria-label="Pane tools for service.log">
+                        <div aria-label="Log text actions for service.log" class="crosslog-log-text-selection" role="group">
+                          <button aria-label="Copy selected text from service.log" class="crosslog-log-text-selection__copy" type="button">Copy</button>
+                        </div>
+                      </div>
+                      <div class="crosslog-log-scroller">
+                        <pre class="crosslog-log-viewport" aria-label="Log lines for service.log"><span class="crosslog-log-viewport__row"><span class="crosslog-log-viewport__line-number">1</span><span class="crosslog-log-viewport__line-text">2026-06-16T09:00:00.000Z service.log boot sequence started with a deliberately long line for horizontal scrolling verification</span></span>
+<span class="crosslog-log-viewport__row"><span class="crosslog-log-viewport__line-number">2</span><span class="crosslog-log-viewport__line-text">2026-06-16T09:00:01.250Z service.log connected to upstream service</span></span>
+<span class="crosslog-log-viewport__row"><span class="crosslog-log-viewport__line-number">3</span><span class="crosslog-log-viewport__line-text">2026-06-16T09:00:02.500Z service.log processed request id=42 status=ok</span></span>
+<span class="crosslog-log-viewport__row" data-sync-target="true"><span class="crosslog-log-viewport__line-number">4</span><span class="crosslog-log-viewport__line-text">2026-06-16T09:00:03.750Z service.log completed comparison sample</span></span>
+<span class="crosslog-log-viewport__row"><span class="crosslog-log-viewport__line-number">5</span><span class="crosslog-log-viewport__line-text">2026-06-16T09:00:04.000Z service.log line 5</span></span>
+<span class="crosslog-log-viewport__row"><span class="crosslog-log-viewport__line-number">6</span><span class="crosslog-log-viewport__line-text">2026-06-16T09:00:05.000Z service.log line 6</span></span>
+<span class="crosslog-log-viewport__row"><span class="crosslog-log-viewport__line-number">7</span><span class="crosslog-log-viewport__line-text">2026-06-16T09:00:06.000Z service.log line 7</span></span>
+<span class="crosslog-log-viewport__row"><span class="crosslog-log-viewport__line-number">8</span><span class="crosslog-log-viewport__line-text">2026-06-16T09:00:07.000Z service.log line 8</span></span>
+<span class="crosslog-log-viewport__row"><span class="crosslog-log-viewport__line-number">9</span><span class="crosslog-log-viewport__line-text">2026-06-16T09:00:08.000Z service.log line 9</span></span>
+<span class="crosslog-log-viewport__row"><span class="crosslog-log-viewport__line-number">10</span><span class="crosslog-log-viewport__line-text">2026-06-16T09:00:09.000Z service.log line 10</span></span></pre>
+                      </div>
+                      <footer class="crosslog-pane-status">ready</footer>
+                    </article>
+
+                    <div role="separator" aria-label="Resize boundary after service.log">
+                      <button type="button" aria-label="Move boundary after service.log left">-</button>
+                      <button type="button" aria-label="Move boundary after service.log right">+</button>
+                    </div>
+
+                    <article class="crosslog-log-pane" aria-label="Log pane app-2026-06-16.log" data-pane-id="pane-directory" data-active="false" style="inline-size: 520px;">
+                      <header aria-label="logs/2026, selected file app-2026-06-16.log" class="crosslog-pane-header" data-active="false">
+                        <div class="crosslog-pane-header__identity crosslog-pane-header__identity--directory">
+                          <span class="crosslog-pane-header__directory" title="logs/2026">logs/2026</span>
+                          <h2 class="crosslog-pane-header__title crosslog-pane-header__selected-file" title="app-2026-06-16.log">app-2026-06-16.log</h2>
+                        </div>
+                        <div class="crosslog-directory-navigator" aria-label="Directory navigation for app-2026-06-16.log in logs/2026">
+                          <button class="crosslog-icon-button" type="button" aria-label="Previous file in logs/2026" title="No previous file in logs/2026" disabled>
+                            <svg class="crosslog-icon" aria-hidden="true"><use href="#icon-previous"></use></svg>
+                          </button>
+                          <button class="crosslog-icon-button" type="button" aria-label="Next file in logs/2026" title="Next file: app-2026-06-15.log">
+                            <svg class="crosslog-icon" aria-hidden="true"><use href="#icon-next"></use></svg>
+                          </button>
+                        </div>
+                        <div class="crosslog-pane-header__actions">
+                          <button aria-expanded="false" aria-haspopup="dialog" aria-label="Time offset for app-2026-06-16.log: +0000-00-00 00:00:00.000" class="crosslog-pane-header__offset-tag" data-offset-trigger="pane-directory" type="button">Offset +0000-00-00 00:00:00.000</button>
+                          <button aria-expanded="false" aria-haspopup="dialog" aria-label="Search in app-2026-06-16.log" class="crosslog-icon-button" data-search-trigger="pane-directory" type="button" title="Search in app-2026-06-16.log">
+                            <svg class="crosslog-icon" aria-hidden="true"><use href="#icon-search"></use></svg>
+                          </button>
+                          <button aria-label="Close pane app-2026-06-16.log" class="crosslog-icon-button" type="button" title="Close pane app-2026-06-16.log">
+                            <svg class="crosslog-icon" aria-hidden="true"><use href="#icon-close"></use></svg>
+                          </button>
+                        </div>
+                      </header>
+                      <section aria-label="Pane search for app-2026-06-16.log" class="crosslog-popover crosslog-pane-search-popover is-hidden" data-popover-type="search" data-owner-pane="pane-directory" role="dialog" tabindex="-1">
+                        <div class="crosslog-pane-search-popover__content">
+                          <label class="crosslog-pane-search-popover__field"><span>Search</span><input aria-label="Search app-2026-06-16.log" type="search" value="" /></label>
+                          <span aria-label="Search match count for app-2026-06-16.log" class="crosslog-pane-search-popover__match-count">0 of 0</span>
+                          <div aria-label="Search actions for app-2026-06-16.log" class="crosslog-pane-search-popover__actions" role="toolbar">
+                            <button class="crosslog-icon-button" type="button" aria-label="Previous search match in app-2026-06-16.log" disabled><svg class="crosslog-icon" aria-hidden="true"><use href="#icon-previous"></use></svg></button>
+                            <button class="crosslog-icon-button" type="button" aria-label="Next search match in app-2026-06-16.log" disabled><svg class="crosslog-icon" aria-hidden="true"><use href="#icon-next"></use></svg></button>
+                            <label class="crosslog-pane-search-popover__toggle"><input aria-label="Case-sensitive search for app-2026-06-16.log" type="checkbox" /><span>Aa</span></label>
+                            <label class="crosslog-pane-search-popover__toggle"><input aria-label="Regular expression search for app-2026-06-16.log" type="checkbox" /><span>.*</span></label>
+                          </div>
+                        </div>
+                      </section>
+                      <section aria-label="Time offset for app-2026-06-16.log" class="crosslog-popover crosslog-time-offset-popover is-hidden" data-popover-type="time" data-owner-pane="pane-directory" role="dialog" tabindex="-1">
+                        <div class="crosslog-time-offset-popover__content">
+                          <div class="crosslog-time-offset-popover__grid">
+                            <label class="crosslog-time-offset-popover__field"><span>Days</span><input aria-label="Days offset for app-2026-06-16.log" inputmode="numeric" type="text" value="0" /></label>
+                            <label class="crosslog-time-offset-popover__field"><span>Hours</span><input aria-label="Hours offset for app-2026-06-16.log" inputmode="numeric" type="text" value="0" /></label>
+                            <label class="crosslog-time-offset-popover__field"><span>Minutes</span><input aria-label="Minutes offset for app-2026-06-16.log" inputmode="numeric" type="text" value="0" /></label>
+                            <label class="crosslog-time-offset-popover__field"><span>Seconds</span><input aria-label="Seconds offset for app-2026-06-16.log" inputmode="numeric" type="text" value="0" /></label>
+                            <label class="crosslog-time-offset-popover__field"><span>Milliseconds</span><input aria-label="Milliseconds offset for app-2026-06-16.log" inputmode="numeric" type="text" value="0" /></label>
+                          </div>
+                          <div class="crosslog-time-offset-popover__actions">
+                            <button class="crosslog-time-offset-popover__apply" type="button">Apply</button>
+                            <button class="crosslog-time-offset-popover__close" data-close-popover type="button">Close</button>
+                          </div>
+                        </div>
+                      </section>
+                      <div class="crosslog-pane-tools" role="toolbar" aria-label="Pane tools for app-2026-06-16.log">
+                        <div aria-label="Log text actions for app-2026-06-16.log" class="crosslog-log-text-selection" role="group">
+                          <button aria-label="Copy selected text from app-2026-06-16.log" class="crosslog-log-text-selection__copy" type="button">Copy</button>
+                        </div>
+                      </div>
+                      <div class="crosslog-log-scroller">
+                        <pre class="crosslog-log-viewport" aria-label="Log lines for app-2026-06-16.log"><span class="crosslog-log-viewport__row"><span class="crosslog-log-viewport__line-number">1</span><span class="crosslog-log-viewport__line-text">2026-06-16T09:00:00.000Z app-2026-06-16.log boot sequence started with a deliberately long line for horizontal scrolling verification</span></span>
+<span class="crosslog-log-viewport__row"><span class="crosslog-log-viewport__line-number">2</span><span class="crosslog-log-viewport__line-text">2026-06-16T09:00:01.250Z app-2026-06-16.log connected to upstream service</span></span>
+<span class="crosslog-log-viewport__row"><span class="crosslog-log-viewport__line-number">3</span><span class="crosslog-log-viewport__line-text">2026-06-16T09:00:02.500Z app-2026-06-16.log processed request id=42 status=ok</span></span>
+<span class="crosslog-log-viewport__row"><span class="crosslog-log-viewport__line-number">4</span><span class="crosslog-log-viewport__line-text">2026-06-16T09:00:03.750Z app-2026-06-16.log completed comparison sample</span></span>
+<span class="crosslog-log-viewport__row"><span class="crosslog-log-viewport__line-number">5</span><span class="crosslog-log-viewport__line-text">2026-06-16T09:00:04.000Z app-2026-06-16.log line 5</span></span>
+<span class="crosslog-log-viewport__row"><span class="crosslog-log-viewport__line-number">6</span><span class="crosslog-log-viewport__line-text">2026-06-16T09:00:05.000Z app-2026-06-16.log line 6</span></span>
+<span class="crosslog-log-viewport__row"><span class="crosslog-log-viewport__line-number">7</span><span class="crosslog-log-viewport__line-text">2026-06-16T09:00:06.000Z app-2026-06-16.log line 7</span></span>
+<span class="crosslog-log-viewport__row"><span class="crosslog-log-viewport__line-number">8</span><span class="crosslog-log-viewport__line-text">2026-06-16T09:00:07.000Z app-2026-06-16.log line 8</span></span>
+<span class="crosslog-log-viewport__row"><span class="crosslog-log-viewport__line-number">9</span><span class="crosslog-log-viewport__line-text">2026-06-16T09:00:08.000Z app-2026-06-16.log line 9</span></span>
+<span class="crosslog-log-viewport__row"><span class="crosslog-log-viewport__line-number">10</span><span class="crosslog-log-viewport__line-text">2026-06-16T09:00:09.000Z app-2026-06-16.log line 10</span></span></pre>
+                      </div>
+                      <footer class="crosslog-pane-status">ready</footer>
+                    </article>
+                  </div>
+                  <div aria-hidden="true" class="crosslog-pane-workspace__scrollbar">
+                    <div class="crosslog-pane-workspace__scrollbar-thumb"></div>
+                  </div>
+                </div>
+              </section>
+
+              <footer aria-label="Workspace status" class="crosslog-shell__status">
+                <div aria-label="3 panes, Sync on, active source app.log" aria-live="polite" class="crosslog-status-bar" data-active-source="app.log" data-sync-enabled="true" role="status">
+                  <span>3 panes</span>
+                  <span>Sync on</span>
+                  <span class="crosslog-status-bar__active-source" title="app.log">Active: app.log</span>
+                </div>
+              </footer>
+            </main>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const body = document.body;
+      const variant = document.querySelector(".variant");
+
+      function setPressed(selector, activeValue, key) {
+        document.querySelectorAll(selector).forEach((button) => {
+          button.setAttribute("aria-pressed", button.dataset[key] === activeValue ? "true" : "false");
+        });
+      }
+
+      document.querySelectorAll("[data-theme-button]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const theme = button.dataset.themeButton;
+          body.dataset.theme = theme;
+          variant.dataset.theme = theme;
+          setPressed("[data-theme-button]", theme, "themeButton");
+        });
+      });
+
+      document.querySelectorAll("[data-platform-button]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const platform = button.dataset.platformButton;
+          body.dataset.platform = platform;
+          variant.dataset.platform = platform;
+          setPressed("[data-platform-button]", platform, "platformButton");
+        });
+      });
+
+      function closePopovers() {
+        document.querySelectorAll("[data-popover-type]").forEach((popover) => {
+          popover.classList.add("is-hidden");
+        });
+        document.querySelectorAll("[data-search-trigger], [data-offset-trigger]").forEach((trigger) => {
+          trigger.setAttribute("aria-expanded", "false");
+        });
+      }
+
+      function openPanePopover(paneId, type) {
+        closePopovers();
+        const popover = document.querySelector(`[data-owner-pane="${paneId}"][data-popover-type="${type}"]`);
+        if (!popover) {
+          return;
+        }
+
+        popover.classList.remove("is-hidden");
+        const triggerSelector = type === "search" ? `[data-search-trigger="${paneId}"]` : `[data-offset-trigger="${paneId}"]`;
+        document.querySelector(triggerSelector)?.setAttribute("aria-expanded", "true");
+      }
+
+      document.querySelectorAll("[data-search-trigger]").forEach((button) => {
+        button.addEventListener("click", () => openPanePopover(button.dataset.searchTrigger, "search"));
+      });
+
+      document.querySelectorAll("[data-offset-trigger]").forEach((button) => {
+        button.addEventListener("click", () => openPanePopover(button.dataset.offsetTrigger, "time"));
+      });
+
+      document.querySelectorAll("[data-close-popover]").forEach((button) => {
+        button.addEventListener("click", closePopovers);
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          closePopovers();
+        }
+      });
+    </script>
+  </body>
+</html>

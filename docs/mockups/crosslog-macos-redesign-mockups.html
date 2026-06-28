@@ -1,0 +1,2178 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Crosslog Figma Activity Rail Mockup</title>
+    <style>
+      :root {
+        --screen-bg: #ececf1;
+        --window-bg: #f5f5f7;
+        --topbar-bg: #fafafa;
+        --rail-bg: #f0f0f3;
+        --pane-bg: #ffffff;
+        --border: #d9d9df;
+        --scroll-track: #dcdde1;
+        --scroll-thumb: #a6a9af;
+        --accent: #007aff;
+        --accent-bg: #d9ebff;
+        --muted: #6e6e73;
+        --line-number: #8e8e93;
+        --text: #1d1d1f;
+        --warn-bg: #fff4d7;
+        --warn-text: #9a6500;
+        --error-bg: #ffe5e5;
+        --error-text: #ff3b30;
+        --tag-bg: #f0f1f3;
+        --window-shadow: 0 15.805px 47.414px rgba(0, 0, 0, 0.13);
+        --font-ui: Inter, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+        --font-log: "Roboto Mono", "SF Mono", Menlo, Monaco, Consolas, monospace;
+      }
+
+      [data-theme="dark"] {
+        color-scheme: dark;
+      }
+
+      .variant[data-theme="dark"] {
+        --screen-bg: #111214;
+        --window-bg: #1c1c1e;
+        --topbar-bg: #25262a;
+        --rail-bg: #1f2024;
+        --pane-bg: #202124;
+        --border: #3a3b40;
+        --scroll-track: #34363c;
+        --scroll-thumb: #6d7078;
+        --accent: #0a84ff;
+        --accent-bg: rgba(10, 132, 255, 0.24);
+        --muted: #a1a1a6;
+        --line-number: #8f949c;
+        --text: #f5f5f7;
+        --warn-bg: rgba(255, 159, 10, 0.18);
+        --warn-text: #ffd60a;
+        --error-bg: rgba(255, 69, 58, 0.2);
+        --error-text: #ff453a;
+        --tag-bg: #2c2d31;
+        --window-shadow: 0 15.805px 47.414px rgba(0, 0, 0, 0.38);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-width: 1440px;
+        min-height: 900px;
+        background: #e5e5ea;
+        font-family: var(--font-ui);
+      }
+
+      body {
+        display: block;
+      }
+
+      body[data-theme="dark"] {
+        background: #111214;
+        color: #f5f5f7;
+      }
+
+      .mockup-page {
+        width: 1440px;
+        margin: 0 auto;
+        padding: 24px 0 48px;
+      }
+
+      .catalog-header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 24px;
+        align-items: end;
+        margin-bottom: 18px;
+      }
+
+      h1,
+      h2,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        color: #1d1d1f;
+        font-size: 26px;
+        line-height: 32px;
+      }
+
+      body[data-theme="dark"] h1 {
+        color: #f5f5f7;
+      }
+
+      .subtitle {
+        max-width: 760px;
+        margin-top: 6px;
+        color: #6e6e73;
+        font-size: 13px;
+        line-height: 18px;
+      }
+
+      body[data-theme="dark"] .subtitle {
+        color: #a1a1a6;
+      }
+
+      .mockup-controls {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+
+      .segmented {
+        display: inline-flex;
+        gap: 2px;
+        padding: 3px;
+        border: 0.5px solid rgba(0, 0, 0, 0.09);
+        border-radius: 9px;
+        background: rgba(250, 250, 250, 0.86);
+      }
+
+      body[data-theme="dark"] .segmented {
+        border-color: rgba(255, 255, 255, 0.09);
+        background: rgba(38, 38, 40, 0.88);
+      }
+
+      .segmented button {
+        height: 28px;
+        min-width: 68px;
+        padding: 0 11px;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        color: #1d1d1f;
+        cursor: pointer;
+        font-family: var(--font-ui);
+        font-size: 13px;
+      }
+
+      body[data-theme="dark"] .segmented button {
+        color: #f5f5f7;
+      }
+
+      .segmented button[aria-pressed="true"] {
+        background: #ffffff;
+        box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.09), 0 1px 2px rgba(0, 0, 0, 0.08);
+      }
+
+      body[data-theme="dark"] .segmented button[aria-pressed="true"] {
+        background: #2c2c2e;
+        box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.09), 0 1px 2px rgba(0, 0, 0, 0.3);
+      }
+
+      .variant {
+        margin-bottom: 36px;
+      }
+
+      .variant-title {
+        margin: 0 0 10px;
+        color: #1d1d1f;
+        font-family: var(--font-ui);
+        font-size: 15px;
+        font-weight: 600;
+        line-height: 20px;
+      }
+
+      .variant[data-theme="dark"] .variant-title {
+        color: #f5f5f7;
+      }
+
+      .screen {
+        position: relative;
+        width: 1440px;
+        height: 900px;
+        overflow: hidden;
+        background: var(--screen-bg);
+      }
+
+      .empty-screen {
+        width: 1120px;
+        height: 680px;
+      }
+
+      .symbols {
+        position: absolute;
+        width: 0;
+        height: 0;
+        overflow: hidden;
+      }
+
+      .icon {
+        width: 15.805px;
+        height: 15.805px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .icon.small {
+        width: 13.829px;
+        height: 13.829px;
+      }
+
+      .window {
+        position: absolute;
+        left: 32px;
+        top: 37px;
+        width: 1375px;
+        height: 825.79px;
+        overflow: hidden;
+        border: 0.988px solid var(--border);
+        border-radius: 11.853px;
+        background: var(--window-bg);
+        box-shadow: var(--window-shadow);
+      }
+
+      .empty-window {
+        position: absolute;
+        left: 32px;
+        top: 32px;
+        width: 1056px;
+        height: 596px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--window-bg);
+        box-shadow: 0 16px 42px rgba(0, 0, 0, 0.12);
+      }
+
+      .empty-topbar {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1056px;
+        height: 35.56px;
+        overflow: hidden;
+        background: var(--topbar-bg);
+      }
+
+      .empty-topbar-border {
+        position: absolute;
+        left: 0;
+        top: 34.57px;
+        width: 1056px;
+        height: 0.988px;
+        background: var(--border);
+      }
+
+      .empty-topbar .traffic {
+        top: 11.85px;
+        width: 11.853px;
+        height: 11.853px;
+      }
+
+      .empty-topbar .traffic.close {
+        left: 13.83px;
+      }
+
+      .empty-topbar .traffic.minimize {
+        left: 33.58px;
+      }
+
+      .empty-topbar .traffic.zoom {
+        left: 53.34px;
+      }
+
+      .empty-app-title {
+        display: none;
+      }
+
+      .variant[data-platform="windows"] .empty-app-title,
+      .variant[data-platform="linux"] .empty-app-title,
+      .variant[data-platform="web"] .empty-app-title {
+        display: none;
+      }
+
+      .empty-topbar .platform-title {
+        top: 8px;
+      }
+
+      .empty-topbar .caption-controls {
+        height: 35.56px;
+      }
+
+      .variant[data-platform="windows"] .empty-topbar .caption-controls span {
+        height: 35.56px;
+      }
+
+      .empty-command-field {
+        position: absolute;
+        left: 340.32px;
+        top: 3.95px;
+        width: 375.36px;
+        height: 27.66px;
+        overflow: hidden;
+        border: 0.988px solid var(--border);
+        border-radius: 6.915px;
+        background: var(--pane-bg);
+      }
+
+      .empty-command-field .search-icon {
+        position: absolute;
+        left: 7.9px;
+        top: 5.93px;
+        color: var(--muted);
+      }
+
+      .empty-command-field p {
+        position: absolute;
+        left: 28.65px;
+        top: 4.94px;
+        width: 292.39px;
+        margin: 0;
+        color: var(--muted);
+        font-family: var(--font-ui);
+        font-size: 11.853px;
+        font-weight: 400;
+        line-height: 15.805px;
+        white-space: nowrap;
+      }
+
+      .empty-command-field .shortcut {
+        left: 328.92px;
+        width: auto;
+        font-size: 10px;
+        line-height: 15px;
+      }
+
+      .empty-topbar-button {
+        position: absolute;
+        top: 4px;
+        display: grid;
+        place-items: center;
+        width: 27px;
+        height: 27px;
+        overflow: hidden;
+        border: 0.988px solid var(--border);
+        border-radius: 6.915px;
+        background: var(--topbar-bg);
+        color: var(--muted);
+      }
+
+      .empty-topbar-button.sync {
+        left: 724px;
+        background: var(--accent-bg);
+        color: var(--accent);
+      }
+
+      .empty-topbar-button.add-pane {
+        left: 758px;
+      }
+
+      .empty-body {
+        position: absolute;
+        left: 0;
+        top: 35.56px;
+        width: 1056px;
+        height: 560.44px;
+        overflow: hidden;
+        background: var(--pane-bg);
+      }
+
+      .empty-body .activity-rail {
+        left: 0;
+        top: 0;
+        height: 560.44px;
+      }
+
+      .empty-body .rail-border {
+        height: 560.44px;
+      }
+
+      .empty-body .rail-button.settings {
+        top: auto;
+        bottom: 7px;
+        left: 6px;
+      }
+
+      .empty-drop-zone {
+        position: absolute;
+        left: 316px;
+        top: 165px;
+        width: 460px;
+        height: 230px;
+        overflow: hidden;
+        border: 1px dashed var(--border);
+        border-radius: 12px;
+        background: #fbfbfd;
+      }
+
+      .variant[data-theme="dark"] .empty-drop-zone,
+      .variant[data-theme="dark"] .left-panel {
+        background: #25262a;
+      }
+
+      .empty-drop-icon {
+        position: absolute;
+        left: 204px;
+        top: 53px;
+        width: 34px;
+        height: 34px;
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 1.8;
+        color: var(--accent);
+      }
+
+      .empty-drop-zone h3 {
+        position: absolute;
+        left: 169px;
+        top: 103px;
+        margin: 0;
+        color: var(--text);
+        font-family: var(--font-ui);
+        font-size: 20px;
+        font-weight: 600;
+        line-height: 28px;
+        white-space: nowrap;
+      }
+
+      .empty-drop-zone p {
+        position: absolute;
+        left: 115px;
+        top: 137px;
+        width: 260px;
+        margin: 0;
+        color: var(--muted);
+        font-family: var(--font-ui);
+        font-size: 13px;
+        font-weight: 400;
+        line-height: 18px;
+        white-space: nowrap;
+      }
+
+      .empty-primary-button {
+        position: absolute;
+        left: 159px;
+        top: 173px;
+        width: 142px;
+        height: 34px;
+        overflow: hidden;
+        border-radius: 7px;
+        background: var(--accent);
+        color: #ffffff;
+      }
+
+      .empty-primary-button svg {
+        position: absolute;
+        left: 14px;
+        top: 9px;
+        width: 16px;
+        height: 16px;
+      }
+
+      .empty-primary-button span {
+        position: absolute;
+        left: 40px;
+        top: 9px;
+        font-family: var(--font-ui);
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 16px;
+        white-space: nowrap;
+      }
+
+      .topbar {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1375px;
+        height: 35.56px;
+        overflow: hidden;
+        background: var(--topbar-bg);
+      }
+
+      .topbar-border,
+      .status-border,
+      .rail-border,
+      .header-line {
+        position: absolute;
+        background: var(--border);
+      }
+
+      .topbar-border {
+        left: 0;
+        top: 34.57px;
+        width: 1375px;
+        height: 0.988px;
+      }
+
+      .traffic {
+        position: absolute;
+        top: 11.85px;
+        width: 11.853px;
+        height: 11.853px;
+        border-radius: 50%;
+        box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.13);
+      }
+
+      .traffic.close {
+        left: 13.83px;
+        background: #ff5f57;
+      }
+
+      .traffic.minimize {
+        left: 33.58px;
+        background: #febc2e;
+      }
+
+      .traffic.zoom {
+        left: 53.34px;
+        background: #28c840;
+      }
+
+      .platform-title {
+        position: absolute;
+        display: none;
+        left: 13.83px;
+        top: 8px;
+        margin: 0;
+        color: var(--text);
+        font-family: var(--font-ui);
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 18px;
+        white-space: nowrap;
+      }
+
+      .caption-controls {
+        position: absolute;
+        display: none;
+        right: 0;
+        top: 0;
+        height: 35.56px;
+      }
+
+      .caption-controls span {
+        display: grid;
+        place-items: center;
+        color: var(--muted);
+        font-family: var(--font-ui);
+        font-size: 13px;
+        line-height: 1;
+      }
+
+      .variant[data-platform="windows"] .traffic,
+      .variant[data-platform="linux"] .traffic,
+      .variant[data-platform="web"] .traffic {
+        display: none;
+      }
+
+      .variant[data-platform="windows"] .platform-title,
+      .variant[data-platform="linux"] .platform-title,
+      .variant[data-platform="web"] .platform-title {
+        display: block;
+      }
+
+      .variant[data-platform="windows"] .caption-controls,
+      .variant[data-platform="linux"] .caption-controls {
+        display: flex;
+      }
+
+      .variant[data-platform="windows"] .caption-controls span {
+        width: 46px;
+        height: 35.56px;
+      }
+
+      .variant[data-platform="windows"] .caption-close {
+        color: #c42b1c;
+      }
+
+      .variant[data-platform="linux"] .caption-controls {
+        align-items: center;
+        right: 12px;
+        gap: 8px;
+      }
+
+      .variant[data-platform="linux"] .caption-controls span {
+        width: 18px;
+        height: 18px;
+        border: 0.5px solid var(--border);
+        border-radius: 50%;
+        background: var(--tag-bg);
+        font-size: 10px;
+      }
+
+      .variant[data-platform="web"] .window {
+        border-radius: 0;
+        box-shadow: none;
+      }
+
+      .variant[data-platform="web"] .empty-window {
+        border-radius: 0;
+        box-shadow: none;
+      }
+
+      .button,
+      .rail-button,
+      .pane-button {
+        position: absolute;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+        border: 0.988px solid var(--border);
+        color: var(--muted);
+      }
+
+      .button {
+        top: 4px;
+        width: 27px;
+        height: 27px;
+        border-radius: 6.915px;
+        background: var(--topbar-bg);
+      }
+
+      .button.sync {
+        left: 883px;
+        background: var(--accent-bg);
+        color: var(--accent);
+      }
+
+      .button.add-pane {
+        left: 917px;
+      }
+
+      .command-field {
+        position: absolute;
+        left: 499.82px;
+        top: 3.95px;
+        width: 375.36px;
+        height: 27.66px;
+        overflow: hidden;
+        border: 0.988px solid var(--border);
+        border-radius: 6.915px;
+        background: var(--pane-bg);
+      }
+
+      .command-field .search-icon {
+        position: absolute;
+        left: 7.9px;
+        top: 5.93px;
+        color: var(--muted);
+      }
+
+      .command-field p,
+      .pane-search-field p {
+        position: absolute;
+        margin: 0;
+        color: var(--muted);
+        font-family: var(--font-ui);
+        font-size: 11.853px;
+        font-weight: 400;
+        line-height: 15.805px;
+        white-space: nowrap;
+      }
+
+      .command-field p {
+        left: 28.65px;
+        top: 4.94px;
+      }
+
+      .app-body {
+        position: absolute;
+        left: 0;
+        top: 35.56px;
+        width: 1375px;
+        height: 762.57px;
+        overflow: hidden;
+        background: var(--pane-bg);
+      }
+
+      .activity-rail {
+        position: absolute;
+        left: 0.01px;
+        top: 0.74px;
+        width: 40px;
+        height: 762px;
+        overflow: hidden;
+        background: var(--rail-bg);
+      }
+
+      .rail-border {
+        left: 38.5px;
+        top: 0;
+        width: 0.987px;
+        height: 762.02px;
+      }
+
+      .rail-button {
+        left: 5.99px;
+        width: 27px;
+        height: 27px;
+        border-width: 0.987px;
+        border-radius: 6.909px;
+        background: var(--topbar-bg);
+      }
+
+      .rail-button.search {
+        top: 9.7px;
+      }
+
+      .rail-button.filter {
+        top: 43.7px;
+      }
+
+      .rail-button.palette {
+        top: 76.7px;
+      }
+
+      .rail-button.files {
+        top: 110.7px;
+      }
+
+      .rail-button.bookmark {
+        top: 143.7px;
+      }
+
+      .rail-button.settings {
+        left: 4.99px;
+        top: 729.7px;
+      }
+
+      .workspace {
+        position: absolute;
+        left: 40.03px;
+        top: 0.47px;
+        width: 1335.97px;
+        height: 762.55px;
+        overflow: hidden;
+        background: var(--pane-bg);
+      }
+
+      .left-panel-open .workspace {
+        left: 300.01px;
+        width: 1074.99px;
+      }
+
+      .left-panel-open .rail-button.search {
+        background: var(--accent-bg);
+        color: var(--accent);
+      }
+
+      .left-panel {
+        position: absolute;
+        left: 40.01px;
+        top: 0.74px;
+        width: 260px;
+        height: 762px;
+        overflow: hidden;
+        background: #fbfbfd;
+      }
+
+      .left-panel-border {
+        position: absolute;
+        left: 259px;
+        top: 0;
+        width: 1px;
+        height: 762px;
+        background: var(--border);
+      }
+
+      .left-panel-title,
+      .left-panel-section-title,
+      .left-panel-result-title,
+      .source-title {
+        position: absolute;
+        margin: 0;
+        color: var(--text);
+        font-family: var(--font-ui);
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      .left-panel-title {
+        left: 16px;
+        top: 16px;
+        font-size: 13px;
+        line-height: 18px;
+      }
+
+      .left-panel-action {
+        position: absolute;
+        left: 216px;
+        top: 10px;
+        display: grid;
+        place-items: center;
+        width: 28px;
+        height: 28px;
+        overflow: hidden;
+        border: 0.987px solid var(--border);
+        border-radius: 6.909px;
+        background: var(--topbar-bg);
+        color: var(--muted);
+      }
+
+      .panel-search-field {
+        position: absolute;
+        left: 16px;
+        top: 52px;
+        width: 228px;
+        height: 28px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        background: var(--pane-bg);
+      }
+
+      .panel-search-field .search-icon {
+        position: absolute;
+        left: 8px;
+        top: 6px;
+        color: var(--muted);
+      }
+
+      .panel-search-field p,
+      .left-panel-result-body,
+      .source-subtitle {
+        position: absolute;
+        margin: 0;
+        color: var(--muted);
+        font-family: var(--font-ui);
+        font-weight: 400;
+      }
+
+      .panel-search-field p {
+        left: 29px;
+        top: 5px;
+        width: 144px;
+        font-size: 12px;
+        line-height: 16px;
+        white-space: nowrap;
+      }
+
+      .panel-tag {
+        position: absolute;
+        top: 81.7px;
+        width: 32px;
+        height: 20px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--tag-bg);
+      }
+
+      .panel-tag.aa {
+        left: 176.99px;
+      }
+
+      .panel-tag.regex {
+        left: 211.99px;
+        border-color: var(--accent-bg);
+        background: var(--accent-bg);
+      }
+
+      .panel-tag p {
+        position: absolute;
+        left: 6px;
+        top: 2px;
+        margin: 0;
+        color: var(--muted);
+        font-family: var(--font-ui);
+        font-size: 10px;
+        font-weight: 500;
+        line-height: 14px;
+        white-space: nowrap;
+      }
+
+      .panel-tag.regex p {
+        color: var(--accent);
+      }
+
+      .panel-results {
+        position: absolute;
+        left: 15.99px;
+        top: 103.7px;
+        width: 228px;
+        height: 91px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--pane-bg);
+      }
+
+      .left-panel-result-title {
+        left: 11px;
+        width: 190px;
+        font-size: 11px;
+        line-height: 14px;
+      }
+
+      .left-panel-result-title.first-result {
+        top: 9px;
+      }
+
+      .left-panel-result-title.second-result {
+        top: 50.7px;
+      }
+
+      .left-panel-result-body {
+        left: 11px;
+        width: 190px;
+        font-size: 10px;
+        line-height: 13px;
+      }
+
+      .left-panel-result-body.first-result {
+        top: 27px;
+      }
+
+      .left-panel-result-body.second-result {
+        top: 66.7px;
+      }
+
+      .panel-result-divider {
+        position: absolute;
+        left: 12.99px;
+        top: 45.7px;
+        width: 204px;
+        height: 1px;
+        background: var(--border);
+      }
+
+      .left-panel-section-title {
+        left: 16px;
+        top: 320px;
+        font-size: 12px;
+        line-height: 16px;
+      }
+
+      .left-panel-source {
+        position: absolute;
+        left: 16px;
+        width: 228px;
+        height: 40px;
+        overflow: hidden;
+        border-radius: 7px;
+      }
+
+      .left-panel-source.selected {
+        top: 350px;
+        background: #e7f1ff;
+      }
+
+      .variant[data-theme="dark"] .left-panel-source.selected {
+        background: rgba(10, 132, 255, 0.2);
+      }
+
+      .left-panel-source.secondary {
+        top: 398px;
+      }
+
+      .left-panel-source .folder-icon {
+        position: absolute;
+        left: 10px;
+        top: 12px;
+        width: 15px;
+        height: 15px;
+        color: var(--accent);
+      }
+
+      .left-panel-source.secondary .folder-icon {
+        color: var(--muted);
+      }
+
+      .source-title {
+        left: 34px;
+        top: 6px;
+        width: 140px;
+        font-size: 11px;
+        line-height: 15px;
+      }
+
+      .source-subtitle {
+        left: 34px;
+        top: 22px;
+        width: 150px;
+        font-size: 10px;
+        line-height: 13px;
+        white-space: nowrap;
+      }
+
+      .workspace-scrollbar {
+        position: absolute;
+        left: 11.85px;
+        top: 742.82px;
+        width: 1311.78px;
+        height: 7.902px;
+        overflow: hidden;
+        border-radius: 3.951px;
+        background: var(--scroll-track);
+      }
+
+      .left-panel-open .workspace-scrollbar {
+        width: 1050.8px;
+      }
+
+      .workspace-scrollbar .thumb {
+        position: absolute;
+        left: 404.99px;
+        top: 0;
+        width: 493.89px;
+        height: 7.902px;
+        border-radius: 3.951px;
+        background: var(--scroll-thumb);
+      }
+
+      .left-panel-open .workspace-scrollbar .thumb {
+        left: 324.42px;
+        width: 395.63px;
+      }
+
+      .resize-one {
+        position: absolute;
+        left: 0;
+        top: 0.27px;
+        width: 0.988px;
+        height: 732.94px;
+        background: var(--border);
+      }
+
+      .resize-two {
+        position: absolute;
+        left: 877.16px;
+        top: 366.47px;
+        width: 1px;
+        height: 1px;
+        background: var(--border);
+      }
+
+      .pane {
+        position: absolute;
+        top: 0;
+        width: 444px;
+        height: 732px;
+        overflow: hidden;
+        border: 0.988px solid var(--border);
+        background: var(--pane-bg);
+      }
+
+      .pane.idea {
+        left: 0;
+      }
+
+      .pane.first {
+        left: 443.97px;
+        top: -0.03px;
+      }
+
+      .pane.second {
+        left: 888px;
+      }
+
+      .viewport {
+        position: absolute;
+        left: 0;
+        top: 55px;
+        width: 444px;
+        height: 660px;
+        overflow: hidden;
+        background: var(--pane-bg);
+      }
+
+      .pane-header {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 444px;
+        height: 55px;
+      }
+
+      .header-line {
+        left: 1px;
+        top: 54px;
+        width: 444px;
+        height: 1px;
+      }
+
+      .pane.second .header-line {
+        width: 442px;
+      }
+
+      .active-top-border {
+        position: absolute;
+        left: 1px;
+        top: 0;
+        width: 444px;
+        height: 1.976px;
+        background: var(--accent);
+      }
+
+      .pane-title,
+      .current-file,
+      .offset-tag,
+      .pane-find {
+        position: absolute;
+      }
+
+      .pane-title {
+        top: 0;
+        height: 18px;
+      }
+
+      .pane-title.idea {
+        left: 186.97px;
+        top: 14.7px;
+        width: 78px;
+      }
+
+      .pane-title.first {
+        left: 169.97px;
+        width: 104px;
+      }
+
+      .pane-title.second {
+        left: 160px;
+        width: 123px;
+      }
+
+      .file-icon,
+      .folder-icon {
+        position: absolute;
+        left: 0;
+        color: var(--text);
+      }
+
+      .file-icon {
+        top: 0;
+        width: 14px;
+        height: 14px;
+      }
+
+      .folder-icon {
+        top: 2px;
+        width: 13.829px;
+        height: 13.829px;
+      }
+
+      .pane-title p,
+      .current-file p {
+        position: absolute;
+        margin: 0;
+        color: var(--text);
+        font-family: var(--font-ui);
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      .pane-title p {
+        left: 15px;
+        top: 0;
+        font-size: 12.841px;
+        line-height: 17.78px;
+      }
+
+      .pane-title.idea p {
+        font-size: 13px;
+      }
+
+      .current-file {
+        top: 17.7px;
+        width: 130px;
+        height: 15px;
+      }
+
+      .current-file.first {
+        left: 156.97px;
+      }
+
+      .current-file.second {
+        left: 167px;
+        top: 18px;
+        width: 110px;
+      }
+
+      .current-file p {
+        left: 15px;
+        top: 0;
+        font-size: 10px;
+        line-height: 14.817px;
+      }
+
+      .live-dot {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #20c933;
+      }
+
+      .pane-title.idea .live-dot {
+        left: 73px;
+        top: 6px;
+      }
+
+      .current-file .live-dot {
+        left: 116px;
+        top: 3px;
+      }
+
+      .pane-button {
+        width: 27px;
+        height: 27px;
+        border-radius: 6.915px;
+        background: var(--topbar-bg);
+      }
+
+      .pane-button.close-pane {
+        left: 417px;
+        top: 3px;
+        width: 25px;
+        height: 25px;
+      }
+
+      .pane.second .pane-button.close-pane {
+        left: 416px;
+      }
+
+      .pane-button.prev {
+        left: 6.03px;
+        top: 25.3px;
+      }
+
+      .pane-button.next {
+        left: 393px;
+        top: 25px;
+      }
+
+      .pane.second .pane-button.next {
+        left: 391px;
+      }
+
+      .offset-tag {
+        left: 156.97px;
+        top: 32.7px;
+        width: 140px;
+        height: 15px;
+        overflow: hidden;
+        border-radius: 9.878px;
+        background: var(--tag-bg);
+        cursor: pointer;
+      }
+
+      .pane.idea .offset-tag,
+      .pane.first .offset-tag,
+      .pane.second .offset-tag {
+        left: 151.97px;
+      }
+
+      .pane.second .offset-tag {
+        top: 32.97px;
+      }
+
+      .offset-tag p {
+        position: absolute;
+        left: 0;
+        top: 2px;
+        width: 140px;
+        margin: 0;
+        color: var(--text);
+        font-family: var(--font-ui);
+        font-size: 10px;
+        font-weight: 500;
+        line-height: 12px;
+        text-align: center;
+        white-space: nowrap;
+      }
+
+      .pane-find {
+        left: 296px;
+        top: 32.97px;
+        width: 15px;
+        height: 15px;
+        color: var(--muted);
+        cursor: pointer;
+      }
+
+      .pane.second .pane-find {
+        left: 295px;
+      }
+
+      .row-bg {
+        position: absolute;
+        left: 0;
+        width: 418.82px;
+        height: 19.756px;
+      }
+
+      .row-bg.sync {
+        background: var(--accent-bg);
+      }
+
+      .row-bg.warn {
+        background: var(--warn-bg);
+      }
+
+      .row-bg.error {
+        background: var(--error-bg);
+      }
+
+      .log-text {
+        position: absolute;
+        margin: 0;
+        font-family: var(--font-log);
+        font-size: 10.866px;
+        line-height: 15.805px;
+        white-space: nowrap;
+      }
+
+      .line-number {
+        left: 9.88px;
+        color: var(--line-number);
+        font-weight: 400;
+      }
+
+      .timestamp {
+        left: 57.29px;
+        color: var(--accent);
+        font-weight: 500;
+      }
+
+      .severity {
+        left: 215.34px;
+        color: var(--accent);
+        font-weight: 500;
+      }
+
+      .severity.warn {
+        color: var(--warn-text);
+      }
+
+      .severity.error {
+        color: var(--error-text);
+      }
+
+      .message {
+        left: 272.63px;
+        color: var(--text);
+        font-weight: 400;
+      }
+
+      .t1 {
+        top: 9.88px;
+      }
+
+      .t2 {
+        top: 31.61px;
+      }
+
+      .t3 {
+        top: 53.34px;
+      }
+
+      .t4 {
+        top: 75.07px;
+      }
+
+      .t5 {
+        top: 96.8px;
+      }
+
+      .t6 {
+        top: 118.53px;
+      }
+
+      .time-offset-popover {
+        position: absolute;
+        left: 70.97px;
+        top: 54.97px;
+        width: 302.22px;
+        height: 114.08px;
+        overflow: hidden;
+        border: 0.974px solid var(--border);
+        border-radius: 9.739px;
+        background: var(--pane-bg);
+        box-shadow: 0 9.739px 27.27px rgba(0, 0, 0, 0.15);
+      }
+
+      .time-offset-popover .title-icon {
+        position: absolute;
+        left: 10.71px;
+        top: 10.71px;
+        color: var(--text);
+      }
+
+      .popover-title {
+        position: absolute;
+        left: 32.14px;
+        top: 8.77px;
+        margin: 0;
+        color: var(--text);
+        font-family: var(--font-ui);
+        font-size: 12.661px;
+        font-weight: 600;
+        line-height: 17.531px;
+        white-space: nowrap;
+      }
+
+      .popover-source,
+      .offset-label {
+        position: absolute;
+        margin: 0;
+        color: var(--muted);
+        font-family: var(--font-ui);
+        font-size: 9.739px;
+        font-weight: 400;
+        line-height: 12.661px;
+        white-space: nowrap;
+      }
+
+      .popover-source {
+        left: 224.98px;
+        top: 10.71px;
+      }
+
+      .offset-input {
+        position: absolute;
+        top: 55.51px;
+        width: 50.644px;
+        height: 25.322px;
+        overflow: hidden;
+        border: 0.974px solid var(--border);
+        border-radius: 5.844px;
+        background: var(--pane-bg);
+      }
+
+      .offset-input p {
+        position: absolute;
+        left: 34.09px;
+        top: 4.87px;
+        margin: 0;
+        color: var(--text);
+        font-family: var(--font-ui);
+        font-size: 10.713px;
+        line-height: 13.635px;
+      }
+
+      .apply-button {
+        position: absolute;
+        left: 236.66px;
+        top: 84.73px;
+        width: 50.644px;
+        height: 25.322px;
+        overflow: hidden;
+        border-radius: 5.844px;
+        background: var(--accent);
+      }
+
+      .apply-button p {
+        position: absolute;
+        left: 11.69px;
+        top: 5.84px;
+        margin: 0;
+        color: #ffffff;
+        font-family: var(--font-ui);
+        font-size: 10.713px;
+        font-weight: 600;
+        line-height: 13.635px;
+        white-space: nowrap;
+      }
+
+      .pane-search-popover {
+        position: absolute;
+        left: 532.97px;
+        top: 57.97px;
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        width: 351px;
+        height: 37px;
+        overflow: hidden;
+        padding: 5px 6px;
+        border: 0.988px solid var(--border);
+        border-radius: 9.878px;
+        background: var(--pane-bg);
+        box-shadow: 0 7.902px 23.707px rgba(0, 0, 0, 0.12);
+      }
+
+      .pane-search-field {
+        position: relative;
+        flex: 0 0 auto;
+        width: 170px;
+        height: 25px;
+        overflow: hidden;
+        border: 0.988px solid var(--border);
+        border-radius: 6.915px;
+        background: var(--pane-bg);
+      }
+
+      .pane-search-field .search-icon {
+        position: absolute;
+        left: 7.9px;
+        top: 5.93px;
+        color: var(--muted);
+      }
+
+      .pane-search-field p {
+        left: 28.65px;
+        top: 4.94px;
+      }
+
+      .search-button {
+        position: relative;
+        flex: 0 0 auto;
+        display: grid;
+        place-items: center;
+        width: 27px;
+        height: 27px;
+        overflow: hidden;
+        border: 0.988px solid var(--border);
+        border-radius: 6.915px;
+        background: var(--topbar-bg);
+        color: var(--muted);
+      }
+
+      .search-button.next {
+        background: var(--accent-bg);
+        color: var(--accent);
+      }
+
+      .search-tag {
+        position: relative;
+        flex: 0 0 auto;
+        height: 18px;
+        overflow: hidden;
+        border: 0.988px solid var(--border);
+        border-radius: 9.878px;
+        background: var(--tag-bg);
+      }
+
+      .search-tag.aa,
+      .search-tag.regex {
+        width: 32px;
+      }
+
+      .search-tag.count {
+        width: 41px;
+      }
+
+      .search-tag.regex {
+        border-color: var(--accent-bg);
+        background: var(--accent-bg);
+      }
+
+      .search-tag p {
+        position: absolute;
+        top: 1.98px;
+        margin: 0;
+        color: var(--muted);
+        font-family: var(--font-ui);
+        font-size: 9.878px;
+        font-weight: 500;
+        line-height: 13.829px;
+        white-space: nowrap;
+      }
+
+      .search-tag.aa p,
+      .search-tag.regex p {
+        left: 5.93px;
+      }
+
+      .search-tag.regex p {
+        color: var(--accent);
+      }
+
+      .search-tag.count p {
+        left: 10px;
+      }
+
+      .is-hidden {
+        display: none !important;
+      }
+
+      .popover-components {
+        display: flex;
+        align-items: flex-start;
+        gap: 24px;
+        margin-top: 18px;
+        padding: 16px;
+        border: 0.5px solid rgba(0, 0, 0, 0.09);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.48);
+      }
+
+      body[data-theme="dark"] .popover-components {
+        border-color: rgba(255, 255, 255, 0.09);
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .popover-reference {
+        min-width: 0;
+      }
+
+      .popover-reference h3 {
+        margin: 0 0 10px;
+        color: #1d1d1f;
+        font-family: var(--font-ui);
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 16px;
+      }
+
+      body[data-theme="dark"] .popover-reference h3 {
+        color: #f5f5f7;
+      }
+
+      .popover-components .time-offset-popover,
+      .popover-components .pane-search-popover {
+        position: relative;
+        left: auto;
+        top: auto;
+      }
+
+      .statusbar {
+        position: absolute;
+        left: 0;
+        top: 798.59px;
+        width: 1375px;
+        height: 27px;
+        overflow: hidden;
+        background: var(--rail-bg);
+      }
+
+      .status-border {
+        left: 0;
+        top: 0;
+        width: 1374px;
+        height: 0.987px;
+      }
+
+      .statusbar p {
+        position: absolute;
+        left: 13.82px;
+        top: 6.91px;
+        margin: 0;
+        color: var(--muted);
+        font-family: var(--font-ui);
+        font-size: 10.858px;
+        font-weight: 400;
+        line-height: 13.819px;
+        white-space: nowrap;
+      }
+    </style>
+  </head>
+  <body data-theme="light" data-platform="macos">
+    <svg class="symbols" aria-hidden="true">
+      <symbol id="search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></symbol>
+      <symbol id="sync" viewBox="0 0 24 24"><path d="M19 6v5h-5"></path><path d="M5 18v-5h5"></path><path d="M17.4 10A6 6 0 0 0 7 6.8L5 10"></path><path d="M6.6 14A6 6 0 0 0 17 17.2L19 14"></path></symbol>
+      <symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14"></path><path d="M5 12h14"></path></symbol>
+      <symbol id="filter" viewBox="0 0 24 24"><path d="M4 6h16"></path><path d="M7 12h10"></path><path d="M10 18h4"></path></symbol>
+      <symbol id="palette" viewBox="0 0 24 24"><path d="M12 4a8 8 0 0 0 0 16h1.5a2 2 0 0 0 1.2-3.6c-.7-.5-.3-1.4.5-1.4H17a3 3 0 0 0 3-3 8 8 0 0 0-8-8Z"></path><circle cx="8.5" cy="10" r=".7"></circle><circle cx="11.5" cy="7.5" r=".7"></circle><circle cx="15" cy="10" r=".7"></circle></symbol>
+      <symbol id="file" viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7z"></path><path d="M14 3v5h4"></path></symbol>
+      <symbol id="folder" viewBox="0 0 24 24"><path d="M3.5 7h6l2 2h9v9.5a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2Z"></path></symbol>
+      <symbol id="bookmark" viewBox="0 0 24 24"><path d="M7 4h10v16l-5-3-5 3z"></path></symbol>
+      <symbol id="settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"></circle><path d="M19 12a7 7 0 0 0-.1-1.1l2-1.5-2-3.4-2.4 1a7 7 0 0 0-1.8-1L14.3 3H9.7L9.4 6a7 7 0 0 0-1.8 1L5.2 6l-2 3.4 2 1.5A7 7 0 0 0 5 12c0 .4 0 .8.2 1.1l-2 1.5 2 3.4 2.4-1a7 7 0 0 0 1.8 1l.3 3h4.6l.3-3a7 7 0 0 0 1.8-1l2.4 1 2-3.4-2-1.5c.1-.3.2-.7.2-1.1Z"></path></symbol>
+      <symbol id="close" viewBox="0 0 24 24"><path d="M7 7l10 10"></path><path d="M17 7 7 17"></path></symbol>
+      <symbol id="prev" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"></path></symbol>
+      <symbol id="next" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"></path></symbol>
+      <symbol id="clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7.5V12l3 2"></path></symbol>
+    </svg>
+
+    <div class="mockup-page">
+    <header class="catalog-header">
+      <div>
+        <h1>Crosslog Figma Activity Rail Mockup</h1>
+        <p class="subtitle">Direct HTML transfer of the Figma Activity Rail frame with platform and theme switches.</p>
+      </div>
+      <div class="mockup-controls" aria-label="Mockup controls">
+        <div class="segmented" aria-label="Theme">
+          <button type="button" data-theme-button="light" aria-pressed="true">Light</button>
+          <button type="button" data-theme-button="dark" aria-pressed="false">Dark</button>
+        </div>
+        <div class="segmented" aria-label="Platform">
+          <button type="button" data-platform-button="macos" aria-pressed="true">macOS</button>
+          <button type="button" data-platform-button="windows" aria-pressed="false">Windows</button>
+          <button type="button" data-platform-button="linux" aria-pressed="false">Linux</button>
+          <button type="button" data-platform-button="web" aria-pressed="false">Web</button>
+        </div>
+      </div>
+    </header>
+    <section class="variant" data-platform="macos" data-theme="light" data-screen-label="Screen / Empty Workspace - Light">
+    <h2 class="variant-title">Screen / Empty Workspace - Light - macOS Light</h2>
+    <main class="screen empty-screen" data-node-id="8:2" data-name="Screen / Empty Workspace - Light">
+      <section class="empty-window" data-node-id="8:3" data-name="Empty Window">
+        <div class="empty-topbar" data-node-id="8:4" data-name="Empty/Toolbar">
+          <div class="empty-topbar-border" data-node-id="8:5"></div>
+          <div class="traffic close" data-node-id="8:6"></div>
+          <div class="traffic minimize" data-node-id="8:7"></div>
+          <div class="traffic zoom" data-node-id="8:8"></div>
+          <p class="empty-app-title" data-node-id="8:9">Crosslog</p>
+          <p class="platform-title">Crosslog</p>
+          <div class="caption-controls" aria-hidden="true">
+            <span class="caption-minimize">-</span>
+            <span class="caption-maximize">[]</span>
+            <span class="caption-close">x</span>
+          </div>
+          <div class="empty-command-field" data-node-id="8:10">
+            <svg class="icon small search-icon"><use href="#search"></use></svg>
+            <p>Command or workspace search</p>
+            <p class="shortcut">Cmd K</p>
+          </div>
+          <div class="empty-topbar-button sync" data-node-id="8:16"><svg class="icon"><use href="#sync"></use></svg></div>
+          <div class="empty-topbar-button add-pane" data-name="Empty/Add Pane"><svg class="icon"><use href="#plus"></use></svg></div>
+        </div>
+        <div class="empty-body" data-node-id="8:23" data-name="Empty Body">
+          <section class="empty-drop-zone" data-node-id="8:30" data-name="Drop Zone">
+            <svg class="empty-drop-icon"><use href="#folder"></use></svg>
+            <h3 data-node-id="8:33">Drop logs here</h3>
+            <p data-node-id="8:34">Open a file or directory into the first pane.</p>
+            <div class="empty-primary-button" data-node-id="8:35">
+              <svg class="icon"><use href="#folder"></use></svg>
+              <span>Open Source</span>
+            </div>
+          </section>
+          <aside class="activity-rail" data-node-id="58:355" data-name="Activity Rail">
+            <div class="rail-border" data-node-id="58:356"></div>
+            <div class="rail-button search" data-node-id="58:357"><svg class="icon"><use href="#search"></use></svg></div>
+            <div class="rail-button filter" data-node-id="58:361"><svg class="icon"><use href="#filter"></use></svg></div>
+            <div class="rail-button palette" data-node-id="58:364"><svg class="icon"><use href="#palette"></use></svg></div>
+            <div class="rail-button files" data-node-id="58:370"><svg class="icon"><use href="#file"></use></svg></div>
+            <div class="rail-button bookmark" data-node-id="58:374"><svg class="icon"><use href="#bookmark"></use></svg></div>
+            <div class="rail-button settings" data-node-id="58:377"><svg class="icon"><use href="#settings"></use></svg></div>
+          </aside>
+        </div>
+      </section>
+    </main>
+    </section>
+
+    <section class="variant" data-platform="macos" data-theme="light" data-screen-label="Screen / Draft Layout - Activity Rail">
+    <h2 class="variant-title">Screen / Draft Layout - Activity Rail - macOS Light</h2>
+    <main class="screen" data-node-id="11:2" data-name="Screen / Draft Layout - Activity Rail">
+      <section class="window" data-node-id="11:3" data-name="Crosslog Window">
+        <div class="topbar" data-node-id="11:4" data-name="Topbar">
+          <div class="topbar-border" data-node-id="11:5"></div>
+          <div class="traffic close" data-node-id="11:6"></div>
+          <div class="traffic minimize" data-node-id="11:7"></div>
+          <div class="traffic zoom" data-node-id="11:8"></div>
+          <p class="platform-title">Crosslog</p>
+          <div class="caption-controls" aria-hidden="true">
+            <span class="caption-minimize">-</span>
+            <span class="caption-maximize">[]</span>
+            <span class="caption-close">x</span>
+          </div>
+          <div class="command-field" data-node-id="11:9">
+            <svg class="icon small search-icon"><use href="#search"></use></svg>
+            <p>Command or workspace search</p>
+          </div>
+          <div class="button sync" data-node-id="11:15"><svg class="icon"><use href="#sync"></use></svg></div>
+          <div class="button add-pane" data-node-id="11:19"><svg class="icon"><use href="#plus"></use></svg></div>
+        </div>
+
+        <div class="app-body" data-node-id="11:22" data-name="App Body">
+          <aside class="activity-rail" data-node-id="11:23" data-name="Activity Rail">
+            <div class="rail-border" data-node-id="11:24"></div>
+            <div class="rail-button search" data-node-id="11:25"><svg class="icon"><use href="#search"></use></svg></div>
+            <div class="rail-button filter" data-node-id="11:29"><svg class="icon"><use href="#filter"></use></svg></div>
+            <div class="rail-button palette" data-node-id="11:32"><svg class="icon"><use href="#palette"></use></svg></div>
+            <div class="rail-button files" data-node-id="11:38"><svg class="icon"><use href="#file"></use></svg></div>
+            <div class="rail-button bookmark" data-node-id="11:42"><svg class="icon"><use href="#bookmark"></use></svg></div>
+            <div class="rail-button settings" data-node-id="11:45"><svg class="icon"><use href="#settings"></use></svg></div>
+          </aside>
+
+          <section class="workspace" data-node-id="11:49" data-name="Pane Workspace">
+            <div class="workspace-scrollbar" data-node-id="11:196"><div class="thumb" data-node-id="11:197"></div></div>
+            <div class="resize-one" data-node-id="11:92"></div>
+            <div class="resize-two" data-node-id="11:143"></div>
+
+            <section class="pane second" data-node-id="11:144" data-name="Log Pane/Second Directory">
+              <div class="viewport" data-node-id="11:167">
+                <p class="log-text line-number t1">4402</p><p class="log-text timestamp t1">2026-06-09 11:15:35.256</p><p class="log-text severity t1">INFO</p><p class="log-text message t1">daemon connected pid=5365 port=63343 workspace=Crosslog</p>
+                <p class="log-text line-number t2">4403</p><p class="log-text timestamp t2">2026-06-09 11:15:35.301</p><p class="log-text severity t2">INFO</p><p class="log-text message t2">Received sync target timestamp=11:15:18.256 offset=-2400ms</p>
+                <div class="row-bg warn" style="top: 51.36px"></div><p class="log-text line-number t3">4404</p><p class="log-text timestamp t3">2026-06-09 11:15:35.337</p><p class="log-text severity warn t3">WARN</p><p class="log-text message t3">Untimed line excluded from anchor calculation</p>
+                <div class="row-bg error" style="top: 73.1px"></div><p class="log-text line-number t4">4405</p><p class="log-text timestamp t4">2026-06-09 11:15:35.400</p><p class="log-text severity error t4">ERROR</p><p class="log-text message t4">Same trace observed trace=981f status=503</p>
+                <p class="log-text line-number t5">4406</p><p class="log-text timestamp t5">2026-06-09 11:15:35.441</p><p class="log-text severity t5">INFO</p><p class="log-text message t5">Directory file list refreshed files=18 newest=daemon-5367.log</p>
+              </div>
+              <header class="pane-header" data-node-id="11:166">
+                <div class="header-line"></div>
+                <div class="pane-title second"><svg class="icon small folder-icon"><use href="#folder"></use></svg><p>Second Directory</p></div>
+                <div class="current-file second"><svg class="icon file-icon"><use href="#file"></use></svg><p>daemon-5365.log</p></div>
+                <div class="pane-button close-pane"><svg class="icon"><use href="#close"></use></svg></div>
+                <div class="pane-button prev"><svg class="icon"><use href="#prev"></use></svg></div>
+                <div class="pane-button next"><svg class="icon"><use href="#next"></use></svg></div>
+                <div class="offset-tag" role="button" tabindex="0" data-popover-toggle="time"><p>+0000-00-00 00:00:02.400</p></div>
+                <svg class="icon pane-find" role="button" tabindex="0" data-popover-toggle="search"><use href="#search"></use></svg>
+              </header>
+            </section>
+
+            <section class="pane first" data-node-id="11:93" data-name="Log Pane/First Directory">
+              <div class="viewport" data-node-id="11:118">
+                <p class="log-text line-number t1">5710</p><p class="log-text timestamp t1">2026-06-09 11:15:18.256</p><p class="log-text severity t1">INFO</p><p class="log-text message t1">daemon connected pid=10770 port=63342 workspace=Crosslog</p>
+                <div class="row-bg sync" style="top: 29.63px"></div><p class="log-text line-number t2">5711</p><p class="log-text timestamp t2">2026-06-09 11:15:18.301</p><p class="log-text severity t2">INFO</p><p class="log-text message t2">Sync offset applied source=idea.log delta=-1801400ms</p>
+                <p class="log-text line-number t3">5712</p><p class="log-text timestamp t3">2026-06-09 11:15:18.344</p><p class="log-text severity t3">INFO</p><p class="log-text message t3">Workspace search indexed files=18 elapsed=92ms</p>
+                <div class="row-bg error" style="top: 73.1px"></div><p class="log-text line-number t4">5713</p><p class="log-text timestamp t4">2026-06-09 11:15:18.402</p><p class="log-text severity error t4">ERROR</p><p class="log-text message t4">daemon failed to parse response trace=981f status=503</p>
+                <p class="log-text line-number t5">5714</p><p class="log-text timestamp t5">2026-06-09 11:15:18.450</p><p class="log-text severity t5">INFO</p><p class="log-text message t5">Rotated candidate ignored file=daemon-10769.log</p>
+              </div>
+              <header class="pane-header" data-node-id="11:117">
+                <div class="header-line"></div>
+                <div class="pane-title first"><svg class="icon small folder-icon"><use href="#folder"></use></svg><p>First Directory</p></div>
+                <div class="current-file first"><svg class="icon file-icon"><use href="#file"></use></svg><p>daemon-10770.log</p><span class="live-dot"></span></div>
+                <div class="pane-button close-pane"><svg class="icon"><use href="#close"></use></svg></div>
+                <div class="pane-button prev"><svg class="icon"><use href="#prev"></use></svg></div>
+                <div class="pane-button next"><svg class="icon"><use href="#next"></use></svg></div>
+                <div class="offset-tag" role="button" tabindex="0" data-popover-toggle="time"><p>-0000-00-00 00:30:01.400</p></div>
+                <svg class="icon pane-find" role="button" tabindex="0" data-popover-toggle="search"><use href="#search"></use></svg>
+              </header>
+            </section>
+
+            <section class="pane idea" data-node-id="11:50" data-name="Log Pane/idea.log">
+              <div class="viewport" data-node-id="11:63">
+                <p class="log-text line-number t1">12018</p><p class="log-text timestamp t1">2026-06-09 11:15:13.859</p><p class="log-text severity t1">INFO</p><p class="log-text message t1">Project opened workspace=Crosslog source=local</p>
+                <p class="log-text line-number t2">12019</p><p class="log-text timestamp t2">2026-06-09 11:15:13.908</p><p class="log-text severity t2">INFO</p><p class="log-text message t2">Index snapshot ready modules=12 duration=48ms</p>
+                <div class="row-bg warn" style="top: 51.36px"></div><p class="log-text line-number t3">12020</p><p class="log-text timestamp t3">2026-06-09 11:15:13.944</p><p class="log-text severity warn t3">WARN</p><p class="log-text message t3">Slow file watcher event queue depth=140</p>
+                <p class="log-text line-number t4">12021</p><p class="log-text timestamp t4">2026-06-09 11:15:13.981</p><p class="log-text severity t4">INFO</p><p class="log-text message t4">Log stream appended bytes=8192 source=idea.log</p>
+                <p class="log-text line-number t5">12022</p><p class="log-text timestamp t5">2026-06-09 11:15:14.015</p><p class="log-text severity t5">INFO</p><p class="log-text message t5">Sync anchor selected pane=idea.log timestamp=11:15:13.859</p>
+                <div class="row-bg error" style="top: 116.56px"></div><p class="log-text line-number t6">12023</p><p class="log-text timestamp t6">2026-06-09 11:15:14.101</p><p class="log-text severity error t6">ERROR</p><p class="log-text message t6">Request failed trace=981f status=503 retryable=true</p>
+              </div>
+              <header class="pane-header" data-node-id="11:62">
+                <div class="header-line"></div>
+                <div class="active-top-border"></div>
+                <div class="pane-title idea"><svg class="icon file-icon"><use href="#file"></use></svg><p>idea.log</p><span class="live-dot"></span></div>
+                <div class="pane-button close-pane"><svg class="icon"><use href="#close"></use></svg></div>
+                <div class="offset-tag" role="button" tabindex="0" data-popover-toggle="time"><p>+0000-00-00 00:00:00.000</p></div>
+                <svg class="icon pane-find" role="button" tabindex="0" data-popover-toggle="search"><use href="#search"></use></svg>
+              </header>
+            </section>
+
+            <div class="time-offset-popover is-hidden" data-main-time-offset-popover data-node-id="11:202" data-name="Time Offset Popover">
+              <svg class="icon small title-icon"><use href="#clock"></use></svg>
+              <p class="popover-title">Time Offset</p>
+              <p class="popover-source">idea.log</p>
+              <p class="offset-label" style="left: 10.71px; top: 39.93px">Days</p>
+              <div class="offset-input" style="left: 10.71px"><p>0</p></div>
+              <p class="offset-label" style="left: 67.2px; top: 39.93px">Hours</p>
+              <div class="offset-input" style="left: 67.2px"><p>0</p></div>
+              <p class="offset-label" style="left: 123.69px; top: 39.93px">Min</p>
+              <div class="offset-input" style="left: 123.69px"><p>0</p></div>
+              <p class="offset-label" style="left: 180.18px; top: 39.93px">Sec</p>
+              <div class="offset-input" style="left: 180.18px"><p>0</p></div>
+              <p class="offset-label" style="left: 236.66px; top: 39.93px">Ms</p>
+              <div class="offset-input" style="left: 236.66px"><p>0</p></div>
+              <div class="apply-button"><p>Apply</p></div>
+            </div>
+
+            <div class="pane-search-popover is-hidden" data-main-pane-search-popover data-node-id="11:225" data-name="Pane Search Popover">
+              <div class="pane-search-field"><svg class="icon small search-icon"><use href="#search"></use></svg><p>Search</p></div>
+              <div class="search-button"><svg class="icon"><use href="#prev"></use></svg></div>
+              <div class="search-button next"><svg class="icon"><use href="#next"></use></svg></div>
+              <div class="search-tag aa"><p>Aa</p></div>
+              <div class="search-tag regex"><p>.*</p></div>
+              <div class="search-tag count"><p>4/12</p></div>
+            </div>
+          </section>
+        </div>
+
+        <footer class="statusbar" data-node-id="11:198" data-name="Status Bar">
+          <div class="status-border" data-node-id="11:199"></div>
+          <p data-node-id="11:200">3 panes, sync on, active: daemon-10770.log</p>
+        </footer>
+      </section>
+    </main>
+    <section class="popover-components" aria-label="Standalone popover components">
+      <div class="popover-reference">
+        <h3>Time Offset Popover</h3>
+        <div class="time-offset-popover" data-name="Standalone Time Offset Popover">
+          <svg class="icon small title-icon"><use href="#clock"></use></svg>
+          <p class="popover-title">Time Offset</p>
+          <p class="popover-source">idea.log</p>
+          <p class="offset-label" style="left: 10.71px; top: 39.93px">Days</p>
+          <div class="offset-input" style="left: 10.71px"><p>0</p></div>
+          <p class="offset-label" style="left: 67.2px; top: 39.93px">Hours</p>
+          <div class="offset-input" style="left: 67.2px"><p>0</p></div>
+          <p class="offset-label" style="left: 123.69px; top: 39.93px">Min</p>
+          <div class="offset-input" style="left: 123.69px"><p>0</p></div>
+          <p class="offset-label" style="left: 180.18px; top: 39.93px">Sec</p>
+          <div class="offset-input" style="left: 180.18px"><p>0</p></div>
+          <p class="offset-label" style="left: 236.66px; top: 39.93px">Ms</p>
+          <div class="offset-input" style="left: 236.66px"><p>0</p></div>
+          <div class="apply-button"><p>Apply</p></div>
+        </div>
+      </div>
+      <div class="popover-reference">
+        <h3>Pane Search Popover</h3>
+        <div class="pane-search-popover" data-name="Standalone Pane Search Popover">
+          <div class="pane-search-field"><svg class="icon small search-icon"><use href="#search"></use></svg><p>Search</p></div>
+          <div class="search-button"><svg class="icon"><use href="#prev"></use></svg></div>
+          <div class="search-button next"><svg class="icon"><use href="#next"></use></svg></div>
+          <div class="search-tag aa"><p>Aa</p></div>
+          <div class="search-tag regex"><p>.*</p></div>
+          <div class="search-tag count"><p>4/12</p></div>
+        </div>
+      </div>
+    </section>
+    </section>
+    <section class="variant left-panel-open" data-platform="macos" data-theme="light" data-screen-label="Screen / Draft Layout - Left Panel Open">
+    <h2 class="variant-title">Screen / Draft Layout - Left Panel Open - macOS Light</h2>
+    <main class="screen" data-node-id="11:243" data-name="Screen / Draft Layout - Left Panel Open">
+      <section class="window" data-node-id="11:244" data-name="Crosslog Window">
+        <div class="topbar" data-node-id="11:245" data-name="Topbar">
+          <div class="topbar-border" data-node-id="11:246"></div>
+          <div class="traffic close" data-node-id="11:247"></div>
+          <div class="traffic minimize" data-node-id="11:248"></div>
+          <div class="traffic zoom" data-node-id="11:249"></div>
+          <p class="platform-title">Crosslog</p>
+          <div class="caption-controls" aria-hidden="true">
+            <span class="caption-minimize">-</span>
+            <span class="caption-maximize">[]</span>
+            <span class="caption-close">x</span>
+          </div>
+          <div class="command-field" data-node-id="11:250">
+            <svg class="icon small search-icon"><use href="#search"></use></svg>
+            <p>Command or workspace search</p>
+          </div>
+          <div class="button sync" data-node-id="11:256"><svg class="icon"><use href="#sync"></use></svg></div>
+          <div class="button add-pane" data-node-id="11:260"><svg class="icon"><use href="#plus"></use></svg></div>
+        </div>
+
+        <div class="app-body" data-node-id="11:263" data-name="App Body">
+          <aside class="activity-rail" data-node-id="11:264" data-name="Activity Rail">
+            <div class="rail-border" data-node-id="11:265"></div>
+            <div class="rail-button search" data-node-id="11:266"><svg class="icon"><use href="#search"></use></svg></div>
+            <div class="rail-button filter" data-node-id="11:270"><svg class="icon"><use href="#filter"></use></svg></div>
+            <div class="rail-button palette" data-node-id="11:273"><svg class="icon"><use href="#palette"></use></svg></div>
+            <div class="rail-button files" data-node-id="11:279"><svg class="icon"><use href="#file"></use></svg></div>
+            <div class="rail-button bookmark" data-node-id="11:283"><svg class="icon"><use href="#bookmark"></use></svg></div>
+            <div class="rail-button settings" data-node-id="11:286"><svg class="icon"><use href="#settings"></use></svg></div>
+          </aside>
+
+          <aside class="left-panel" data-node-id="11:290" data-name="Expanded Left Panel / Directory Search">
+            <div class="left-panel-border" data-node-id="11:291"></div>
+            <p class="left-panel-title" data-node-id="11:292">Directory Search</p>
+            <div class="left-panel-action" data-node-id="54:310"><svg class="icon"><use href="#search"></use></svg></div>
+            <div class="panel-search-field" data-node-id="11:297">
+              <svg class="icon small search-icon"><use href="#search"></use></svg>
+              <p data-node-id="11:301">trace=981f|status=503</p>
+            </div>
+            <div class="panel-tag aa" data-node-id="11:302"><p>Aa</p></div>
+            <div class="panel-tag regex" data-node-id="11:304"><p>.*</p></div>
+            <div class="panel-results" data-node-id="11:306">
+              <p class="left-panel-result-title first-result" data-node-id="11:307">daemon-10770.log:5713</p>
+              <p class="left-panel-result-body first-result" data-node-id="11:308">failed to parse response trace=981f</p>
+              <div class="panel-result-divider" data-node-id="11:309"></div>
+              <p class="left-panel-result-title second-result" data-node-id="11:310">daemon-5365.log:4405</p>
+              <p class="left-panel-result-body second-result" data-node-id="11:311">same trace observed status=503</p>
+            </div>
+            <p class="left-panel-section-title" data-node-id="11:312">Work directories</p>
+            <div class="left-panel-source selected" data-node-id="11:313">
+              <svg class="icon folder-icon"><use href="#folder"></use></svg>
+              <p class="source-title" data-node-id="11:316">First Directory</p>
+              <p class="source-subtitle" data-node-id="11:317">daemon-10770.log selected</p>
+            </div>
+            <div class="left-panel-source secondary" data-node-id="11:318">
+              <svg class="icon folder-icon"><use href="#folder"></use></svg>
+              <p class="source-title" data-node-id="11:321">Second Directory</p>
+              <p class="source-subtitle" data-node-id="11:322">daemon-5365.log selected</p>
+            </div>
+          </aside>
+
+          <section class="workspace" data-node-id="11:323" data-name="Pane Workspace">
+            <div class="workspace-scrollbar" data-node-id="11:470"><div class="thumb" data-node-id="11:471"></div></div>
+            <div class="resize-one" data-node-id="11:366"></div>
+            <div class="resize-two" data-node-id="11:417"></div>
+
+            <section class="pane second" data-node-id="11:418" data-name="Log Pane/Second Directory">
+              <div class="viewport" data-node-id="11:441">
+                <p class="log-text line-number t1">4402</p><p class="log-text timestamp t1">2026-06-09 11:15:35.256</p><p class="log-text severity t1">INFO</p><p class="log-text message t1">daemon connected pid=5365 port=63343 workspace=Crosslog</p>
+                <p class="log-text line-number t2">4403</p><p class="log-text timestamp t2">2026-06-09 11:15:35.301</p><p class="log-text severity t2">INFO</p><p class="log-text message t2">Received sync target timestamp=11:15:18.256 offset=-2400ms</p>
+                <div class="row-bg warn" style="top: 51.36px"></div><p class="log-text line-number t3">4404</p><p class="log-text timestamp t3">2026-06-09 11:15:35.337</p><p class="log-text severity warn t3">WARN</p><p class="log-text message t3">Untimed line excluded from anchor calculation</p>
+                <div class="row-bg error" style="top: 73.1px"></div><p class="log-text line-number t4">4405</p><p class="log-text timestamp t4">2026-06-09 11:15:35.400</p><p class="log-text severity error t4">ERROR</p><p class="log-text message t4">Same trace observed trace=981f status=503</p>
+                <p class="log-text line-number t5">4406</p><p class="log-text timestamp t5">2026-06-09 11:15:35.441</p><p class="log-text severity t5">INFO</p><p class="log-text message t5">Directory file list refreshed files=18 newest=daemon-5367.log</p>
+              </div>
+              <header class="pane-header" data-node-id="37:86">
+                <div class="header-line"></div>
+                <div class="pane-title second"><svg class="icon small folder-icon"><use href="#folder"></use></svg><p>Second Directory</p></div>
+                <div class="current-file second"><svg class="icon file-icon"><use href="#file"></use></svg><p>daemon-5365.log</p></div>
+                <div class="pane-button close-pane"><svg class="icon"><use href="#close"></use></svg></div>
+                <div class="pane-button prev"><svg class="icon"><use href="#prev"></use></svg></div>
+                <div class="pane-button next"><svg class="icon"><use href="#next"></use></svg></div>
+                <div class="offset-tag"><p>+0000-00-00 00:00:02.400</p></div>
+                <svg class="icon pane-find"><use href="#search"></use></svg>
+              </header>
+            </section>
+
+            <section class="pane first" data-node-id="11:367" data-name="Log Pane/First Directory">
+              <div class="viewport" data-node-id="11:392">
+                <p class="log-text line-number t1">5710</p><p class="log-text timestamp t1">2026-06-09 11:15:18.256</p><p class="log-text severity t1">INFO</p><p class="log-text message t1">daemon connected pid=10770 port=63342 workspace=Crosslog</p>
+                <div class="row-bg warn" style="top: 29.63px"></div><p class="log-text line-number t2">5711</p><p class="log-text timestamp t2">2026-06-09 11:15:18.301</p><p class="log-text severity warn t2">WARN</p><p class="log-text message t2">Retry policy entered key=timeout attempt=2</p>
+                <p class="log-text line-number t3">5712</p><p class="log-text timestamp t3">2026-06-09 11:15:18.344</p><p class="log-text severity t3">INFO</p><p class="log-text message t3">Workspace search indexed files=46 elapsed=232ms</p>
+                <div class="row-bg error" style="top: 73.1px"></div><p class="log-text line-number t4">5713</p><p class="log-text timestamp t4">2026-06-09 11:15:18.402</p><p class="log-text severity error t4">ERROR</p><p class="log-text message t4">daemon failed to parse response trace=981f status=503</p>
+                <p class="log-text line-number t5">5714</p><p class="log-text timestamp t5">2026-06-09 11:15:18.450</p><p class="log-text severity t5">INFO</p><p class="log-text message t5">Rotated candidate ignored because selected file stays fixed</p>
+              </div>
+              <header class="pane-header" data-node-id="37:30">
+                <div class="header-line"></div>
+                <div class="pane-title first"><svg class="icon small folder-icon"><use href="#folder"></use></svg><p>First Directory</p></div>
+                <div class="current-file first"><svg class="icon file-icon"><use href="#file"></use></svg><p>daemon-10770.log</p><span class="live-dot"></span></div>
+                <div class="pane-button close-pane"><svg class="icon"><use href="#close"></use></svg></div>
+                <div class="pane-button prev"><svg class="icon"><use href="#prev"></use></svg></div>
+                <div class="pane-button next"><svg class="icon"><use href="#next"></use></svg></div>
+                <div class="offset-tag"><p>-0000-00-00 00:30:01.400</p></div>
+                <svg class="icon pane-find"><use href="#search"></use></svg>
+              </header>
+            </section>
+
+            <section class="pane idea" data-node-id="11:324" data-name="Log Pane/idea.log">
+              <div class="viewport" data-node-id="11:337">
+                <p class="log-text line-number t1">12018</p><p class="log-text timestamp t1">2026-06-09 11:15:13.859</p><p class="log-text severity t1">INFO</p><p class="log-text message t1">Project opened workspace=Crosslog source=local</p>
+                <p class="log-text line-number t2">12019</p><p class="log-text timestamp t2">2026-06-09 11:15:13.908</p><p class="log-text severity t2">INFO</p><p class="log-text message t2">Index snapshot ready modules=12 duration=48ms</p>
+                <div class="row-bg warn" style="top: 51.36px"></div><p class="log-text line-number t3">12020</p><p class="log-text timestamp t3">2026-06-09 11:15:13.944</p><p class="log-text severity warn t3">WARN</p><p class="log-text message t3">Slow file watcher event queue depth=140</p>
+                <p class="log-text line-number t4">12021</p><p class="log-text timestamp t4">2026-06-09 11:15:13.981</p><p class="log-text severity t4">INFO</p><p class="log-text message t4">Log stream appended bytes=8192 source=idea.log</p>
+                <p class="log-text line-number t5">12022</p><p class="log-text timestamp t5">2026-06-09 11:15:14.015</p><p class="log-text severity t5">INFO</p><p class="log-text message t5">Sync anchor selected pane=idea.log timestamp=11:15:13.859</p>
+                <div class="row-bg error" style="top: 116.56px"></div><p class="log-text line-number t6">12023</p><p class="log-text timestamp t6">2026-06-09 11:15:14.101</p><p class="log-text severity error t6">ERROR</p><p class="log-text message t6">Request failed trace=981f status=503 retryable=true</p>
+              </div>
+              <header class="pane-header" data-node-id="37:58">
+                <div class="header-line"></div>
+                <div class="active-top-border"></div>
+                <div class="pane-title idea"><svg class="icon file-icon"><use href="#file"></use></svg><p>idea.log</p><span class="live-dot"></span></div>
+                <div class="pane-button close-pane"><svg class="icon"><use href="#close"></use></svg></div>
+                <div class="offset-tag"><p>+0000-00-00 00:00:00.000</p></div>
+                <svg class="icon pane-find"><use href="#search"></use></svg>
+              </header>
+            </section>
+          </section>
+        </div>
+
+        <footer class="statusbar" data-node-id="11:472" data-name="Status Bar">
+          <div class="status-border" data-node-id="11:473"></div>
+          <p data-node-id="11:474">3 panes, sync on, active: daemon-10770.log</p>
+        </footer>
+      </section>
+    </main>
+    </section>
+    </div>
+    <script>
+      (() => {
+        const labels = {
+          macos: "macOS",
+          windows: "Windows",
+          linux: "Linux",
+          web: "Web Application"
+        };
+        const variants = Array.from(document.querySelectorAll(".variant"));
+        const popoverOffsets = {
+          search: { left: 88.97, top: 57.97 },
+          time: { left: 70.97, top: 54.97 }
+        };
+
+        const setPressed = (selector, value, key) => {
+          document.querySelectorAll(selector).forEach((button) => {
+            button.setAttribute("aria-pressed", String(button.dataset[key] === value));
+          });
+        };
+
+        const updateTitle = (variant) => {
+          const themeLabel = variant.dataset.theme === "dark" ? "Dark" : "Light";
+          const screenLabel = variant.dataset.screenLabel || "Screen";
+          const title = `${screenLabel} - ${labels[variant.dataset.platform]} ${themeLabel}`;
+          variant.querySelector(".variant-title").textContent = title;
+          variant.querySelector(".screen").dataset.name = title;
+        };
+
+        const updateAllTitles = () => {
+          variants.forEach(updateTitle);
+        };
+
+        const initializePopovers = (variant) => {
+          const popovers = {
+            search: variant.querySelector("[data-main-pane-search-popover]"),
+            time: variant.querySelector("[data-main-time-offset-popover]")
+          };
+
+          if (!popovers.search && !popovers.time) {
+            return;
+          }
+
+          const activePopoverPanes = {
+            search: null,
+            time: null
+          };
+
+        const setExpanded = (type, isExpanded, activeToggle = null) => {
+          variant.querySelectorAll(`[data-popover-toggle="${type}"]`).forEach((toggle) => {
+            toggle.setAttribute("aria-expanded", String(isExpanded && toggle === activeToggle));
+          });
+        };
+
+        const positionMainPopover = (type, pane) => {
+          const popover = popovers[type];
+          if (!popover) {
+            return;
+          }
+          const offset = popoverOffsets[type];
+          popover.style.left = `${pane.offsetLeft + offset.left}px`;
+          popover.style.top = `${offset.top}px`;
+        };
+
+        const toggleMainPopover = (type, toggle) => {
+          const pane = toggle.closest(".pane");
+          const popover = popovers[type];
+          if (!pane || !popover) {
+            return;
+          }
+          const isSamePaneOpen = activePopoverPanes[type] === pane && !popover.classList.contains("is-hidden");
+
+          if (isSamePaneOpen) {
+            popover.classList.add("is-hidden");
+            activePopoverPanes[type] = null;
+            setExpanded(type, false);
+            return;
+          }
+
+          positionMainPopover(type, pane);
+          popover.classList.remove("is-hidden");
+          activePopoverPanes[type] = pane;
+          setExpanded(type, true, toggle);
+        };
+
+          variant.querySelectorAll("[data-popover-toggle]").forEach((toggle) => {
+          const type = toggle.dataset.popoverToggle;
+          toggle.setAttribute("aria-expanded", "false");
+          toggle.addEventListener("click", () => toggleMainPopover(type, toggle));
+          toggle.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              toggleMainPopover(type, toggle);
+            }
+          });
+        });
+        };
+
+        variants.forEach(initializePopovers);
+
+        document.querySelectorAll("[data-theme-button]").forEach((button) => {
+          button.addEventListener("click", () => {
+            const theme = button.dataset.themeButton;
+            document.body.dataset.theme = theme;
+            variants.forEach((variant) => {
+              variant.dataset.theme = theme;
+            });
+            setPressed("[data-theme-button]", theme, "themeButton");
+            updateAllTitles();
+          });
+        });
+
+        document.querySelectorAll("[data-platform-button]").forEach((button) => {
+          button.addEventListener("click", () => {
+            const platform = button.dataset.platformButton;
+            document.body.dataset.platform = platform;
+            variants.forEach((variant) => {
+              variant.dataset.platform = platform;
+            });
+            setPressed("[data-platform-button]", platform, "platformButton");
+            updateAllTitles();
+          });
+        });
+
+        updateAllTitles();
+      })();
+    </script>
+  </body>
+</html>
