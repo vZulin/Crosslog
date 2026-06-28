@@ -16,6 +16,12 @@ pub fn ui_test_session_key() -> String {
 }
 
 #[tauri::command]
+pub fn ui_test_persistent_session_enabled() -> bool {
+    env::var("CROSSLOG_UI_TEST_PERSIST_SESSION")
+        .is_ok_and(|value| value == "1" || value.eq_ignore_ascii_case("true"))
+}
+
+#[tauri::command]
 pub fn publish_ui_test_state(window: tauri::Window, state: String) -> Result<(), String> {
     if ui_test_mode_enabled() {
         window

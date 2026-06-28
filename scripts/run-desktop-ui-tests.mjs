@@ -498,6 +498,7 @@ function macosTestEnvironment(appBundlePath, appBundleId) {
     ...process.env,
     CROSSLOG_DESKTOP_APP_BUNDLE_ID: appBundleId,
     CROSSLOG_DESKTOP_APP_BUNDLE_PATH: appBundlePath,
+    CROSSLOG_UI_TEST_PERSIST_SESSION: "1",
   };
 }
 

@@ -37,6 +37,7 @@ class CrosslogUITests: XCTestCase {
         app.launchArguments.append("--crosslog-ui-test")
         app.launchEnvironment["CROSSLOG_UI_TEST"] = "1"
         app.launchEnvironment["CROSSLOG_UI_TEST_ACTIONS_PATH"] = actionsURL.path
+        app.launchEnvironment["CROSSLOG_UI_TEST_PERSIST_SESSION"] = "1"
         app.launch()
 
         XCTAssertTrue(

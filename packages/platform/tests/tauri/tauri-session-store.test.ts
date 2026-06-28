@@ -27,17 +27,31 @@ describe("TauriSessionStore", () => {
     });
     expect(invokeMock).toHaveBeenCalledWith("is_ui_test_mode");
     expect(invokeMock).toHaveBeenCalledWith("ui_test_session_key");
+    expect(invokeMock).toHaveBeenCalledWith("ui_test_persistent_session_enabled");
+    expect(localStorage.getItem(uiTestSessionKey)).toBeNull();
   });
 
-  it("recovers UI-test sessions from localStorage after app relaunch", async () => {
+  it("ignores UI-test localStorage sessions", async () => {
     mockUiTestMode();
-    const session = createValidSession();
-    localStorage.setItem(uiTestSessionKey, JSON.stringify(session));
+    localStorage.setItem(uiTestSessionKey, JSON.stringify(createValidSession()));
 
-    await expect(new TauriSessionStore().recoverSession()).resolves.toMatchObject({
+    await expect(new TauriSessionStore().recoverSession()).resolves.toBeNull();
+  });
+
+  it("delegates persistent UI-test recovery to isolated Tauri commands", async () => {
+    mockUiTestMode({ persistentSessionEnabled: true });
+    const store = new TauriSessionStore();
+
+    await store.writeSessionSnapshot(createValidSession());
+
+    await expect(store.recoverSession()).resolves.toMatchObject({
       synchronizationEnabled: true,
       panes: [{ id: "pane-app", sourceRef: "source-app" }],
     });
+    expect(invokeMock).toHaveBeenCalledWith("ui_test_write_session_snapshot", expect.any(Object));
+    expect(invokeMock).toHaveBeenCalledWith("ui_test_recover_session");
+    expect(sessionStorage.getItem(uiTestSessionKey)).toBeNull();
+    expect(localStorage.getItem(uiTestSessionKey)).toBeNull();
   });
 
   it("delegates to Tauri commands outside UI-test mode", async () => {
@@ -64,7 +78,7 @@ describe("TauriSessionStore", () => {
   });
 });
 
-function mockUiTestMode() {
+function mockUiTestMode(options: { readonly persistentSessionEnabled?: boolean } = {}) {
   invokeMock.mockImplementation((command: string) => {
     if (command === "is_ui_test_mode") {
       return Promise.resolve(true);
@@ -72,6 +86,14 @@ function mockUiTestMode() {
 
     if (command === "ui_test_session_key") {
       return Promise.resolve(uiTestSessionKey);
+    }
+
+    if (command === "ui_test_persistent_session_enabled") {
+      return Promise.resolve(options.persistentSessionEnabled ?? false);
+    }
+
+    if (command === "ui_test_recover_session" || command === "ui_test_load_last_valid_session") {
+      return Promise.resolve(createValidSession());
     }
 
     return Promise.resolve(null);

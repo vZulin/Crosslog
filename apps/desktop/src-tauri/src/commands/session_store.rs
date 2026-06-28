@@ -1,7 +1,7 @@
-use crate::commands::ui_test::ui_test_mode_enabled;
+use crate::commands::ui_test::{ui_test_mode_enabled, ui_test_persistent_session_enabled};
 use serde_json::Value;
-use std::fs;
 use std::path::{Path, PathBuf};
+use std::{env, fs};
 use tauri::{AppHandle, Manager};
 use thiserror::Error;
 
@@ -44,6 +44,34 @@ pub fn recover_session(app: AppHandle) -> Result<Option<Value>, String> {
     }
 
     recover_session_from_dir(&session_dir(&app)?).map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+pub fn ui_test_load_last_valid_session() -> Result<Option<Value>, String> {
+    if !ui_test_mode_enabled() || !ui_test_persistent_session_enabled() {
+        return Ok(None);
+    }
+
+    read_last_valid_session_from_dir(&ui_test_session_dir()).map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+pub fn ui_test_write_session_snapshot(session: Value) -> Result<(), String> {
+    if !ui_test_mode_enabled() || !ui_test_persistent_session_enabled() {
+        return Ok(());
+    }
+
+    write_session_snapshot_to_dir(&ui_test_session_dir(), &session)
+        .map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+pub fn ui_test_recover_session() -> Result<Option<Value>, String> {
+    if !ui_test_mode_enabled() || !ui_test_persistent_session_enabled() {
+        return Ok(None);
+    }
+
+    recover_session_from_dir(&ui_test_session_dir()).map_err(|error| error.to_string())
 }
 
 pub fn write_session_snapshot_to_dir(
@@ -98,6 +126,28 @@ fn session_dir(app: &AppHandle) -> Result<PathBuf, String> {
         .map_err(|_| SessionStoreError::SessionDirectory.to_string())
 }
 
+fn ui_test_session_dir() -> PathBuf {
+    let suffix = env::var("CROSSLOG_UI_TEST_ACTIONS_PATH")
+        .ok()
+        .filter(|value| !value.trim().is_empty())
+        .unwrap_or_else(|| "default".to_owned());
+
+    env::temp_dir()
+        .join("crosslog-ui-test-sessions")
+        .join(format!("{:016x}", fnv1a64(suffix.as_bytes())))
+}
+
+fn fnv1a64(bytes: &[u8]) -> u64 {
+    let mut hash = 0xcbf29ce484222325u64;
+
+    for byte in bytes {
+        hash ^= u64::from(*byte);
+        hash = hash.wrapping_mul(0x100000001b3);
+    }
+
+    hash
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -130,6 +180,18 @@ mod tests {
         assert_eq!(
             recover_session_from_dir(dir.path()).expect("recover"),
             Some(session)
+        );
+    }
+
+    #[test]
+    fn hashes_ui_test_session_suffix_stably() {
+        assert_eq!(
+            fnv1a64(b"/tmp/crosslog-ui-actions-test.txt"),
+            fnv1a64(b"/tmp/crosslog-ui-actions-test.txt")
+        );
+        assert_ne!(
+            fnv1a64(b"/tmp/crosslog-ui-actions-one.txt"),
+            fnv1a64(b"/tmp/crosslog-ui-actions-two.txt")
         );
     }
 }
