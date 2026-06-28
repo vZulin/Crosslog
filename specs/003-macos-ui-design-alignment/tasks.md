@@ -93,31 +93,31 @@
 
 ### Tests for User Story 2 (MANDATORY)
 
-- [ ] T039 [P] [US2] Update pane rail component tests from plus/minus resize clicks to drag-boundary resize behavior in `packages/ui/tests/pane-rail/pane-layout.test.tsx`
-- [ ] T040 [P] [US2] Add component tests for rightmost-pane alignment, overflow-only workspace scroll, and desired-width persistence in `packages/ui/tests/pane-rail/pane-workspace-alignment.test.tsx`
-- [ ] T041 [P] [US2] Update responsive no-overlap tests for long pane names and target header spacing in `packages/ui/tests/app-shell/redesigned-shell-responsive.test.tsx`
-- [ ] T042 [P] [US2] Update file lifecycle header tests for compact live dot and no per-pane ready footer in `packages/ui/tests/log-pane/pane-lifecycle-header.test.tsx`
-- [ ] T043 [P] [US2] Update directory header tests for current-file identity, previous/next controls, and long-name truncation in `packages/ui/tests/log-pane/directory-pane-header.test.tsx`
-- [ ] T044 [P] [US2] Add focused file-pane header layout tests with no directory controls in `packages/ui/tests/log-pane/file-pane-header.test.tsx`
-- [ ] T045 [P] [US2] Update Web multi-pane layout UI test for drag resize, right-edge alignment, and independent horizontal pane scrolling in `apps/web/tests/ui/multi-pane-layout.spec.ts`
-- [ ] T046 [P] [US2] Update Web directory navigation UI test for aligned directory headers and no-overlap behavior in `apps/web/tests/ui/directory-navigation.spec.ts`
-- [ ] T047 [P] [US2] Update Desktop WDIO multi-pane layout UI test for drag resize and right-edge alignment in `apps/desktop/tests/ui/multi-pane-layout.spec.ts`
-- [ ] T048 [P] [US2] Update Desktop WDIO directory navigation UI test for aligned directory headers in `apps/desktop/tests/ui/directory-navigation.spec.ts`
-- [ ] T049 [P] [US2] Update macOS multi-pane XCTest coverage for drag resize and right-edge alignment in `apps/desktop/tests/ui/macos/MultiPaneLayoutUITests.swift`
-- [ ] T050 [P] [US2] Update macOS directory navigation XCTest coverage for aligned headers in `apps/desktop/tests/ui/macos/DirectoryNavigationUITests.swift`
+- [X] T039 [P] [US2] Update pane rail component tests from plus/minus resize clicks to drag-boundary resize behavior in `packages/ui/tests/pane-rail/pane-layout.test.tsx`
+- [X] T040 [P] [US2] Add component tests for rightmost-pane alignment, overflow-only workspace scroll, and desired-width persistence in `packages/ui/tests/pane-rail/pane-workspace-alignment.test.tsx`
+- [X] T041 [P] [US2] Update responsive no-overlap tests for long pane names and target header spacing in `packages/ui/tests/app-shell/redesigned-shell-responsive.test.tsx`
+- [X] T042 [P] [US2] Update file lifecycle header tests for compact live dot and no per-pane ready footer in `packages/ui/tests/log-pane/pane-lifecycle-header.test.tsx`
+- [X] T043 [P] [US2] Update directory header tests for current-file identity, previous/next controls, and long-name truncation in `packages/ui/tests/log-pane/directory-pane-header.test.tsx`
+- [X] T044 [P] [US2] Add focused file-pane header layout tests with no directory controls in `packages/ui/tests/log-pane/file-pane-header.test.tsx`
+- [X] T045 [P] [US2] Update Web multi-pane layout UI test for drag resize, right-edge alignment, and independent horizontal pane scrolling in `apps/web/tests/ui/multi-pane-layout.spec.ts`
+- [X] T046 [P] [US2] Update Web directory navigation UI test for aligned directory headers and no-overlap behavior in `apps/web/tests/ui/directory-navigation.spec.ts`
+- [X] T047 [P] [US2] Update Desktop WDIO multi-pane layout UI test for drag resize and right-edge alignment in `apps/desktop/tests/ui/multi-pane-layout.spec.ts`
+- [X] T048 [P] [US2] Update Desktop WDIO directory navigation UI test for aligned directory headers in `apps/desktop/tests/ui/directory-navigation.spec.ts`
+- [X] T049 [P] [US2] Update macOS multi-pane XCTest coverage for drag resize and right-edge alignment in `apps/desktop/tests/ui/macos/MultiPaneLayoutUITests.swift`
+- [X] T050 [P] [US2] Update macOS directory navigation XCTest coverage for aligned headers in `apps/desktop/tests/ui/macos/DirectoryNavigationUITests.swift`
 
 ### Implementation for User Story 2
 
-- [ ] T051 [US2] Create view-level pane fill and overflow calculation helpers in `packages/ui/src/pane-rail/usePaneWorkspaceLayout.ts`
-- [ ] T052 [US2] Apply computed rendered widths and overflow state in the pane workspace container in `packages/ui/src/pane-rail/PaneWorkspace.tsx`
-- [ ] T053 [US2] Pass rendered pane widths, overflow state, and resize boundary metadata through pane rail rendering in `packages/ui/src/pane-rail/PaneRail.tsx`
-- [ ] T054 [US2] Replace plus/minus resize controls with a draggable editor-style boundary in `packages/ui/src/pane-rail/PaneResizer.tsx`
-- [ ] T055 [US2] Add pointer drag handling and accessible separator state for resize boundaries in `packages/ui/src/pane-rail/PaneResizeBoundary.tsx`
-- [ ] T056 [US2] Preserve desired pane widths and avoid persisting auto-fill widths when saving sessions in `packages/ui/src/app-shell/AppShell.tsx`
-- [ ] T057 [US2] Align file and directory pane header structure, active indicator, live dot, offset tag, find icon, and close spacing in `packages/ui/src/log-pane/PaneHeader.tsx`
-- [ ] T058 [US2] Align directory previous/next controls with target icon sizing and disabled boundary states in `packages/ui/src/log-pane/DirectoryNavigator.tsx`
-- [ ] T059 [US2] Update pane workspace, resizer, header, scrollbar, and no-overlap CSS in `packages/ui/src/app-shell/activity-rail-theme.css`
-- [ ] T060 [US2] Run `bash scripts/macos/test.sh`, `bash scripts/macos/test-ui.sh`, and `bash scripts/macos/perf.sh` for US2 and record the result in `specs/003-macos-ui-design-alignment/validation-log.md`
+- [X] T051 [US2] Create view-level pane fill and overflow calculation helpers in `packages/ui/src/pane-rail/usePaneWorkspaceLayout.ts`
+- [X] T052 [US2] Apply computed rendered widths and overflow state in the pane workspace container in `packages/ui/src/pane-rail/PaneWorkspace.tsx`
+- [X] T053 [US2] Pass rendered pane widths, overflow state, and resize boundary metadata through pane rail rendering in `packages/ui/src/pane-rail/PaneRail.tsx`
+- [X] T054 [US2] Replace plus/minus resize controls with a draggable editor-style boundary in `packages/ui/src/pane-rail/PaneResizer.tsx`
+- [X] T055 [US2] Add pointer drag handling and accessible separator state for resize boundaries in `packages/ui/src/pane-rail/PaneResizeBoundary.tsx`
+- [X] T056 [US2] Preserve desired pane widths and avoid persisting auto-fill widths when saving sessions in `packages/ui/src/app-shell/AppShell.tsx`
+- [X] T057 [US2] Align file and directory pane header structure, active indicator, live dot, offset tag, find icon, and close spacing in `packages/ui/src/log-pane/PaneHeader.tsx`
+- [X] T058 [US2] Align directory previous/next controls with target icon sizing and disabled boundary states in `packages/ui/src/log-pane/DirectoryNavigator.tsx`
+- [X] T059 [US2] Update pane workspace, resizer, header, scrollbar, and no-overlap CSS in `packages/ui/src/app-shell/activity-rail-theme.css`
+- [X] T060 [US2] Run `bash scripts/macos/test.sh`, `bash scripts/macos/test-ui.sh`, and `bash scripts/macos/perf.sh` for US2 and record the result in `specs/003-macos-ui-design-alignment/validation-log.md`
 
 **Checkpoint**: User Story 2 is independently functional and does not regress User Story 1.
 

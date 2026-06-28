@@ -33,10 +33,18 @@ restate the full 001 or 002 validation history.
 | 2026-06-28 | T038 US1 UI test bridge follow-up | `bash scripts/macos/test.sh` | Pass | Re-ran after stabilizing UI test action polling so consumed actions cannot be dropped during React rerenders; lint passed, Vitest unit suites passed 45 files / 115 tests, integration suites passed 4 files / 5 tests, and Rust tests passed 5 tests. |
 | 2026-06-28 | T038 US1 UI test bridge follow-up | `bash scripts/macos/test-ui.sh` | Pass | Re-ran after the polling fix; Playwright Web UI passed 14 tests and macOS XCTest passed 10 tests, including live file state, pane search, session restore, and time offset action flows. |
 
+## Phase 4: User Story 2 Aligned Pane Workspace And Headers
+
+| Date | Scope | Command Or Evidence | Result | Notes |
+| --- | --- | --- | --- | --- |
+| 2026-06-29 | T039-T044 US2 component coverage | `corepack pnpm exec vitest run packages/ui/tests/pane-rail/pane-layout.test.tsx packages/ui/tests/pane-rail/pane-workspace-alignment.test.tsx packages/ui/tests/app-shell/redesigned-shell-responsive.test.tsx packages/ui/tests/log-pane/pane-lifecycle-header.test.tsx packages/ui/tests/log-pane/directory-pane-header.test.tsx packages/ui/tests/log-pane/file-pane-header.test.tsx` | Pass | Targeted component tests passed 6 files / 18 tests, covering draggable resize boundaries, right-edge fill/overflow calculation, desired-width preservation, file and directory header spacing, live-dot rendering, and no ready footer. |
+| 2026-06-29 | T045-T050 US2 UI coverage | `corepack pnpm test:ui:web` | Pass | Playwright Web UI passed 14 tests, including drag resize by pane boundary, fit-case right-edge alignment, overflow-only workspace scrollbar visibility, directory header controls, and session restore through the new resize boundary selector. |
+| 2026-06-29 | T047-T050 US2 Desktop/macOS UI coverage | `bash scripts/macos/test-ui.sh` | Pass | Full UI gate passed: Playwright Web UI passed 14 tests; macOS Desktop app built successfully; XCTest suite passed 10 tests with resize-boundary publication, right-edge/overflow state, obsolete-control absence, and aligned directory header evidence. |
+| 2026-06-29 | T060 US2 automated gate | `bash scripts/macos/test.sh` | Pass | Lint passed; Vitest unit suites passed 47 files / 120 tests; integration suites passed 4 files / 5 tests; Rust tests passed 5 tests. |
+| 2026-06-29 | T060 US2 performance gate | `bash scripts/macos/perf.sh` | Pass | Performance benchmark gate completed after rendering and scrolling layout changes. Existing performance scenarios for source opening, search, synchronization, session writing, directory navigation, virtualization, live append, and memory pressure completed successfully. |
+
 ## Future Evidence Slots
 
-- US2 gate: `bash scripts/macos/test.sh`, `bash scripts/macos/test-ui.sh`,
-  and `bash scripts/macos/perf.sh`.
 - US3 gate: `bash scripts/macos/test.sh` and `bash scripts/macos/test-ui.sh`.
 - US4 shared implementation gate: `bash scripts/macos/test.sh` and
   `bash scripts/macos/test-ui.sh`.

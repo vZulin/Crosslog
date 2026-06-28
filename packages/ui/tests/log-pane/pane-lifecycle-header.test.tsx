@@ -27,6 +27,7 @@ describe("pane lifecycle header", () => {
     );
 
     expect(getByTestId(redesignedShellTestIds.paneHeaderLive).textContent).toBe("Live");
+    expect(getByTestId(redesignedShellTestIds.paneHeaderLive).querySelector(".crosslog-pane-header__live-dot")).toBeTruthy();
     expect(getByRole("status", { name: "File state for app.log: Live" })).toBeTruthy();
     expect(getByTestId(redesignedShellTestIds.paneHeader).getAttribute("aria-label")).toContain(
       "file state Live",
@@ -144,6 +145,8 @@ describe("pane lifecycle header", () => {
     const pane = getByTestId(redesignedShellTestIds.logPane);
 
     expect(within(pane).getByTestId(redesignedShellTestIds.paneHeaderDeleted)).toBeTruthy();
+    expect(within(pane).queryByTestId(redesignedShellTestIds.obsoletePaneReadyFooter)).toBeNull();
+    expect(pane.querySelector(".crosslog-pane-status")).toBeNull();
     expect(within(pane).getByTestId(redesignedShellTestIds.paneDeletedStatus).textContent).toBe(
       "app.log was deleted. Loaded content is retained.",
     );

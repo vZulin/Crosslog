@@ -78,7 +78,10 @@ describe("final redesigned shell accessibility and no-overlap contracts", () => 
       /\.crosslog-shell\s*\{[^}]*grid-template:[^}]*"topbar topbar"[^}]*"rail workspace"[^}]*"status status"/s,
     );
     expect(themeCss).toMatch(
-      /\.crosslog-pane-header\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\) auto auto auto;/s,
+      /\.crosslog-pane-header\s*\{[^}]*display:\s*flex;[^}]*gap:\s*10px;[^}]*min-inline-size:\s*0;/s,
+    );
+    expect(themeCss).toMatch(
+      /\.crosslog-pane-header__actions\s*\{[^}]*flex:\s*0 0 auto;[^}]*gap:\s*8px;/s,
     );
     expect(themeCss).toMatch(
       /\.crosslog-pane-header__title,[^}]*\.crosslog-status-bar__active-source\s*\{[^}]*overflow:\s*hidden;[^}]*text-overflow:\s*ellipsis;[^}]*white-space:\s*nowrap;/s,

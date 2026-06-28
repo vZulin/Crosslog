@@ -849,6 +849,7 @@ function getPublishedRedesignedRegions(
 
   return [
     ...nonEmptyRegions,
+    ...(paneCount > 1 ? [redesignedShellTestIds.paneResizeBoundary] : []),
     ...(searchOpen ? [redesignedShellTestIds.paneSearchPopover] : []),
     ...(timeOffsetOpen ? [redesignedShellTestIds.timeOffsetPopover] : []),
   ];

@@ -26,7 +26,15 @@ describe("redesigned shell responsive contracts", () => {
     );
 
     expect(getByTitle(longTitle).className).toContain("crosslog-pane-header__title");
-    expect(getByTestId(redesignedShellTestIds.paneHeader)).toBeTruthy();
+    const header = getByTestId(redesignedShellTestIds.paneHeader);
+    const offset = getByTestId(redesignedShellTestIds.paneHeaderOffset);
+    const find = getByTestId(redesignedShellTestIds.paneHeaderSearch);
+    const close = getByTestId(redesignedShellTestIds.paneHeaderClose);
+
+    expect(header.querySelector(".crosslog-pane-header__identity")).toBeTruthy();
+    expect(header.querySelector(".crosslog-pane-header__actions")).toBeTruthy();
+    expect(offset.compareDocumentPosition(find) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(find.compareDocumentPosition(close) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(getByLabelText(`Close pane ${longTitle}`)).toBeTruthy();
   });
 

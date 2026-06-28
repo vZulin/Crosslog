@@ -1,6 +1,6 @@
 import { browser, expect } from "@wdio/globals";
 import {
-  clickElementWithJavaScript,
+  dragPaneResizeBoundary,
   enqueueDesktopUiTestAction,
   getLogPaneByTitle,
   getRedesignedShell,
@@ -22,7 +22,7 @@ describe("Desktop session restore", () => {
 
     await openSampleLogsWithUiBridge();
 
-    await clickElementWithJavaScript(await $("button[aria-label=\"Move boundary after app.log right\"]"));
+    await dragPaneResizeBoundary("app.log", 80);
     enqueueDesktopUiTestAction("navigateNextDirectoryFile");
     await waitForUiTestTitleFragment("directoryFile=app-2026-06-15.log");
     enqueueDesktopUiTestAction("openActivePaneTimeOffset");

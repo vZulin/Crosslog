@@ -100,6 +100,16 @@ export function PaneHeader({
           </h2>
         )}
       </div>
+      {directorySource && directorySource.files.length > 0 ? (
+        <DirectoryNavigator
+          directoryName={directorySource.displayName}
+          selectedFileName={selectedFile?.name ?? null}
+          previousFileName={previousFile?.name ?? null}
+          nextFileName={nextFile?.name ?? null}
+          onPrevious={() => onNavigateDirectory?.(paneId, "previous")}
+          onNext={() => onNavigateDirectory?.(paneId, "next")}
+        />
+      ) : null}
       {lifecycleIndicators.length > 0 ? (
         <div
           aria-label={`File state for ${displayTitle}: ${lifecycleIndicators.map((indicator) => indicator.label).join(", ")}`}
@@ -114,20 +124,17 @@ export function PaneHeader({
               key={indicator.kind}
               title={indicator.description}
             >
-              {indicator.label}
+              {indicator.kind === "live" ? (
+                <>
+                  <span aria-hidden="true" className="crosslog-pane-header__live-dot" />
+                  <span className="crosslog-sr-only">{indicator.label}</span>
+                </>
+              ) : (
+                indicator.label
+              )}
             </span>
           ))}
         </div>
-      ) : null}
-      {directorySource && directorySource.files.length > 0 ? (
-        <DirectoryNavigator
-          directoryName={directorySource.displayName}
-          selectedFileName={selectedFile?.name ?? null}
-          previousFileName={previousFile?.name ?? null}
-          nextFileName={nextFile?.name ?? null}
-          onPrevious={() => onNavigateDirectory?.(paneId, "previous")}
-          onNext={() => onNavigateDirectory?.(paneId, "next")}
-        />
       ) : null}
       <div className="crosslog-pane-header__actions">
         <button

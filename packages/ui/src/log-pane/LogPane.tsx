@@ -16,6 +16,7 @@ export interface LogPaneProps {
   readonly timestamps?: readonly (Date | null)[];
   readonly directorySource?: DirectorySource;
   readonly lifecycleState?: PaneHeaderLifecycleState;
+  readonly renderedWidth?: number;
   readonly synchronizationTargetLineNumber?: number | null;
   readonly onClose: (paneId: string) => void;
   readonly onActivate: (paneId: string) => void;
@@ -43,6 +44,7 @@ export function LogPane({
   timestamps,
   directorySource,
   lifecycleState,
+  renderedWidth,
   synchronizationTargetLineNumber,
   onClose,
   onActivate,
@@ -76,7 +78,7 @@ export function LogPane({
       id={redesignedShellTestIds.logPane}
       data-active={pane.active}
       style={{
-        inlineSize: `${pane.width}px`,
+        inlineSize: `${renderedWidth ?? pane.width}px`,
       }}
       onFocus={() => onActivate(pane.id)}
       onClick={() => onActivate(pane.id)}

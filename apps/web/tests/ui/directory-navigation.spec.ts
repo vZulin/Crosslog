@@ -16,6 +16,12 @@ test("navigates directory files without auto-switching on refresh", async ({ pag
   await expect(page.getByRole("heading", { name: "app-2026-06-16.log" })).toBeVisible();
   await expect(previousFile).toBeDisabled();
   await expect(directoryHeader.getByRole("button", { name: "Next file in logs/2026" })).toBeEnabled();
+  await expect(directoryHeader.getByTestId(redesignedShellTestIds.paneHeaderOffset)).toBeVisible();
+  await expect(directoryHeader.getByTestId(redesignedShellTestIds.paneHeaderSearch)).toBeVisible();
+  await expect(directoryHeader.getByTestId(redesignedShellTestIds.paneHeaderClose)).toBeVisible();
+  await expect(page.getByTestId(redesignedShellTestIds.paneHeader).filter({ hasText: "app.log" }).getByTestId(
+    redesignedShellTestIds.paneHeaderDirectoryPrevious,
+  )).toHaveCount(0);
 
   await nextFile.click();
   await expect(selectedFile).toHaveText("app-2026-06-15.log");

@@ -29,6 +29,9 @@ describe("directory pane header", () => {
     );
     expect(getByRole("heading", { name: "app-2026-06-16.log" })).toBeTruthy();
     expect(getByTestId(redesignedShellTestIds.paneHeader).getAttribute("aria-current")).toBe("true");
+    expect(getByTestId(redesignedShellTestIds.paneHeader).getAttribute("aria-label")).toContain(
+      "logs/2026, selected file app-2026-06-16.log active pane",
+    );
     expect(getByLabelText("Previous file in logs/2026").hasAttribute("disabled")).toBe(true);
     expect(getByLabelText("Next file in logs/2026").hasAttribute("disabled")).toBe(false);
   });
@@ -88,11 +91,14 @@ describe("directory pane header", () => {
 
     const directoryLabel = getByTestId(redesignedShellTestIds.paneHeaderDirectoryTitle);
     const selectedFileLabel = getByTestId(redesignedShellTestIds.paneHeaderSelectedFile);
+    const header = getByTestId(redesignedShellTestIds.paneHeader);
 
     expect(directoryLabel.getAttribute("title")).toBe(longDirectoryName);
     expect(directoryLabel.className).toContain("crosslog-pane-header__directory");
     expect(selectedFileLabel.getAttribute("title")).toBe(longFileName);
     expect(selectedFileLabel.className).toContain("crosslog-pane-header__selected-file");
+    expect(header.querySelector(".crosslog-directory-navigator")).toBeTruthy();
+    expect(header.querySelector(".crosslog-pane-header__actions")).toBeTruthy();
   });
 
   it("keeps the empty-directory status inside the redesigned header area", () => {

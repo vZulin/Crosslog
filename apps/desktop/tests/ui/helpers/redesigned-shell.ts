@@ -138,6 +138,53 @@ export async function clickElementWithJavaScript(element: WebdriverIO.Element): 
   await browser.execute((target: HTMLElement) => target.click(), element);
 }
 
+export async function dragPaneResizeBoundary(title: string, deltaX: number): Promise<void> {
+  const label = `Resize boundary after ${title}`;
+
+  await browser.execute((boundaryLabel: string) => {
+    const boundary = document.querySelector<HTMLElement>(`[aria-label="${boundaryLabel}"]`);
+
+    if (!boundary) {
+      throw new Error(`Missing ${boundaryLabel}.`);
+    }
+
+    const rect = boundary.getBoundingClientRect();
+
+    boundary.dispatchEvent(new PointerEvent("pointerdown", {
+      bubbles: true,
+      button: 0,
+      clientX: rect.left + rect.width / 2,
+      clientY: rect.top + rect.height / 2,
+      pointerId: 1,
+    }));
+  }, label);
+  await browser.pause(0);
+  await browser.execute((boundaryLabel: string, dragDeltaX: number) => {
+    const boundary = document.querySelector<HTMLElement>(`[aria-label="${boundaryLabel}"]`);
+
+    if (!boundary) {
+      throw new Error(`Missing ${boundaryLabel}.`);
+    }
+
+    const rect = boundary.getBoundingClientRect();
+    const startX = rect.left + rect.width / 2;
+    const startY = rect.top + rect.height / 2;
+
+    window.dispatchEvent(new PointerEvent("pointermove", {
+      bubbles: true,
+      clientX: startX + dragDeltaX,
+      clientY: startY,
+      pointerId: 1,
+    }));
+    window.dispatchEvent(new PointerEvent("pointerup", {
+      bubbles: true,
+      clientX: startX + dragDeltaX,
+      clientY: startY,
+      pointerId: 1,
+    }));
+  }, label, deltaX);
+}
+
 export async function expectRedesignedShellRegions(): Promise<void> {
   for (const testId of redesignedShellStructuralTestIds) {
     await expect(browser.$(byTestId(testId))).toBeExisting();

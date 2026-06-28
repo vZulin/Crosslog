@@ -9,6 +9,9 @@ final class DirectoryNavigationUITests: CrosslogUITests {
         waitForUiTestTitle("directoryFile=app-2026-06-16.log", in: app)
         waitForUiTestTitle("directoryPrevious=off", in: app)
         waitForUiTestTitle("directoryNext=on", in: app)
+        RedesignedShellAssertions.assertRequiredRegions(in: app)
+        RedesignedShellAssertions.assertResizeBoundaryPublished(in: app)
+        RedesignedShellAssertions.assertObsoleteControlsAbsent(in: app)
 
         performUiTestAction(.navigateNextDirectoryFile)
         waitForUiTestTitle("directoryFile=app-2026-06-15.log", in: app)

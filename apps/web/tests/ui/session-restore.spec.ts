@@ -20,7 +20,7 @@ test("restores panes from last valid browser session after reload", async ({ pag
   await expect(shell.paneWorkspace).toBeVisible();
   await expect(shell.statusBar).toContainText("3 panes");
 
-  await page.getByRole("button", { name: "Move boundary after app.log right" }).click();
+  await dragResizeBoundary(page, "app.log", 80);
   await directoryHeader.getByTestId(redesignedShellTestIds.paneHeaderDirectoryNext).click();
   await directoryPane.getByTestId(redesignedShellTestIds.paneHeaderOffset).click();
   await directoryPane.getByTestId(redesignedShellTestIds.timeOffsetMinutes).fill("1");
@@ -96,6 +96,54 @@ async function waitForRestorableSession(page: Page) {
         !snapshot.panes?.some((pane) => "horizontalScroll" in pane),
     );
   });
+}
+
+async function dragResizeBoundary(page: Page, title: string, deltaX: number) {
+  const label = `Resize boundary after ${title}`;
+
+  await page.evaluate((boundaryLabel) => {
+    const boundary = document.querySelector<HTMLElement>(`[aria-label="${boundaryLabel}"]`);
+
+    if (!boundary) {
+      throw new Error(`Missing ${boundaryLabel}.`);
+    }
+
+    const rect = boundary.getBoundingClientRect();
+
+    boundary.dispatchEvent(new PointerEvent("pointerdown", {
+      bubbles: true,
+      button: 0,
+      clientX: rect.left + rect.width / 2,
+      clientY: rect.top + rect.height / 2,
+      pointerId: 1,
+    }));
+  }, label);
+
+  await page.waitForTimeout(0);
+  await page.evaluate(({ boundaryLabel, dragDeltaX }) => {
+    const boundary = document.querySelector<HTMLElement>(`[aria-label="${boundaryLabel}"]`);
+
+    if (!boundary) {
+      throw new Error(`Missing ${boundaryLabel}.`);
+    }
+
+    const rect = boundary.getBoundingClientRect();
+    const startX = rect.left + rect.width / 2;
+    const startY = rect.top + rect.height / 2;
+
+    window.dispatchEvent(new PointerEvent("pointermove", {
+      bubbles: true,
+      clientX: startX + dragDeltaX,
+      clientY: startY,
+      pointerId: 1,
+    }));
+    window.dispatchEvent(new PointerEvent("pointerup", {
+      bubbles: true,
+      clientX: startX + dragDeltaX,
+      clientY: startY,
+      pointerId: 1,
+    }));
+  }, { boundaryLabel: label, dragDeltaX: deltaX });
 }
 
 async function writeCorruptPendingSession(page: Page) {

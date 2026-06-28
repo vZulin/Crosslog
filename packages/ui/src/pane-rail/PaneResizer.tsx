@@ -1,19 +1,27 @@
 import React from "react";
+import { PaneResizeBoundary } from "./PaneResizeBoundary";
 
 export interface PaneResizerProps {
   readonly leftPaneTitle: string;
+  readonly leftPaneWidth: number;
+  readonly rightPaneWidth: number;
   readonly onResize: (delta: number) => void;
 }
 
-export function PaneResizer({ leftPaneTitle, onResize }: PaneResizerProps) {
+export function PaneResizer({
+  leftPaneTitle,
+  leftPaneWidth,
+  rightPaneWidth,
+  onResize,
+}: PaneResizerProps) {
   return (
-    <div role="separator" aria-label={`Resize boundary after ${leftPaneTitle}`}>
-      <button type="button" aria-label={`Move boundary after ${leftPaneTitle} left`} onClick={() => onResize(-80)}>
-        -
-      </button>
-      <button type="button" aria-label={`Move boundary after ${leftPaneTitle} right`} onClick={() => onResize(80)}>
-        +
-      </button>
+    <div className="crosslog-pane-resizer">
+      <PaneResizeBoundary
+        leftPaneTitle={leftPaneTitle}
+        leftPaneWidth={leftPaneWidth}
+        rightPaneWidth={rightPaneWidth}
+        onResize={onResize}
+      />
     </div>
   );
 }

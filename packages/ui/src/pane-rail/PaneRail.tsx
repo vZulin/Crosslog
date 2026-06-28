@@ -5,6 +5,7 @@ import type { ClipboardWriter } from "../log-pane/LogTextSelection";
 import type { PaneHeaderLifecycleState } from "../log-pane/useFileLifecycleEvents";
 import { PaneResizer } from "./PaneResizer";
 import { PaneWorkspace } from "./PaneWorkspace";
+import { usePaneWorkspaceLayout } from "./usePaneWorkspaceLayout";
 
 export interface PaneRailPane {
   readonly pane: LogPaneModel;
@@ -60,12 +61,21 @@ export function PaneRail({
   onCopied,
   clipboard,
 }: PaneRailProps) {
+  const paneWorkspaceLayout = usePaneWorkspaceLayout(
+    panes.map((entry) => ({ paneId: entry.pane.id, desiredWidth: entry.pane.width })),
+  );
+
   return (
-    <PaneWorkspace>
+    <PaneWorkspace
+      contentWidth={paneWorkspaceLayout.totalRenderedWidth}
+      overflowing={paneWorkspaceLayout.overflowing}
+      workspaceRef={paneWorkspaceLayout.workspaceRef}
+    >
       {panes.map((entry, index) => (
         <React.Fragment key={entry.pane.id}>
           <LogPane
             pane={entry.pane}
+            renderedWidth={paneWorkspaceLayout.renderedWidthsByPaneId.get(entry.pane.id)}
             lines={entry.lines}
             timestamps={entry.timestamps}
             directorySource={entry.directorySource}
@@ -95,6 +105,8 @@ export function PaneRail({
           {index < panes.length - 1 ? (
             <PaneResizer
               leftPaneTitle={entry.pane.title}
+              leftPaneWidth={entry.pane.width}
+              rightPaneWidth={panes[index + 1]?.pane.width ?? entry.pane.width}
               onResize={(delta) => onResizePane(entry.pane.id, delta)}
             />
           ) : null}
