@@ -6,11 +6,25 @@ import {
 } from "../../src/app-shell/testIds";
 
 const defaultPaneTitles = ["idea.log", "daemon-10770.log", "daemon-5365.log"] as const;
+const longPaneTitles = [
+  "prod-us-east-very-long-service-name-with-build-number-2026-06-27T09-20-11.123Z.log",
+  "directory-with-a-very-long-name/currently-selected-log-file-with-extra-context-and-timestamp.log",
+  "observability-ingest-worker-shard-003-archive-rotation-output.log",
+] as const;
+
+export type RedesignedShellFixtureWorkspaceState = "populated" | "empty";
+export type RedesignedShellFixtureThemeVariant = "light" | "dark";
+export type RedesignedShellFixturePlatformVariant = "macos" | "windows" | "linux" | "web";
 
 export interface RenderRedesignedShellOptions {
   readonly paneTitles?: readonly string[];
+  readonly workspaceState?: RedesignedShellFixtureWorkspaceState;
   readonly activeSource?: string;
   readonly syncEnabled?: boolean;
+  readonly themeVariant?: RedesignedShellFixtureThemeVariant;
+  readonly platformVariant?: RedesignedShellFixturePlatformVariant;
+  readonly useLongPaneTitles?: boolean;
+  readonly includeResizeBoundary?: boolean;
   readonly includeSearchPopover?: boolean;
   readonly includeTimeOffsetPopover?: boolean;
   readonly statusMessage?: string;
@@ -24,9 +38,15 @@ export interface RenderedRedesignedShell extends RenderResult {
 export function renderRedesignedShell(
   options: RenderRedesignedShellOptions = {},
 ): RenderedRedesignedShell {
-  const paneTitles = options.paneTitles ?? defaultPaneTitles;
+  const paneTitles =
+    options.workspaceState === "empty"
+      ? []
+      : options.paneTitles ?? (options.useLongPaneTitles ? longPaneTitles : defaultPaneTitles);
   const activeSource = options.activeSource ?? paneTitles[0] ?? "none";
   const syncState = options.syncEnabled ?? true;
+  const themeVariant = options.themeVariant ?? "light";
+  const platformVariant = options.platformVariant ?? "macos";
+  const hasPanes = paneTitles.length > 0;
   const statusMessage =
     options.statusMessage ??
     `${paneTitles.length} panes, sync ${syncState ? "on" : "off"}, active: ${activeSource}`;
@@ -34,11 +54,14 @@ export function renderRedesignedShell(
   const result = render(
     <RedesignedShellFixture
       activeSource={activeSource}
-      includeSearchPopover={options.includeSearchPopover ?? true}
-      includeTimeOffsetPopover={options.includeTimeOffsetPopover ?? true}
+      includeResizeBoundary={options.includeResizeBoundary ?? paneTitles.length > 1}
+      includeSearchPopover={options.includeSearchPopover ?? hasPanes}
+      includeTimeOffsetPopover={options.includeTimeOffsetPopover ?? hasPanes}
       paneTitles={paneTitles}
+      platformVariant={platformVariant}
       statusMessage={statusMessage}
       syncEnabled={syncState}
+      themeVariant={themeVariant}
     />,
   );
 
@@ -53,6 +76,9 @@ interface RedesignedShellFixtureProps {
   readonly paneTitles: readonly string[];
   readonly activeSource: string;
   readonly syncEnabled: boolean;
+  readonly themeVariant: RedesignedShellFixtureThemeVariant;
+  readonly platformVariant: RedesignedShellFixturePlatformVariant;
+  readonly includeResizeBoundary: boolean;
   readonly includeSearchPopover: boolean;
   readonly includeTimeOffsetPopover: boolean;
   readonly statusMessage: string;
@@ -62,12 +88,24 @@ function RedesignedShellFixture({
   paneTitles,
   activeSource,
   syncEnabled,
+  themeVariant,
+  platformVariant,
+  includeResizeBoundary,
   includeSearchPopover,
   includeTimeOffsetPopover,
   statusMessage,
 }: RedesignedShellFixtureProps) {
   return (
-    <main aria-label="Crosslog workspace" data-testid={redesignedShellTestIds.crosslogShell}>
+    <main
+      aria-label="Crosslog workspace"
+      data-platform={platformVariant}
+      data-testid={redesignedShellTestIds.crosslogShell}
+      data-theme={themeVariant}
+    >
+      <span hidden data-testid={redesignedShellTestIds.themeVariant}>
+        {themeVariant}
+      </span>
+      <PlatformChromeFixture platformVariant={platformVariant} />
       <section aria-label="Topbar" data-testid={redesignedShellTestIds.topbar}>
         <label>
           Command or workspace search
@@ -78,7 +116,7 @@ function RedesignedShellFixture({
           data-testid={redesignedShellTestIds.topbarSync}
           type="button"
         >
-          Synchronize by time
+          Sync
         </button>
         <button data-testid={redesignedShellTestIds.topbarAddPane} type="button">
           Add pane
@@ -90,25 +128,34 @@ function RedesignedShellFixture({
       </nav>
 
       <section aria-label="Pane workspace" data-testid={redesignedShellTestIds.paneWorkspace}>
-        {paneTitles.map((title) => (
-          <article
-            aria-label={`Log pane ${title}`}
-            data-active={title === activeSource ? "true" : "false"}
-            data-testid={redesignedShellTestIds.logPane}
-            key={title}
-          >
-            <PaneHeaderFixture title={title} />
-            <ol
-              aria-label={`Virtual log viewport for ${title}`}
-              data-testid={redesignedShellTestIds.logViewport}
-            >
-              <li>2026-06-09 11:15:13.859 INFO Project opened workspace=Crosslog</li>
-            </ol>
-          </article>
-        ))}
-        <div aria-hidden data-testid={redesignedShellTestIds.workspaceScrollbar}>
-          <div data-testid={redesignedShellTestIds.workspaceScrollbarThumb} />
-        </div>
+        {paneTitles.length === 0 ? (
+          <EmptyWorkspaceFixture />
+        ) : (
+          <>
+            {paneTitles.map((title, index) => (
+              <article
+                aria-label={`Log pane ${title}`}
+                data-active={title === activeSource ? "true" : "false"}
+                data-testid={redesignedShellTestIds.logPane}
+                key={title}
+              >
+                <PaneHeaderFixture title={title} />
+                <ol
+                  aria-label={`Virtual log viewport for ${title}`}
+                  data-testid={redesignedShellTestIds.logViewport}
+                >
+                  <li>2026-06-09 11:15:13.859 INFO Project opened workspace=Crosslog</li>
+                </ol>
+                {includeResizeBoundary && index < paneTitles.length - 1 ? (
+                  <ResizeBoundaryFixture />
+                ) : null}
+              </article>
+            ))}
+            <div aria-hidden data-testid={redesignedShellTestIds.workspaceScrollbar}>
+              <div data-testid={redesignedShellTestIds.workspaceScrollbarThumb} />
+            </div>
+          </>
+        )}
       </section>
 
       {includeTimeOffsetPopover ? <TimeOffsetPopoverFixture activeSource={activeSource} /> : null}
@@ -118,6 +165,69 @@ function RedesignedShellFixture({
         {statusMessage}
       </footer>
     </main>
+  );
+}
+
+function PlatformChromeFixture({
+  platformVariant,
+}: {
+  readonly platformVariant: RedesignedShellFixturePlatformVariant;
+}) {
+  return (
+    <section
+      aria-label={`${platformVariant} shell chrome`}
+      data-platform={platformVariant}
+      data-testid={redesignedShellTestIds.platformChrome}
+    >
+      <span data-testid={redesignedShellTestIds.platformChromeTitle}>Crosslog</span>
+      {platformVariant === "macos" ? (
+        <span
+          aria-label="macOS traffic lights"
+          data-testid={redesignedShellTestIds.platformChromeMacosTrafficLights}
+        />
+      ) : null}
+      {platformVariant === "windows" ? (
+        <span
+          aria-label="Windows caption controls"
+          data-testid={redesignedShellTestIds.platformChromeWindowsCaptionControls}
+        />
+      ) : null}
+      {platformVariant === "linux" ? (
+        <span
+          aria-label="Linux caption controls"
+          data-testid={redesignedShellTestIds.platformChromeLinuxCaptionControls}
+        />
+      ) : null}
+      {platformVariant === "web" ? (
+        <span
+          aria-label="Web shell title"
+          data-testid={redesignedShellTestIds.platformChromeWebTitle}
+        />
+      ) : null}
+    </section>
+  );
+}
+
+function EmptyWorkspaceFixture() {
+  return (
+    <section aria-label="Empty workspace" data-testid={redesignedShellTestIds.emptyWorkspace}>
+      <div aria-label="Drop log sources" data-testid={redesignedShellTestIds.emptyDropZone}>
+        <button data-testid={redesignedShellTestIds.emptyOpenSource} type="button">
+          Open Source
+        </button>
+      </div>
+    </section>
+  );
+}
+
+function ResizeBoundaryFixture() {
+  return (
+    <div
+      aria-label="Resize panes"
+      aria-orientation="vertical"
+      data-testid={redesignedShellTestIds.paneResizeBoundary}
+      role="separator"
+    />
   );
 }
 
@@ -218,4 +328,3 @@ const activityRailButtons: ReactNode = (
     </button>
   </>
 );
-

@@ -4,6 +4,13 @@ export const redesignedShellTestIds = {
   commandField: "command-field",
   topbarSync: "topbar-sync",
   topbarAddPane: "topbar-add-pane",
+  themeVariant: "theme-variant",
+  platformChrome: "platform-chrome",
+  platformChromeTitle: "platform-chrome-title",
+  platformChromeMacosTrafficLights: "platform-chrome-macos-traffic-lights",
+  platformChromeWindowsCaptionControls: "platform-chrome-windows-caption-controls",
+  platformChromeLinuxCaptionControls: "platform-chrome-linux-caption-controls",
+  platformChromeWebTitle: "platform-chrome-web-title",
   activityRail: "activity-rail",
   activityRailSearch: "activity-rail-search",
   activityRailFilter: "activity-rail-filter",
@@ -12,9 +19,13 @@ export const redesignedShellTestIds = {
   activityRailBookmark: "activity-rail-bookmark",
   activityRailSettings: "activity-rail-settings",
   paneWorkspace: "pane-workspace",
+  emptyWorkspace: "empty-workspace",
+  emptyDropZone: "empty-drop-zone",
+  emptyOpenSource: "empty-open-source",
   workspaceScrollbar: "workspace-scrollbar",
   workspaceScrollbarThumb: "workspace-scrollbar-thumb",
   logPane: "log-pane",
+  paneResizeBoundary: "pane-resize-boundary",
   paneHeader: "pane-header",
   paneHeaderClose: "pane-header-close",
   paneHeaderSearch: "pane-header-search",
@@ -48,6 +59,12 @@ export const redesignedShellTestIds = {
   timeOffsetApply: "time-offset-apply",
   capabilityLimitations: "capability-limitations",
   statusBar: "status-bar",
+  obsoleteWorkspaceToolbar: "obsolete-workspace-toolbar",
+  obsoletePaneCopyToolbar: "obsolete-pane-copy-toolbar",
+  obsoleteSplitButton: "obsolete-split-button",
+  obsoleteResizeDecrease: "obsolete-resize-decrease",
+  obsoleteResizeIncrease: "obsolete-resize-increase",
+  obsoletePaneReadyFooter: "obsolete-pane-ready-footer",
 } as const;
 
 export type RedesignedShellTestId =
@@ -66,4 +83,27 @@ export const redesignedShellStructuralTestIds = [
   redesignedShellTestIds.paneSearchPopover,
   redesignedShellTestIds.timeOffsetPopover,
   redesignedShellTestIds.statusBar,
+] as const satisfies readonly RedesignedShellTestId[];
+
+export const redesignedShellOptionalStructuralTestIds = {
+  emptyWorkspace: [
+    redesignedShellTestIds.emptyWorkspace,
+    redesignedShellTestIds.emptyDropZone,
+    redesignedShellTestIds.emptyOpenSource,
+  ],
+  platformChrome: [
+    redesignedShellTestIds.themeVariant,
+    redesignedShellTestIds.platformChrome,
+    redesignedShellTestIds.platformChromeTitle,
+  ],
+  paneResize: [redesignedShellTestIds.paneResizeBoundary],
+} as const satisfies Record<string, readonly RedesignedShellTestId[]>;
+
+export const redesignedShellObsoleteControlTestIds = [
+  redesignedShellTestIds.obsoleteWorkspaceToolbar,
+  redesignedShellTestIds.obsoletePaneCopyToolbar,
+  redesignedShellTestIds.obsoleteSplitButton,
+  redesignedShellTestIds.obsoleteResizeDecrease,
+  redesignedShellTestIds.obsoleteResizeIncrease,
+  redesignedShellTestIds.obsoletePaneReadyFooter,
 ] as const satisfies readonly RedesignedShellTestId[];

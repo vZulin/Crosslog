@@ -17,13 +17,13 @@
 
 **Purpose**: Prepare shared selectors, helpers, and implementation notes for the alignment pass.
 
-- [ ] T001 Create the implementation inventory for current-vs-target UI gaps in `specs/003-macos-ui-design-alignment/implementation-inventory.md`
-- [ ] T002 Add missing stable test IDs for empty workspace, drop zone, theme variant, platform chrome, resize boundary, and obsolete-control checks in `packages/ui/src/app-shell/testIds.ts`
-- [ ] T003 [P] Extend shared component render options for empty workspace, theme variant, platform variant, and long-name panes in `packages/ui/tests/app-shell/renderRedesignedShell.tsx`
-- [ ] T004 [P] Extend Web UI shell locators for empty workspace, drop zone, theme/platform chrome, resize boundary, and obsolete-control absence checks in `apps/web/tests/ui/helpers/redesigned-shell.ts`
-- [ ] T005 [P] Extend Desktop WDIO shell locators and UI bridge helpers for theme/platform chrome, resize boundary, and lifecycle test actions in `apps/desktop/tests/ui/helpers/redesigned-shell.ts`
-- [ ] T006 [P] Extend macOS XCTest shell assertions for theme/platform chrome, empty workspace, resize boundary, and obsolete-control absence in `apps/desktop/tests/ui/macos/RedesignedShellAssertions.swift`
-- [ ] T007 Create the running validation log for this alignment pass in `specs/003-macos-ui-design-alignment/validation-log.md`
+- [X] T001 Create the implementation inventory for current-vs-target UI gaps in `specs/003-macos-ui-design-alignment/implementation-inventory.md`
+- [X] T002 Add missing stable test IDs for empty workspace, drop zone, theme variant, platform chrome, resize boundary, and obsolete-control checks in `packages/ui/src/app-shell/testIds.ts`
+- [X] T003 [P] Extend shared component render options for empty workspace, theme variant, platform variant, and long-name panes in `packages/ui/tests/app-shell/renderRedesignedShell.tsx`
+- [X] T004 [P] Extend Web UI shell locators for empty workspace, drop zone, theme/platform chrome, resize boundary, and obsolete-control absence checks in `apps/web/tests/ui/helpers/redesigned-shell.ts`
+- [X] T005 [P] Extend Desktop WDIO shell locators and UI bridge helpers for theme/platform chrome, resize boundary, and lifecycle test actions in `apps/desktop/tests/ui/helpers/redesigned-shell.ts`
+- [X] T006 [P] Extend macOS XCTest shell assertions for theme/platform chrome, empty workspace, resize boundary, and obsolete-control absence in `apps/desktop/tests/ui/macos/RedesignedShellAssertions.swift`
+- [X] T007 Create the running validation log for this alignment pass in `specs/003-macos-ui-design-alignment/validation-log.md`
 
 ---
 

@@ -1,23 +1,36 @@
 import { appendFileSync } from "node:fs";
 import { browser, expect } from "@wdio/globals";
 import {
+  redesignedShellObsoleteControlTestIds,
   redesignedShellStructuralTestIds,
   redesignedShellTestIds,
   type RedesignedShellTestId,
 } from "@crosslog/ui";
+
+export type ShellThemeVariant = "light" | "dark";
+export type ShellPlatformVariant = "macos" | "windows" | "linux" | "web";
 
 export function redesignedShellSelectors() {
   return {
     shell: byTestId(redesignedShellTestIds.crosslogShell),
     topbar: byTestId(redesignedShellTestIds.topbar),
     commandField: byTestId(redesignedShellTestIds.commandField),
+    topbarSync: byTestId(redesignedShellTestIds.topbarSync),
+    topbarAddPane: byTestId(redesignedShellTestIds.topbarAddPane),
+    themeVariant: byTestId(redesignedShellTestIds.themeVariant),
+    platformChrome: byTestId(redesignedShellTestIds.platformChrome),
     activityRail: byTestId(redesignedShellTestIds.activityRail),
+    emptyWorkspace: byTestId(redesignedShellTestIds.emptyWorkspace),
+    emptyDropZone: byTestId(redesignedShellTestIds.emptyDropZone),
+    emptyOpenSource: byTestId(redesignedShellTestIds.emptyOpenSource),
     paneWorkspace: byTestId(redesignedShellTestIds.paneWorkspace),
+    paneResizeBoundary: byTestId(redesignedShellTestIds.paneResizeBoundary),
     workspaceScrollbar: byTestId(redesignedShellTestIds.workspaceScrollbar),
     logPane: byTestId(redesignedShellTestIds.logPane),
     paneSearchPopover: byTestId(redesignedShellTestIds.paneSearchPopover),
     timeOffsetPopover: byTestId(redesignedShellTestIds.timeOffsetPopover),
     statusBar: byTestId(redesignedShellTestIds.statusBar),
+    obsoleteControls: redesignedShellObsoleteControlTestIds.map(byTestId),
   };
 }
 
@@ -28,13 +41,22 @@ export function getRedesignedShell() {
     shell: browser.$(selectors.shell),
     topbar: browser.$(selectors.topbar),
     commandField: browser.$(selectors.commandField),
+    topbarSync: browser.$(selectors.topbarSync),
+    topbarAddPane: browser.$(selectors.topbarAddPane),
+    themeVariant: browser.$(selectors.themeVariant),
+    platformChrome: browser.$(selectors.platformChrome),
     activityRail: browser.$(selectors.activityRail),
+    emptyWorkspace: browser.$(selectors.emptyWorkspace),
+    emptyDropZone: browser.$(selectors.emptyDropZone),
+    emptyOpenSource: browser.$(selectors.emptyOpenSource),
     paneWorkspace: browser.$(selectors.paneWorkspace),
+    paneResizeBoundaries: browser.$$(selectors.paneResizeBoundary),
     workspaceScrollbar: browser.$(selectors.workspaceScrollbar),
     logPanes: browser.$$(selectors.logPane),
     paneSearchPopover: browser.$(selectors.paneSearchPopover),
     timeOffsetPopover: browser.$(selectors.timeOffsetPopover),
     statusBar: browser.$(selectors.statusBar),
+    obsoleteControls: selectors.obsoleteControls.map((selector) => browser.$(selector)),
   };
 }
 
@@ -120,6 +142,30 @@ export async function expectRedesignedShellRegions(): Promise<void> {
   for (const testId of redesignedShellStructuralTestIds) {
     await expect(browser.$(byTestId(testId))).toBeExisting();
   }
+}
+
+export async function expectObsoleteControlsAbsent(): Promise<void> {
+  for (const testId of redesignedShellObsoleteControlTestIds) {
+    await expect(browser.$$(byTestId(testId))).toBeElementsArrayOfSize(0);
+  }
+}
+
+export function shellPresentationSearchParams(options: {
+  readonly theme?: ShellThemeVariant;
+  readonly platform?: ShellPlatformVariant;
+} = {}): string {
+  const params = new URLSearchParams();
+
+  if (options.theme) {
+    params.set("crosslog-theme", options.theme);
+  }
+
+  if (options.platform) {
+    params.set("crosslog-platform", options.platform);
+  }
+
+  const query = params.toString();
+  return query.length > 0 ? `?${query}` : "";
 }
 
 export function byTestId(testId: RedesignedShellTestId): string {

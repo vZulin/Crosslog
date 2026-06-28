@@ -4,14 +4,33 @@ enum RedesignedShellAssertions {
     static let crosslogShell = "crosslog-shell"
     static let topbar = "topbar"
     static let commandField = "command-field"
+    static let topbarSync = "topbar-sync"
+    static let topbarAddPane = "topbar-add-pane"
+    static let themeVariant = "theme-variant"
+    static let platformChrome = "platform-chrome"
+    static let platformChromeTitle = "platform-chrome-title"
+    static let platformChromeMacosTrafficLights = "platform-chrome-macos-traffic-lights"
+    static let platformChromeWindowsCaptionControls = "platform-chrome-windows-caption-controls"
+    static let platformChromeLinuxCaptionControls = "platform-chrome-linux-caption-controls"
+    static let platformChromeWebTitle = "platform-chrome-web-title"
     static let activityRail = "activity-rail"
+    static let emptyWorkspace = "empty-workspace"
+    static let emptyDropZone = "empty-drop-zone"
+    static let emptyOpenSource = "empty-open-source"
     static let paneWorkspace = "pane-workspace"
+    static let paneResizeBoundary = "pane-resize-boundary"
     static let workspaceScrollbar = "workspace-scrollbar"
     static let logPane = "log-pane"
     static let paneHeader = "pane-header"
     static let paneSearchPopover = "pane-search-popover"
     static let timeOffsetPopover = "time-offset-popover"
     static let statusBar = "status-bar"
+    static let obsoleteWorkspaceToolbar = "obsolete-workspace-toolbar"
+    static let obsoletePaneCopyToolbar = "obsolete-pane-copy-toolbar"
+    static let obsoleteSplitButton = "obsolete-split-button"
+    static let obsoleteResizeDecrease = "obsolete-resize-decrease"
+    static let obsoleteResizeIncrease = "obsolete-resize-increase"
+    static let obsoletePaneReadyFooter = "obsolete-pane-ready-footer"
 
     static func assertRequiredRegions(
         in app: XCUIApplication,
@@ -50,6 +69,75 @@ enum RedesignedShellAssertions {
         XCTAssertTrue(
             waitForUiTestTitleFragment("panes=\(expectedCount)", in: app, timeout: 5),
             "Expected redesigned shell pane count \(expectedCount)",
+            file: file,
+            line: line
+        )
+    }
+
+    static func assertEmptyWorkspacePublished(
+        in app: XCUIApplication,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        [emptyWorkspace, emptyDropZone, emptyOpenSource].forEach { identifier in
+            XCTAssertTrue(
+                waitForUiTestTitleFragment("regions=", containing: identifier, in: app, timeout: 5),
+                "Expected empty workspace region '\(identifier)' to be published",
+                file: file,
+                line: line
+            )
+        }
+    }
+
+    static func assertThemeVariant(
+        _ expectedVariant: String,
+        in app: XCUIApplication,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        XCTAssertTrue(
+            waitForUiTestTitleFragment("theme=\(expectedVariant)", in: app, timeout: 5),
+            "Expected shell theme variant '\(expectedVariant)'",
+            file: file,
+            line: line
+        )
+    }
+
+    static func assertPlatformVariant(
+        _ expectedVariant: String,
+        in app: XCUIApplication,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        XCTAssertTrue(
+            waitForUiTestTitleFragment("platform=\(expectedVariant)", in: app, timeout: 5),
+            "Expected shell platform variant '\(expectedVariant)'",
+            file: file,
+            line: line
+        )
+    }
+
+    static func assertResizeBoundaryPublished(
+        in app: XCUIApplication,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        XCTAssertTrue(
+            waitForUiTestTitleFragment("regions=", containing: paneResizeBoundary, in: app, timeout: 5),
+            "Expected pane resize boundary region to be published",
+            file: file,
+            line: line
+        )
+    }
+
+    static func assertObsoleteControlsAbsent(
+        in app: XCUIApplication,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        XCTAssertTrue(
+            waitForUiTestTitleFragment("obsolete=absent", in: app, timeout: 5),
+            "Expected obsolete product controls to be absent",
             file: file,
             line: line
         )
