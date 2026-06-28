@@ -66,11 +66,49 @@ class CrosslogUITests: XCTestCase {
         }
 
         do {
-            let currentContents = (try? String(contentsOf: actionsURL, encoding: .utf8)) ?? ""
-            try (currentContents + action.rawValue + "\n").write(to: actionsURL, atomically: true, encoding: .utf8)
+            let handle = try FileHandle(forWritingTo: actionsURL)
+            try handle.seekToEnd()
+            try handle.write(contentsOf: Data("\(action.rawValue)\n".utf8))
+            try handle.close()
         } catch {
             XCTFail("Failed to enqueue UI test action '\(action.rawValue)': \(error)", file: file, line: line)
+            return
         }
+
+        waitForUiTestActionQueueToDrain(action, file: file, line: line)
+    }
+
+    private func waitForUiTestActionQueueToDrain(
+        _ action: CrosslogUITestAction,
+        timeout: TimeInterval = 5,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        guard let actionsURL else {
+            XCTFail("UI test actions file is not initialized", file: file, line: line)
+            return
+        }
+
+        let deadline = Date().addingTimeInterval(timeout)
+
+        while Date() < deadline {
+            let contents = (try? String(contentsOf: actionsURL, encoding: .utf8)) ?? ""
+
+            if !contents
+                .components(separatedBy: .newlines)
+                .map({ $0.trimmingCharacters(in: .whitespacesAndNewlines) })
+                .contains(action.rawValue) {
+                return
+            }
+
+            RunLoop.current.run(until: Date().addingTimeInterval(0.1))
+        }
+
+        XCTFail(
+            "Expected UI test action '\(action.rawValue)' to be consumed",
+            file: file,
+            line: line
+        )
     }
 
     func waitForUiTestTitle(
