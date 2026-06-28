@@ -258,19 +258,19 @@
 
 **Purpose**: Finalize visual quality, accessibility, CI/CD, performance, and release-readiness validation across all stories.
 
-- [ ] T112 [P] Update redesign implementation notes and local validation instructions in `specs/002-redesign-activity-rail/quickstart.md`
-- [ ] T113 [P] Update project-level generated guidance after final task changes in `AGENTS.md`
-- [ ] T114 [P] Add usability walkthrough protocol for identifying active pane, pane count, synchronization state, and active source in `specs/002-redesign-activity-rail/usability-walkthrough.md`
-- [ ] T115 [P] Add final accessibility and no-overlap assertions for supported viewport sizes in `packages/ui/tests/app-shell/redesigned-shell-final-a11y.test.tsx`
-- [ ] T116 [P] Add Web UI viewport coverage for desktop-width and narrow-width redesigned shell in `apps/web/tests/ui/redesigned-shell-viewports.spec.ts`
-- [ ] T117 [P] Add Desktop WDIO viewport coverage for redesigned shell in `apps/desktop/tests/ui/redesigned-shell-viewports.spec.ts`
-- [ ] T118 [P] Add macOS viewport/accessibility coverage for redesigned shell in `apps/desktop/tests/ui/macos/RedesignedShellViewportUITests.swift`
-- [ ] T119 Verify read-only and inert-content safety after UI changes with `bash scripts/macos/test.sh`
-- [ ] T120 Run local Web/Desktop UI validation on the current OS with `bash scripts/macos/test-ui.sh`
-- [ ] T121 Define and record performance reference fixtures and measured-run methodology in `specs/002-redesign-activity-rail/quickstart.md`
-- [ ] T122 Run local performance validation after rendering changes with `bash scripts/macos/perf.sh`
-- [ ] T123 Run local build validation with `bash scripts/macos/build.sh`
-- [ ] T124 Push the branch and verify GitHub Actions Windows/macOS/Linux automated and UI/E2E jobs defined in `.github/workflows/ci.yml`
+- [X] T112 [P] Update redesign implementation notes and local validation instructions in `specs/002-redesign-activity-rail/quickstart.md`
+- [X] T113 [P] Update project-level generated guidance after final task changes in `AGENTS.md`
+- [X] T114 [P] Add usability walkthrough protocol for identifying active pane, pane count, synchronization state, and active source in `specs/002-redesign-activity-rail/usability-walkthrough.md`
+- [X] T115 [P] Add final accessibility and no-overlap assertions for supported viewport sizes in `packages/ui/tests/app-shell/redesigned-shell-final-a11y.test.tsx`
+- [X] T116 [P] Add Web UI viewport coverage for desktop-width and narrow-width redesigned shell in `apps/web/tests/ui/redesigned-shell-viewports.spec.ts`
+- [X] T117 [P] Add Desktop WDIO viewport coverage for redesigned shell in `apps/desktop/tests/ui/redesigned-shell-viewports.spec.ts`
+- [X] T118 [P] Add macOS viewport/accessibility coverage for redesigned shell in `apps/desktop/tests/ui/macos/RedesignedShellViewportUITests.swift`
+- [X] T119 Verify read-only and inert-content safety after UI changes with `bash scripts/macos/test.sh`
+- [X] T120 Run local Web/Desktop UI validation on the current OS with `bash scripts/macos/test-ui.sh`
+- [X] T121 Define and record performance reference fixtures and measured-run methodology in `specs/002-redesign-activity-rail/quickstart.md`
+- [X] T122 Run local performance validation after rendering changes with `bash scripts/macos/perf.sh`
+- [X] T123 Run local build validation with `bash scripts/macos/build.sh`
+- [X] T124 Push the branch and verify GitHub Actions Windows/macOS/Linux automated and UI/E2E jobs defined in `.github/workflows/ci.yml`
 
 ---
 

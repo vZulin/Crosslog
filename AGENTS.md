@@ -1,17 +1,20 @@
 # Crosslog Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-06-27
+Auto-generated from all feature plans. Last updated: 2026-06-28
 
 ## Active Technologies
 - TypeScript 5.x for shared UI/domain code; React 19; Rust 1.77+ stable for
   Tauri 2 adapters; Node.js 22 in CI; pnpm 9.15.4 via Corepack.
 - Current UI/runtime stack remains React, Vite, Zustand, TanStack Virtual,
   Tauri 2, Vitest, Playwright, WebdriverIO, Rust `notify`, `encoding_rs`, and
-  `chardetng`; `lucide-react` is only a conditional icon dependency for the
-  redesign if implementation review justifies it. (002-redesign-activity-rail)
+  `chardetng`; the redesign uses reviewed local SVG icons instead of a new UI
+  or icon dependency. (002-redesign-activity-rail)
 - Browser session state remains in IndexedDB; Desktop session snapshots remain
   in the application data directory; no state is written beside opened logs.
   (002-redesign-activity-rail)
+- Activity Rail release readiness requires final viewport/no-overlap,
+  accessibility, performance, local macOS, and GitHub Actions Windows/macOS/Linux
+  automated plus UI/E2E validation. (002-redesign-activity-rail)
 
 - TypeScript 5.x for shared domain/UI and Web shell; Rust stable compatible with
   Tauri 2 for Desktop adapters; Node.js active LTS for tooling.
@@ -54,6 +57,10 @@ scripts/
 - `pnpm test:ui:web`
 - `pnpm test:ui:desktop`
 - `pnpm bench`
+- `bash scripts/macos/test.sh`
+- `bash scripts/macos/test-ui.sh`
+- `bash scripts/macos/perf.sh`
+- `bash scripts/macos/build.sh`
 - `cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml`
 
 ## Code Style
@@ -64,6 +71,11 @@ scripts/
 - Preserve expected test results unless the underlying requirement changes.
 
 ## Recent Changes
+- 002-redesign-activity-rail: Completed final Activity Rail redesign polish with
+  viewport/no-overlap coverage, accessibility assertions, usability walkthrough
+  protocol, performance reference methodology, local macOS gates, and required
+  GitHub Actions release validation.
+
 - 002-redesign-activity-rail: Planned the Activity Rail UI redesign using the
   current shared React/Tauri stack, Figma mockup audit, UI contract updates, and
   required Windows/macOS/Linux UI/E2E CI gates.
