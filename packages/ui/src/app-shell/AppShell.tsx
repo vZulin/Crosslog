@@ -544,6 +544,11 @@ export function AppShell({ platform, shellPresentation: shellPresentationOverrid
       synchronizationEnabled,
     ],
   );
+  const executeUiTestActionRef = React.useRef(executeUiTestAction);
+
+  React.useEffect(() => {
+    executeUiTestActionRef.current = executeUiTestAction;
+  }, [executeUiTestAction]);
 
   React.useEffect(() => {
     if (!uiTestEnabled || !platform.uiTestBridge) {
@@ -560,7 +565,7 @@ export function AppShell({ platform, shellPresentation: shellPresentationOverrid
       consuming = true;
       void platform.uiTestBridge?.consumePendingAction().then((action) => {
         if (!disposed && action) {
-          executeUiTestAction(action);
+          executeUiTestActionRef.current(action);
         }
       }).finally(() => {
         consuming = false;
@@ -574,7 +579,7 @@ export function AppShell({ platform, shellPresentation: shellPresentationOverrid
       disposed = true;
       globalThis.clearInterval(intervalId);
     };
-  }, [executeUiTestAction, platform.uiTestBridge, uiTestEnabled]);
+  }, [platform.uiTestBridge, uiTestEnabled]);
 
   const openFileSource = async (sourceRef: FileSourceRef) => {
     const result = await platform.fileAccess.openFileReadOnly(sourceRef, defaultFileOpenPolicy);

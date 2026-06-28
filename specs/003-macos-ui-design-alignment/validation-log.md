@@ -30,6 +30,8 @@ restate the full 001 or 002 validation history.
 | 2026-06-28 | T026-T027 US1 Desktop UI selector migration | `corepack pnpm test:ui:desktop` | Pass | Desktop WDIO and macOS XCTest UI suite passed; XCTest executed 10 tests with updated empty workspace and obsolete-control absence checks for the empty shell. |
 | 2026-06-28 | T038 US1 automated gate | `bash scripts/macos/test.sh` | Pass | Lint passed; Vitest unit suites passed 45 files / 115 tests; integration suites passed 4 files / 5 tests; Rust tests passed 5 tests. |
 | 2026-06-28 | T038 US1 UI gate | `bash scripts/macos/test-ui.sh` | Pass | Playwright Web UI passed 14 tests; Desktop/macOS UI tests built the app and XCTest suite passed 10 tests. Populated-workspace `obsolete=visible` remains expected until Phase 4 replaces resize plus/minus controls. |
+| 2026-06-28 | T038 US1 UI test bridge follow-up | `bash scripts/macos/test.sh` | Pass | Re-ran after stabilizing UI test action polling so consumed actions cannot be dropped during React rerenders; lint passed, Vitest unit suites passed 45 files / 115 tests, integration suites passed 4 files / 5 tests, and Rust tests passed 5 tests. |
+| 2026-06-28 | T038 US1 UI test bridge follow-up | `bash scripts/macos/test-ui.sh` | Pass | Re-ran after the polling fix; Playwright Web UI passed 14 tests and macOS XCTest passed 10 tests, including live file state, pane search, session restore, and time offset action flows. |
 
 ## Future Evidence Slots
 
