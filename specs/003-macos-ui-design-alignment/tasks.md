@@ -196,7 +196,7 @@
 
 ### Tests for User Story 4 (MANDATORY)
 
-- [ ] T094 [P] [US4] Add component tests for light and dark tokens applied to actual app surfaces in `packages/ui/tests/app-shell/theme-variants.test.tsx`
+- [ ] T094 [P] [US4] Add component tests for runtime/mockup/test light and dark presentation tokens applied to actual app surfaces in `packages/ui/tests/app-shell/theme-variants.test.tsx`
 - [ ] T095 [P] [US4] Add component tests for macOS, Windows, Linux, and Web shell chrome variants in `packages/ui/tests/app-shell/platform-shell-variants.test.tsx`
 - [ ] T096 [P] [US4] Update final shell accessibility tests for theme/platform variants and no-overlap contracts in `packages/ui/tests/app-shell/redesigned-shell-final-a11y.test.tsx`
 - [ ] T097 [P] [US4] Update Web viewport UI tests for light/dark themes and Web no desktop radius/shadow in `apps/web/tests/ui/redesigned-shell-viewports.spec.ts`
@@ -208,13 +208,13 @@
 ### Implementation for User Story 4
 
 - [ ] T102 [US4] Add light/dark theme token definitions and shell `data-theme` application in `packages/ui/src/app-shell/activity-rail-theme.css`
-- [ ] T103 [US4] Add app shell theme variant resolution without new persisted UI preference storage in `packages/ui/src/app-shell/shellPresentation.ts`
+- [ ] T103 [US4] Add app shell theme variant resolution for runtime/mockup/test presentation input without a product-visible selector or new persisted UI preference storage in `packages/ui/src/app-shell/shellPresentation.ts`
 - [ ] T104 [US4] Create platform chrome rendering for macOS, Windows, Linux, and Web variants in `packages/ui/src/app-shell/WindowChrome.tsx`
 - [ ] T105 [US4] Integrate theme and platform chrome into the shared shell layout in `packages/ui/src/app-shell/ActivityRailShell.tsx`
 - [ ] T106 [US4] Pass theme/platform presentation props from the shared app shell to shell layout in `packages/ui/src/app-shell/AppShell.tsx`
-- [ ] T107 [US4] Wire Web app theme/platform test overrides without changing source capabilities in `apps/web/src/App.tsx`
-- [ ] T108 [US4] Wire Desktop app theme/platform test overrides without changing Tauri adapters in `apps/desktop/src/App.tsx`
-- [ ] T109 [US4] Run `bash scripts/macos/test.sh` and `bash scripts/macos/test-ui.sh` for US4 and record the result in `specs/003-macos-ui-design-alignment/validation-log.md`
+- [ ] T107 [US4] Wire Web app theme/platform mockup/test overrides without changing source capabilities or adding product UI selectors in `apps/web/src/App.tsx`
+- [ ] T108 [US4] Wire Desktop app theme/platform mockup/test overrides without changing Tauri adapters or adding product UI selectors in `apps/desktop/src/App.tsx`
+- [ ] T109 [US4] Run `bash scripts/macos/test.sh` and `bash scripts/macos/test-ui.sh` for US4 shared implementation and record the result in `specs/003-macos-ui-design-alignment/validation-log.md`; release-level OS-specific completion still depends on T119-T121 corresponding-OS UI evidence.
 
 **Checkpoint**: User Story 4 is independently functional and product behavior is shared across variants.
 
@@ -228,7 +228,7 @@
 - [ ] T111 [P] Update Web UI test helper documentation for the new selectors and variant overrides in `apps/web/tests/ui/helpers/redesigned-shell.ts`
 - [ ] T112 [P] Update Desktop WDIO helper documentation for UI bridge actions and variant overrides in `apps/desktop/tests/ui/helpers/redesigned-shell.ts`
 - [ ] T113 [P] Update macOS XCTest helper documentation for shell state assertions in `apps/desktop/tests/ui/macos/README.md`
-- [ ] T114 Record the timed empty-workspace source-opening recognition review for SC-010 in `specs/003-macos-ui-design-alignment/validation-log.md`
+- [ ] T114 Record the timed empty-workspace source-opening recognition review for SC-010 in `specs/003-macos-ui-design-alignment/validation-log.md`, including reviewer role, empty-workspace start condition, viewport/platform, 5-second result, and pass/fail outcome.
 - [ ] T115 Run `bash scripts/macos/test.sh` and record the final automated gate in `specs/003-macos-ui-design-alignment/validation-log.md`
 - [ ] T116 Run `bash scripts/macos/test-ui.sh` and record the final UI gate in `specs/003-macos-ui-design-alignment/validation-log.md`
 - [ ] T117 Run `bash scripts/macos/perf.sh` after rendering/scrolling changes and record the result in `specs/003-macos-ui-design-alignment/validation-log.md`
@@ -342,6 +342,11 @@ Task: "T099 [P] [US4] Update Desktop WDIO viewport UI tests for default platform
 5. US3 -> compact pane-local popovers.
 6. US4 -> actual light/dark themes and platform chrome variants.
 7. Polish -> local macOS gates and GitHub Actions Windows/macOS/Linux validation.
+
+Resolved checklist/analyze findings A1, I1, and C1 are treated as documentation
+alignment prerequisites before Phase 1 implementation. They do not block
+implementation after spec, plan, task, contract, quickstart, and checklist
+artifacts agree on theme scope, OS-specific evidence, and timed review evidence.
 
 ### Non-Goals During Implementation
 

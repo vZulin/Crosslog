@@ -22,12 +22,15 @@ with the updated design deltas from
   workspace, and statusbar.
 - The topbar height is shared between empty and populated workspaces.
 - Light and dark theme tokens apply to all actual shell surfaces.
-- Theme selection is current-session presentation state in this alignment pass;
-  no new persisted theme preference storage is added.
+- Theme variants are runtime, mockup, or test presentation state in this
+  alignment pass; no product-visible theme selector and no new persisted theme
+  preference storage are added.
 - macOS, Windows, Linux, and Web variants render appropriate shell chrome while
   preserving shared product behavior.
 - OS-specific UI gates validate the default runtime chrome on their
   corresponding OS; override rendering is limited to mockup/test coverage.
+- Platform override selectors are not product UI in this alignment pass unless
+  a later specification explicitly adds them.
 - Web shell does not render desktop radius or shadow.
 
 ## Topbar
@@ -119,6 +122,9 @@ internal test APIs that are not visible in product UI.
 ## Accessibility
 
 - Icon-only controls have accessible names and testable state.
+- Icon-only theme or platform selectors require accessible names only if a later
+  specification adds product-visible selectors; current runtime/mockup/test
+  override mechanisms must not appear as product UI controls.
 - Disabled future controls are not focus traps.
 - Structural regions keep stable roles or `data-testid` values where semantic
   selectors are insufficient.

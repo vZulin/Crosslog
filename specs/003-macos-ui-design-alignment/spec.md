@@ -123,9 +123,10 @@ offset validation, and pane-local anchoring.
 
 ### User Story 4 - Use the Same Product Across Themes and Platforms (Priority: P2)
 
-A user renders Crosslog in light or dark appearance, or uses Crosslog on macOS,
-Windows, Linux, or Web, and sees appropriate shell chrome while the same
-product workflow, pane behavior, and capability boundaries remain intact.
+A user renders Crosslog through the configured runtime, mockup, or test
+appearance and platform presentation state, or uses Crosslog on macOS, Windows,
+Linux, or Web, and sees appropriate shell chrome while the same product
+workflow, pane behavior, and capability boundaries remain intact.
 
 **Why this priority**: The updated mockups define both theme and platform
 variants. A shell-only mockup switch is insufficient; the actual application UI
@@ -141,20 +142,21 @@ structure, and preserved Web/Desktop capability messaging.
 
 **Acceptance Scenarios**:
 
-1. **Given** dark appearance is selected for the current shell session or test
-   variant, **When** the workspace renders,
+1. **Given** dark appearance is selected through runtime, mockup, or test
+   presentation state, **When** the workspace renders,
    **Then** the actual application topbar, rail, pane, statusbar, popovers, and
    log severity surfaces use the dark design tokens.
-2. **Given** light appearance is selected for the current shell session or test
-   variant, **When** the workspace renders, **Then** the application uses the
-   light design tokens and preserves readable contrast.
+2. **Given** light appearance is selected through runtime, mockup, or test
+   presentation state, **When** the workspace renders, **Then** the application
+   uses the light design tokens and preserves readable contrast.
 3. **Given** the app is rendered for macOS, Windows, Linux, or Web, **When** the
    shell chrome is visible, **Then** platform-appropriate window controls appear
    while the Crosslog topbar, activity rail, pane workspace, and statusbar
    remain structurally consistent.
-4. **Given** the user changes appearance, **When** the shell rerenders, **Then**
-   the appearance changes actual UI surfaces without adding new persisted
-   preference storage in this alignment scope.
+4. **Given** the runtime, mockup, or test presentation state changes
+   appearance, **When** the shell rerenders, **Then** the appearance changes
+   actual UI surfaces without exposing a new product-visible theme selector or
+   adding persisted preference storage in this alignment scope.
 
 ---
 
@@ -203,7 +205,8 @@ contracts; new tests are added only for uncovered alignment deltas.
 - A file pane and a directory pane both have live indicators.
 - The user opens pane search or time offset from each pane in a three-pane
   workspace.
-- The user switches theme while a popover is open.
+- Theme variant changes in a mockup or test environment while a popover is
+  open.
 - The user switches platform variant in a mockup or test environment.
 - A future activity rail control is visible before its feature exists.
 - The Directory Search left panel is shown while directory-wide search remains
@@ -279,8 +282,9 @@ contracts; new tests are added only for uncovered alignment deltas.
   state boundaries.
 - **FR-023**: Light and dark appearances MUST apply to the actual application
   surfaces, including topbar, activity rail, panes, popovers, statusbar, log
-  rows, and state indicators; this alignment pass MUST NOT add new persisted
-  theme preference storage unless a later specification defines it.
+  rows, and state indicators; this alignment pass MUST NOT add a
+  product-visible theme selector or new persisted theme preference storage
+  unless a later specification defines it.
 - **FR-024**: macOS, Windows, Linux, and Web variants MUST render
   platform-appropriate shell chrome while preserving the same Crosslog product
   layout and behavior; OS-specific validation MUST verify the default runtime
@@ -296,8 +300,9 @@ contracts; new tests are added only for uncovered alignment deltas.
   for selectors and visual contracts instead of rewritten from scratch.
 - **FR-028**: New tests MUST be added only for alignment deltas not already
   covered: empty workspace, theme variants, platform variants, right-edge pane
-  alignment, drag resize, compact popover positioning, header no-overlap, and
-  obsolete-control removal.
+  alignment, drag resize, compact popover positioning, header no-overlap,
+  obsolete-control removal, Files/Directory Search guardrails, default platform
+  chrome evidence, and timed empty-state review.
 
 ### Constitution Requirements *(mandatory)*
 
@@ -334,8 +339,9 @@ contracts; new tests are added only for uncovered alignment deltas.
   pane that invoked it.
 - **Time Offset Popover**: The compact pane-local offset editor anchored to the
   pane that invoked it.
-- **Theme Variant**: The selected appearance whose tokens apply to all
-  application surfaces.
+- **Theme Variant**: The runtime, mockup, or test presentation appearance whose
+  tokens apply to all application surfaces; it is not a product-visible
+  selector in this alignment pass.
 - **Platform Variant**: The shell chrome variant for macOS, Windows, Linux, or
   Web.
 - **Test Coverage Map**: The trace from existing and newly added tests to the
@@ -371,6 +377,10 @@ contracts; new tests are added only for uncovered alignment deltas.
   planning is considered complete.
 - **SC-010**: Users can start from an empty workspace and identify how to open a
   source in no more than 5 seconds during review of the aligned empty state.
+  Evidence MUST record one reviewer starting from the empty workspace with no
+  instruction beyond the app title and review protocol, whether the
+  source-opening path was identifiable within 5 seconds, and the pass/fail
+  result in `validation-log.md`.
 
 ## Assumptions
 

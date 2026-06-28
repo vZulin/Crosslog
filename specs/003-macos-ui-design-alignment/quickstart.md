@@ -68,8 +68,8 @@ Verify these user-visible outcomes before closing implementation:
   toolbar.
 - Empty workspace shows shared topbar height, visible activity rail, centered
   drop zone, `Open Source`, and drag/drop entry.
-- Light and dark themes affect actual application surfaces.
-- Light/dark switching affects the current shell session without adding new
+- Light and dark runtime/mockup/test presentation variants affect actual
+  application surfaces without adding product-visible theme selectors or new
   persisted UI preference storage.
 - macOS, Windows, Linux, and Web variants render distinct shell chrome while
   sharing product behavior, and Windows/Linux UI gates record default OS chrome.
@@ -81,7 +81,9 @@ Verify these user-visible outcomes before closing implementation:
   return focus on Escape.
 - Future rail and left-panel surfaces do not execute out-of-scope behavior.
 - A timed review records that the empty workspace makes the source-opening path
-  identifiable within 5 seconds.
+  identifiable within 5 seconds. Evidence includes reviewer role,
+  empty-workspace start condition, viewport/platform, 5-second result, and
+  pass/fail outcome in `validation-log.md`.
 
 ## Test Migration Flow
 

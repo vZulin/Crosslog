@@ -255,8 +255,8 @@ without restating the full 002 redesign plan.
 - Ensure window, topbar, activity rail, panes, borders, scrollbars, accent,
   warning, error, text, tag backgrounds, popovers, statusbar, and log rows use
   tokens.
-- Keep theme selection as shell presentation state without adding new persisted
-  preference storage.
+- Keep theme variants as runtime, mockup, or test presentation input without
+  adding a product-visible selector or new persisted preference storage.
 
 **Reuse**:
 
@@ -266,7 +266,8 @@ without restating the full 002 redesign plan.
 **Tests**:
 
 - Update existing shell viewport/style tests.
-- Add missing light/dark application surface tests.
+- Add missing light/dark application surface tests using runtime/mockup/test
+  presentation inputs, not product UI controls.
 
 **Gate**:
 
@@ -499,6 +500,7 @@ without restating the full 002 redesign plan.
 - Future rail controls unavailable.
 - Empty-state source-opening recognition review for the 5-second usability
   criterion.
+- Files MVP-only behavior and Directory Search guardrails.
 
 **Gate**:
 
@@ -531,7 +533,18 @@ behavior changes, and always before release readiness.
   from the UI gate.
 
 Release readiness requires green automated, UI/E2E, and build jobs for Windows,
-macOS, and Linux.
+macOS, and Linux. Default OS chrome evidence MUST include the target OS, UI
+gate command or job link, captured shell variant, and pass/fail result in
+`validation-log.md`.
+
+**Timed Empty-State Review Evidence**:
+
+- Reviewer role: implementation reviewer or QA reviewer who has not received
+  step-by-step source-opening instructions for the current build.
+- Start condition: app loaded at the aligned empty workspace with no panes open.
+- Evidence: reviewer identifier or role, date, viewport/platform, whether the
+  source-opening path was identified within 5 seconds, and pass/fail result.
+- Pass threshold: the path is identifiable within 5 seconds.
 
 ## Phase 1 Design Outputs
 
@@ -559,7 +572,10 @@ macOS, and Linux.
 - PASS: The plan maps each user scenario to reused, updated, or new tests.
 - PASS: The plan treats obsolete-control removal and rightmost-pane alignment
   as first-class acceptance criteria.
-- PASS: The plan includes local macOS and GitHub Actions validation gates.
+- PASS: The plan includes local macOS and GitHub Actions validation gates;
+  local US4 completion validates shared implementation, while release-level
+  OS-specific default behavior remains incomplete until Windows, macOS, and
+  Linux UI gates provide corresponding-OS evidence.
 
 ## Project Structure
 

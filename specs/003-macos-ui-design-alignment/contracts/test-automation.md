@@ -52,9 +52,9 @@ Expected updates include:
 | Requirement | Required coverage |
 | --- | --- |
 | Obsolete controls absent | Component and UI/E2E assertions for empty and populated workspaces. |
-| Empty workspace alignment | Topbar height, activity rail, centered drop zone, `Open Source`, drag/drop entry, drag-over no shift, and recorded source-opening recognition review. |
-| Theme variants | Light and dark tokens applied to topbar, rail, panes, popovers, statusbar, log rows, warnings, errors, and tags. |
-| Platform variants | macOS traffic lights, Windows caption controls, Linux caption controls, Web no radius/shadow, and default OS chrome evidence in OS-specific UI gates. |
+| Empty workspace alignment | Topbar height, activity rail, centered drop zone, `Open Source`, drag/drop entry, drag-over no shift, and recorded source-opening recognition review with reviewer role, empty-workspace start condition, viewport/platform, 5-second result, and pass/fail outcome. |
+| Theme variants | Runtime/mockup/test light and dark presentation tokens applied to topbar, rail, panes, popovers, statusbar, log rows, warnings, errors, and tags; no product-visible theme selector is required or added. |
+| Platform variants | macOS traffic lights, Windows caption controls, Linux caption controls, and Web no radius/shadow through presentation override coverage, plus default OS chrome evidence from corresponding OS-specific UI gates. |
 | Rightmost pane alignment | Fit case reaches workspace right edge; overflow case scrolls horizontally. |
 | Drag resize | Pointer drag updates adjacent desired widths and persists them through existing session state. |
 | Compact popovers | Pane search and time offset open in left, middle, and right invoking panes; Escape returns focus. |
