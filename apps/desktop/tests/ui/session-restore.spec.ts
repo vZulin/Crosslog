@@ -2,6 +2,7 @@ import { browser, expect } from "@wdio/globals";
 import {
   dragPaneResizeBoundary,
   enqueueDesktopUiTestAction,
+  expectObsoleteControlsAbsent,
   getLogPaneByTitle,
   getRedesignedShell,
   openSampleLogsWithUiBridge,
@@ -21,6 +22,7 @@ describe("Desktop session restore", () => {
     await expect(shell.paneWorkspace).toBeExisting();
 
     await openSampleLogsWithUiBridge();
+    await expectObsoleteControlsAbsent();
 
     await dragPaneResizeBoundary("app.log", 80);
     enqueueDesktopUiTestAction("navigateNextDirectoryFile");
@@ -50,6 +52,7 @@ describe("Desktop session restore", () => {
     await expect(await getLogPaneByTitle("service.log")).toBeExisting();
     await expect(await getLogPaneByTitle("app-2026-06-15.log")).toBeExisting();
     await expect(shell.workspaceScrollbar).toBeExisting();
+    await expectObsoleteControlsAbsent();
     expect(await shell.statusBar.getText()).toContain("3 panes");
     expect(await shell.statusBar.getText()).toContain("Sync off");
     expect(await getElementWidth(await getLogPaneByTitle("app.log"))).toBe(resizedAppWidth);

@@ -22,7 +22,7 @@ export type * from "./ports/file-access-port";
 export type * from "./ports/file-watcher-port";
 export type * from "./ports/session-store-port";
 export type * from "./ports/source-picker-port";
-export type * from "./ports/ui-test-bridge-port";
+export * from "./ports/ui-test-bridge-port";
 export * from "./browser/browser-file-watcher";
 export * from "./browser/browser-file-access";
 export * from "./browser/browser-directory-access";

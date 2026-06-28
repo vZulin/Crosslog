@@ -1,5 +1,6 @@
 import { appendFileSync } from "node:fs";
 import { browser, expect } from "@wdio/globals";
+import type { UiTestAction } from "@crosslog/platform";
 import {
   redesignedShellObsoleteControlTestIds,
   redesignedShellStructuralTestIds,
@@ -107,23 +108,7 @@ export async function waitForUiTestTitleFragment(fragment: string, timeout = 15_
   });
 }
 
-export function enqueueDesktopUiTestAction(
-  action:
-    | "openSampleLogs"
-    | "copyFirstPane"
-    | "toggleSynchronization"
-    | "openActivePaneSearch"
-    | "setActivePaneInvalidSearch"
-    | "openEmptyDirectory"
-    | "navigatePreviousDirectoryFile"
-    | "navigateNextDirectoryFile"
-    | "discoverNewerDirectoryFile"
-    | "openActivePaneTimeOffset"
-    | "setActivePaneTimeOffset"
-    | "appendActiveFile"
-    | "deleteActiveFile"
-    | "replaceActiveFile",
-): void {
+export function enqueueDesktopUiTestAction(action: UiTestAction): void {
   const actionsPath = process.env.CROSSLOG_UI_TEST_ACTIONS_PATH;
 
   if (!actionsPath) {

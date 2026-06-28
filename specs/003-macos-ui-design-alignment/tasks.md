@@ -131,25 +131,25 @@
 
 ### Tests for User Story 5 (MANDATORY)
 
-- [ ] T061 [P] [US5] Update Web session restore UI test for aligned shell selectors and preserved pane/session outcomes in `apps/web/tests/ui/session-restore.spec.ts`
-- [ ] T062 [P] [US5] Update Desktop WDIO session restore UI test for aligned shell selectors and preserved pane/session outcomes in `apps/desktop/tests/ui/session-restore.spec.ts`
-- [ ] T063 [P] [US5] Update macOS session restore XCTest coverage for aligned shell selectors and preserved pane/session outcomes in `apps/desktop/tests/ui/macos/SessionRestoreUITests.swift`
-- [ ] T064 [P] [US5] Update Web unsupported-monitoring UI test to use aligned lifecycle indicators without old product action buttons in `apps/web/tests/ui/unsupported-monitoring.spec.ts`
-- [ ] T065 [P] [US5] Update Desktop live file update UI test to use UI bridge actions instead of visible lifecycle buttons in `apps/desktop/tests/ui/live-file-updates.spec.ts`
-- [ ] T066 [P] [US5] Update macOS live file state XCTest coverage to use UI bridge actions and aligned header indicators in `apps/desktop/tests/ui/macos/LiveFileStateUITests.swift`
-- [ ] T067 [P] [US5] Update Web log text copy UI test to verify selection/context-menu/keyboard copy without permanent toolbar UI in `apps/web/tests/ui/log-text-copy.spec.ts`
-- [ ] T068 [P] [US5] Update Desktop log text copy UI test to verify selection/context-menu/keyboard copy without permanent toolbar UI in `apps/desktop/tests/ui/log-text-copy.spec.ts`
-- [ ] T069 [P] [US5] Update macOS log text copy XCTest coverage for aligned copy behavior in `apps/desktop/tests/ui/macos/LogTextCopyUITests.swift`
-- [ ] T070 [P] [US5] Add final test reuse audit updates for reused, selector-updated, activity rail/Files guardrail, Directory Search guardrail, and newly added coverage in `specs/003-macos-ui-design-alignment/test-reuse-audit.md`
+- [X] T061 [P] [US5] Update Web session restore UI test for aligned shell selectors and preserved pane/session outcomes in `apps/web/tests/ui/session-restore.spec.ts`
+- [X] T062 [P] [US5] Update Desktop WDIO session restore UI test for aligned shell selectors and preserved pane/session outcomes in `apps/desktop/tests/ui/session-restore.spec.ts`
+- [X] T063 [P] [US5] Update macOS session restore XCTest coverage for aligned shell selectors and preserved pane/session outcomes in `apps/desktop/tests/ui/macos/SessionRestoreUITests.swift`
+- [X] T064 [P] [US5] Update Web unsupported-monitoring UI test to use aligned lifecycle indicators without old product action buttons in `apps/web/tests/ui/unsupported-monitoring.spec.ts`
+- [X] T065 [P] [US5] Update Desktop live file update UI test to use UI bridge actions instead of visible lifecycle buttons in `apps/desktop/tests/ui/live-file-updates.spec.ts`
+- [X] T066 [P] [US5] Update macOS live file state XCTest coverage to use UI bridge actions and aligned header indicators in `apps/desktop/tests/ui/macos/LiveFileStateUITests.swift`
+- [X] T067 [P] [US5] Update Web log text copy UI test to verify selection/context-menu/keyboard copy without permanent toolbar UI in `apps/web/tests/ui/log-text-copy.spec.ts`
+- [X] T068 [P] [US5] Update Desktop log text copy UI test to verify selection/context-menu/keyboard copy without permanent toolbar UI in `apps/desktop/tests/ui/log-text-copy.spec.ts`
+- [X] T069 [P] [US5] Update macOS log text copy XCTest coverage for aligned copy behavior in `apps/desktop/tests/ui/macos/LogTextCopyUITests.swift`
+- [X] T070 [P] [US5] Add final test reuse audit updates for reused, selector-updated, activity rail/Files guardrail, Directory Search guardrail, and newly added coverage in `specs/003-macos-ui-design-alignment/test-reuse-audit.md`
 
 ### Implementation for User Story 5
 
-- [ ] T071 [US5] Keep lifecycle simulation actions available only through UI test bridge command handling in `packages/ui/src/app-shell/AppShell.tsx`
-- [ ] T072 [US5] Update the UI test bridge action type list and shell-state publication for lifecycle/source actions in `packages/platform/src/ports/ui-test-bridge-port.ts`
-- [ ] T073 [US5] Update Desktop UI bridge command consumption for lifecycle/source actions in `apps/desktop/src-tauri/src/commands/ui_test.rs`
-- [ ] T074 [US5] Keep browser and Desktop capability messaging aligned with the new shell in `packages/ui/src/app-shell/CapabilityLimitations.tsx`
-- [ ] T075 [US5] Verify read-only and inert rendering regressions remain unchanged by running existing safety tests and recording results in `specs/003-macos-ui-design-alignment/validation-log.md`
-- [ ] T076 [US5] Run `bash scripts/macos/test.sh` and `bash scripts/macos/test-ui.sh` for US5 and record the result in `specs/003-macos-ui-design-alignment/validation-log.md`
+- [X] T071 [US5] Keep lifecycle simulation actions available only through UI test bridge command handling in `packages/ui/src/app-shell/AppShell.tsx`
+- [X] T072 [US5] Update the UI test bridge action type list and shell-state publication for lifecycle/source actions in `packages/platform/src/ports/ui-test-bridge-port.ts`
+- [X] T073 [US5] Update Desktop UI bridge command consumption for lifecycle/source actions in `apps/desktop/src-tauri/src/commands/ui_test.rs`
+- [X] T074 [US5] Keep browser and Desktop capability messaging aligned with the new shell in `packages/ui/src/app-shell/CapabilityLimitations.tsx`
+- [X] T075 [US5] Verify read-only and inert rendering regressions remain unchanged by running existing safety tests and recording results in `specs/003-macos-ui-design-alignment/validation-log.md`
+- [X] T076 [US5] Run `bash scripts/macos/test.sh` and `bash scripts/macos/test-ui.sh` for US5 and record the result in `specs/003-macos-ui-design-alignment/validation-log.md`
 
 **Checkpoint**: Prior MVP behavior remains requirement-driven and covered.
 

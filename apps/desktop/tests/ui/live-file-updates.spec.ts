@@ -5,6 +5,7 @@ import {
   byTestId,
   clickElementWithJavaScript,
   enqueueDesktopUiTestAction,
+  expectObsoleteControlsAbsent,
   getLogPaneByTitle,
   openSampleLogsWithUiBridge,
   waitForDesktopShell,
@@ -15,6 +16,7 @@ describe("Desktop live file updates", () => {
   it("appends, retains deleted content, and treats replacement as pane-local", async () => {
     await waitForDesktopShell();
     await openSampleLogsWithUiBridge();
+    await expectObsoleteControlsAbsent();
 
     const appPane = await activateLogPaneByTitle("app.log");
     const appHeader = await appPane.$(byTestId(redesignedShellTestIds.paneHeader));
@@ -23,11 +25,13 @@ describe("Desktop live file updates", () => {
 
     enqueueDesktopUiTestAction("appendActiveFile");
     await waitForUiTestTitleFragment("lifecycle=app.log:live");
+    await expectObsoleteControlsAbsent();
     await expect(await appPane.$("code*=live appended line")).toBeExisting();
     await expectElementTextContent(await appHeader.$(byTestId(redesignedShellTestIds.paneHeaderLive)), "Live");
 
     enqueueDesktopUiTestAction("deleteActiveFile");
     await waitForUiTestTitleFragment("lifecycle=app.log:deleted");
+    await expectObsoleteControlsAbsent();
     const deletedAppPane = await getLogPaneByTitle("app.log");
     const deletedAppHeader = await deletedAppPane.$(byTestId(redesignedShellTestIds.paneHeader));
     await expectElementTextContent(
@@ -47,6 +51,7 @@ describe("Desktop live file updates", () => {
     await activateLogPaneByTitle("app.log");
     enqueueDesktopUiTestAction("replaceActiveFile");
     await waitForUiTestTitleFragment("lifecycle=app.log:replaced");
+    await expectObsoleteControlsAbsent();
     const replacedAppPane = await getLogPaneByTitle("app.log");
     const replacedAppHeader = await replacedAppPane.$(byTestId(redesignedShellTestIds.paneHeader));
     await expectElementTextContent(

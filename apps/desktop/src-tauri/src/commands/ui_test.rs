@@ -1,5 +1,22 @@
 use std::{env, fs, io};
 
+const SUPPORTED_UI_TEST_ACTIONS: &[&str] = &[
+    "openSampleLogs",
+    "copyFirstPane",
+    "toggleSynchronization",
+    "openActivePaneSearch",
+    "setActivePaneInvalidSearch",
+    "openEmptyDirectory",
+    "navigatePreviousDirectoryFile",
+    "navigateNextDirectoryFile",
+    "discoverNewerDirectoryFile",
+    "openActivePaneTimeOffset",
+    "setActivePaneTimeOffset",
+    "appendActiveFile",
+    "deleteActiveFile",
+    "replaceActiveFile",
+];
+
 #[tauri::command]
 pub fn is_ui_test_mode() -> bool {
     ui_test_mode_enabled()
@@ -47,16 +64,32 @@ pub fn consume_ui_test_action() -> Result<Option<String>, String> {
         Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(None),
         Err(error) => return Err(error.to_string()),
     };
-    let mut actions = contents
+    let actions = contents
         .lines()
         .map(str::trim)
-        .filter(|line| !line.is_empty());
+        .filter(|line| !line.is_empty())
+        .collect::<Vec<_>>();
 
-    let Some(action) = actions.next() else {
+    let Some((action_index, action)) = actions
+        .iter()
+        .enumerate()
+        .find(|(_, action)| supported_ui_test_action(action))
+    else {
+        fs::write(actions_path, String::new()).map_err(|error| error.to_string())?;
         return Ok(None);
     };
 
-    let remaining_actions = actions.collect::<Vec<_>>();
+    let remaining_actions = actions
+        .iter()
+        .enumerate()
+        .filter_map(|(index, remaining_action)| {
+            if index > action_index {
+                Some(*remaining_action)
+            } else {
+                None
+            }
+        })
+        .collect::<Vec<_>>();
     let remaining_contents = if remaining_actions.is_empty() {
         String::new()
     } else {
@@ -65,11 +98,15 @@ pub fn consume_ui_test_action() -> Result<Option<String>, String> {
 
     fs::write(actions_path, remaining_contents).map_err(|error| error.to_string())?;
 
-    Ok(Some(action.to_owned()))
+    Ok(Some((*action).to_owned()))
 }
 
 pub(crate) fn ui_test_mode_enabled() -> bool {
     env::var("CROSSLOG_UI_TEST")
         .is_ok_and(|value| value == "1" || value.eq_ignore_ascii_case("true"))
         || env::args().any(|argument| argument == "--crosslog-ui-test")
+}
+
+fn supported_ui_test_action(action: &str) -> bool {
+    SUPPORTED_UI_TEST_ACTIONS.contains(&action)
 }

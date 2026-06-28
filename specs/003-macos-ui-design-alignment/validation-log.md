@@ -43,6 +43,16 @@ restate the full 001 or 002 validation history.
 | 2026-06-29 | T060 US2 automated gate | `bash scripts/macos/test.sh` | Pass | Lint passed; Vitest unit suites passed 47 files / 120 tests; integration suites passed 4 files / 5 tests; Rust tests passed 5 tests. |
 | 2026-06-29 | T060 US2 performance gate | `bash scripts/macos/perf.sh` | Pass | Performance benchmark gate completed after rendering and scrolling layout changes. Existing performance scenarios for source opening, search, synchronization, session writing, directory navigation, virtualization, live append, and memory pressure completed successfully. |
 
+## Phase 5: User Story 5 MVP Behavior Preservation
+
+| Date | Scope | Command Or Evidence | Result | Notes |
+| --- | --- | --- | --- | --- |
+| 2026-06-29 | T061-T074 US5 targeted bridge and obsolete-control coverage | `corepack pnpm exec vitest run packages/platform/tests/ports/ui-test-bridge-port.test.ts packages/ui/tests/app-shell/obsolete-controls.test.tsx packages/ui/tests/app-shell/redesigned-workspace.test.tsx` | Pass | Targeted component/contract tests passed 3 files / 7 tests, covering the shared UI test action whitelist, shell-state formatting, hidden lifecycle/source action removal, and obsolete-control absence. |
+| 2026-06-29 | T061, T064, T067 Web preservation coverage | `corepack pnpm exec playwright test --config playwright.config.ts apps/web/tests/ui/session-restore.spec.ts apps/web/tests/ui/directory-navigation.spec.ts apps/web/tests/ui/empty-directory.spec.ts apps/web/tests/ui/unsupported-monitoring.spec.ts apps/web/tests/ui/log-text-copy.spec.ts apps/web/tests/ui/browser-capabilities.spec.ts` | Pass | Targeted Playwright suite passed 6 tests, including Web test bridge source setup, restored session outcomes, browser capability messaging, unsupported monitoring indicators, directory refresh, empty directory, and copy without permanent toolbar UI. |
+| 2026-06-29 | T075 read-only and inert rendering safety | `corepack pnpm test:integration` | Pass | Integration suites passed 4 files / 5 tests, including read-only file safety and inert log content security. |
+| 2026-06-29 | T076 US5 automated gate | `bash scripts/macos/test.sh` | Pass | Lint passed; Vitest unit suites passed 47 files / 121 tests; integration suites passed 4 files / 5 tests; Rust tests passed 5 tests. |
+| 2026-06-29 | T076 US5 UI gate | `bash scripts/macos/test-ui.sh` | Pass | Playwright Web UI passed 14 tests; Desktop/macOS UI tests built the app and XCTest suite passed 10 tests with `obsolete=absent` evidence across session restore, live lifecycle, copy, and aligned shell preservation flows. |
+
 ## Future Evidence Slots
 
 - US3 gate: `bash scripts/macos/test.sh` and `bash scripts/macos/test-ui.sh`.

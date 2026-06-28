@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 import { redesignedShellTestIds } from "@crosslog/ui";
-import { getRedesignedShell } from "./helpers/redesigned-shell";
+import { expectObsoleteControlsAbsent, getRedesignedShell } from "./helpers/redesigned-shell";
 
 test("restores panes from last valid browser session after reload", async ({ page }) => {
   await page.goto("/");
@@ -19,6 +19,7 @@ test("restores panes from last valid browser session after reload", async ({ pag
   await expect(shell.activityRail).toBeVisible();
   await expect(shell.paneWorkspace).toBeVisible();
   await expect(shell.statusBar).toContainText("3 panes");
+  await expectObsoleteControlsAbsent(page);
 
   await dragResizeBoundary(page, "app.log", 80);
   await directoryHeader.getByTestId(redesignedShellTestIds.paneHeaderDirectoryNext).click();
@@ -60,6 +61,7 @@ test("restores panes from last valid browser session after reload", async ({ pag
   await expect(shell.statusBar).toContainText("3 panes");
   await expect(shell.statusBar).toContainText("Sync off");
   await expect(shell.statusBar).toContainText("Active: app-2026-06-15.log");
+  await expectObsoleteControlsAbsent(page);
 
   await expect(directoryPane.getByTestId(redesignedShellTestIds.paneHeaderOffset)).toContainText("+1m");
   await expect(directoryHeader.getByTestId(redesignedShellTestIds.paneHeaderSelectedFile)).toHaveText(

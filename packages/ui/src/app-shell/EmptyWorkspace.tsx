@@ -5,14 +5,12 @@ import { redesignedShellTestIds } from "./testIds";
 export interface EmptyWorkspaceProps {
   readonly onOpenSource: () => void;
   readonly onFilesSelected?: React.ChangeEventHandler<HTMLInputElement>;
-  readonly onOpenEmptyDirectoryForTests?: () => void;
   readonly onDragOver?: React.DragEventHandler<HTMLElement>;
   readonly onDrop?: React.DragEventHandler<HTMLElement>;
 }
 
 export function EmptyWorkspace({
   onFilesSelected,
-  onOpenEmptyDirectoryForTests,
   onOpenSource,
   onDragOver,
   onDrop,
@@ -65,16 +63,6 @@ export function EmptyWorkspace({
             onChange={onFilesSelected}
             type="file"
           />
-        ) : null}
-        {onOpenEmptyDirectoryForTests ? (
-          <button
-            data-ui-test-action="openEmptyDirectory"
-            hidden
-            onClick={onOpenEmptyDirectoryForTests}
-            type="button"
-          >
-            Open empty directory
-          </button>
         ) : null}
       </div>
     </section>

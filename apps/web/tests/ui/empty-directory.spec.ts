@@ -1,11 +1,15 @@
 import { expect, test } from "@playwright/test";
 import { redesignedShellTestIds } from "@crosslog/ui";
+import {
+  enqueueWebUiTestAction,
+  gotoWithWebUiTestBridge,
+  waitForWebUiTestTitleFragment,
+} from "./helpers/redesigned-shell";
 
 test("shows empty-directory status for directories without top-level files", async ({ page }) => {
-  await page.goto("/");
-  await page.locator('[data-ui-test-action="openEmptyDirectory"]').evaluate((element) => {
-    (element as HTMLButtonElement).click();
-  });
+  await gotoWithWebUiTestBridge(page);
+  await enqueueWebUiTestAction(page, "openEmptyDirectory");
+  await waitForWebUiTestTitleFragment(page, "emptyDirectory=on");
 
   await expect(page.getByTestId(redesignedShellTestIds.paneWorkspace)).toBeVisible();
   const paneHeader = page.getByTestId(redesignedShellTestIds.paneHeader);

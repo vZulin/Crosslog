@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { UiTestShellState } from "../../src/ports/ui-test-bridge-port";
+import { isUiTestAction, uiTestActions, type UiTestShellState } from "../../src/ports/ui-test-bridge-port";
 import { formatUiTestShellState } from "../../src/tauri/tauri-ui-test-bridge";
 
 describe("UI test bridge shell state contract", () => {
@@ -71,6 +71,28 @@ describe("UI test bridge shell state contract", () => {
     expect(formatUiTestShellState(state)).toContain("workspaceOverflow=off");
     expect(formatUiTestShellState(state)).toContain("rightEdgeAligned=unknown");
     expect(formatUiTestShellState(state)).toContain("workspaceWidth=unknown");
+  });
+
+  it("keeps lifecycle and source simulation actions behind the supported UI test action contract", () => {
+    expect(uiTestActions).toEqual([
+      "openSampleLogs",
+      "copyFirstPane",
+      "toggleSynchronization",
+      "openActivePaneSearch",
+      "setActivePaneInvalidSearch",
+      "openEmptyDirectory",
+      "navigatePreviousDirectoryFile",
+      "navigateNextDirectoryFile",
+      "discoverNewerDirectoryFile",
+      "openActivePaneTimeOffset",
+      "setActivePaneTimeOffset",
+      "appendActiveFile",
+      "deleteActiveFile",
+      "replaceActiveFile",
+    ]);
+    expect(isUiTestAction("appendActiveFile")).toBe(true);
+    expect(isUiTestAction("openEmptyDirectory")).toBe(true);
+    expect(isUiTestAction("showProductLifecycleToolbar")).toBe(false);
   });
 });
 

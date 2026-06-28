@@ -4,6 +4,7 @@ import { BrowserDirectoryAccess } from "@crosslog/platform/browser/browser-direc
 import { BrowserSessionStore } from "@crosslog/platform/browser/browser-session-store";
 import { createBrowserDragDropSource } from "./browserDropSources";
 import { createBrowserFileAccess } from "./browserFileSources";
+import { createBrowserUiTestBridge } from "./browserUiTestBridge";
 
 export function createWebPlatform(): CrosslogPlatform {
   return {
@@ -13,5 +14,6 @@ export function createWebPlatform(): CrosslogPlatform {
     directoryAccess: new BrowserDirectoryAccess(),
     dragDropSource: createBrowserDragDropSource(),
     sessionStore: new BrowserSessionStore(),
+    uiTestBridge: createBrowserUiTestBridge(),
   };
 }

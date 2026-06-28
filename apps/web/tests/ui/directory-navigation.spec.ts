@@ -1,8 +1,13 @@
 import { expect, test } from "@playwright/test";
 import { redesignedShellTestIds } from "@crosslog/ui";
+import {
+  enqueueWebUiTestAction,
+  gotoWithWebUiTestBridge,
+  waitForWebUiTestTitleFragment,
+} from "./helpers/redesigned-shell";
 
 test("navigates directory files without auto-switching on refresh", async ({ page }) => {
-  await page.goto("/");
+  await gotoWithWebUiTestBridge(page);
   await page.getByTestId(redesignedShellTestIds.emptyOpenSource).click();
 
   await expect(page.getByTestId(redesignedShellTestIds.paneWorkspace)).toBeVisible();
@@ -27,9 +32,8 @@ test("navigates directory files without auto-switching on refresh", async ({ pag
   await expect(selectedFile).toHaveText("app-2026-06-15.log");
 
   await previousFile.click();
-  await page.locator('[data-ui-test-action="discoverNewerDirectoryFile"]').evaluate((element) => {
-    (element as HTMLButtonElement).click();
-  });
+  await enqueueWebUiTestAction(page, "discoverNewerDirectoryFile");
+  await waitForWebUiTestTitleFragment(page, "directoryPrevious=on");
 
   await expect(selectedFile).toHaveText("app-2026-06-16.log");
   await expect(previousFile).toBeEnabled();

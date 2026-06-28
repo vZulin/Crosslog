@@ -6,6 +6,7 @@ final class SessionRestoreUITests: CrosslogUITests {
 
         openSampleLogs(in: app)
         RedesignedShellAssertions.assertRequiredRegions(in: app)
+        RedesignedShellAssertions.assertObsoleteControlsAbsent(in: app)
         performUiTestAction(.navigateNextDirectoryFile)
         waitForUiTestTitle("directoryFile=app-2026-06-15.log", in: app)
         performUiTestAction(.openActivePaneTimeOffset)
@@ -32,6 +33,7 @@ final class SessionRestoreUITests: CrosslogUITests {
         waitForUiTestTitle("active=app-2026-06-15.log", in: app)
 
         RedesignedShellAssertions.assertRequiredRegions(in: app)
+        RedesignedShellAssertions.assertObsoleteControlsAbsent(in: app)
         RedesignedShellAssertions.assertPaneCount(3, in: app)
         RedesignedShellAssertions.assertStatusContains("3 panes", in: app)
         RedesignedShellAssertions.assertStatusContains("Sync off", in: app)

@@ -1,4 +1,5 @@
 import { expect, type Locator, type Page } from "@playwright/test";
+import type { UiTestAction } from "@crosslog/platform";
 import {
   redesignedShellStructuralTestIds,
   redesignedShellObsoleteControlTestIds,
@@ -76,6 +77,7 @@ export function shellPresentationUrl(
   options: {
     readonly theme?: ShellThemeVariant;
     readonly platform?: ShellPlatformVariant;
+    readonly uiTestBridge?: boolean;
   } = {},
 ): string {
   const url = new URL(baseUrl, "http://localhost");
@@ -88,5 +90,33 @@ export function shellPresentationUrl(
     url.searchParams.set("crosslog-platform", options.platform);
   }
 
+  if (options.uiTestBridge) {
+    url.searchParams.set("crosslog-ui-test", "1");
+  }
+
   return `${url.pathname}${url.search}`;
+}
+
+export async function gotoWithWebUiTestBridge(page: Page, baseUrl = "/"): Promise<void> {
+  await page.goto(shellPresentationUrl(baseUrl, { uiTestBridge: true }));
+  await waitForWebUiTestTitleFragment(page, "state=");
+}
+
+export async function enqueueWebUiTestAction(page: Page, action: UiTestAction): Promise<void> {
+  await page.evaluate((queuedAction) => {
+    window.__crosslogUiTestActions ??= [];
+    window.__crosslogUiTestActions.push(queuedAction);
+  }, action);
+}
+
+export async function waitForWebUiTestTitleFragment(
+  page: Page,
+  fragment: string,
+  timeout = 10_000,
+): Promise<void> {
+  await page.waitForFunction(
+    (expectedFragment) => document.title.includes(expectedFragment),
+    fragment,
+    { timeout },
+  );
 }

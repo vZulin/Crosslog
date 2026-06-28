@@ -444,7 +444,7 @@ export function AppShell({ platform, shellPresentation: shellPresentationOverrid
     (action: UiTestAction) => {
       switch (action) {
         case "openSampleLogs":
-          if (!clickUiTestActionControl("openSampleLogs") && state.panes.length === 0) {
+          if (state.panes.length === 0) {
             samplePanes.forEach((pane) => dispatch({ type: "addPane", pane }));
           }
           break;
@@ -456,9 +456,7 @@ export function AppShell({ platform, shellPresentation: shellPresentationOverrid
           }
           break;
         case "toggleSynchronization":
-          if (!clickUiTestActionControl("toggleSynchronization")) {
-            handleSynchronizationEnabledChange(!synchronizationEnabled);
-          }
+          handleSynchronizationEnabledChange(!synchronizationEnabled);
           break;
         case "openActivePaneSearch":
           requestActivePaneSearch();
@@ -679,27 +677,6 @@ export function AppShell({ platform, shellPresentation: shellPresentationOverrid
     dispatch({ type: "addPane", pane: createAddedPane(state.nextPaneNumber) });
   };
 
-  const handleOpenEmptyDirectory = () => {
-    dispatchDirectorySource({ type: "refreshFiles", files: [] });
-    dispatch({
-      type: "addPane",
-      pane: {
-        id: "pane-empty-directory",
-        title: "logs/empty",
-        sourceRef: "source-directory",
-        width: 520,
-        status: "empty",
-      },
-    });
-  };
-
-  const handleDiscoverNewerDirectoryFile = () => {
-    dispatchDirectorySource({
-      type: "refreshFiles",
-      files: [newerDirectoryFile, ...directorySource.files],
-    });
-  };
-
   const handleOpenSourcesFromRail = () => {
     if (state.panes.length === 0) {
       handleOpenSampleLogs();
@@ -719,7 +696,6 @@ export function AppShell({ platform, shellPresentation: shellPresentationOverrid
         onDragOver={(event) => event.preventDefault()}
         onDrop={handleDrop}
         onFilesSelected={platform.kind === "web" ? handleBrowserFileInput : undefined}
-        onOpenEmptyDirectoryForTests={handleOpenEmptyDirectory}
         onOpenSource={handleOpenSampleLogs}
       />
     ) : (
@@ -775,32 +751,6 @@ export function AppShell({ platform, shellPresentation: shellPresentationOverrid
           <SessionRecoveryBanner message={restoreState.message} />
           <CapabilityLimitations limitations={platform.capabilities.limitations} />
           <TimestampConfigError message={null} />
-          <div aria-hidden="true" hidden>
-            <button
-              aria-label="Discover newer directory file"
-              data-ui-test-action="discoverNewerDirectoryFile"
-              onClick={handleDiscoverNewerDirectoryFile}
-              type="button"
-            />
-            <button
-              aria-label="Append live line"
-              data-ui-test-action="appendActiveFile"
-              onClick={() => handleFileLifecycleTestAction("append")}
-              type="button"
-            />
-            <button
-              aria-label="Delete active file"
-              data-ui-test-action="deleteActiveFile"
-              onClick={() => handleFileLifecycleTestAction("delete")}
-              type="button"
-            />
-            <button
-              aria-label="Replace active file"
-              data-ui-test-action="replaceActiveFile"
-              onClick={() => handleFileLifecycleTestAction("replace")}
-              type="button"
-            />
-          </div>
         </>
       }
       themeVariant={shellPresentation.themeVariant}
@@ -1090,23 +1040,6 @@ const newerDirectoryFile = createDirectoryFileEntry({
 });
 
 const uiTestActionPollIntervalMs = 100;
-
-function clickUiTestActionControl(action: UiTestAction): boolean {
-  if (typeof document === "undefined") {
-    return false;
-  }
-
-  return clickElement(document.querySelector<HTMLElement>(`[data-ui-test-action="${action}"]`));
-}
-
-function clickElement(element: HTMLElement | null): boolean {
-  if (!element) {
-    return false;
-  }
-
-  element.click();
-  return true;
-}
 
 function createAddedPane(nextPaneNumber: number) {
   return {

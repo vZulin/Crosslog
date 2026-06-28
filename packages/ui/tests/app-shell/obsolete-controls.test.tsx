@@ -30,6 +30,11 @@ describe("obsolete product controls", () => {
     expect(queryByText("Append live line")).toBeNull();
     expect(queryByText("Delete active file")).toBeNull();
     expect(queryByText("Replace active file")).toBeNull();
+    expect(queryByLabelText("Discover newer directory file")).toBeNull();
+    expect(queryByLabelText("Append live line")).toBeNull();
+    expect(queryByLabelText("Delete active file")).toBeNull();
+    expect(queryByLabelText("Replace active file")).toBeNull();
+    expect(container.querySelector('[data-ui-test-action="openEmptyDirectory"]')).toBeNull();
 
     fireEvent.click(getByRole("button", { name: "Open Source" }));
     await waitFor(() => expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(3));
@@ -44,6 +49,10 @@ describe("obsolete product controls", () => {
     expect(queryByText("Append live line")).toBeNull();
     expect(queryByText("Delete active file")).toBeNull();
     expect(queryByText("Replace active file")).toBeNull();
+    expect(queryByLabelText("Discover newer directory file")).toBeNull();
+    expect(queryByLabelText("Append live line")).toBeNull();
+    expect(queryByLabelText("Delete active file")).toBeNull();
+    expect(queryByLabelText("Replace active file")).toBeNull();
   });
 
   it("does not expose Directory Search as an active left-panel feature", async () => {
