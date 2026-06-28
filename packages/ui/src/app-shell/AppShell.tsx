@@ -81,6 +81,7 @@ export function AppShell({ platform }: AppShellProps) {
   const setSynchronizationAnchor = useSynchronizationStore((store) => store.setAnchor);
   const setPaneOffset = useSynchronizationStore((store) => store.setPaneOffset);
   const setPlanResult = useSynchronizationStore((store) => store.setPlanResult);
+  const restoreSynchronizationSessionState = useSynchronizationStore((store) => store.restoreSessionState);
   const searchStates = usePaneSearchStore((store) => store.states);
   const setPaneSearchLines = usePaneSearchStore((store) => store.setPaneLines);
   const setSearchQuery = usePaneSearchStore((store) => store.setQuery);
@@ -96,6 +97,7 @@ export function AppShell({ platform }: AppShellProps) {
       );
 
       dispatch({ type: "replaceState", state: restoreLogPaneStateFromSession(session) });
+      restoreSynchronizationSessionState(session);
       setFileSources(restoreFileSourcesFromSession(session));
 
       if (restoredDirectorySource) {
@@ -111,23 +113,6 @@ export function AppShell({ platform }: AppShellProps) {
   const timestampService = React.useMemo(
     () => createTimestampRecognitionService(defaultTimestampFormats),
     [],
-  );
-  const sessionSnapshot = React.useMemo(
-    () =>
-      state.panes.length === 0
-        ? null
-        : createSessionSnapshot({
-            panes: state.panes,
-            fileSources: Object.values(fileSources),
-            directorySources: [directorySource],
-          }),
-    [directorySource, fileSources, state.panes],
-  );
-
-  const sessionSnapshotStatus = useSessionSnapshotWriter(
-    platform.sessionStore,
-    sessionSnapshot,
-    restoreState.status === "ready" && state.panes.length > 0,
   );
 
   const paneData = React.useMemo(
@@ -169,6 +154,24 @@ export function AppShell({ platform }: AppShellProps) {
         };
       }),
     [directorySource, fileSources, state.panes, syncOffsets, syncTargets, synchronizationEnabled, timestampService],
+  );
+  const sessionSnapshot = React.useMemo(
+    () =>
+      paneData.length === 0
+        ? null
+        : createSessionSnapshot({
+            panes: paneData.map((entry) => entry.pane),
+            fileSources: Object.values(fileSources),
+            directorySources: [directorySource],
+            synchronizationEnabled,
+          }),
+    [directorySource, fileSources, paneData, synchronizationEnabled],
+  );
+
+  const sessionSnapshotStatus = useSessionSnapshotWriter(
+    platform.sessionStore,
+    sessionSnapshot,
+    restoreState.status === "ready" && paneData.length > 0,
   );
   const panes = paneData.map((entry) => ({
     ...entry,

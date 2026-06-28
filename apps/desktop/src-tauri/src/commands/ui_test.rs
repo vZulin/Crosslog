@@ -6,6 +6,16 @@ pub fn is_ui_test_mode() -> bool {
 }
 
 #[tauri::command]
+pub fn ui_test_session_key() -> String {
+    let suffix = env::var("CROSSLOG_UI_TEST_ACTIONS_PATH")
+        .ok()
+        .filter(|value| !value.trim().is_empty())
+        .unwrap_or_else(|| "default".to_owned());
+
+    format!("crosslog.ui-test.session.last-valid:{suffix}")
+}
+
+#[tauri::command]
 pub fn publish_ui_test_state(window: tauri::Window, state: String) -> Result<(), String> {
     if ui_test_mode_enabled() {
         window

@@ -39,6 +39,7 @@ body {
 }
 
 .crosslog-shell {
+  position: relative;
   display: grid;
   grid-template:
     "topbar topbar" var(--crosslog-topbar-height)
@@ -77,11 +78,46 @@ body {
   background: var(--crosslog-surface);
 }
 
+.crosslog-shell__banners {
+  grid-area: workspace;
+  z-index: 4;
+  align-self: start;
+  justify-self: stretch;
+  display: grid;
+  gap: 6px;
+  padding: 8px 12px;
+  pointer-events: none;
+}
+
 .crosslog-shell__status {
   grid-area: status;
   min-width: 0;
   border-block-start: 1px solid var(--crosslog-border);
   background: var(--crosslog-rail-surface);
+}
+
+.crosslog-capability-limitations {
+  max-inline-size: min(560px, 100%);
+  border: 1px solid rgb(154 101 0 / 35%);
+  border-radius: var(--crosslog-control-radius);
+  background: var(--crosslog-warning-surface);
+  color: var(--crosslog-warning-text);
+  box-shadow: 0 8px 20px rgb(29 29 31 / 10%);
+}
+
+.crosslog-capability-limitations__list {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  padding: 7px 10px;
+  list-style: none;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.crosslog-capability-limitations__item {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .crosslog-icon-button {

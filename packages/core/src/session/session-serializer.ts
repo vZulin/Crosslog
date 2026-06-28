@@ -9,6 +9,7 @@ export interface SessionSnapshotInput {
   readonly panes: readonly LogPane[];
   readonly fileSources: readonly FileSource[];
   readonly directorySources: readonly DirectorySource[];
+  readonly synchronizationEnabled: boolean;
 }
 
 export function createSessionSnapshot(input: SessionSnapshotInput): Session {
@@ -43,6 +44,7 @@ export function createSessionSnapshot(input: SessionSnapshotInput): Session {
         .filter((source) => source.currentFileId !== null)
         .map((source) => [source.id, source.currentFileId as string]),
     ),
+    synchronizationEnabled: input.synchronizationEnabled,
     futureExtensions: {},
   };
 

@@ -54,5 +54,6 @@ export interface Session {
   readonly paneSizes: Readonly<Record<LogPaneId, number>>;
   readonly sources: readonly SessionSource[];
   readonly directorySelections: Readonly<Record<DirectorySourceId, string>>;
+  readonly synchronizationEnabled: boolean;
   readonly futureExtensions: Readonly<Record<string, unknown>>;
 }

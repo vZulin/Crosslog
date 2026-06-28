@@ -233,22 +233,22 @@
 
 ### Tests for User Story 7
 
-- [ ] T099 [P] [US7] Update Web session restore UI test for redesigned shell restore assertions in `apps/web/tests/ui/session-restore.spec.ts`
-- [ ] T100 [P] [US7] Update Desktop WDIO session restore UI test for redesigned shell restore assertions in `apps/desktop/tests/ui/session-restore.spec.ts`
-- [ ] T101 [P] [US7] Add macOS session restore UI test for redesigned shell restore assertions in `apps/desktop/tests/ui/macos/SessionRestoreUITests.swift`
-- [ ] T102 [P] [US7] Update Web browser capability UI test for redesigned shell messaging in `apps/web/tests/ui/browser-capabilities.spec.ts`
-- [ ] T103 [P] [US7] Update browser drag/drop UI test for redesigned empty shell in `apps/web/tests/ui/browser-drag-drop.spec.ts`
-- [ ] T104 [P] [US7] Update manual encoding UI tests for redesigned shell regions in `apps/web/tests/ui/manual-encoding.spec.ts`
-- [ ] T105 [P] [US7] Update Desktop manual encoding UI tests for redesigned shell regions in `apps/desktop/tests/ui/manual-encoding.spec.ts`
+- [X] T099 [P] [US7] Update Web session restore UI test for redesigned shell restore assertions in `apps/web/tests/ui/session-restore.spec.ts`
+- [X] T100 [P] [US7] Update Desktop WDIO session restore UI test for redesigned shell restore assertions in `apps/desktop/tests/ui/session-restore.spec.ts`
+- [X] T101 [P] [US7] Add macOS session restore UI test for redesigned shell restore assertions in `apps/desktop/tests/ui/macos/SessionRestoreUITests.swift`
+- [X] T102 [P] [US7] Update Web browser capability UI test for redesigned shell messaging in `apps/web/tests/ui/browser-capabilities.spec.ts`
+- [X] T103 [P] [US7] Update browser drag/drop UI test for redesigned empty shell in `apps/web/tests/ui/browser-drag-drop.spec.ts`
+- [X] T104 [P] [US7] Update manual encoding UI tests for redesigned shell regions in `apps/web/tests/ui/manual-encoding.spec.ts`
+- [X] T105 [P] [US7] Update Desktop manual encoding UI tests for redesigned shell regions in `apps/desktop/tests/ui/manual-encoding.spec.ts`
 
 ### Implementation for User Story 7
 
-- [ ] T106 [US7] Preserve redesigned shell restoration around restored panes in `packages/ui/src/session/useSessionRestore.ts`
-- [ ] T107 [US7] Preserve restored pane order, pane sizes, directory selections, sync state, and offsets in `packages/ui/src/app-shell/AppShell.tsx`
-- [ ] T108 [US7] Redesign capability limitation messaging inside the Activity Rail shell in `packages/ui/src/app-shell/CapabilityLimitations.tsx`
-- [ ] T109 [US7] Ensure browser drag/drop and file input entry points remain available in the redesigned empty shell in `packages/ui/src/app-shell/AppShell.tsx`
-- [ ] T110 [US7] Run the local US7 gate with `bash scripts/macos/test.sh`
-- [ ] T111 [US7] Run the local US7 UI gate with `bash scripts/macos/test-ui.sh`
+- [X] T106 [US7] Preserve redesigned shell restoration around restored panes in `packages/ui/src/session/useSessionRestore.ts`
+- [X] T107 [US7] Preserve restored pane order, pane sizes, directory selections, sync state, and offsets in `packages/ui/src/app-shell/AppShell.tsx`
+- [X] T108 [US7] Redesign capability limitation messaging inside the Activity Rail shell in `packages/ui/src/app-shell/CapabilityLimitations.tsx`
+- [X] T109 [US7] Ensure browser drag/drop and file input entry points remain available in the redesigned empty shell in `packages/ui/src/app-shell/AppShell.tsx`
+- [X] T110 [US7] Run the local US7 gate with `bash scripts/macos/test.sh`
+- [X] T111 [US7] Run the local US7 UI gate with `bash scripts/macos/test-ui.sh`
 
 **Checkpoint**: User Story 7 is independently functional across supported Web/Desktop capability boundaries.
 

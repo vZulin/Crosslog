@@ -66,6 +66,9 @@ export const sessionMigrations: readonly SessionMigration[] = [
         paneSizes: Object.fromEntries(panes.map((pane) => [pane.id, pane.width])),
         sources,
         directorySelections: {},
+        synchronizationEnabled: typeof input.synchronizationEnabled === "boolean"
+          ? input.synchronizationEnabled
+          : true,
         futureExtensions: isRecord(input.futureExtensions) ? input.futureExtensions : {},
       };
     },

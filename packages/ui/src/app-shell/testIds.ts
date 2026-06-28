@@ -46,6 +46,7 @@ export const redesignedShellTestIds = {
   timeOffsetSeconds: "time-offset-seconds",
   timeOffsetMilliseconds: "time-offset-milliseconds",
   timeOffsetApply: "time-offset-apply",
+  capabilityLimitations: "capability-limitations",
   statusBar: "status-bar",
 } as const;
 

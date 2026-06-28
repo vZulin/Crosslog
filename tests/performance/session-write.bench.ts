@@ -32,6 +32,7 @@ describe("session write", () => {
         encoding: "utf-8",
       })),
       directorySelections: {},
+      synchronizationEnabled: true,
       futureExtensions: {},
     });
   });

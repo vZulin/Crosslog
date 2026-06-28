@@ -35,7 +35,11 @@ export function ActivityRailShell({
       onDragOver={onDragOver}
       onDrop={onDrop}
     >
-      {systemBanners}
+      {systemBanners ? (
+        <aside aria-label="System notices" className="crosslog-shell__banners">
+          {systemBanners}
+        </aside>
+      ) : null}
       <section
         aria-label="Topbar"
         className="crosslog-shell__topbar"

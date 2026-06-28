@@ -1,8 +1,16 @@
 import { expect, test } from "@playwright/test";
 import { redesignedShellTestIds } from "@crosslog/ui";
+import { getRedesignedShell } from "./helpers/redesigned-shell";
 
 test("loads dropped browser files into panes and keeps search available", async ({ page }) => {
   await page.goto("/");
+
+  const shell = getRedesignedShell(page);
+  await expect(shell.shell).toBeVisible();
+  await expect(shell.activityRail).toBeVisible();
+  await expect(shell.paneWorkspace).toBeVisible();
+  await expect(page.getByRole("button", { name: "Open logs" })).toBeVisible();
+  await expect(page.getByLabel("Open browser files")).toBeAttached();
 
   await page.getByLabel("Empty workspace").dispatchEvent("drop", {
     dataTransfer: await page.evaluateHandle(() => {
