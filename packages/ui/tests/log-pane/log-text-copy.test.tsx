@@ -21,7 +21,7 @@ describe("log text copy", () => {
       <LogTextSelection title="app.log" lines={["first", "second"]} clipboard={clipboard} />,
     );
 
-    fireEvent.contextMenu(getByRole("button", { name: "Copy selected text from app.log" }).parentElement!);
+    fireEvent.contextMenu(getByRole("group", { name: "Log text actions for app.log" }));
     fireEvent.click(getByRole("menuitem", { name: "Copy selected text" }));
 
     await waitFor(() => expect(getByText("Copied")).toBeTruthy());

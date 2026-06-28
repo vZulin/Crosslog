@@ -124,28 +124,26 @@ export function LogPane({
           onClose={() => onTimeOffsetOpenChange?.(pane.id, false)}
         />
       ) : null}
-      <div className="crosslog-pane-tools" role="toolbar" aria-label={`Pane tools for ${pane.title}`}>
-        <LogTextSelection title={pane.title} lines={lines} onCopied={onCopied} clipboard={clipboard} />
-      </div>
-      <HorizontalLogScroller
-        title={pane.title}
-        scrollLeft={pane.horizontalScroll}
-        onScrollLeftChange={(scrollLeft) => onHorizontalScroll(pane.id, scrollLeft)}
-      >
-        <VirtualLogViewport
+      <LogTextSelection title={pane.title} lines={lines} onCopied={onCopied} clipboard={clipboard}>
+        <HorizontalLogScroller
           title={pane.title}
-          lines={lines}
-          timestamps={timestamps}
-          searchMatches={pane.searchState.matches}
-          activeSearchMatchLineNumber={activeSearchMatch?.lineNumber ?? null}
-          maxVisibleLines={400}
-          synchronizationTargetLineNumber={synchronizationTargetLineNumber}
-          onTimeAnchorChange={(lineNumber, timestamp) => onTimeAnchorChange?.(pane.id, lineNumber, timestamp)}
-        />
-      </HorizontalLogScroller>
+          scrollLeft={pane.horizontalScroll}
+          onScrollLeftChange={(scrollLeft) => onHorizontalScroll(pane.id, scrollLeft)}
+        >
+          <VirtualLogViewport
+            title={pane.title}
+            lines={lines}
+            timestamps={timestamps}
+            searchMatches={pane.searchState.matches}
+            activeSearchMatchLineNumber={activeSearchMatch?.lineNumber ?? null}
+            maxVisibleLines={400}
+            synchronizationTargetLineNumber={synchronizationTargetLineNumber}
+            onTimeAnchorChange={(lineNumber, timestamp) => onTimeAnchorChange?.(pane.id, lineNumber, timestamp)}
+          />
+        </HorizontalLogScroller>
+      </LogTextSelection>
       {pane.status === "deleted" ? <DeletedFileStatus title={pane.title} /> : null}
       {pane.syncEnabled ? null : <p>Synchronization disabled for this pane</p>}
-      <footer className="crosslog-pane-status">{pane.status}</footer>
     </article>
   );
 }

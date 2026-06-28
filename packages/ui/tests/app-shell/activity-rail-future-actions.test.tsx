@@ -1,3 +1,5 @@
+import React from "react";
+import { fireEvent, render } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import {
   canExecuteActivityRailItem,
@@ -5,6 +7,8 @@ import {
   getActivityRailItems,
   isFutureActivityRailItem,
 } from "../../src/app-shell/activityRailItems";
+import { ActivityRail } from "../../src/app-shell/ActivityRail";
+import { redesignedShellTestIds } from "../../src/app-shell/testIds";
 
 describe("activity rail future action guards", () => {
   it("keeps MVP rail items executable", () => {
@@ -36,5 +40,32 @@ describe("activity rail future action guards", () => {
     const items = getActivityRailItems({ includeFutureItems: false });
 
     expect(items.map((item) => item.id)).toEqual(["search", "files", "settings"]);
+  });
+
+  it("renders the target rail order and keeps future controls unavailable", () => {
+    const onOpenSources = vi.fn();
+    const onSearch = vi.fn();
+    const { getAllByRole, getByTestId } = render(
+      <ActivityRail onOpenSources={onOpenSources} onSearch={onSearch} />,
+    );
+
+    expect(getAllByRole("button").map((button) => button.getAttribute("aria-label"))).toEqual([
+      "Search logs",
+      "Filters unavailable",
+      "Highlighting unavailable",
+      "Open sources",
+      "Bookmarks unavailable",
+      "Settings",
+    ]);
+    expect(getByTestId(redesignedShellTestIds.activityRailFilter).hasAttribute("disabled")).toBe(true);
+    expect(getByTestId(redesignedShellTestIds.activityRailPalette).hasAttribute("disabled")).toBe(true);
+    expect(getByTestId(redesignedShellTestIds.activityRailBookmark).hasAttribute("disabled")).toBe(true);
+
+    fireEvent.click(getByTestId(redesignedShellTestIds.activityRailFiles));
+    fireEvent.click(getByTestId(redesignedShellTestIds.activityRailSearch));
+    fireEvent.click(getByTestId(redesignedShellTestIds.activityRailFilter));
+
+    expect(onOpenSources).toHaveBeenCalledTimes(1);
+    expect(onSearch).toHaveBeenCalledTimes(1);
   });
 });

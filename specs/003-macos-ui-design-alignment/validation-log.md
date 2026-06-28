@@ -21,9 +21,18 @@ restate the full 001 or 002 validation history.
 | 2026-06-28 | T008-T018 foundational phase | `bash scripts/macos/test.sh` | Pass | Lint passed; Vitest unit suites passed 43 files / 110 tests; integration suites passed 4 files / 5 tests; Rust tests passed 5 tests. |
 | 2026-06-28 | T013-T014 app entrypoint overrides | `corepack pnpm --filter @crosslog/web build` and `corepack pnpm --filter @crosslog/desktop build` | Pass | Vite production builds completed for the Web and Desktop shells after presentation override parsing was wired. |
 
+## Phase 3: User Story 1 Aligned Shell Without Obsolete Controls
+
+| Date | Scope | Command Or Evidence | Result | Notes |
+| --- | --- | --- | --- | --- |
+| 2026-06-28 | T019-T037 US1 implementation | `corepack pnpm test:unit` | Pass | Vitest unit suites passed 45 files / 115 tests, including obsolete-control absence, empty workspace, compact topbar, icon-only sync, Activity Rail guardrails, and context-menu copy coverage. |
+| 2026-06-28 | T024-T027 US1 UI selector migration | `corepack pnpm test:ui:web` | Pass | Playwright Web UI suite passed 14 tests after migrating source-opening, sync, add-pane, directory refresh, empty-directory, drag/drop, and copy flows away from removed controls. |
+| 2026-06-28 | T026-T027 US1 Desktop UI selector migration | `corepack pnpm test:ui:desktop` | Pass | Desktop WDIO and macOS XCTest UI suite passed; XCTest executed 10 tests with updated empty workspace and obsolete-control absence checks for the empty shell. |
+| 2026-06-28 | T038 US1 automated gate | `bash scripts/macos/test.sh` | Pass | Lint passed; Vitest unit suites passed 45 files / 115 tests; integration suites passed 4 files / 5 tests; Rust tests passed 5 tests. |
+| 2026-06-28 | T038 US1 UI gate | `bash scripts/macos/test-ui.sh` | Pass | Playwright Web UI passed 14 tests; Desktop/macOS UI tests built the app and XCTest suite passed 10 tests. Populated-workspace `obsolete=visible` remains expected until Phase 4 replaces resize plus/minus controls. |
+
 ## Future Evidence Slots
 
-- US1 gate: `bash scripts/macos/test.sh` and `bash scripts/macos/test-ui.sh`.
 - US2 gate: `bash scripts/macos/test.sh`, `bash scripts/macos/test-ui.sh`,
   and `bash scripts/macos/perf.sh`.
 - US3 gate: `bash scripts/macos/test.sh` and `bash scripts/macos/test-ui.sh`.

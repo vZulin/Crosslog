@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { getRedesignedShell } from "./helpers/redesigned-shell";
+import { expectObsoleteControlsAbsent, getRedesignedShell } from "./helpers/redesigned-shell";
 
 test("opens and manages multiple log panes", async ({ page }) => {
   await page.goto("/");
@@ -12,7 +12,7 @@ test("opens and manages multiple log panes", async ({ page }) => {
   await expect(shell.paneWorkspace).toBeVisible();
   await expect(shell.statusBar).toContainText("0 panes");
 
-  await page.getByRole("button", { name: "Open logs" }).click();
+  await shell.emptyOpenSource.click();
 
   await expect(shell.paneWorkspace).toBeVisible();
   await expect(page.getByRole("heading", { name: "app.log" })).toBeVisible();
@@ -20,16 +20,14 @@ test("opens and manages multiple log panes", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "app-2026-06-16.log" })).toBeVisible();
   await expect(shell.statusBar).toContainText("3 panes");
   await expect(shell.statusBar).toContainText("Active: app-2026-06-16.log");
+  await expectObsoleteControlsAbsent(page);
 
   await page.getByTestId("topbar-add-pane").click();
   await expect(shell.logPanes).toHaveCount(4);
 
-  await page.getByRole("button", { name: "Split active pane" }).click();
-  await expect(shell.logPanes).toHaveCount(5);
-
   await page.getByRole("button", { name: "Move boundary after app.log right" }).click();
   await page.getByRole("button", { name: "Close pane service.log" }).click();
-  await expect(shell.logPanes).toHaveCount(4);
+  await expect(shell.logPanes).toHaveCount(3);
 
   await shell.paneWorkspace.evaluate((element) => {
     element.scrollLeft = 120;

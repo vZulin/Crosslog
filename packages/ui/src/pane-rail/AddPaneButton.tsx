@@ -2,25 +2,14 @@ import React from "react";
 import { IconButton } from "../app-shell/IconButton";
 
 export interface AddPaneButtonProps {
-  readonly canSplit: boolean;
   readonly onAddPane: () => void;
-  readonly onSplitPane: () => void;
   readonly addPaneTestId?: string;
 }
 
-export function AddPaneButton({ addPaneTestId, canSplit, onAddPane, onSplitPane }: AddPaneButtonProps) {
+export function AddPaneButton({ addPaneTestId, onAddPane }: AddPaneButtonProps) {
   return (
-    <div className="crosslog-pane-creation" role="group" aria-label="Pane creation controls">
+    <div className="crosslog-pane-creation">
       <IconButton icon="add-pane" label="Add pane" onClick={onAddPane} testId={addPaneTestId} />
-      <button
-        className="crosslog-split-button"
-        type="button"
-        aria-label="Split active pane"
-        onClick={onSplitPane}
-        disabled={!canSplit}
-      >
-        Split
-      </button>
     </div>
   );
 }

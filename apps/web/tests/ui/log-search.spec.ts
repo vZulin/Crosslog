@@ -3,7 +3,7 @@ import { redesignedShellTestIds } from "@crosslog/ui";
 
 test("searches from the pane popover and isolates pane search state", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Open logs" }).click();
+  await page.getByTestId(redesignedShellTestIds.emptyOpenSource).click();
 
   const activityRail = page.getByTestId(redesignedShellTestIds.activityRail);
   const commandField = page.getByTestId(redesignedShellTestIds.commandField);

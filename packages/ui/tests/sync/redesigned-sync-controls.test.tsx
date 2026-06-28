@@ -16,20 +16,20 @@ describe("redesigned synchronization controls", () => {
   it("keeps the topbar synchronization state and status summary in sync", async () => {
     const { getByRole, getByTestId } = render(<AppShell platform={createMockPlatform()} />);
 
-    fireEvent.click(getByRole("button", { name: "Open logs" }));
+    fireEvent.click(getByRole("button", { name: "Open Source" }));
 
     await waitFor(() => expect(getByTestId(redesignedShellTestIds.statusBar).textContent).toContain("3 panes"));
     const topbarSync = getByTestId(redesignedShellTestIds.topbarSync);
-    const syncToggle = within(topbarSync).getByRole("checkbox", { name: "Synchronize by time" }) as HTMLInputElement;
+    const syncToggle = within(topbarSync).getByRole("button", { name: "Toggle time synchronization" });
 
-    expect(syncToggle.checked).toBe(true);
-    expect(topbarSync.textContent).toContain("Sync on");
+    expect(syncToggle.getAttribute("aria-pressed")).toBe("true");
+    expect(topbarSync.textContent).not.toContain("Sync on");
+    expect(topbarSync.textContent).not.toContain("Sync off");
     expect(getByTestId(redesignedShellTestIds.statusBar).textContent).toContain("Sync on");
 
     fireEvent.click(syncToggle);
 
-    await waitFor(() => expect(topbarSync.textContent).toContain("Sync off"));
-    expect(syncToggle.checked).toBe(false);
+    await waitFor(() => expect(syncToggle.getAttribute("aria-pressed")).toBe("false"));
     expect(getByTestId(redesignedShellTestIds.statusBar).textContent).toContain("Sync off");
   });
 
@@ -38,7 +38,7 @@ describe("redesigned synchronization controls", () => {
       <AppShell platform={createMockPlatform()} />,
     );
 
-    fireEvent.click(getByRole("button", { name: "Open logs" }));
+    fireEvent.click(getByRole("button", { name: "Open Source" }));
     await waitFor(() => expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(3));
 
     const headers = getAllByTestId(redesignedShellTestIds.paneHeader);

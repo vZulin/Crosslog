@@ -1,6 +1,7 @@
 import { $, $$, browser, expect } from "@wdio/globals";
 import {
   clickElementWithJavaScript,
+  expectObsoleteControlsAbsent,
   getRedesignedShell,
   openSampleLogsWithUiBridge,
   waitForDesktopShell,
@@ -23,12 +24,10 @@ describe("Desktop multi-pane layout", () => {
     expect(await shell.statusBar.getText()).toContain("3 panes");
     await expect($('aria/app.log')).toBeExisting();
     await expect($('aria/service.log')).toBeExisting();
+    await expectObsoleteControlsAbsent();
 
     await clickElementWithJavaScript(await shell.topbar.$('[data-testid="topbar-add-pane"]'));
     await expect($$('[data-testid="log-pane"]')).toBeElementsArrayOfSize(4);
-
-    await clickElementWithJavaScript(await $("aria/Split active pane"));
-    await expect($$('[data-testid="log-pane"]')).toBeElementsArrayOfSize(5);
 
     await browser.execute((selector: string) => {
       const workspace = document.querySelector<HTMLElement>(selector);

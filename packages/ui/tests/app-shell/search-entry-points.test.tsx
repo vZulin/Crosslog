@@ -16,7 +16,7 @@ describe("redesigned search entry points", () => {
   it("opens pane search from the pane header, activity rail, and command field", async () => {
     const { getAllByTestId, getByRole, getByTestId } = render(<AppShell platform={createMockPlatform()} />);
 
-    fireEvent.click(getByRole("button", { name: "Open logs" }));
+    fireEvent.click(getByRole("button", { name: "Open Source" }));
     await waitFor(() => expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(3));
 
     const panes = getAllByTestId(redesignedShellTestIds.logPane);

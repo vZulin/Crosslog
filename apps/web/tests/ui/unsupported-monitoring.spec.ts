@@ -5,7 +5,7 @@ test("shows unsupported local monitoring messaging in the browser", async ({ pag
   await page.goto("/");
 
   await expect(page.getByText("Browser sessions cannot monitor local filesystem changes.")).toBeVisible();
-  await page.getByRole("button", { name: "Open logs" }).click();
+  await page.getByTestId(redesignedShellTestIds.emptyOpenSource).click();
   await expect(page.getByText("Browser sessions cannot monitor local filesystem changes.")).toBeVisible();
 
   const appPane = page.getByTestId(redesignedShellTestIds.logPane).filter({ hasText: "app.log" }).first();

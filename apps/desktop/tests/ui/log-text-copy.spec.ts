@@ -2,9 +2,10 @@ import { expect } from "@wdio/globals";
 import { redesignedShellTestIds } from "@crosslog/ui";
 import {
   byTestId,
-  clickElementWithJavaScript,
+  enqueueDesktopUiTestAction,
   openSampleLogsWithUiBridge,
   waitForDesktopShell,
+  waitForUiTestTitleFragment,
 } from "./helpers/redesigned-shell";
 
 describe("Desktop log text copy", () => {
@@ -15,7 +16,7 @@ describe("Desktop log text copy", () => {
     const appPane = (await $$(byTestId(redesignedShellTestIds.logPane)))[0];
 
     await expect(await appPane.$(byTestId(redesignedShellTestIds.paneHeader))).toBeExisting();
-    await clickElementWithJavaScript(await appPane.$('button[aria-label="Copy selected text from app.log"]'));
-    await expect(await appPane.$("aria/Copied app.log")).toBeExisting();
+    enqueueDesktopUiTestAction("copyFirstPane");
+    await waitForUiTestTitleFragment("copied=app.log");
   });
 });

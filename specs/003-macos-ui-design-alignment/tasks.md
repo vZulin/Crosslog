@@ -57,29 +57,29 @@
 
 ### Tests for User Story 1 (MANDATORY)
 
-- [ ] T019 [P] [US1] Add component tests for obsolete-control absence, activity rail order/sizing, Files MVP-only behavior, future rail unavailability, and Directory Search left-panel guardrails in `packages/ui/tests/app-shell/obsolete-controls.test.tsx` and `packages/ui/tests/app-shell/activity-rail-future-actions.test.tsx`
-- [ ] T020 [P] [US1] Update shell component tests for `Open Source`, compact topbar controls, and no visible sync text in `packages/ui/tests/app-shell/redesigned-workspace.test.tsx`
-- [ ] T021 [P] [US1] Update synchronization component tests from checkbox/text assertions to icon-button state assertions in `packages/ui/tests/sync/redesigned-sync-controls.test.tsx`
-- [ ] T022 [P] [US1] Update existing synchronization control tests to preserve store behavior without requiring topbar text in `packages/ui/tests/sync/synchronization-controls.test.tsx`
-- [ ] T023 [P] [US1] Add empty workspace layout and drag-over no-shift component coverage in `packages/ui/tests/app-shell/empty-workspace.test.tsx`
-- [ ] T024 [P] [US1] Update Web shell UI tests from `Open logs` and `Split active pane` to target controls in `apps/web/tests/ui/multi-pane-layout.spec.ts`
-- [ ] T025 [P] [US1] Update Web browser drag/drop UI test for the target empty drop zone and `Open Source` action in `apps/web/tests/ui/browser-drag-drop.spec.ts`
-- [ ] T026 [P] [US1] Update Desktop WDIO multi-pane UI test for target topbar controls and obsolete-control absence in `apps/desktop/tests/ui/multi-pane-layout.spec.ts`
-- [ ] T027 [P] [US1] Update macOS empty-state XCTest coverage for target empty workspace and obsolete-control absence in `apps/desktop/tests/ui/macos/EmptyStateUITests.swift`
+- [X] T019 [P] [US1] Add component tests for obsolete-control absence, activity rail order/sizing, Files MVP-only behavior, future rail unavailability, and Directory Search left-panel guardrails in `packages/ui/tests/app-shell/obsolete-controls.test.tsx` and `packages/ui/tests/app-shell/activity-rail-future-actions.test.tsx`
+- [X] T020 [P] [US1] Update shell component tests for `Open Source`, compact topbar controls, and no visible sync text in `packages/ui/tests/app-shell/redesigned-workspace.test.tsx`
+- [X] T021 [P] [US1] Update synchronization component tests from checkbox/text assertions to icon-button state assertions in `packages/ui/tests/sync/redesigned-sync-controls.test.tsx`
+- [X] T022 [P] [US1] Update existing synchronization control tests to preserve store behavior without requiring topbar text in `packages/ui/tests/sync/synchronization-controls.test.tsx`
+- [X] T023 [P] [US1] Add empty workspace layout and drag-over no-shift component coverage in `packages/ui/tests/app-shell/empty-workspace.test.tsx`
+- [X] T024 [P] [US1] Update Web shell UI tests from `Open logs` and `Split active pane` to target controls in `apps/web/tests/ui/multi-pane-layout.spec.ts`
+- [X] T025 [P] [US1] Update Web browser drag/drop UI test for the target empty drop zone and `Open Source` action in `apps/web/tests/ui/browser-drag-drop.spec.ts`
+- [X] T026 [P] [US1] Update Desktop WDIO multi-pane UI test for target topbar controls and obsolete-control absence in `apps/desktop/tests/ui/multi-pane-layout.spec.ts`
+- [X] T027 [P] [US1] Update macOS empty-state XCTest coverage for target empty workspace and obsolete-control absence in `apps/desktop/tests/ui/macos/EmptyStateUITests.swift`
 
 ### Implementation for User Story 1
 
-- [ ] T028 [US1] Replace visible checkbox/text synchronization UI with an icon-only accessible control in `packages/ui/src/sync/SynchronizationToggle.tsx`
-- [ ] T029 [US1] Align the compact topbar command field, sync icon, and add-pane icon placement in `packages/ui/src/app-shell/Topbar.tsx`
-- [ ] T030 [US1] Remove the visible `Split active pane` button while keeping add-pane dispatch wiring in `packages/ui/src/pane-rail/AddPaneButton.tsx`
-- [ ] T031 [US1] Route the topbar add-pane action to split the rightmost pane when panes exist in `packages/ui/src/app-shell/AppShell.tsx`
-- [ ] T032 [US1] Create the aligned empty workspace drop zone and `Open Source` component in `packages/ui/src/app-shell/EmptyWorkspace.tsx`
-- [ ] T033 [US1] Replace the old empty workspace content and product-visible workspace action toolbar with target shell content in `packages/ui/src/app-shell/AppShell.tsx`
-- [ ] T034 [US1] Remove `FuturePaneToolbarSlot` rendering from the product shell and keep any future surfaces explicitly guarded in `packages/ui/src/app-shell/AppShell.tsx`
-- [ ] T035 [US1] Stop exporting product-visible future pane toolbar affordances from `packages/ui/src/index.ts`
-- [ ] T036 [US1] Remove the permanent pane copy toolbar and per-pane status footer while preserving selection/context-menu copy behavior in `packages/ui/src/log-pane/LogPane.tsx`
-- [ ] T037 [US1] Adjust copy selection behavior so tests use selection, keyboard, or context menu instead of a permanent toolbar in `packages/ui/src/log-pane/LogTextSelection.tsx`
-- [ ] T038 [US1] Run `bash scripts/macos/test.sh` and `bash scripts/macos/test-ui.sh` for US1 and record the result in `specs/003-macos-ui-design-alignment/validation-log.md`
+- [X] T028 [US1] Replace visible checkbox/text synchronization UI with an icon-only accessible control in `packages/ui/src/sync/SynchronizationToggle.tsx`
+- [X] T029 [US1] Align the compact topbar command field, sync icon, and add-pane icon placement in `packages/ui/src/app-shell/Topbar.tsx`
+- [X] T030 [US1] Remove the visible `Split active pane` button while keeping add-pane dispatch wiring in `packages/ui/src/pane-rail/AddPaneButton.tsx`
+- [X] T031 [US1] Route the topbar add-pane action to split the rightmost pane when panes exist in `packages/ui/src/app-shell/AppShell.tsx`
+- [X] T032 [US1] Create the aligned empty workspace drop zone and `Open Source` component in `packages/ui/src/app-shell/EmptyWorkspace.tsx`
+- [X] T033 [US1] Replace the old empty workspace content and product-visible workspace action toolbar with target shell content in `packages/ui/src/app-shell/AppShell.tsx`
+- [X] T034 [US1] Remove `FuturePaneToolbarSlot` rendering from the product shell and keep any future surfaces explicitly guarded in `packages/ui/src/app-shell/AppShell.tsx`
+- [X] T035 [US1] Stop exporting product-visible future pane toolbar affordances from `packages/ui/src/index.ts`
+- [X] T036 [US1] Remove the permanent pane copy toolbar and per-pane status footer while preserving selection/context-menu copy behavior in `packages/ui/src/log-pane/LogPane.tsx`
+- [X] T037 [US1] Adjust copy selection behavior so tests use selection, keyboard, or context menu instead of a permanent toolbar in `packages/ui/src/log-pane/LogTextSelection.tsx`
+- [X] T038 [US1] Run `bash scripts/macos/test.sh` and `bash scripts/macos/test-ui.sh` for US1 and record the result in `specs/003-macos-ui-design-alignment/validation-log.md`
 
 **Checkpoint**: User Story 1 is independently functional and demoable.
 

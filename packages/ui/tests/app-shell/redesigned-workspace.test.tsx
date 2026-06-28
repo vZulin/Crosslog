@@ -23,7 +23,9 @@ describe("redesigned workspace shell", () => {
     expect(getByTestId(redesignedShellTestIds.paneWorkspace)).toBeTruthy();
     expect(getByTestId(redesignedShellTestIds.statusBar).textContent).toContain("0 panes");
 
-    fireEvent.click(getByRole("button", { name: "Open logs" }));
+    expect(getByRole("button", { name: "Open Source" })).toBeTruthy();
+
+    fireEvent.click(getByRole("button", { name: "Open Source" }));
 
     await waitFor(() => expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(3));
     expect(getAllByTestId(redesignedShellTestIds.paneHeader)).toHaveLength(3);
@@ -35,20 +37,24 @@ describe("redesigned workspace shell", () => {
     );
   });
 
-  it("routes topbar pane controls and keeps future rail actions unavailable", async () => {
-    const { getAllByTestId, getByLabelText, getByRole, getByTestId } = render(
+  it("routes compact topbar controls and keeps future rail actions unavailable", async () => {
+    const { getAllByTestId, getByRole, getByTestId, queryByLabelText, queryByText } = render(
       <AppShell platform={createMockPlatform()} />,
     );
 
-    fireEvent.click(getByRole("button", { name: "Open logs" }));
+    fireEvent.click(getByRole("button", { name: "Open Source" }));
     await waitFor(() => expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(3));
+
+    const topbar = getByTestId(redesignedShellTestIds.topbar);
+    expect(topbar.textContent).not.toContain("Sync on");
+    expect(topbar.textContent).not.toContain("Sync off");
+    expect(queryByText("Synchronize by time")).toBeNull();
+    expect(queryByLabelText("Split active pane")).toBeNull();
+    expect(getByRole("button", { name: "Toggle time synchronization" }).getAttribute("aria-pressed")).toBe("true");
 
     fireEvent.click(getByTestId(redesignedShellTestIds.topbarAddPane));
     expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(4);
-
-    fireEvent.click(getByLabelText("Split active pane"));
-    expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(5);
-    await waitFor(() => expect(getByTestId(redesignedShellTestIds.statusBar).textContent).toContain("5 panes"));
+    await waitFor(() => expect(getByTestId(redesignedShellTestIds.statusBar).textContent).toContain("4 panes"));
 
     expect(getByTestId(redesignedShellTestIds.activityRailFilter).hasAttribute("disabled")).toBe(true);
     expect(getByTestId(redesignedShellTestIds.activityRailPalette).hasAttribute("disabled")).toBe(true);

@@ -3,7 +3,7 @@ import { redesignedShellTestIds } from "@crosslog/ui";
 
 test("copies selected log text from a pane", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Open logs" }).click();
+  await page.getByTestId(redesignedShellTestIds.emptyOpenSource).click();
 
   const appPane = page.getByTestId(redesignedShellTestIds.logPane).filter({ hasText: "app.log" }).first();
 

@@ -6,24 +6,17 @@ import { redesignedShellTestIds } from "./testIds";
 
 export interface TopbarProps {
   readonly syncEnabled: boolean;
-  readonly canSplitPane: boolean;
   readonly onSyncEnabledChange: (enabled: boolean) => void;
   readonly onAddPane: () => void;
-  readonly onSplitPane: () => void;
   readonly onCommandSearch?: () => void;
 }
 
 export function Topbar({
-  canSplitPane,
   syncEnabled,
   onAddPane,
   onCommandSearch,
-  onSplitPane,
   onSyncEnabledChange,
 }: TopbarProps) {
-  const syncStateId = `${redesignedShellTestIds.topbarSync}-state`;
-  const syncStateLabel = syncEnabled ? "Sync on" : "Sync off";
-
   return (
     <div className="crosslog-topbar">
       <label className="crosslog-command-field">
@@ -45,28 +38,13 @@ export function Topbar({
           type="search"
         />
       </label>
-      <div className="crosslog-topbar__actions">
-        <div className="crosslog-topbar__sync" data-testid={redesignedShellTestIds.topbarSync}>
-          <SynchronizationToggle
-            describedBy={syncStateId}
-            enabled={syncEnabled}
-            onEnabledChange={onSyncEnabledChange}
-          />
-          <span
-            aria-live="polite"
-            className="crosslog-topbar__sync-state"
-            id={syncStateId}
-          >
-            {syncStateLabel}
-          </span>
-        </div>
-        <AddPaneButton
-          addPaneTestId={redesignedShellTestIds.topbarAddPane}
-          canSplit={canSplitPane}
-          onAddPane={onAddPane}
-          onSplitPane={onSplitPane}
+      <div className="crosslog-topbar__sync" data-testid={redesignedShellTestIds.topbarSync}>
+        <SynchronizationToggle
+          enabled={syncEnabled}
+          onEnabledChange={onSyncEnabledChange}
         />
       </div>
+      <AddPaneButton addPaneTestId={redesignedShellTestIds.topbarAddPane} onAddPane={onAddPane} />
     </div>
   );
 }

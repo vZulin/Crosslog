@@ -9,16 +9,17 @@ test("loads dropped browser files into panes and keeps search available", async 
   await expect(shell.shell).toBeVisible();
   await expect(shell.activityRail).toBeVisible();
   await expect(shell.paneWorkspace).toBeVisible();
-  await expect(page.getByRole("button", { name: "Open logs" })).toBeVisible();
-  await expect(page.getByLabel("Open browser files")).toBeAttached();
+  await expect(shell.emptyOpenSource).toBeVisible();
+  await expect(shell.emptyDropZone).toBeVisible();
 
-  await page.getByLabel("Empty workspace").dispatchEvent("drop", {
-    dataTransfer: await page.evaluateHandle(() => {
-      const dataTransfer = new DataTransfer();
-      dataTransfer.items.add(new File(["alpha dropped line\nneedle dropped line"], "dropped.log"));
-      return dataTransfer;
-    }),
+  const dataTransfer = await page.evaluateHandle(() => {
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(new File(["alpha dropped line\nneedle dropped line"], "dropped.log"));
+    return dataTransfer;
   });
+
+  await shell.shell.dispatchEvent("dragover", { dataTransfer });
+  await shell.shell.dispatchEvent("drop", { dataTransfer });
 
   const droppedPane = page
     .getByTestId("log-pane")

@@ -3,7 +3,9 @@ import { redesignedShellTestIds } from "@crosslog/ui";
 
 test("shows empty-directory status for directories without top-level files", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Open empty directory" }).click();
+  await page.locator('[data-ui-test-action="openEmptyDirectory"]').evaluate((element) => {
+    (element as HTMLButtonElement).click();
+  });
 
   await expect(page.getByTestId(redesignedShellTestIds.paneWorkspace)).toBeVisible();
   const paneHeader = page.getByTestId(redesignedShellTestIds.paneHeader);

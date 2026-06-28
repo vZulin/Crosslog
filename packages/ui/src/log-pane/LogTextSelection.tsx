@@ -10,6 +10,7 @@ export interface LogTextSelectionProps {
   readonly selectedLineIndexes?: readonly number[];
   readonly clipboard?: ClipboardWriter;
   readonly onCopied?: (title: string) => void;
+  readonly children?: React.ReactNode;
 }
 
 export function formatSelectedLogText(lines: readonly string[], selectedLineIndexes?: readonly number[]): string {
@@ -38,6 +39,7 @@ export async function copySelectedLogText(
 }
 
 export function LogTextSelection({
+  children,
   title,
   lines,
   selectedLineIndexes,
@@ -59,20 +61,19 @@ export function LogTextSelection({
     <div
       aria-label={`Log text actions for ${title}`}
       className="crosslog-log-text-selection"
+      onKeyDown={(event) => {
+        if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "c") {
+          copy();
+        }
+      }}
       onContextMenu={(event) => {
         event.preventDefault();
         setMenuOpen(true);
       }}
       role="group"
+      tabIndex={0}
     >
-      <button
-        aria-label={`Copy selected text from ${title}`}
-        className="crosslog-log-text-selection__copy"
-        type="button"
-        onClick={copy}
-      >
-        Copy
-      </button>
+      {children}
       {menuOpen ? (
         <button
           className="crosslog-log-text-selection__menuitem"

@@ -8,11 +8,11 @@ import { VirtualLogViewport } from "../../src/log-pane/VirtualLogViewport";
 describe("synchronization controls", () => {
   it("toggles global time synchronization", () => {
     const onEnabledChange = vi.fn();
-    const { getByLabelText } = render(
+    const { getByRole } = render(
       <SynchronizationToggle enabled={true} onEnabledChange={onEnabledChange} />,
     );
 
-    fireEvent.click(getByLabelText("Synchronize by time"));
+    fireEvent.click(getByRole("button", { name: "Toggle time synchronization" }));
 
     expect(onEnabledChange).toHaveBeenCalledWith(false);
   });

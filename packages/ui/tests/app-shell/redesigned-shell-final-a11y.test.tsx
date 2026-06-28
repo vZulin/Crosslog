@@ -26,7 +26,7 @@ describe("final redesigned shell accessibility and no-overlap contracts", () => 
 
       expect(getByRole("main", { name: "Crosslog workspace" })).toBeTruthy();
       expect(getByRole("searchbox", { name: "Command or workspace search" })).toBeTruthy();
-      expect(getByRole("checkbox", { name: "Synchronize by time" })).toBeTruthy();
+      expect(getByRole("button", { name: "Toggle time synchronization" })).toBeTruthy();
       expect(getByRole("button", { name: "Add pane" })).toBeTruthy();
       expect(getByRole("button", { name: "Search logs" })).toBeTruthy();
       expect(getByRole("button", { name: "Open sources" })).toBeTruthy();
@@ -36,13 +36,13 @@ describe("final redesigned shell accessibility and no-overlap contracts", () => 
 
       await waitFor(() => expect(platform.sessionStore.recoverSession).toHaveBeenCalled());
       await act(async () => {
-        fireEvent.click(getByRole("button", { name: "Open logs" }));
+        fireEvent.click(getByRole("button", { name: "Open Source" }));
         await Promise.resolve();
       });
 
       await waitFor(() => expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(3));
       await waitFor(() => expect(platform.sessionStore.writeSessionSnapshot).toHaveBeenCalled());
-      expect(getByRole("button", { name: "Split active pane" })).toBeTruthy();
+      expect(getByRole("button", { name: "Add pane" })).toBeTruthy();
       expect(getByRole("button", { name: "Search in app.log" })).toBeTruthy();
       expect(getByRole("button", { name: "Close pane app.log" })).toBeTruthy();
       expect(getByRole("button", { name: "Time offset for app.log: 0 ms" })).toBeTruthy();

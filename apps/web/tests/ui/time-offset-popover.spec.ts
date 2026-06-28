@@ -4,7 +4,7 @@ import { getRedesignedShell } from "./helpers/redesigned-shell";
 
 test("applies valid pane offsets and rejects invalid offset drafts", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Open logs" }).click();
+  await page.getByTestId(redesignedShellTestIds.emptyOpenSource).click();
 
   const shell = getRedesignedShell(page);
   const appPane = page.getByTestId(redesignedShellTestIds.logPane).filter({

@@ -33,8 +33,8 @@ import {
 import { ActivityRail } from "./ActivityRail";
 import { ActivityRailShell } from "./ActivityRailShell";
 import { CapabilityLimitations } from "./CapabilityLimitations";
-import { FuturePaneToolbarSlot } from "../log-pane/FuturePaneToolbarSlot";
-import type { ClipboardWriter } from "../log-pane/LogTextSelection";
+import { EmptyWorkspace } from "./EmptyWorkspace";
+import { copySelectedLogText, type ClipboardWriter } from "../log-pane/LogTextSelection";
 import { PaneRail } from "../pane-rail/PaneRail";
 import { usePaneSearchStore } from "../search/usePaneSearchStore";
 import { SessionRecoveryBanner } from "../session/SessionRecoveryBanner";
@@ -192,7 +192,6 @@ export function AppShell({ platform, shellPresentation: shellPresentationOverrid
   const activePane = state.panes.find((pane) => pane.id === state.activePaneId) ?? null;
   const activePaneTitle = panes.find((entry) => entry.pane.id === state.activePaneId)?.pane.title ?? null;
   const activeFileSource = activePane?.sourceRef ? fileSources[activePane.sourceRef] : null;
-  const lifecycleActionsDisabled = !activeFileSource;
   const openSearchPane = openSearchPaneId
     ? panes.find((entry) => entry.pane.id === openSearchPaneId) ?? null
     : null;
@@ -440,31 +439,7 @@ export function AppShell({ platform, shellPresentation: shellPresentationOverrid
     [getFileLifecycleTarget, publishAppendForSource, publishFileLifecycleEvent, publishReplacementForSource],
   );
 
-  const handleAppendLiveLine = () => {
-    if (!activeFileSource) {
-      return;
-    }
-
-    publishAppendForSource(activeFileSource);
-  };
-
-  const handleDeleteActiveFile = () => {
-    if (!activeFileSource) {
-      return;
-    }
-
-    publishFileLifecycleEvent({ type: "FileDeleted", sourceId: activeFileSource.id });
-  };
-
-  const handleReplaceActiveFile = () => {
-    if (!activeFileSource) {
-      return;
-    }
-
-    publishReplacementForSource(activeFileSource);
-  };
-
-  const firstPaneTitle = panes[0]?.pane.title ?? null;
+  const firstPaneEntry = panes[0] ?? null;
   const executeUiTestAction = React.useCallback(
     (action: UiTestAction) => {
       switch (action) {
@@ -474,8 +449,10 @@ export function AppShell({ platform, shellPresentation: shellPresentationOverrid
           }
           break;
         case "copyFirstPane":
-          if (firstPaneTitle) {
-            clickElementByAriaLabel(`Copy selected text from ${firstPaneTitle}`);
+          if (firstPaneEntry) {
+            void copySelectedLogText(firstPaneEntry.lines, undefined, uiTestClipboardWriter).then(() => {
+              setUiTestCopiedPaneTitle(firstPaneEntry.pane.title);
+            });
           }
           break;
         case "toggleSynchronization":
@@ -554,7 +531,7 @@ export function AppShell({ platform, shellPresentation: shellPresentationOverrid
     },
     [
       directorySource.files,
-      firstPaneTitle,
+      firstPaneEntry,
       handleFileLifecycleTestAction,
       handleSynchronizationEnabledChange,
       requestActivePaneSearch,
@@ -673,14 +650,6 @@ export function AppShell({ platform, shellPresentation: shellPresentationOverrid
     event.currentTarget.value = "";
   };
 
-  const handleOpenBrowserDirectory = () => {
-    void openDirectorySource({
-      id: "browser-directory-fixture",
-      name: "browser-fixtures",
-      entries: browserDirectoryEntries,
-    });
-  };
-
   const handleDrop = (event: React.DragEvent<HTMLElement>) => {
     event.preventDefault();
     void platform.dragDropSource.mapDroppedSources(event.nativeEvent).then(openDroppedSources);
@@ -691,11 +660,18 @@ export function AppShell({ platform, shellPresentation: shellPresentationOverrid
   };
 
   const handleAddPane = () => {
-    dispatch({ type: "addPane", pane: createAddedPane(state.nextPaneNumber) });
-  };
+    const rightmostPane = state.panes.at(-1);
 
-  const handleSplitPane = () => {
-    dispatch({ type: "splitPane" });
+    if (rightmostPane) {
+      dispatch({
+        type: "splitPane",
+        paneId: rightmostPane.id,
+        pane: createAddedPane(state.nextPaneNumber),
+      });
+      return;
+    }
+
+    dispatch({ type: "addPane", pane: createAddedPane(state.nextPaneNumber) });
   };
 
   const handleOpenEmptyDirectory = () => {
@@ -734,73 +710,38 @@ export function AppShell({ platform, shellPresentation: shellPresentationOverrid
       : null;
   const paneWorkspace =
     state.panes.length === 0 ? (
-      <section className="crosslog-empty-workspace" aria-label="Empty workspace">
-        <h1>Crosslog</h1>
-        <button type="button" data-ui-test-action="openSampleLogs" onClick={handleOpenSampleLogs}>
-          Open logs
-        </button>
-        {platform.kind === "web" ? (
-          <>
-            <label>
-              Open browser files
-              <input
-                aria-label="Open browser files"
-                multiple
-                type="file"
-                onChange={handleBrowserFileInput}
-              />
-            </label>
-            <button type="button" onClick={handleOpenBrowserDirectory}>
-              Open browser directory
-            </button>
-          </>
-        ) : null}
-        <button type="button" onClick={handleOpenEmptyDirectory}>
-          Open empty directory
-        </button>
-        <p>{platform.kind === "web" ? "Web workspace" : "Desktop workspace"}</p>
-      </section>
+      <EmptyWorkspace
+        onDragOver={(event) => event.preventDefault()}
+        onDrop={handleDrop}
+        onFilesSelected={platform.kind === "web" ? handleBrowserFileInput : undefined}
+        onOpenEmptyDirectoryForTests={handleOpenEmptyDirectory}
+        onOpenSource={handleOpenSampleLogs}
+      />
     ) : (
-      <>
-        <div className="crosslog-workspace-actions" role="toolbar" aria-label="Workspace tools">
-          <button type="button" onClick={handleDiscoverNewerDirectoryFile}>
-            Discover newer directory file
-          </button>
-          <button type="button" disabled={lifecycleActionsDisabled} onClick={handleAppendLiveLine}>
-            Append live line
-          </button>
-          <button type="button" disabled={lifecycleActionsDisabled} onClick={handleDeleteActiveFile}>
-            Delete active file
-          </button>
-          <button type="button" disabled={lifecycleActionsDisabled} onClick={handleReplaceActiveFile}>
-            Replace active file
-          </button>
-        </div>
-        <PaneRail
-          panes={panes}
-          onClosePane={(paneId) => dispatch({ type: "closePane", paneId })}
-          onActivatePane={(paneId) => dispatch({ type: "setActivePane", paneId })}
-          onResizePane={(leftPaneId, delta) => dispatch({ type: "resizePane", leftPaneId, delta })}
-          onHorizontalScroll={(paneId, scrollLeft) =>
-            dispatch({ type: "setHorizontalScroll", paneId, scrollLeft })
-          }
-          onNavigateDirectory={(_paneId, direction) => dispatchDirectorySource({ type: "navigate", direction })}
-          onTimeAnchorChange={handleAnchorChange}
-          onTimeOffsetChange={setPaneOffset}
-          onSearchQueryChange={setSearchQuery}
-          onSearchRegexModeChange={(paneId, enabled) => setSearchMode(paneId, enabled ? "regex" : "text")}
-          onSearchCaseSensitiveChange={setSearchCaseSensitive}
-          onPreviousSearchMatch={selectPreviousSearchMatch}
-          onNextSearchMatch={selectNextSearchMatch}
-          openSearchPaneId={openSearchPaneId}
-          openTimeOffsetPaneId={openTimeOffsetPaneId}
-          searchFocusRequestSequence={searchFocusRequestSequence}
-          onSearchOpenChange={handleSearchOpenChange}
-          onTimeOffsetOpenChange={handleTimeOffsetOpenChange}
-          onCopied={setUiTestCopiedPaneTitle}
-          clipboard={uiTestEnabled ? uiTestClipboardWriter : undefined}
-        />
-      </>
+      <PaneRail
+        panes={panes}
+        onClosePane={(paneId) => dispatch({ type: "closePane", paneId })}
+        onActivatePane={(paneId) => dispatch({ type: "setActivePane", paneId })}
+        onResizePane={(leftPaneId, delta) => dispatch({ type: "resizePane", leftPaneId, delta })}
+        onHorizontalScroll={(paneId, scrollLeft) =>
+          dispatch({ type: "setHorizontalScroll", paneId, scrollLeft })
+        }
+        onNavigateDirectory={(_paneId, direction) => dispatchDirectorySource({ type: "navigate", direction })}
+        onTimeAnchorChange={handleAnchorChange}
+        onTimeOffsetChange={setPaneOffset}
+        onSearchQueryChange={setSearchQuery}
+        onSearchRegexModeChange={(paneId, enabled) => setSearchMode(paneId, enabled ? "regex" : "text")}
+        onSearchCaseSensitiveChange={setSearchCaseSensitive}
+        onPreviousSearchMatch={selectPreviousSearchMatch}
+        onNextSearchMatch={selectNextSearchMatch}
+        openSearchPaneId={openSearchPaneId}
+        openTimeOffsetPaneId={openTimeOffsetPaneId}
+        searchFocusRequestSequence={searchFocusRequestSequence}
+        onSearchOpenChange={handleSearchOpenChange}
+        onTimeOffsetOpenChange={handleTimeOffsetOpenChange}
+        onCopied={setUiTestCopiedPaneTitle}
+        clipboard={uiTestEnabled ? uiTestClipboardWriter : undefined}
+      />
     );
 
   return (
@@ -829,17 +770,40 @@ export function AppShell({ platform, shellPresentation: shellPresentationOverrid
           <SessionRecoveryBanner message={restoreState.message} />
           <CapabilityLimitations limitations={platform.capabilities.limitations} />
           <TimestampConfigError message={null} />
-          <FuturePaneToolbarSlot />
+          <div aria-hidden="true" hidden>
+            <button
+              aria-label="Discover newer directory file"
+              data-ui-test-action="discoverNewerDirectoryFile"
+              onClick={handleDiscoverNewerDirectoryFile}
+              type="button"
+            />
+            <button
+              aria-label="Append live line"
+              data-ui-test-action="appendActiveFile"
+              onClick={() => handleFileLifecycleTestAction("append")}
+              type="button"
+            />
+            <button
+              aria-label="Delete active file"
+              data-ui-test-action="deleteActiveFile"
+              onClick={() => handleFileLifecycleTestAction("delete")}
+              type="button"
+            />
+            <button
+              aria-label="Replace active file"
+              data-ui-test-action="replaceActiveFile"
+              onClick={() => handleFileLifecycleTestAction("replace")}
+              type="button"
+            />
+          </div>
         </>
       }
       themeVariant={shellPresentation.themeVariant}
       topbar={
         <Topbar
-          canSplitPane={state.panes.length > 0}
           syncEnabled={synchronizationEnabled}
           onAddPane={handleAddPane}
           onCommandSearch={requestActivePaneSearch}
-          onSplitPane={handleSplitPane}
           onSyncEnabledChange={handleSynchronizationEnabledChange}
         />
       }
@@ -862,7 +826,12 @@ function getPublishedRedesignedRegions(
   ];
 
   if (paneCount === 0) {
-    return persistentRegions;
+    return [
+      ...persistentRegions,
+      redesignedShellTestIds.emptyWorkspace,
+      redesignedShellTestIds.emptyDropZone,
+      redesignedShellTestIds.emptyOpenSource,
+    ];
   }
 
   const nonEmptyRegions = [
@@ -1114,28 +1083,6 @@ const newerDirectoryFile = createDirectoryFileEntry({
   sizeBytes: 4096,
 });
 
-const browserDirectoryEntries = [
-  {
-    kind: "file" as const,
-    id: "browser-directory-new",
-    name: "browser-new.log",
-    createdAt: new Date("2026-06-16T12:00:00.000Z"),
-    sizeBytes: 128,
-  },
-  {
-    kind: "file" as const,
-    id: "browser-directory-old",
-    name: "browser-old.log",
-    createdAt: new Date("2026-06-15T12:00:00.000Z"),
-    sizeBytes: 128,
-  },
-  {
-    kind: "directory" as const,
-    id: "browser-directory-nested",
-    name: "nested",
-  },
-];
-
 const uiTestActionPollIntervalMs = 100;
 
 function clickUiTestActionControl(action: UiTestAction): boolean {
@@ -1144,18 +1091,6 @@ function clickUiTestActionControl(action: UiTestAction): boolean {
   }
 
   return clickElement(document.querySelector<HTMLElement>(`[data-ui-test-action="${action}"]`));
-}
-
-function clickElementByAriaLabel(label: string): boolean {
-  if (typeof document === "undefined") {
-    return false;
-  }
-
-  const element = Array.from(document.querySelectorAll<HTMLElement>("button,input")).find(
-    (candidate) => candidate.getAttribute("aria-label") === label,
-  );
-
-  return clickElement(element ?? null);
 }
 
 function clickElement(element: HTMLElement | null): boolean {

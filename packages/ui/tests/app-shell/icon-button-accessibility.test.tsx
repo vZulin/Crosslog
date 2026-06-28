@@ -15,10 +15,10 @@ describe("IconButton", () => {
 
   it("reports pressed and active state independently", () => {
     const { getByRole } = render(
-      <IconButton active={true} icon="sync" label="Synchronize by time" pressed={true} />,
+      <IconButton active={true} icon="sync" label="Toggle time synchronization" pressed={true} />,
     );
 
-    const button = getByRole("button", { name: "Synchronize by time" });
+    const button = getByRole("button", { name: "Toggle time synchronization" });
 
     expect(button.getAttribute("aria-pressed")).toBe("true");
     expect(button.getAttribute("data-active")).toBe("true");

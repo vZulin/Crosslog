@@ -20,7 +20,7 @@ test.describe("redesigned shell viewport coverage", () => {
       await expect(shell.paneWorkspace).toBeVisible();
       await expect(shell.statusBar).toBeVisible();
 
-      await page.getByRole("button", { name: "Open logs" }).click();
+      await shell.emptyOpenSource.click();
       await expect(shell.logPanes).toHaveCount(3);
       await expect(shell.workspaceScrollbar).toBeVisible();
       await expect(shell.statusBar).toContainText("3 panes");

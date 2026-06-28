@@ -10,6 +10,6 @@ test("manual encoding UI is reserved for source loading flows", async ({ page })
   await expect(shell.activityRail).toBeVisible();
   await expect(shell.paneWorkspace).toBeVisible();
   await expect(shell.statusBar).toContainText("0 panes");
-  await expect(page.getByRole("button", { name: "Open logs" })).toBeVisible();
-  await expect(page.getByLabel("Open browser files")).toBeAttached();
+  await expect(shell.emptyOpenSource).toBeVisible();
+  await expect(page.locator('input[aria-label="Select log source files"]')).toBeAttached();
 });

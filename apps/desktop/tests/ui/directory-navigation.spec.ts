@@ -1,8 +1,9 @@
-import { expect } from "@wdio/globals";
+import { $, expect } from "@wdio/globals";
 import { redesignedShellTestIds, type RedesignedShellTestId } from "@crosslog/ui";
 import {
   byTestId,
   clickElementWithJavaScript,
+  enqueueDesktopUiTestAction,
   openSampleLogsWithUiBridge,
   waitForDesktopShell,
   waitForUiTestTitleFragment,
@@ -27,7 +28,7 @@ describe("Desktop directory navigation", () => {
     await waitForUiTestTitleFragment("directoryNext=on");
 
     await clickElementWithJavaScript(await directoryButton("Previous file in logs/2026"));
-    await clickElementWithJavaScript(await $("button=Discover newer directory file"));
+    enqueueDesktopUiTestAction("discoverNewerDirectoryFile");
     await waitForUiTestTitleFragment("directoryFile=app-2026-06-16.log");
     await waitForUiTestTitleFragment("directoryPrevious=on");
 

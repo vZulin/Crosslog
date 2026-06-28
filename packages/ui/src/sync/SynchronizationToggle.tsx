@@ -1,4 +1,5 @@
 import React from "react";
+import { IconButton } from "../app-shell/IconButton";
 
 export interface SynchronizationToggleProps {
   readonly enabled: boolean;
@@ -12,16 +13,14 @@ export function SynchronizationToggle({
   onEnabledChange,
 }: SynchronizationToggleProps) {
   return (
-    <label>
-      <input
-        type="checkbox"
-        aria-label="Synchronize by time"
-        aria-describedby={describedBy}
-        data-ui-test-action="toggleSynchronization"
-        checked={enabled}
-        onChange={(event) => onEnabledChange(event.currentTarget.checked)}
-      />
-      Synchronize by time
-    </label>
+    <IconButton
+      aria-describedby={describedBy}
+      data-ui-test-action="toggleSynchronization"
+      icon="sync"
+      label="Toggle time synchronization"
+      onClick={() => onEnabledChange(!enabled)}
+      pressed={enabled}
+      tooltip={enabled ? "Time synchronization enabled" : "Time synchronization disabled"}
+    />
   );
 }

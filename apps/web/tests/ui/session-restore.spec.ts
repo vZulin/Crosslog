@@ -5,7 +5,7 @@ import { getRedesignedShell } from "./helpers/redesigned-shell";
 
 test("restores panes from last valid browser session after reload", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Open logs" }).click();
+  await page.getByTestId(redesignedShellTestIds.emptyOpenSource).click();
 
   const shell = getRedesignedShell(page);
   const appPane = page.getByTestId(redesignedShellTestIds.logPane).filter({
@@ -25,7 +25,7 @@ test("restores panes from last valid browser session after reload", async ({ pag
   await directoryPane.getByTestId(redesignedShellTestIds.paneHeaderOffset).click();
   await directoryPane.getByTestId(redesignedShellTestIds.timeOffsetMinutes).fill("1");
   await directoryPane.getByTestId(redesignedShellTestIds.timeOffsetApply).click();
-  await shell.topbar.getByRole("checkbox", { name: "Synchronize by time" }).click();
+  await shell.topbar.getByRole("button", { name: "Toggle time synchronization" }).click();
 
   await expect(directoryPane.getByTestId(redesignedShellTestIds.paneHeaderOffset)).toContainText("+1m");
   await expect(shell.statusBar).toContainText("Sync off");
