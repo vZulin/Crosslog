@@ -49,10 +49,39 @@ change production behavior or close user-story acceptance criteria by itself.
 | T006 | Extend macOS XCTest shell assertions. | Complete |
 | T007 | Create the running validation log. | Complete |
 
+## Phase 2 Foundational Status
+
+Phase 2 adds shared presentation state and UI-test plumbing only. It does not
+remove obsolete product controls, implement platform chrome rendering, apply
+final theme tokens, or change pane layout behavior; those remain assigned to
+the user-story phases listed in `tasks.md`.
+
+| Task | Purpose | Status |
+| --- | --- | --- |
+| T008 | Define typed shell presentation helpers for theme and platform variants. | Complete |
+| T009 | Export shell presentation helpers through the shared UI package. | Complete |
+| T010 | Extend the local app-shell icon set for platform captions, sources, drops, and resize affordances. | Complete |
+| T011 | Extend the UI test bridge shell state contract for theme, platform, obsolete-control visibility, and workspace layout measurements. | Complete |
+| T012 | Include the new shell state fields in the Tauri UI test bridge title/state payload. | Complete |
+| T013 | Parse Web `crosslog-theme` and `crosslog-platform` presentation overrides. | Complete |
+| T014 | Parse Desktop `crosslog-theme` and `crosslog-platform` presentation overrides. | Complete |
+| T015 | Cover shell presentation helper defaults, runtime derivation, query parsing, and invalid fallback behavior. | Complete |
+| T016 | Cover the extended UI test bridge state formatting contract. | Complete |
+
+## Mockup Review Before Story Work
+
+Reviewed `docs/mockups/crosslog-macos-redesign-mockups.html` after Phase 2
+foundation work. The mockup still requires the planned story-phase deltas:
+empty workspace `Open Source` drop zone, compact topbar controls, pane resize
+boundaries, pane-local `pane-search-popover` and `time-offset-popover`, light
+and dark presentation variants, macOS/Windows/Linux/Web shell variants, and
+obsolete-control removal. The inventory remains aligned with those target
+surfaces and no new product capability was identified during the review.
+
 ## Follow-Up Checks Before Story Work
 
-- Compare this inventory against
-  `docs/mockups/crosslog-macos-redesign-mockups.html` before beginning US1.
+- Phase 2 mockup review is complete; re-check the specific target screen before
+  each user-story phase if the mockup changes.
 - Keep new tests tied to documented deltas from `contracts/test-automation.md`.
 - Use `specs/003-macos-ui-design-alignment/validation-log.md` for local gate
   results, OS-specific chrome evidence, and timed empty-workspace review

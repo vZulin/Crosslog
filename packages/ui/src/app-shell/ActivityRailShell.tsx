@@ -1,10 +1,13 @@
 import React from "react";
+import type { PlatformShellVariant, ThemeVariant } from "./shellPresentation";
 import { redesignedShellTestIds } from "./testIds";
 
 export interface ActivityRailShellProps {
   readonly activityRail: React.ReactNode;
   readonly paneWorkspace: React.ReactNode;
+  readonly platformShellVariant: PlatformShellVariant;
   readonly statusBar: React.ReactNode;
+  readonly themeVariant: ThemeVariant;
   readonly topbar: React.ReactNode;
   readonly className?: string;
   readonly popovers?: React.ReactNode;
@@ -17,8 +20,10 @@ export function ActivityRailShell({
   activityRail,
   className,
   paneWorkspace,
+  platformShellVariant,
   popovers,
   statusBar,
+  themeVariant,
   systemBanners,
   topbar,
   onDragOver,
@@ -30,11 +35,16 @@ export function ActivityRailShell({
     <main
       aria-label="Crosslog workspace"
       className={classes}
+      data-platform={platformShellVariant}
       data-testid={redesignedShellTestIds.crosslogShell}
+      data-theme={themeVariant}
       id={redesignedShellTestIds.crosslogShell}
       onDragOver={onDragOver}
       onDrop={onDrop}
     >
+      <span hidden data-testid={redesignedShellTestIds.themeVariant}>
+        {themeVariant}
+      </span>
       {systemBanners ? (
         <aside aria-label="System notices" className="crosslog-shell__banners">
           {systemBanners}

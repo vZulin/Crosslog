@@ -1,5 +1,35 @@
+export type UiTestThemeVariant = "light" | "dark";
+export type UiTestPlatformShellVariant = "macos" | "windows" | "linux" | "web";
+
+export interface UiTestObsoleteControlVisibility {
+  readonly workspaceToolbar: boolean;
+  readonly paneCopyToolbar: boolean;
+  readonly discoverNewerDirectoryFile: boolean;
+  readonly appendLiveLine: boolean;
+  readonly deleteActiveFile: boolean;
+  readonly replaceActiveFile: boolean;
+  readonly splitButton: boolean;
+  readonly synchronizeByTimeText: boolean;
+  readonly syncStateText: boolean;
+  readonly resizeDecreaseButton: boolean;
+  readonly resizeIncreaseButton: boolean;
+  readonly paneReadyFooter: boolean;
+}
+
+export interface UiTestWorkspaceLayoutMeasurements {
+  readonly workspaceWidthPx: number | null;
+  readonly workspaceContentWidthPx: number | null;
+  readonly workspaceRightPx: number | null;
+  readonly rightmostPaneRightPx: number | null;
+  readonly rightEdgeGapPx: number | null;
+  readonly rightmostPaneAlignedToWorkspace: boolean | null;
+  readonly horizontalOverflow: boolean;
+}
+
 export interface UiTestShellState {
   readonly status: "empty" | "logs";
+  readonly themeVariant: UiTestThemeVariant;
+  readonly platformShellVariant: UiTestPlatformShellVariant;
   readonly paneCount: number;
   readonly paneTitles: readonly string[];
   readonly activePaneTitle: string | null;
@@ -19,6 +49,8 @@ export interface UiTestShellState {
   readonly directoryFileCount: number;
   readonly directoryEmptyVisible: boolean;
   readonly fileLifecycleSummary: string;
+  readonly obsoleteControlVisibility: UiTestObsoleteControlVisibility;
+  readonly workspaceLayout: UiTestWorkspaceLayoutMeasurements;
 }
 
 export type UiTestAction =

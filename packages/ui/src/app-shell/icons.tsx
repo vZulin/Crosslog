@@ -3,8 +3,12 @@ import React from "react";
 export const crosslogIconNames = [
   "add-pane",
   "bookmark",
+  "caption-close",
+  "caption-maximize",
+  "caption-minimize",
   "close",
   "command-search",
+  "drop-source",
   "file",
   "files",
   "filter",
@@ -13,8 +17,10 @@ export const crosslogIconNames = [
   "next",
   "palette",
   "previous",
+  "resize-boundary",
   "search",
   "settings",
+  "source",
   "sync",
   "time-offset",
 ] as const;
@@ -40,8 +46,12 @@ export function CrosslogIcon({ name, ...props }: NamedCrosslogIconProps) {
 export const iconComponents: Record<CrosslogIconName, IconComponent> = {
   "add-pane": AddPaneIcon,
   bookmark: BookmarkIcon,
+  "caption-close": CaptionCloseIcon,
+  "caption-maximize": CaptionMaximizeIcon,
+  "caption-minimize": CaptionMinimizeIcon,
   close: CloseIcon,
   "command-search": SearchIcon,
+  "drop-source": DropSourceIcon,
   file: FileIcon,
   files: FilesIcon,
   filter: FilterIcon,
@@ -50,8 +60,10 @@ export const iconComponents: Record<CrosslogIconName, IconComponent> = {
   next: NextIcon,
   palette: PaletteIcon,
   previous: PreviousIcon,
+  "resize-boundary": ResizeBoundaryIcon,
   search: SearchIcon,
   settings: SettingsIcon,
+  source: SourceIcon,
   sync: SyncIcon,
   "time-offset": TimeOffsetIcon,
 };
@@ -101,6 +113,42 @@ function CloseIcon(props: CrosslogIconProps) {
     <SvgIcon {...props}>
       <path d="m7 7 10 10" />
       <path d="M17 7 7 17" />
+    </SvgIcon>
+  );
+}
+
+function CaptionCloseIcon(props: CrosslogIconProps) {
+  return (
+    <SvgIcon {...props}>
+      <circle cx="12" cy="12" r="7" />
+      <path d="m9.5 9.5 5 5" />
+      <path d="m14.5 9.5-5 5" />
+    </SvgIcon>
+  );
+}
+
+function CaptionMaximizeIcon(props: CrosslogIconProps) {
+  return (
+    <SvgIcon {...props}>
+      <rect height="11" rx="1.8" width="11" x="6.5" y="6.5" />
+    </SvgIcon>
+  );
+}
+
+function CaptionMinimizeIcon(props: CrosslogIconProps) {
+  return (
+    <SvgIcon {...props}>
+      <path d="M7 12h10" />
+    </SvgIcon>
+  );
+}
+
+function DropSourceIcon(props: CrosslogIconProps) {
+  return (
+    <SvgIcon {...props}>
+      <path d="M12 4v10" />
+      <path d="m8.5 10.5 3.5 3.5 3.5-3.5" />
+      <path d="M5 16.5v2.5h14v-2.5" />
     </SvgIcon>
   );
 }
@@ -180,6 +228,17 @@ function PreviousIcon(props: CrosslogIconProps) {
   );
 }
 
+function ResizeBoundaryIcon(props: CrosslogIconProps) {
+  return (
+    <SvgIcon {...props}>
+      <path d="M10 4v16" />
+      <path d="M14 4v16" />
+      <path d="m6 9-3 3 3 3" />
+      <path d="m18 9 3 3-3 3" />
+    </SvgIcon>
+  );
+}
+
 function SearchIcon(props: CrosslogIconProps) {
   return (
     <SvgIcon {...props}>
@@ -201,6 +260,17 @@ function SettingsIcon(props: CrosslogIconProps) {
       <path d="M18.8 12h2.4" />
       <path d="m4.35 19.65 1.7-1.7" />
       <path d="m17.95 6.05 1.7-1.7" />
+    </SvgIcon>
+  );
+}
+
+function SourceIcon(props: CrosslogIconProps) {
+  return (
+    <SvgIcon {...props}>
+      <path d="M5 5.5A2.5 2.5 0 0 1 7.5 3h5.25L19 9.25v9.25a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 5 18.5Z" />
+      <path d="M12.5 3v6.5H19" />
+      <path d="M8.5 14h7" />
+      <path d="M8.5 17h5" />
     </SvgIcon>
   );
 }

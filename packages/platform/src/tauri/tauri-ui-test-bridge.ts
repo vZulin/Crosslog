@@ -31,6 +31,8 @@ export class TauriUiTestBridge implements UiTestBridge {
 export function formatUiTestShellState(state: UiTestShellState): string {
   return [
     `state=${state.status}`,
+    `theme=${state.themeVariant}`,
+    `platform=${state.platformShellVariant}`,
     `panes=${state.paneCount}`,
     `sync=${state.synchronizationEnabled ? "on" : "off"}`,
     `search=${state.paneSearchStatus}`,
@@ -49,8 +51,32 @@ export function formatUiTestShellState(state: UiTestShellState): string {
     `directoryFiles=${state.directoryFileCount}`,
     `emptyDirectory=${state.directoryEmptyVisible ? "on" : "off"}`,
     `lifecycle=${state.fileLifecycleSummary}`,
+    `obsolete=${hasVisibleObsoleteControls(state) ? "visible" : "absent"}`,
+    `workspaceOverflow=${state.workspaceLayout.horizontalOverflow ? "on" : "off"}`,
+    `rightEdgeAligned=${formatNullableBoolean(state.workspaceLayout.rightmostPaneAlignedToWorkspace)}`,
+    `workspaceWidth=${formatNullableNumber(state.workspaceLayout.workspaceWidthPx)}`,
+    `workspaceContentWidth=${formatNullableNumber(state.workspaceLayout.workspaceContentWidthPx)}`,
+    `workspaceRight=${formatNullableNumber(state.workspaceLayout.workspaceRightPx)}`,
+    `rightmostPaneRight=${formatNullableNumber(state.workspaceLayout.rightmostPaneRightPx)}`,
+    `rightEdgeGap=${formatNullableNumber(state.workspaceLayout.rightEdgeGapPx)}`,
     `regions=${state.redesignedRegions.length > 0 ? state.redesignedRegions.join(",") : "none"}`,
   ].join(";");
+}
+
+function hasVisibleObsoleteControls(state: UiTestShellState): boolean {
+  return Object.values(state.obsoleteControlVisibility).some(Boolean);
+}
+
+function formatNullableBoolean(value: boolean | null): string {
+  if (value === null) {
+    return "unknown";
+  }
+
+  return value ? "on" : "off";
+}
+
+function formatNullableNumber(value: number | null): string {
+  return value === null ? "unknown" : String(value);
 }
 
 function parseUiTestAction(action: string | null): UiTestAction | null {

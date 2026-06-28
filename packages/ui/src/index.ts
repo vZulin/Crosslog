@@ -9,6 +9,7 @@ export * from "./app-shell/StatusBar";
 export * from "./app-shell/Topbar";
 export * from "./app-shell/activityRailItems";
 export * from "./app-shell/icons";
+export * from "./app-shell/shellPresentation";
 export * from "./app-shell/testIds";
 export * from "./session/SessionRecoveryBanner";
 export * from "./session/useSessionRestore";

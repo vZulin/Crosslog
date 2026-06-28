@@ -1,5 +1,9 @@
 import React from "react";
-import type { CrosslogPlatform } from "@crosslog/platform";
+import type {
+  CrosslogPlatform,
+  UiTestObsoleteControlVisibility,
+  UiTestWorkspaceLayoutMeasurements,
+} from "@crosslog/platform";
 import type { DirectorySourceRef, DragDropSource, FileSourceRef, UiTestAction } from "@crosslog/platform";
 import {
   createLogPane,
@@ -38,7 +42,8 @@ import { useSessionRestore, useSessionSnapshotWriter } from "../session/useSessi
 import { StatusBar } from "./StatusBar";
 import { TimestampConfigError } from "../sync/TimestampConfigError";
 import { Topbar } from "./Topbar";
-import { redesignedShellTestIds } from "./testIds";
+import { resolveShellPresentation, type ShellPresentation } from "./shellPresentation";
+import { redesignedShellTestIds, type RedesignedShellTestId } from "./testIds";
 import { getPaneOffset, useSynchronizationStore } from "../sync/useSynchronizationStore";
 import {
   getPaneHeaderLifecycleState,
@@ -48,13 +53,16 @@ import {
 
 export interface AppShellProps {
   readonly platform: CrosslogPlatform;
+  readonly shellPresentation?: ShellPresentation;
 }
 
 const uiTestClipboardWriter: ClipboardWriter = {
   writeText: async () => undefined,
 };
 
-export function AppShell({ platform }: AppShellProps) {
+export function AppShell({ platform, shellPresentation: shellPresentationOverride }: AppShellProps) {
+  const shellPresentation =
+    shellPresentationOverride ?? resolveShellPresentation({ runtimeKind: platform.kind });
   const [state, dispatch] = React.useReducer(logPaneReducer, createLogPaneState());
   const [fileSources, setFileSources] = React.useState<FileSourceMap>(() => createInitialFileSources(platform.kind));
   const [uiTestEnabled, setUiTestEnabled] = React.useState(false);
@@ -235,6 +243,8 @@ export function AppShell({ platform }: AppShellProps) {
 
     void platform.uiTestBridge?.publishShellState({
       status: panes.length === 0 ? "empty" : "logs",
+      themeVariant: shellPresentation.themeVariant,
+      platformShellVariant: shellPresentation.platformShellVariant,
       paneCount: panes.length,
       paneTitles: panes.map((entry) => entry.pane.title),
       activePaneTitle,
@@ -258,6 +268,8 @@ export function AppShell({ platform }: AppShellProps) {
       directoryFileCount: publishedDirectorySource?.files.length ?? 0,
       directoryEmptyVisible: publishedDirectorySource?.files.length === 0,
       fileLifecycleSummary: publishedFileLifecycleSummary,
+      obsoleteControlVisibility: getPublishedObsoleteControlVisibility(),
+      workspaceLayout: getPublishedWorkspaceLayoutMeasurements(),
     });
   }, [
     activePaneTitle,
@@ -269,6 +281,8 @@ export function AppShell({ platform }: AppShellProps) {
     activePaneOffsetLabel,
     paneSearchStatus,
     platform.uiTestBridge,
+    shellPresentation.platformShellVariant,
+    shellPresentation.themeVariant,
     publishedDirectorySelectedFile,
     publishedDirectorySource,
     publishedFileLifecycleSummary,
@@ -801,6 +815,7 @@ export function AppShell({ platform }: AppShellProps) {
       onDragOver={(event) => event.preventDefault()}
       onDrop={handleDrop}
       paneWorkspace={paneWorkspace}
+      platformShellVariant={shellPresentation.platformShellVariant}
       statusBar={
         <StatusBar
           activeSourceLabel={activePaneTitle}
@@ -817,6 +832,7 @@ export function AppShell({ platform }: AppShellProps) {
           <FuturePaneToolbarSlot />
         </>
       }
+      themeVariant={shellPresentation.themeVariant}
       topbar={
         <Topbar
           canSplitPane={state.panes.length > 0}
@@ -862,6 +878,156 @@ function getPublishedRedesignedRegions(
     ...(searchOpen ? [redesignedShellTestIds.paneSearchPopover] : []),
     ...(timeOffsetOpen ? [redesignedShellTestIds.timeOffsetPopover] : []),
   ];
+}
+
+function getPublishedObsoleteControlVisibility(): UiTestObsoleteControlVisibility {
+  return {
+    workspaceToolbar:
+      hasVisibleSelector(".crosslog-workspace-actions") ||
+      hasVisibleTestId(redesignedShellTestIds.obsoleteWorkspaceToolbar),
+    paneCopyToolbar:
+      hasVisibleSelector(".crosslog-pane-tools") ||
+      hasVisibleSelector(".crosslog-log-text-selection__copy") ||
+      hasVisibleTestId(redesignedShellTestIds.obsoletePaneCopyToolbar),
+    discoverNewerDirectoryFile: hasVisibleButtonText("Discover newer directory file"),
+    appendLiveLine: hasVisibleButtonText("Append live line"),
+    deleteActiveFile: hasVisibleButtonText("Delete active file"),
+    replaceActiveFile: hasVisibleButtonText("Replace active file"),
+    splitButton:
+      hasVisibleTestId(redesignedShellTestIds.obsoleteSplitButton) ||
+      hasVisibleButtonText("Split") ||
+      hasVisibleAriaLabel("Split active pane"),
+    synchronizeByTimeText: hasVisibleText("Synchronize by time"),
+    syncStateText: hasVisibleSelector(".crosslog-topbar__sync-state"),
+    resizeDecreaseButton:
+      hasVisibleTestId(redesignedShellTestIds.obsoleteResizeDecrease) ||
+      hasVisibleAriaLabelContaining("Move boundary after", "left"),
+    resizeIncreaseButton:
+      hasVisibleTestId(redesignedShellTestIds.obsoleteResizeIncrease) ||
+      hasVisibleAriaLabelContaining("Move boundary after", "right"),
+    paneReadyFooter:
+      hasVisibleSelector(".crosslog-pane-status") ||
+      hasVisibleTestId(redesignedShellTestIds.obsoletePaneReadyFooter),
+  };
+}
+
+function getPublishedWorkspaceLayoutMeasurements(): UiTestWorkspaceLayoutMeasurements {
+  if (typeof document === "undefined") {
+    return emptyWorkspaceLayoutMeasurements;
+  }
+
+  const workspace = queryTestElement(redesignedShellTestIds.paneWorkspace);
+
+  if (!workspace) {
+    return emptyWorkspaceLayoutMeasurements;
+  }
+
+  const panes = queryAllTestElements(redesignedShellTestIds.logPane);
+  const rightmostPane = panes.at(-1) ?? null;
+  const workspaceRect = workspace.getBoundingClientRect();
+  const rightmostPaneRect = rightmostPane?.getBoundingClientRect() ?? null;
+  const workspaceWidthPx = normalizeMeasurement(workspaceRect.width);
+  const workspaceContentWidthPx = normalizeMeasurement(workspace.scrollWidth);
+  const workspaceRightPx = normalizeMeasurement(workspaceRect.right);
+  const rightmostPaneRightPx = rightmostPaneRect ? normalizeMeasurement(rightmostPaneRect.right) : null;
+  const rightEdgeGapPx =
+    workspaceRightPx === null || rightmostPaneRightPx === null
+      ? null
+      : Math.max(0, Math.round(workspaceRightPx - rightmostPaneRightPx));
+
+  return {
+    workspaceWidthPx,
+    workspaceContentWidthPx,
+    workspaceRightPx,
+    rightmostPaneRightPx,
+    rightEdgeGapPx,
+    rightmostPaneAlignedToWorkspace: rightEdgeGapPx === null ? null : rightEdgeGapPx <= 1,
+    horizontalOverflow: workspace.scrollWidth > workspace.clientWidth + 1,
+  };
+}
+
+const emptyWorkspaceLayoutMeasurements: UiTestWorkspaceLayoutMeasurements = {
+  workspaceWidthPx: null,
+  workspaceContentWidthPx: null,
+  workspaceRightPx: null,
+  rightmostPaneRightPx: null,
+  rightEdgeGapPx: null,
+  rightmostPaneAlignedToWorkspace: null,
+  horizontalOverflow: false,
+};
+
+function queryTestElement(testId: RedesignedShellTestId): HTMLElement | null {
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  return document.querySelector<HTMLElement>(`[data-testid="${testId}"]`);
+}
+
+function queryAllTestElements(testId: RedesignedShellTestId): readonly HTMLElement[] {
+  if (typeof document === "undefined") {
+    return [];
+  }
+
+  return Array.from(document.querySelectorAll<HTMLElement>(`[data-testid="${testId}"]`));
+}
+
+function hasVisibleTestId(testId: RedesignedShellTestId): boolean {
+  return Boolean(queryAllTestElements(testId).find(isVisibleElement));
+}
+
+function hasVisibleSelector(selector: string): boolean {
+  if (typeof document === "undefined") {
+    return false;
+  }
+
+  return Boolean(Array.from(document.querySelectorAll<HTMLElement>(selector)).find(isVisibleElement));
+}
+
+function hasVisibleButtonText(text: string): boolean {
+  return getVisibleElements("button,[role='button']").some((element) => normalizeText(element.textContent) === text);
+}
+
+function hasVisibleText(text: string): boolean {
+  return getVisibleElements("body *").some((element) => normalizeText(element.textContent).includes(text));
+}
+
+function hasVisibleAriaLabel(label: string): boolean {
+  return getVisibleElements("[aria-label]").some((element) => element.getAttribute("aria-label") === label);
+}
+
+function hasVisibleAriaLabelContaining(prefix: string, suffix: string): boolean {
+  return getVisibleElements("[aria-label]").some((element) => {
+    const label = element.getAttribute("aria-label") ?? "";
+
+    return label.includes(prefix) && label.includes(suffix);
+  });
+}
+
+function getVisibleElements(selector: string): readonly HTMLElement[] {
+  if (typeof document === "undefined") {
+    return [];
+  }
+
+  return Array.from(document.querySelectorAll<HTMLElement>(selector)).filter(isVisibleElement);
+}
+
+function isVisibleElement(element: HTMLElement): boolean {
+  if (element.hidden || element.getAttribute("aria-hidden") === "true") {
+    return false;
+  }
+
+  const style = globalThis.getComputedStyle?.(element);
+
+  return style?.display !== "none" && style?.visibility !== "hidden";
+}
+
+function normalizeText(text: string | null): string {
+  return (text ?? "").replace(/\s+/g, " ").trim();
+}
+
+function normalizeMeasurement(value: number): number | null {
+  return Number.isFinite(value) ? Math.round(value) : null;
 }
 
 function formatFileLifecycleSummary(fileSources: readonly FileSource[]): string {

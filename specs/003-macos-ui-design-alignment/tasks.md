@@ -33,17 +33,17 @@
 
 **CRITICAL**: No user story implementation should begin until this phase is complete.
 
-- [ ] T008 Define `ThemeVariant`, `PlatformShellVariant`, and shell presentation helpers in `packages/ui/src/app-shell/shellPresentation.ts`
-- [ ] T009 [P] Export shell presentation helpers and any new app-shell test IDs from `packages/ui/src/index.ts`
-- [ ] T010 [P] Add shared app-shell icon coverage for sync, add-pane, platform caption controls, source/drop, and resize affordances in `packages/ui/src/app-shell/icons.tsx`
-- [ ] T011 Add UI test bridge shell state fields for theme variant, platform variant, obsolete-control visibility, and workspace layout measurements in `packages/platform/src/ports/ui-test-bridge-port.ts`
-- [ ] T012 Update Tauri UI test bridge state publication to expose the new shell state fields in `packages/platform/src/tauri/tauri-ui-test-bridge.ts`
-- [ ] T013 Add Web shell presentation override parsing for testable theme/platform variants in `apps/web/src/App.tsx`
-- [ ] T014 Add Desktop shell presentation override parsing for testable theme/platform variants in `apps/desktop/src/App.tsx`
-- [ ] T015 [P] Add component tests for shell presentation helper defaults and validation in `packages/ui/tests/app-shell/shell-presentation.test.tsx`
-- [ ] T016 [P] Add contract tests for the extended UI test bridge shell state shape in `packages/platform/tests/ports/ui-test-bridge-port.test.ts`
-- [ ] T017 Run `bash scripts/macos/test.sh` for the foundational phase and record the result in `specs/003-macos-ui-design-alignment/validation-log.md`
-- [ ] T018 Review `specs/003-macos-ui-design-alignment/implementation-inventory.md` against `docs/mockups/crosslog-macos-redesign-mockups.html` before starting story work
+- [X] T008 Define `ThemeVariant`, `PlatformShellVariant`, and shell presentation helpers in `packages/ui/src/app-shell/shellPresentation.ts`
+- [X] T009 [P] Export shell presentation helpers and any new app-shell test IDs from `packages/ui/src/index.ts`
+- [X] T010 [P] Add shared app-shell icon coverage for sync, add-pane, platform caption controls, source/drop, and resize affordances in `packages/ui/src/app-shell/icons.tsx`
+- [X] T011 Add UI test bridge shell state fields for theme variant, platform variant, obsolete-control visibility, and workspace layout measurements in `packages/platform/src/ports/ui-test-bridge-port.ts`
+- [X] T012 Update Tauri UI test bridge state publication to expose the new shell state fields in `packages/platform/src/tauri/tauri-ui-test-bridge.ts`
+- [X] T013 Add Web shell presentation override parsing for testable theme/platform variants in `apps/web/src/App.tsx`
+- [X] T014 Add Desktop shell presentation override parsing for testable theme/platform variants in `apps/desktop/src/App.tsx`
+- [X] T015 [P] Add component tests for shell presentation helper defaults and validation in `packages/ui/tests/app-shell/shell-presentation.test.tsx`
+- [X] T016 [P] Add contract tests for the extended UI test bridge shell state shape in `packages/platform/tests/ports/ui-test-bridge-port.test.ts`
+- [X] T017 Run `bash scripts/macos/test.sh` for the foundational phase and record the result in `specs/003-macos-ui-design-alignment/validation-log.md`
+- [X] T018 Review `specs/003-macos-ui-design-alignment/implementation-inventory.md` against `docs/mockups/crosslog-macos-redesign-mockups.html` before starting story work
 
 **Checkpoint**: Shared presentation state, selectors, helpers, and test bridge fields are ready.
 
