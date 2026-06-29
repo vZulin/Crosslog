@@ -217,6 +217,7 @@ async function runWdioHarness() {
     CROSSLOG_UI_TEST: "1",
     CROSSLOG_UI_TEST_ACTIONS_PATH: actionsPath,
   };
+  logWdioSpecSelection(wdioEnvironment.CROSSLOG_WDIO_SPECS);
   const driver = timeSync(`tauri-driver start on port ${driverPort}`, () => startTauriDriver(driverPort, wdioEnvironment));
 
   try {
@@ -230,6 +231,20 @@ async function runWdioHarness() {
     rmSync(actionsPath, { force: true });
     logRunnerEvent("tauri-driver stop finished");
   }
+}
+
+function logWdioSpecSelection(specs) {
+  const selectedSpecs = (specs ?? "")
+    .split(/[\n,;]/)
+    .map((entry) => entry.trim())
+    .filter((entry) => entry.length > 0);
+
+  if (selectedSpecs.length === 0) {
+    logRunnerEvent("WDIO desktop UI specs selected: all");
+    return;
+  }
+
+  logRunnerEvent(`WDIO desktop UI specs selected: ${selectedSpecs.join(", ")}`);
 }
 
 function prepareWdioApplication() {
