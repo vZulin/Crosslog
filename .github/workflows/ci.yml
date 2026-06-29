@@ -283,9 +283,6 @@ jobs:
   build-web:
     name: Build Web
     runs-on: ubuntu-22.04
-    needs:
-      - automated-tests
-      - ui-tests
     timeout-minutes: 15
 
     steps:
@@ -328,9 +325,6 @@ jobs:
   build-desktop:
     name: Build Desktop (${{ matrix.os }})
     runs-on: ${{ matrix.runner }}
-    needs:
-      - automated-tests
-      - ui-tests
     timeout-minutes: 45
     strategy:
       fail-fast: false
