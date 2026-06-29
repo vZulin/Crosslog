@@ -98,7 +98,7 @@ jobs:
         run: ${{ matrix.test-command }}
 
   ui-tests:
-    name: UI/E2E tests (${{ matrix.os }})
+    name: UI/E2E tests (${{ matrix.label }})
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 35
     env:
@@ -108,17 +108,59 @@ jobs:
       matrix:
         include:
           - os: linux
+            label: linux-web
             runner: ubuntu-22.04
-            ui-web-command: bash scripts/linux/test-ui.sh web
-            ui-desktop-command: bash scripts/linux/test-ui.sh desktop
+            ui-command: bash scripts/linux/test-ui.sh web
+            rust_required: false
+            tauri_driver_required: false
+            linux_ui_prerequisites: false
+            playwright_required: true
+            linux_playwright_deps: true
+          - os: linux
+            label: linux-desktop
+            runner: ubuntu-22.04
+            ui-command: bash scripts/linux/test-ui.sh desktop
+            rust_required: true
+            tauri_driver_required: true
+            linux_ui_prerequisites: true
+            playwright_required: false
+            linux_playwright_deps: false
           - os: macos
+            label: macos-web
             runner: macos-latest
-            ui-web-command: bash scripts/macos/test-ui.sh web
-            ui-desktop-command: bash scripts/macos/test-ui.sh desktop
+            ui-command: bash scripts/macos/test-ui.sh web
+            rust_required: false
+            tauri_driver_required: false
+            linux_ui_prerequisites: false
+            playwright_required: true
+            linux_playwright_deps: false
+          - os: macos
+            label: macos-desktop
+            runner: macos-latest
+            ui-command: bash scripts/macos/test-ui.sh desktop
+            rust_required: true
+            tauri_driver_required: false
+            linux_ui_prerequisites: false
+            playwright_required: false
+            linux_playwright_deps: false
           - os: windows
+            label: windows-web
             runner: windows-latest
-            ui-web-command: pwsh scripts/windows/test-ui.ps1 web
-            ui-desktop-command: pwsh scripts/windows/test-ui.ps1 desktop
+            ui-command: pwsh scripts/windows/test-ui.ps1 web
+            rust_required: false
+            tauri_driver_required: false
+            linux_ui_prerequisites: false
+            playwright_required: true
+            linux_playwright_deps: false
+          - os: windows
+            label: windows-desktop
+            runner: windows-latest
+            ui-command: pwsh scripts/windows/test-ui.ps1 desktop
+            rust_required: true
+            tauri_driver_required: true
+            linux_ui_prerequisites: false
+            playwright_required: false
+            linux_playwright_deps: false
 
     steps:
       - name: Check out repository
@@ -145,15 +187,17 @@ jobs:
           restore-keys: pnpm-${{ runner.os }}-
 
       - name: Set up Rust
+        if: matrix.rust_required
         uses: dtolnay/rust-toolchain@stable
 
       - name: Cache Rust dependencies
+        if: matrix.rust_required
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: apps/desktop/src-tauri
 
       - name: Install Linux UI prerequisites
-        if: matrix.os == 'linux'
+        if: matrix.linux_ui_prerequisites
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -166,17 +210,18 @@ jobs:
             patchelf
 
       - name: Install tauri-driver
-        if: matrix.os == 'linux' || matrix.os == 'windows'
+        if: matrix.tauri_driver_required
         run: cargo install tauri-driver --locked
 
       - name: Install JavaScript dependencies
         run: corepack pnpm install --frozen-lockfile
 
       - name: Install Linux Playwright dependencies
-        if: matrix.os == 'linux'
+        if: matrix.linux_playwright_deps
         run: corepack pnpm exec playwright install-deps chromium
 
       - name: Cache Playwright browsers
+        if: matrix.playwright_required
         uses: actions/cache@v4
         with:
           path: ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
@@ -184,17 +229,15 @@ jobs:
           restore-keys: playwright-${{ runner.os }}-
 
       - name: Install Playwright browser
+        if: matrix.playwright_required
         run: corepack pnpm exec playwright install chromium
 
       - name: Enable macOS UI automation
-        if: matrix.os == 'macos'
+        if: matrix.label == 'macos-desktop'
         run: sudo /usr/sbin/DevToolsSecurity -enable
 
-      - name: Run Web UI tests
-        run: ${{ matrix.ui-web-command }}
-
-      - name: Run Desktop UI tests
-        run: ${{ matrix.ui-desktop-command }}
+      - name: Run UI tests
+        run: ${{ matrix.ui-command }}
 
   build-web:
     name: Build Web
