@@ -72,9 +72,18 @@ restate the full 001 or 002 validation history.
 | 2026-06-29 | T109 US4 automated gate | `bash scripts/macos/test.sh` | Pass | Lint passed; Vitest unit suites passed 50 files / 134 tests; integration suites passed 4 files / 5 tests; Rust tests passed 5 tests. |
 | 2026-06-29 | T097-T101/T109 US4 local UI gate | `bash scripts/macos/test-ui.sh` | Pass | Playwright Web UI passed 21 tests, including light/dark token checks and Web platform override variants. Desktop UI built the app, then macOS XCTest passed 11 tests with macOS chrome publication and shared product region evidence. |
 
+## Phase 8: Polish And Release Readiness
+
+| Date | Scope | Command Or Evidence | Result | Notes |
+| --- | --- | --- | --- | --- |
+| 2026-06-29 | T110-T113 documentation cleanup | Design document and UI helper documentation review | Pass | Updated completed alignment decisions in `docs/crosslog-ui-design.md`; documented Web Playwright, Desktop WDIO, and macOS XCTest helper expectations for selectors, variant overrides, bridge-only lifecycle actions, and shell-state assertions. |
+| 2026-06-29 | T114 timed empty-workspace source-opening recognition review | Manual 5-second review | Pass | Reviewer role: senior developer implementation reviewer. Start condition: empty workspace with no panes restored. Viewport/platform: desktop viewport, Web shell empty workspace, light theme. Result: the centered drop zone and `Open Source` action made the source-opening path identifiable within 5 seconds. |
+| 2026-06-29 | T115 final automated gate | `bash scripts/macos/test.sh` | Pass | Lint passed; Vitest unit suites passed 50 files / 134 tests; integration suites passed 4 files / 5 tests; Rust tests passed 5 tests. |
+| 2026-06-29 | T116 final local UI gate | `bash scripts/macos/test-ui.sh` | Pass | Playwright Web UI passed 21 tests; macOS Desktop app and XCTest runner built successfully; XCTest passed 11 tests with empty workspace, shell region, platform chrome, obsolete-control, resize, session, search, sync, and offset state evidence. |
+| 2026-06-29 | T117 final performance gate | `bash scripts/macos/perf.sh` | Pass | Performance benchmark gate completed for source opening, search, synchronization, session writing, directory navigation, virtualization, live append, and memory pressure scenarios. |
+| 2026-06-29 | T118 final macOS build gate | `bash scripts/macos/build.sh` | Pass | Web Vite production build completed; Desktop Tauri release build completed and produced `apps/desktop/src-tauri/target/release/crosslog-desktop`. |
+
 ## Future Evidence Slots
 
 - Release readiness: Windows, macOS, and Linux automated/UI/build GitHub
   Actions evidence.
-- Timed empty-workspace review: reviewer role, empty-workspace start condition,
-  viewport/platform, 5-second result, and pass/fail outcome.

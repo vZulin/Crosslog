@@ -10,6 +10,15 @@ import {
 export type ShellThemeVariant = "light" | "dark";
 export type ShellPlatformVariant = "macos" | "windows" | "linux" | "web";
 
+/**
+ * Shared Web shell selectors for the 003 design alignment.
+ *
+ * Prefer these stable `data-testid` locators for shell structure, obsolete
+ * control absence, theme variants, platform chrome, and pane resize boundaries.
+ * Do not assert removed product labels such as `Split`, `Sync on`, or
+ * `Synchronize by time`; those labels are intentionally absent from the aligned
+ * shell.
+ */
 export interface RedesignedShellLocators {
   readonly shell: Locator;
   readonly topbar: Locator;
@@ -80,6 +89,8 @@ export function shellPresentationUrl(
     readonly uiTestBridge?: boolean;
   } = {},
 ): string {
+  // Variant overrides are test/mockup inputs only; they must not imply product
+  // UI selectors or persisted user preferences.
   const url = new URL(baseUrl, "http://localhost");
 
   if (options.theme) {
@@ -98,6 +109,8 @@ export function shellPresentationUrl(
 }
 
 export async function gotoWithWebUiTestBridge(page: Page, baseUrl = "/"): Promise<void> {
+  // The bridge exposes lifecycle and source setup actions that replaced the
+  // removed workspace test-action toolbar in product UI.
   await page.goto(shellPresentationUrl(baseUrl, { uiTestBridge: true }));
   await waitForWebUiTestTitleFragment(page, "state=");
 }

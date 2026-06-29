@@ -12,6 +12,14 @@ import {
 export type ShellThemeVariant = "light" | "dark";
 export type ShellPlatformVariant = "macos" | "windows" | "linux" | "web";
 
+/**
+ * Shared Desktop shell selectors for WDIO coverage of the aligned shell.
+ *
+ * Use these helpers for shell regions, theme/platform chrome evidence,
+ * obsolete-control absence, drag resize boundaries, and UI bridge workflows.
+ * Lifecycle and source setup actions are intentionally bridge-only because the
+ * previous visible workspace action toolbar is no longer product UI.
+ */
 export function redesignedShellSelectors() {
   return {
     shell: byTestId(redesignedShellTestIds.crosslogShell),
@@ -110,6 +118,8 @@ export async function waitForUiTestTitleFragment(fragment: string, timeout = 15_
 }
 
 export function enqueueDesktopUiTestAction(action: UiTestAction): void {
+  // Desktop UI tests communicate semantic actions through a temporary file so
+  // the real Tauri app can execute hidden test-only workflows.
   const actionsPath = process.env.CROSSLOG_UI_TEST_ACTIONS_PATH;
 
   if (!actionsPath) {
@@ -187,6 +197,8 @@ export function shellPresentationSearchParams(options: {
   readonly theme?: ShellThemeVariant;
   readonly platform?: ShellPlatformVariant;
 } = {}): string {
+  // Variant overrides are test/mockup inputs only and must not be treated as
+  // product-visible selectors or persisted Desktop preferences.
   const params = new URLSearchParams();
 
   if (options.theme) {

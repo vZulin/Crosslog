@@ -679,7 +679,8 @@ not available.
 
 Settings should cover only implemented behavior in MVP:
 
-- Theme: System, Light, Dark.
+- Theme: System, Light, Dark, when a product-visible settings surface is
+  implemented.
 - Default pane width.
 - Maximum file size, default `20 MB`.
 - Encoding detection and manual encoding fallback.
@@ -690,6 +691,10 @@ Settings should cover only implemented behavior in MVP:
 
 Future settings for filters, highlights, directory-wide search, saved sets, and
 SSH must be added only with those features.
+
+Implementation note: this alignment pass wires light and dark appearance as
+runtime, mockup, and test presentation state. It intentionally does not add a
+product-visible theme selector or persisted theme preference storage.
 
 ## Accessibility
 
@@ -757,6 +762,35 @@ opacity-only transitions.
 - `HighlightPalettePanel`.
 - `BookmarkPanel`.
 - `SshSourceDialog`.
+
+## Completed Alignment Decisions
+
+These notes describe the implementation decisions completed by the 003
+alignment pass and should guide follow-up UI work:
+
+- The shared shell owns theme and platform presentation. `AppShell` passes
+  resolved light/dark and macOS/Windows/Linux/Web variants into the shell
+  layout, while Web and Desktop app entrypoints expose only mockup/test
+  override inputs.
+- Platform chrome is visual treatment only. macOS traffic lights, Windows
+  caption controls, Linux caption controls, and Web no-radius/no-shadow
+  rendering do not change source capabilities, file watching, session restore,
+  search, synchronization, offsets, or pane behavior.
+- Pane widths keep the existing persisted desired-width model. The workspace
+  computes rendered fill widths at view time so fitting panes reach the right
+  edge without mutating session data.
+- Source lifecycle simulation, deletion, rotation, and live append controls are
+  no longer product UI. Automated coverage drives these states through the UI
+  test bridge and internal test actions.
+- The empty workspace source-opening path is intentionally reduced to the
+  centered drop zone and `Open Source` action. Secondary panels and pane-local
+  controls stay absent until a source is open.
+- Pane search and time offset remain owned by the invoking pane. Escape closes
+  each compact popover and returns focus to the trigger.
+- Future rail and left-panel surfaces remain guarded. Files keeps MVP
+  source-opening behavior; Directory Search, filters, palette, bookmarks, saved
+  sets, recursive search, SSH, and file-manager behavior require separate
+  specifications before becoming active product features.
 
 ## Validation Checklist
 

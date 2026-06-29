@@ -224,15 +224,15 @@
 
 **Purpose**: Final migration cleanup, documentation, and release-readiness validation across all stories.
 
-- [ ] T110 Update the UI design implementation notes with completed alignment decisions in `docs/crosslog-ui-design.md`
-- [ ] T111 [P] Update Web UI test helper documentation for the new selectors and variant overrides in `apps/web/tests/ui/helpers/redesigned-shell.ts`
-- [ ] T112 [P] Update Desktop WDIO helper documentation for UI bridge actions and variant overrides in `apps/desktop/tests/ui/helpers/redesigned-shell.ts`
-- [ ] T113 [P] Update macOS XCTest helper documentation for shell state assertions in `apps/desktop/tests/ui/macos/README.md`
-- [ ] T114 Record the timed empty-workspace source-opening recognition review for SC-010 in `specs/003-macos-ui-design-alignment/validation-log.md`, including reviewer role, empty-workspace start condition, viewport/platform, 5-second result, and pass/fail outcome.
-- [ ] T115 Run `bash scripts/macos/test.sh` and record the final automated gate in `specs/003-macos-ui-design-alignment/validation-log.md`
-- [ ] T116 Run `bash scripts/macos/test-ui.sh` and record the final UI gate in `specs/003-macos-ui-design-alignment/validation-log.md`
-- [ ] T117 Run `bash scripts/macos/perf.sh` after rendering/scrolling changes and record the result in `specs/003-macos-ui-design-alignment/validation-log.md`
-- [ ] T118 Run `bash scripts/macos/build.sh` before release readiness and record the result in `specs/003-macos-ui-design-alignment/validation-log.md`
+- [X] T110 Update the UI design implementation notes with completed alignment decisions in `docs/crosslog-ui-design.md`
+- [X] T111 [P] Update Web UI test helper documentation for the new selectors and variant overrides in `apps/web/tests/ui/helpers/redesigned-shell.ts`
+- [X] T112 [P] Update Desktop WDIO helper documentation for UI bridge actions and variant overrides in `apps/desktop/tests/ui/helpers/redesigned-shell.ts`
+- [X] T113 [P] Update macOS XCTest helper documentation for shell state assertions in `apps/desktop/tests/ui/macos/README.md`
+- [X] T114 Record the timed empty-workspace source-opening recognition review for SC-010 in `specs/003-macos-ui-design-alignment/validation-log.md`, including reviewer role, empty-workspace start condition, viewport/platform, 5-second result, and pass/fail outcome.
+- [X] T115 Run `bash scripts/macos/test.sh` and record the final automated gate in `specs/003-macos-ui-design-alignment/validation-log.md`
+- [X] T116 Run `bash scripts/macos/test-ui.sh` and record the final UI gate in `specs/003-macos-ui-design-alignment/validation-log.md`
+- [X] T117 Run `bash scripts/macos/perf.sh` after rendering/scrolling changes and record the result in `specs/003-macos-ui-design-alignment/validation-log.md`
+- [X] T118 Run `bash scripts/macos/build.sh` before release readiness and record the result in `specs/003-macos-ui-design-alignment/validation-log.md`
 - [ ] T119 Verify GitHub Actions Windows automated/UI/build gates, including default Windows shell chrome evidence, and record links/results in `specs/003-macos-ui-design-alignment/validation-log.md`
 - [ ] T120 Verify GitHub Actions macOS automated/UI/build gates and record links/results in `specs/003-macos-ui-design-alignment/validation-log.md`
 - [ ] T121 Verify GitHub Actions Linux automated/UI/build gates, including default Linux shell chrome evidence, and record links/results in `specs/003-macos-ui-design-alignment/validation-log.md`
