@@ -4,6 +4,7 @@ import {
   AppShell,
   parseShellPresentationSearchParams,
   resolveShellPresentation,
+  shellPresentationChangeEventName,
 } from "@crosslog/ui";
 import "@crosslog/ui/app-shell/activity-rail-theme.css";
 
@@ -12,16 +13,13 @@ export interface AppProps {
 }
 
 export function App({ platform }: AppProps) {
-  return (
-    <AppShell
-      platform={platform}
-      shellPresentation={resolveCurrentShellPresentation(platform.kind)}
-    />
-  );
+  const shellPresentation = useCurrentShellPresentation(platform.kind);
+
+  return <AppShell platform={platform} shellPresentation={shellPresentation} />;
 }
 
-function resolveCurrentShellPresentation(runtimeKind: CrosslogPlatform["kind"]) {
-  const overrides = parseShellPresentationSearchParams(getCurrentSearch());
+function resolveCurrentShellPresentation(runtimeKind: CrosslogPlatform["kind"], search = getCurrentSearch()) {
+  const overrides = parseShellPresentationSearchParams(search);
 
   return resolveShellPresentation({
     runtimeKind,
@@ -29,6 +27,27 @@ function resolveCurrentShellPresentation(runtimeKind: CrosslogPlatform["kind"]) 
     platform: getNavigatorPlatform(),
     userAgent: getNavigatorUserAgent(),
   });
+}
+
+function useCurrentShellPresentation(runtimeKind: CrosslogPlatform["kind"]) {
+  const [presentationSearch, setPresentationSearch] = React.useState(() => getCurrentSearch());
+
+  React.useEffect(() => {
+    const handlePresentationChange = () => setPresentationSearch(getCurrentSearch());
+
+    window.addEventListener("popstate", handlePresentationChange);
+    window.addEventListener(shellPresentationChangeEventName, handlePresentationChange);
+
+    return () => {
+      window.removeEventListener("popstate", handlePresentationChange);
+      window.removeEventListener(shellPresentationChangeEventName, handlePresentationChange);
+    };
+  }, []);
+
+  return React.useMemo(
+    () => resolveCurrentShellPresentation(runtimeKind, presentationSearch),
+    [presentationSearch, runtimeKind],
+  );
 }
 
 function getCurrentSearch(): string {

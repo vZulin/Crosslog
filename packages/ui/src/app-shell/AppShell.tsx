@@ -259,6 +259,7 @@ export function AppShell({ platform, shellPresentation: shellPresentationOverrid
         panes.length,
         openSearchPaneId !== null,
         openTimeOffsetPaneId !== null,
+        shellPresentation.platformShellVariant,
       ),
       directoryName: publishedDirectorySource?.displayName ?? null,
       directorySelectedFileTitle: publishedDirectorySelectedFile?.name ?? null,
@@ -770,11 +771,16 @@ function getPublishedRedesignedRegions(
   paneCount: number,
   searchOpen: boolean,
   timeOffsetOpen: boolean,
+  platformShellVariant: ShellPresentation["platformShellVariant"],
 ): readonly string[] {
   const persistentRegions = [
     redesignedShellTestIds.crosslogShell,
     redesignedShellTestIds.topbar,
     redesignedShellTestIds.commandField,
+    redesignedShellTestIds.themeVariant,
+    redesignedShellTestIds.platformChrome,
+    redesignedShellTestIds.platformChromeTitle,
+    getPlatformChromeRegion(platformShellVariant),
     redesignedShellTestIds.activityRail,
     redesignedShellTestIds.paneWorkspace,
     redesignedShellTestIds.statusBar,
@@ -803,6 +809,21 @@ function getPublishedRedesignedRegions(
     ...(searchOpen ? [redesignedShellTestIds.paneSearchPopover] : []),
     ...(timeOffsetOpen ? [redesignedShellTestIds.timeOffsetPopover] : []),
   ];
+}
+
+function getPlatformChromeRegion(
+  platformShellVariant: ShellPresentation["platformShellVariant"],
+): RedesignedShellTestId {
+  switch (platformShellVariant) {
+    case "macos":
+      return redesignedShellTestIds.platformChromeMacosTrafficLights;
+    case "windows":
+      return redesignedShellTestIds.platformChromeWindowsCaptionControls;
+    case "linux":
+      return redesignedShellTestIds.platformChromeLinuxCaptionControls;
+    case "web":
+      return redesignedShellTestIds.platformChromeWebTitle;
+  }
 }
 
 function getPublishedObsoleteControlVisibility(): UiTestObsoleteControlVisibility {

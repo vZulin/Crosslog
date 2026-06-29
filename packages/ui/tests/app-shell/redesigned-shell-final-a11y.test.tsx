@@ -68,6 +68,31 @@ describe("final redesigned shell accessibility and no-overlap contracts", () => 
     });
   }
 
+  it("publishes theme and platform variants without adding product selectors", async () => {
+    setViewport(1280, 720);
+
+    const { getByLabelText, getByRole, getByTestId, queryByRole } = render(
+      <AppShell
+        platform={createMockPlatform()}
+        shellPresentation={{ themeVariant: "dark", platformShellVariant: "windows" }}
+      />,
+    );
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(getByTestId(redesignedShellTestIds.crosslogShell).getAttribute("data-theme")).toBe("dark");
+    expect(getByTestId(redesignedShellTestIds.crosslogShell).getAttribute("data-platform")).toBe("windows");
+    expect(getByTestId(redesignedShellTestIds.themeVariant).textContent).toBe("dark");
+    expect(getByTestId(redesignedShellTestIds.platformChrome)).toBeTruthy();
+    expect(getByLabelText("Windows caption controls")).toBeTruthy();
+    expect(queryByRole("button", { name: /theme/i })).toBeNull();
+    expect(queryByRole("button", { name: /platform/i })).toBeNull();
+    expect(getByRole("searchbox", { name: "Command or workspace search" })).toBeTruthy();
+    expect(getByRole("button", { name: "Open Source" })).toBeTruthy();
+  });
+
   it("keeps no-overlap responsive layout constraints in the shared shell stylesheet", () => {
     const themeCss = readFileSync(
       "packages/ui/src/app-shell/activity-rail-theme.css",
@@ -88,6 +113,12 @@ describe("final redesigned shell accessibility and no-overlap contracts", () => 
     );
     expect(themeCss).toMatch(
       /\.crosslog-status-bar\s*\{[^}]*grid-template-columns:\s*auto auto minmax\(0,\s*1fr\) auto;/s,
+    );
+    expect(themeCss).toMatch(
+      /\.crosslog-window-chrome\s*\{[^}]*position:\s*absolute;[^}]*pointer-events:\s*none;/s,
+    );
+    expect(themeCss).toMatch(
+      /\.crosslog-shell\[data-platform="web"\]\s*\{[^}]*border-radius:\s*0;[^}]*box-shadow:\s*none;/s,
     );
     expect(themeCss).toContain("@media (max-width: 720px)");
   });

@@ -20,6 +20,7 @@
 		30000000000000000000000D /* DirectoryNavigationUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000D /* DirectoryNavigationUITests.swift */; };
 		30000000000000000000000E /* TimeOffsetUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000E /* TimeOffsetUITests.swift */; };
 		30000000000000000000000F /* RedesignedShellViewportUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000F /* RedesignedShellViewportUITests.swift */; };
+		300000000000000000000010 /* PlatformShellVariantUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000010 /* PlatformShellVariantUITests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -46,6 +47,7 @@
 		20000000000000000000000D /* DirectoryNavigationUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectoryNavigationUITests.swift; sourceTree = "<group>"; };
 		20000000000000000000000E /* TimeOffsetUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeOffsetUITests.swift; sourceTree = "<group>"; };
 		20000000000000000000000F /* RedesignedShellViewportUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RedesignedShellViewportUITests.swift; sourceTree = "<group>"; };
+		200000000000000000000010 /* PlatformShellVariantUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformShellVariantUITests.swift; sourceTree = "<group>"; };
 		200000000000000000000008 /* CrosslogUITestHost.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CrosslogUITestHost.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		200000000000000000000009 /* CrosslogDesktopUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CrosslogDesktopUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -95,6 +97,7 @@
 				20000000000000000000000B /* LiveFileStateUITests.swift */,
 				200000000000000000000005 /* MultiPaneLayoutUITests.swift */,
 				20000000000000000000000A /* PaneSearchUITests.swift */,
+				200000000000000000000010 /* PlatformShellVariantUITests.swift */,
 				200000000000000000000006 /* RedesignedShellAssertions.swift */,
 				20000000000000000000000F /* RedesignedShellViewportUITests.swift */,
 				20000000000000000000000C /* SessionRestoreUITests.swift */,
@@ -226,6 +229,7 @@
 				30000000000000000000000B /* LiveFileStateUITests.swift in Sources */,
 				300000000000000000000005 /* MultiPaneLayoutUITests.swift in Sources */,
 				30000000000000000000000A /* PaneSearchUITests.swift in Sources */,
+				300000000000000000000010 /* PlatformShellVariantUITests.swift in Sources */,
 				300000000000000000000006 /* RedesignedShellAssertions.swift in Sources */,
 				30000000000000000000000F /* RedesignedShellViewportUITests.swift in Sources */,
 				30000000000000000000000C /* SessionRestoreUITests.swift in Sources */,

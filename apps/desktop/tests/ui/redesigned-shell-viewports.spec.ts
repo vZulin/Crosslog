@@ -4,6 +4,7 @@ import {
   byTestId,
   openSampleLogsWithUiBridge,
   waitForDesktopShell,
+  waitForUiTestTitleFragment,
 } from "./helpers/redesigned-shell";
 
 const windowScenarios = [
@@ -14,6 +15,12 @@ const windowScenarios = [
 describe("Desktop redesigned shell viewport coverage", () => {
   it("keeps primary shell controls visible and distinct at supported window sizes", async () => {
     await waitForDesktopShell();
+    const expectedPlatform = expectedDefaultPlatformVariant();
+
+    await waitForUiTestTitleFragment(`platform=${expectedPlatform}`);
+    await expect(browser.$(byTestId(redesignedShellTestIds.platformChrome))).toBeExisting();
+    await expect(browser.$(platformChromeSelector(expectedPlatform))).toBeExisting();
+
     await openSampleLogsWithUiBridge();
 
     for (const windowScenario of windowScenarios) {
@@ -59,6 +66,29 @@ describe("Desktop redesigned shell viewport coverage", () => {
     }
   });
 });
+
+function expectedDefaultPlatformVariant(): "macos" | "windows" | "linux" {
+  if (process.platform === "win32") {
+    return "windows";
+  }
+
+  if (process.platform === "linux") {
+    return "linux";
+  }
+
+  return "macos";
+}
+
+function platformChromeSelector(platform: "macos" | "windows" | "linux"): string {
+  switch (platform) {
+    case "macos":
+      return byTestId(redesignedShellTestIds.platformChromeMacosTrafficLights);
+    case "windows":
+      return byTestId(redesignedShellTestIds.platformChromeWindowsCaptionControls);
+    case "linux":
+      return byTestId(redesignedShellTestIds.platformChromeLinuxCaptionControls);
+  }
+}
 
 interface NamedSelector {
   readonly name: string;

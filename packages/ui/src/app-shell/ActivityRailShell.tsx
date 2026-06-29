@@ -1,6 +1,7 @@
 import React from "react";
 import type { PlatformShellVariant, ThemeVariant } from "./shellPresentation";
 import { redesignedShellTestIds } from "./testIds";
+import { WindowChrome } from "./WindowChrome";
 
 export interface ActivityRailShellProps {
   readonly activityRail: React.ReactNode;
@@ -56,7 +57,8 @@ export function ActivityRailShell({
         data-testid={redesignedShellTestIds.topbar}
         id={redesignedShellTestIds.topbar}
       >
-        {topbar}
+        <WindowChrome platformShellVariant={platformShellVariant} />
+        <div className="crosslog-shell__topbar-content">{topbar}</div>
       </section>
       <nav
         aria-label="Activity rail"

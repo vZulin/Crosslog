@@ -196,25 +196,25 @@
 
 ### Tests for User Story 4 (MANDATORY)
 
-- [ ] T094 [P] [US4] Add component tests for runtime/mockup/test light and dark presentation tokens applied to actual app surfaces in `packages/ui/tests/app-shell/theme-variants.test.tsx`
-- [ ] T095 [P] [US4] Add component tests for macOS, Windows, Linux, and Web shell chrome variants in `packages/ui/tests/app-shell/platform-shell-variants.test.tsx`
-- [ ] T096 [P] [US4] Update final shell accessibility tests for theme/platform variants and no-overlap contracts in `packages/ui/tests/app-shell/redesigned-shell-final-a11y.test.tsx`
-- [ ] T097 [P] [US4] Update Web viewport UI tests for light/dark themes and Web no desktop radius/shadow in `apps/web/tests/ui/redesigned-shell-viewports.spec.ts`
-- [ ] T098 [P] [US4] Add Web platform shell UI test for variant query overrides in `apps/web/tests/ui/platform-shell-variants.spec.ts`
-- [ ] T099 [P] [US4] Update Desktop WDIO viewport UI tests for default platform shell variants on each OS in `apps/desktop/tests/ui/redesigned-shell-viewports.spec.ts`
-- [ ] T100 [P] [US4] Add Desktop WDIO platform shell UI test for macOS/Windows/Linux presentation overrides in `apps/desktop/tests/ui/platform-shell-variants.spec.ts`
-- [ ] T101 [P] [US4] Add macOS platform shell XCTest coverage for macOS chrome and shared product regions in `apps/desktop/tests/ui/macos/PlatformShellVariantUITests.swift`
+- [X] T094 [P] [US4] Add component tests for runtime/mockup/test light and dark presentation tokens applied to actual app surfaces in `packages/ui/tests/app-shell/theme-variants.test.tsx`
+- [X] T095 [P] [US4] Add component tests for macOS, Windows, Linux, and Web shell chrome variants in `packages/ui/tests/app-shell/platform-shell-variants.test.tsx`
+- [X] T096 [P] [US4] Update final shell accessibility tests for theme/platform variants and no-overlap contracts in `packages/ui/tests/app-shell/redesigned-shell-final-a11y.test.tsx`
+- [X] T097 [P] [US4] Update Web viewport UI tests for light/dark themes and Web no desktop radius/shadow in `apps/web/tests/ui/redesigned-shell-viewports.spec.ts`
+- [X] T098 [P] [US4] Add Web platform shell UI test for variant query overrides in `apps/web/tests/ui/platform-shell-variants.spec.ts`
+- [X] T099 [P] [US4] Update Desktop WDIO viewport UI tests for default platform shell variants on each OS in `apps/desktop/tests/ui/redesigned-shell-viewports.spec.ts`
+- [X] T100 [P] [US4] Add Desktop WDIO platform shell UI test for macOS/Windows/Linux presentation overrides in `apps/desktop/tests/ui/platform-shell-variants.spec.ts`
+- [X] T101 [P] [US4] Add macOS platform shell XCTest coverage for macOS chrome and shared product regions in `apps/desktop/tests/ui/macos/PlatformShellVariantUITests.swift`
 
 ### Implementation for User Story 4
 
-- [ ] T102 [US4] Add light/dark theme token definitions and shell `data-theme` application in `packages/ui/src/app-shell/activity-rail-theme.css`
-- [ ] T103 [US4] Add app shell theme variant resolution for runtime/mockup/test presentation input without a product-visible selector or new persisted UI preference storage in `packages/ui/src/app-shell/shellPresentation.ts`
-- [ ] T104 [US4] Create platform chrome rendering for macOS, Windows, Linux, and Web variants in `packages/ui/src/app-shell/WindowChrome.tsx`
-- [ ] T105 [US4] Integrate theme and platform chrome into the shared shell layout in `packages/ui/src/app-shell/ActivityRailShell.tsx`
-- [ ] T106 [US4] Pass theme/platform presentation props from the shared app shell to shell layout in `packages/ui/src/app-shell/AppShell.tsx`
-- [ ] T107 [US4] Wire Web app theme/platform mockup/test overrides without changing source capabilities or adding product UI selectors in `apps/web/src/App.tsx`
-- [ ] T108 [US4] Wire Desktop app theme/platform mockup/test overrides without changing Tauri adapters or adding product UI selectors in `apps/desktop/src/App.tsx`
-- [ ] T109 [US4] Run `bash scripts/macos/test.sh` and `bash scripts/macos/test-ui.sh` for US4 shared implementation and record the result in `specs/003-macos-ui-design-alignment/validation-log.md`; release-level OS-specific completion still depends on T119-T121 corresponding-OS UI evidence.
+- [X] T102 [US4] Add light/dark theme token definitions and shell `data-theme` application in `packages/ui/src/app-shell/activity-rail-theme.css`
+- [X] T103 [US4] Add app shell theme variant resolution for runtime/mockup/test presentation input without a product-visible selector or new persisted UI preference storage in `packages/ui/src/app-shell/shellPresentation.ts`
+- [X] T104 [US4] Create platform chrome rendering for macOS, Windows, Linux, and Web variants in `packages/ui/src/app-shell/WindowChrome.tsx`
+- [X] T105 [US4] Integrate theme and platform chrome into the shared shell layout in `packages/ui/src/app-shell/ActivityRailShell.tsx`
+- [X] T106 [US4] Pass theme/platform presentation props from the shared app shell to shell layout in `packages/ui/src/app-shell/AppShell.tsx`
+- [X] T107 [US4] Wire Web app theme/platform mockup/test overrides without changing source capabilities or adding product UI selectors in `apps/web/src/App.tsx`
+- [X] T108 [US4] Wire Desktop app theme/platform mockup/test overrides without changing Tauri adapters or adding product UI selectors in `apps/desktop/src/App.tsx`
+- [X] T109 [US4] Run `bash scripts/macos/test.sh` and `bash scripts/macos/test-ui.sh` for US4 shared implementation and record the result in `specs/003-macos-ui-design-alignment/validation-log.md`; release-level OS-specific completion still depends on T119-T121 corresponding-OS UI evidence.
 
 **Checkpoint**: User Story 4 is independently functional and product behavior is shared across variants.
 

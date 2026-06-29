@@ -38,6 +38,8 @@ export const shellPresentationQueryParams = {
   platform: "crosslog-platform",
 } as const;
 
+export const shellPresentationChangeEventName = "crosslog:shell-presentation-change";
+
 export function isThemeVariant(value: unknown): value is ThemeVariant {
   return themeVariants.includes(value as ThemeVariant);
 }

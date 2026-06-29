@@ -1,21 +1,37 @@
 :root {
-  --crosslog-shell-bg: #f5f5f7;
-  --crosslog-surface: #ffffff;
-  --crosslog-toolbar-surface: #fafafa;
-  --crosslog-rail-surface: #f0f0f3;
+  --crosslog-screen-bg: #ececf1;
+  --crosslog-window-bg: #f5f5f7;
+  --crosslog-topbar-bg: #fafafa;
+  --crosslog-rail-bg: #f0f0f3;
+  --crosslog-pane-bg: #ffffff;
   --crosslog-border: #d9d9df;
-  --crosslog-scrollbar-track: #dcdde1;
-  --crosslog-scrollbar-thumb: #a6a9af;
+  --crosslog-scroll-track: #dcdde1;
+  --crosslog-scroll-thumb: #a6a9af;
   --crosslog-accent: #007aff;
-  --crosslog-accent-surface: #d9ebff;
-  --crosslog-tag-surface: #f3f6fb;
+  --crosslog-accent-bg: #d9ebff;
+  --crosslog-muted: #6e6e73;
+  --crosslog-line-number: #8e8e93;
   --crosslog-text: #1d1d1f;
-  --crosslog-muted-text: #6e6e73;
-  --crosslog-line-number-text: #8e8e93;
-  --crosslog-warning-surface: #fff4d7;
-  --crosslog-warning-text: #9a6500;
-  --crosslog-error-surface: #ffe5e5;
+  --crosslog-warn-bg: #fff4d7;
+  --crosslog-warn-text: #9a6500;
+  --crosslog-error-bg: #ffe5e5;
   --crosslog-error-text: #ff3b30;
+  --crosslog-tag-bg: #f0f1f3;
+  --crosslog-window-shadow: 0 15.805px 47.414px rgb(0 0 0 / 13%);
+  --crosslog-window-border: 0.988px solid rgb(0 0 0 / 9%);
+  --crosslog-shell-bg: var(--crosslog-window-bg);
+  --crosslog-surface: var(--crosslog-pane-bg);
+  --crosslog-toolbar-surface: var(--crosslog-topbar-bg);
+  --crosslog-rail-surface: var(--crosslog-rail-bg);
+  --crosslog-scrollbar-track: var(--crosslog-scroll-track);
+  --crosslog-scrollbar-thumb: var(--crosslog-scroll-thumb);
+  --crosslog-accent-surface: var(--crosslog-accent-bg);
+  --crosslog-tag-surface: var(--crosslog-tag-bg);
+  --crosslog-muted-text: var(--crosslog-muted);
+  --crosslog-line-number-text: var(--crosslog-line-number);
+  --crosslog-warning-surface: var(--crosslog-warn-bg);
+  --crosslog-warning-text: var(--crosslog-warn-text);
+  --crosslog-error-surface: var(--crosslog-error-bg);
   --crosslog-font-ui: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --crosslog-font-log: "Roboto Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   --crosslog-window-radius: 12px;
@@ -28,6 +44,30 @@
   --crosslog-statusbar-height: 27px;
 }
 
+[data-theme="dark"] {
+  color-scheme: dark;
+  --crosslog-screen-bg: #111214;
+  --crosslog-window-bg: #1c1c1e;
+  --crosslog-topbar-bg: #25262a;
+  --crosslog-rail-bg: #1f2024;
+  --crosslog-pane-bg: #202124;
+  --crosslog-border: #3a3b40;
+  --crosslog-scroll-track: #34363c;
+  --crosslog-scroll-thumb: #6d7078;
+  --crosslog-accent: #0a84ff;
+  --crosslog-accent-bg: rgba(10, 132, 255, 0.24);
+  --crosslog-muted: #a1a1a6;
+  --crosslog-line-number: #8f949c;
+  --crosslog-text: #f5f5f7;
+  --crosslog-warn-bg: rgba(255, 159, 10, 0.18);
+  --crosslog-warn-text: #ffd60a;
+  --crosslog-error-bg: rgba(255, 69, 58, 0.2);
+  --crosslog-error-text: #ff453a;
+  --crosslog-tag-bg: #2c2d31;
+  --crosslog-window-shadow: 0 15.805px 47.414px rgb(0 0 0 / 38%);
+  --crosslog-window-border: 0.988px solid rgb(255 255 255 / 9%);
+}
+
 html,
 body,
 #root {
@@ -36,7 +76,7 @@ body,
 }
 
 body {
-  background: var(--crosslog-shell-bg);
+  background: var(--crosslog-screen-bg);
 }
 
 .crosslog-shell {
@@ -50,24 +90,131 @@ body {
   block-size: 100%;
   min-block-size: 100%;
   overflow: hidden;
+  box-sizing: border-box;
+  border: var(--crosslog-window-border);
   border-radius: var(--crosslog-window-radius);
-  background: var(--crosslog-shell-bg);
+  background: var(--crosslog-window-bg);
+  box-shadow: var(--crosslog-window-shadow);
   color: var(--crosslog-text);
   font-family: var(--crosslog-font-ui);
 }
 
+.crosslog-shell[data-platform="web"] {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
 .crosslog-shell__topbar {
   grid-area: topbar;
+  position: relative;
   min-width: 0;
   border-block-end: 1px solid var(--crosslog-border);
-  background: var(--crosslog-toolbar-surface);
+  background: var(--crosslog-topbar-bg);
+}
+
+.crosslog-shell__topbar-content {
+  position: relative;
+  z-index: 1;
+  block-size: 100%;
+}
+
+.crosslog-window-chrome {
+  position: absolute;
+  inset-block: 0;
+  inset-inline: 10px;
+  z-index: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  pointer-events: none;
+  color: var(--crosslog-muted);
+  font-size: 12px;
+}
+
+.crosslog-window-chrome__title {
+  justify-self: start;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.crosslog-window-chrome[data-platform="macos"] .crosslog-window-chrome__title {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.crosslog-window-chrome__traffic-lights {
+  grid-column: 1;
+  justify-self: start;
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.crosslog-window-chrome__traffic-light {
+  inline-size: 12px;
+  block-size: 12px;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 0.5px rgb(0 0 0 / 16%);
+}
+
+.crosslog-window-chrome__traffic-light--close {
+  background: #ff5f57;
+}
+
+.crosslog-window-chrome__traffic-light--minimize {
+  background: #ffbd2e;
+}
+
+.crosslog-window-chrome__traffic-light--zoom {
+  background: #28c840;
+}
+
+.crosslog-window-chrome__caption-controls {
+  grid-column: 2;
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.crosslog-window-chrome__caption-controls--windows span {
+  inline-size: 28px;
+  block-size: 24px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 4px;
+  color: var(--crosslog-muted);
+  font-size: 11px;
+}
+
+.crosslog-window-chrome__caption-controls--windows span:last-child {
+  color: var(--crosslog-error-text);
+}
+
+.crosslog-window-chrome__caption-controls--linux span {
+  inline-size: 12px;
+  block-size: 12px;
+  border: 1px solid var(--crosslog-border);
+  border-radius: 999px;
+  background: var(--crosslog-topbar-bg);
+}
+
+.crosslog-window-chrome__web-title {
+  display: none;
 }
 
 .crosslog-shell__rail {
   grid-area: rail;
   min-height: 0;
   border-inline-end: 1px solid var(--crosslog-border);
-  background: var(--crosslog-rail-surface);
+  background: var(--crosslog-rail-bg);
 }
 
 .crosslog-shell__workspace {
@@ -76,7 +223,7 @@ body {
   min-height: 0;
   overflow-x: auto;
   overflow-y: hidden;
-  background: var(--crosslog-surface);
+  background: var(--crosslog-pane-bg);
 }
 
 .crosslog-shell__banners {
@@ -94,15 +241,15 @@ body {
   grid-area: status;
   min-width: 0;
   border-block-start: 1px solid var(--crosslog-border);
-  background: var(--crosslog-rail-surface);
+  background: var(--crosslog-rail-bg);
 }
 
 .crosslog-capability-limitations {
   max-inline-size: min(560px, 100%);
   border: 1px solid rgb(154 101 0 / 35%);
   border-radius: var(--crosslog-control-radius);
-  background: var(--crosslog-warning-surface);
-  color: var(--crosslog-warning-text);
+  background: var(--crosslog-warn-bg);
+  color: var(--crosslog-warn-text);
   box-shadow: 0 8px 20px rgb(29 29 31 / 10%);
 }
 
@@ -158,7 +305,7 @@ body {
   max-inline-size: min(360px, calc(100% - 16px));
   border: 1px solid var(--crosslog-border);
   border-radius: var(--crosslog-control-radius);
-  background: var(--crosslog-surface);
+  background: var(--crosslog-pane-bg);
   box-shadow: 0 10px 26px rgb(29 29 31 / 14%);
   color: var(--crosslog-text);
 }
@@ -712,7 +859,7 @@ body {
 }
 
 .crosslog-log-viewport__row[data-search-match="true"] {
-  background: var(--crosslog-warning-surface);
+  background: var(--crosslog-warn-bg);
 }
 
 .crosslog-log-viewport__row[data-active-search-match="true"],
@@ -721,8 +868,17 @@ body {
   outline-offset: 1px;
 }
 
+.crosslog-log-viewport__row[data-severity="warn"] {
+  background: var(--crosslog-warn-bg);
+}
+
 .crosslog-log-viewport__row[data-severity="warn"] .crosslog-log-viewport__line-text {
-  color: var(--crosslog-warning-text);
+  color: var(--crosslog-warn-text);
+}
+
+.crosslog-log-viewport__row[data-severity="error"],
+.crosslog-log-viewport__row[data-severity="fatal"] {
+  background: var(--crosslog-error-bg);
 }
 
 .crosslog-log-viewport__row[data-severity="error"] .crosslog-log-viewport__line-text,
@@ -811,7 +967,7 @@ body {
 }
 
 .crosslog-status-bar__message {
-  color: var(--crosslog-warning-text);
+  color: var(--crosslog-warn-text);
 }
 
 @media (max-width: 720px) {

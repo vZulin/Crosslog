@@ -5,6 +5,7 @@ import {
   redesignedShellObsoleteControlTestIds,
   redesignedShellStructuralTestIds,
   redesignedShellTestIds,
+  shellPresentationChangeEventName,
   type RedesignedShellTestId,
 } from "@crosslog/ui";
 
@@ -198,6 +199,26 @@ export function shellPresentationSearchParams(options: {
 
   const query = params.toString();
   return query.length > 0 ? `?${query}` : "";
+}
+
+export async function setDesktopShellPresentation(options: {
+  readonly theme?: ShellThemeVariant;
+  readonly platform?: ShellPlatformVariant;
+}): Promise<void> {
+  const search = shellPresentationSearchParams(options);
+
+  await browser.execute((nextSearch: string, eventName: string) => {
+    window.history.replaceState(null, "", `${window.location.pathname}${nextSearch}`);
+    window.dispatchEvent(new Event(eventName));
+  }, search, shellPresentationChangeEventName);
+
+  if (options.theme) {
+    await waitForUiTestTitleFragment(`theme=${options.theme}`);
+  }
+
+  if (options.platform) {
+    await waitForUiTestTitleFragment(`platform=${options.platform}`);
+  }
 }
 
 export function byTestId(testId: RedesignedShellTestId): string {

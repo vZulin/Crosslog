@@ -1,6 +1,6 @@
 import { expect, test, type Locator } from "@playwright/test";
 import { redesignedShellTestIds } from "@crosslog/ui";
-import { getRedesignedShell } from "./helpers/redesigned-shell";
+import { getRedesignedShell, shellPresentationUrl } from "./helpers/redesigned-shell";
 
 const viewportScenarios = [
   { name: "desktop", width: 1280, height: 720 },
@@ -48,6 +48,70 @@ test.describe("redesigned shell viewport coverage", () => {
       ]);
     });
   }
+
+  for (const theme of ["light", "dark"] as const) {
+    test(`applies ${theme} theme tokens to actual Web shell surfaces`, async ({ page }) => {
+      await page.goto(shellPresentationUrl("/", { theme, platform: "web" }));
+
+      const shell = getRedesignedShell(page);
+      await expect(shell.shell).toHaveAttribute("data-theme", theme);
+      await expect(shell.themeVariant).toHaveText(theme);
+
+      const colors = await page.evaluate(() => {
+        const read = (selector: string) => {
+          const element = document.querySelector(selector);
+
+          if (!element) {
+            throw new Error(`Missing selector: ${selector}`);
+          }
+
+          const style = getComputedStyle(element);
+          return {
+            backgroundColor: style.backgroundColor,
+            color: style.color,
+          };
+        };
+
+        return {
+          shell: read('[data-testid="crosslog-shell"]'),
+          topbar: read('[data-testid="topbar"]'),
+          rail: read('[data-testid="activity-rail"]'),
+          status: read('[data-testid="status-bar"]'),
+        };
+      });
+
+      if (theme === "dark") {
+        expect(colors.shell.backgroundColor).toBe("rgb(28, 28, 30)");
+        expect(colors.topbar.backgroundColor).toBe("rgb(37, 38, 42)");
+        expect(colors.rail.backgroundColor).toBe("rgb(31, 32, 36)");
+        expect(colors.status.backgroundColor).toBe("rgb(31, 32, 36)");
+      } else {
+        expect(colors.shell.backgroundColor).toBe("rgb(245, 245, 247)");
+        expect(colors.topbar.backgroundColor).toBe("rgb(250, 250, 250)");
+        expect(colors.rail.backgroundColor).toBe("rgb(240, 240, 243)");
+        expect(colors.status.backgroundColor).toBe("rgb(240, 240, 243)");
+      }
+    });
+  }
+
+  test("renders the Web shell without desktop radius or shadow", async ({ page }) => {
+    await page.goto(shellPresentationUrl("/", { platform: "web" }));
+
+    const shell = getRedesignedShell(page);
+    await expect(shell.shell).toHaveAttribute("data-platform", "web");
+
+    const treatment = await shell.shell.evaluate((element) => {
+      const style = getComputedStyle(element);
+
+      return {
+        borderRadius: style.borderRadius,
+        boxShadow: style.boxShadow,
+      };
+    });
+
+    expect(treatment.borderRadius).toBe("0px");
+    expect(treatment.boxShadow).toBe("none");
+  });
 });
 
 interface NamedLocator {

@@ -8,6 +8,7 @@ export * from "./app-shell/IconPreview";
 export * from "./app-shell/Popover";
 export * from "./app-shell/StatusBar";
 export * from "./app-shell/Topbar";
+export * from "./app-shell/WindowChrome";
 export * from "./app-shell/activityRailItems";
 export * from "./app-shell/icons";
 export * from "./app-shell/shellPresentation";

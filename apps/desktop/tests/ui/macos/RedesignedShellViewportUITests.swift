@@ -5,7 +5,15 @@ final class RedesignedShellViewportUITests: CrosslogUITests {
         let app = launchApplication()
 
         RedesignedShellAssertions.assertStatusContains("0 panes", in: app)
-        waitForUiTestTitle("regions=crosslog-shell,topbar,command-field,activity-rail,pane-workspace,status-bar", in: app)
+        waitForUiTestTitle(RedesignedShellAssertions.crosslogShell, in: app)
+        waitForUiTestTitle(RedesignedShellAssertions.topbar, in: app)
+        waitForUiTestTitle(RedesignedShellAssertions.commandField, in: app)
+        waitForUiTestTitle(RedesignedShellAssertions.themeVariant, in: app)
+        waitForUiTestTitle(RedesignedShellAssertions.platformChrome, in: app)
+        waitForUiTestTitle(RedesignedShellAssertions.platformChromeTitle, in: app)
+        waitForUiTestTitle(RedesignedShellAssertions.activityRail, in: app)
+        waitForUiTestTitle(RedesignedShellAssertions.paneWorkspace, in: app)
+        waitForUiTestTitle(RedesignedShellAssertions.statusBar, in: app)
 
         openSampleLogs(in: app)
         RedesignedShellAssertions.assertRequiredRegions(in: app)

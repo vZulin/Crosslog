@@ -63,10 +63,17 @@ restate the full 001 or 002 validation history.
 | 2026-06-29 | T093 US3 automated gate | `bash scripts/macos/test.sh` | Pass | Lint passed; Vitest unit suites passed 48 files / 126 tests; integration suites passed 4 files / 5 tests; Rust tests passed 5 tests. |
 | 2026-06-29 | T093 US3 local UI gate | `bash scripts/macos/test-ui.sh` | Blocked locally | Web Playwright passed 14 tests, including the updated pane search and time offset popover scenarios. The local macOS XCTest portion failed before any product assertion because `XCUIApplication.launch()` could not activate `dev.crosslog.desktop` and reported `Running Background`; Developer Mode was enabled and repeated runs reproduced the same local activation failure. |
 
+## Phase 7: User Story 4 Theme And Platform Variants
+
+| Date | Scope | Command Or Evidence | Result | Notes |
+| --- | --- | --- | --- | --- |
+| 2026-06-29 | T094-T096 US4 component coverage | `corepack pnpm exec vitest run packages/ui/tests/app-shell/theme-variants.test.tsx packages/ui/tests/app-shell/platform-shell-variants.test.tsx packages/ui/tests/app-shell/redesigned-shell-final-a11y.test.tsx` | Pass | Targeted Vitest suite passed 3 files / 11 tests after adding light/dark token assertions, platform chrome variants, no product-visible variant selectors, Web no-radius/no-shadow contract coverage, and no-overlap shell chrome checks. |
+| 2026-06-29 | T094-T108 US4 full unit regression | `corepack pnpm lint` and `corepack pnpm test:unit` | Pass | ESLint completed successfully; Vitest unit suites passed 50 files / 134 tests after adding theme/platform app shell integration and override wiring. |
+| 2026-06-29 | T109 US4 automated gate | `bash scripts/macos/test.sh` | Pass | Lint passed; Vitest unit suites passed 50 files / 134 tests; integration suites passed 4 files / 5 tests; Rust tests passed 5 tests. |
+| 2026-06-29 | T097-T101/T109 US4 local UI gate | `bash scripts/macos/test-ui.sh` | Pass | Playwright Web UI passed 21 tests, including light/dark token checks and Web platform override variants. Desktop UI built the app, then macOS XCTest passed 11 tests with macOS chrome publication and shared product region evidence. |
+
 ## Future Evidence Slots
 
-- US4 shared implementation gate: `bash scripts/macos/test.sh` and
-  `bash scripts/macos/test-ui.sh`.
 - Release readiness: Windows, macOS, and Linux automated/UI/build GitHub
   Actions evidence.
 - Timed empty-workspace review: reviewer role, empty-workspace start condition,
