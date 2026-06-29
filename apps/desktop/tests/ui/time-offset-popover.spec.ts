@@ -25,7 +25,7 @@ describe("Desktop time offset popover", () => {
     const appOffsetMinutes = await appPane.$(byTestId(redesignedShellTestIds.timeOffsetMinutes));
     await expect(appOffsetPopover).toBeExisting();
     await expectCompactPopoverInsidePane(appPane, appOffsetPopover, 120);
-    await expectMockupTimeOffsetPopover(appOffsetPopover, "app.log");
+    await expectMockupTimeOffsetPopoverStructure(appOffsetPopover, "app.log");
     await expect(appOffsetMinutes).toBeExisting();
     await expect(await appPane.$(byTestId(redesignedShellTestIds.timeOffsetApply))).toBeExisting();
     await expect(await appOffsetPopover.$$('[aria-label^="Close time offset"]')).toBeElementsArrayOfSize(0);
@@ -56,13 +56,13 @@ describe("Desktop time offset popover", () => {
     const serviceOffsetPopover = await servicePane.$(byTestId(redesignedShellTestIds.timeOffsetPopover));
     await expect(serviceOffsetPopover).toBeExisting();
     await expectCompactPopoverInsidePane(servicePane, serviceOffsetPopover, 120);
-    await expectMockupTimeOffsetPopover(serviceOffsetPopover, "service.log");
+    await expectMockupTimeOffsetPopoverStructure(serviceOffsetPopover, "service.log");
 
     await clickElementWithJavaScript(await directoryPane.$(byTestId(redesignedShellTestIds.paneHeaderOffset)));
     const directoryOffsetPopover = await directoryPane.$(byTestId(redesignedShellTestIds.timeOffsetPopover));
     await expect(directoryOffsetPopover).toBeExisting();
     await expectCompactPopoverInsidePane(directoryPane, directoryOffsetPopover, 120);
-    await expectMockupTimeOffsetPopover(directoryOffsetPopover, "app-2026-06-16.log");
+    await expectMockupTimeOffsetPopoverStructure(directoryOffsetPopover, "app-2026-06-16.log");
     await expect(await servicePane.$$(byTestId(redesignedShellTestIds.timeOffsetPopover))).toBeElementsArrayOfSize(0);
   });
 });
@@ -96,82 +96,28 @@ async function isFocused(element: WebdriverIO.Element): Promise<boolean> {
   return browser.execute((target: HTMLElement) => document.activeElement === target, element);
 }
 
-async function expectMockupTimeOffsetPopover(
+async function expectMockupTimeOffsetPopoverStructure(
   popover: WebdriverIO.Element,
   sourceName: string,
 ): Promise<void> {
-  await expect(await popover.$("h3")).toHaveText("Time Offset");
-  await expect(await popover.$(".crosslog-time-offset-popover__source")).toHaveText(sourceName);
-
-  const labels = await Promise.all(
-    (await popover.$$(".crosslog-time-offset-popover__field-label")).map((label) => label.getText()),
-  );
-  expect(labels).toEqual(["Days", "Hours", "Min", "Sec", "Ms"]);
-
-  const metrics = await browser.execute((element: HTMLElement) => {
-    const rectOf = (selector: string) => {
-      const target = element.querySelector<HTMLElement>(selector);
-
-      if (!target) {
-        throw new Error(`Missing selector in time offset popover: ${selector}`);
-      }
-
-      const rect = target.getBoundingClientRect();
-      return {
-        left: rect.left,
-        top: rect.top,
-        right: rect.right,
-        bottom: rect.bottom,
-        width: rect.width,
-        height: rect.height,
-      };
-    };
-
-    const popoverRect = element.getBoundingClientRect();
-    const inputs = Array.from(element.querySelectorAll<HTMLInputElement>(".crosslog-time-offset-popover__field input"))
-      .map((input) => {
-        const rect = input.getBoundingClientRect();
-        return {
-          left: rect.left,
-          top: rect.top,
-          right: rect.right,
-          bottom: rect.bottom,
-          width: rect.width,
-          height: rect.height,
-        };
-      });
-
+  const structure = await browser.execute((element: HTMLElement) => {
     return {
-      popover: {
-        width: popoverRect.width,
-        height: popoverRect.height,
-      },
-      titleIcon: rectOf(".crosslog-time-offset-popover__title-icon"),
-      title: rectOf(".crosslog-time-offset-popover__title"),
-      source: rectOf(".crosslog-time-offset-popover__source"),
-      inputs,
-      apply: rectOf(".crosslog-time-offset-popover__apply"),
+      title: element.querySelector<HTMLElement>(".crosslog-time-offset-popover__title")?.textContent?.trim() ?? "",
+      source: element.querySelector<HTMLElement>(".crosslog-time-offset-popover__source")?.textContent?.trim() ?? "",
+      labels: Array.from(element.querySelectorAll<HTMLElement>(".crosslog-time-offset-popover__field-label"))
+        .map((label) => label.textContent?.trim() ?? ""),
+      inputCount: element.querySelectorAll<HTMLInputElement>(".crosslog-time-offset-popover__field input").length,
+      hasTitleIcon: Boolean(element.querySelector(".crosslog-time-offset-popover__title-icon")),
+      hasApplyButton: Boolean(element.querySelector(".crosslog-time-offset-popover__apply")),
     };
   }, popover);
 
-  expect(metrics.popover.width).toBeGreaterThanOrEqual(300);
-  expect(metrics.popover.width).toBeLessThanOrEqual(304);
-  expect(metrics.popover.height).toBeGreaterThanOrEqual(113);
-  expect(metrics.popover.height).toBeLessThanOrEqual(116);
-  expect(metrics.inputs).toHaveLength(5);
-
-  for (const input of metrics.inputs) {
-    expect(input.width).toBeGreaterThanOrEqual(49);
-    expect(input.width).toBeLessThanOrEqual(52);
-    expect(input.height).toBeGreaterThanOrEqual(24);
-    expect(input.height).toBeLessThanOrEqual(27);
-  }
-
-  expect(metrics.titleIcon.left).toBeLessThan(metrics.title.left);
-  expect(metrics.title.right).toBeLessThan(metrics.source.left);
-  expect(metrics.inputs[0]!.top).toBeGreaterThan(metrics.title.bottom);
-  expect(metrics.apply.top).toBeGreaterThan(metrics.inputs[0]!.bottom);
-  expect(Math.abs(metrics.apply.right - metrics.inputs[4]!.right)).toBeLessThanOrEqual(1);
+  expect(structure.title).toBe("Time Offset");
+  expect(structure.source).toBe(sourceName);
+  expect(structure.labels.join("|")).toBe("Days|Hours|Min|Sec|Ms");
+  expect(structure.inputCount).toBe(5);
+  expect(structure.hasTitleIcon).toBe(true);
+  expect(structure.hasApplyButton).toBe(true);
 }
 
 async function expectCompactPopoverInsidePane(

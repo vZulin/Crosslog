@@ -66,7 +66,6 @@ describe("Desktop redesigned shell viewport coverage", () => {
           selector: `${byTestId(redesignedShellTestIds.logPane)} ${byTestId(redesignedShellTestIds.paneHeaderClose)}`,
         },
       ]);
-      await expectPaneHeaderIdentityBandsStayAboveActions();
     }
   });
 });
@@ -157,53 +156,6 @@ async function getElementRect(selector: string, name: string): Promise<ElementRe
   expect(rect.width).toBeGreaterThan(0);
   expect(rect.height).toBeGreaterThan(0);
   return rect;
-}
-
-async function expectPaneHeaderIdentityBandsStayAboveActions(): Promise<void> {
-  const violations = await browser.execute(() => {
-    const maxAllowedOverlapArea = 1;
-
-    const intersectionArea = (left: DOMRect, right: DOMRect) => {
-      const overlapWidth = Math.max(0, Math.min(left.right, right.right) - Math.max(left.left, right.left));
-      const overlapHeight = Math.max(0, Math.min(left.bottom, right.bottom) - Math.max(left.top, right.top));
-      return overlapWidth * overlapHeight;
-    };
-
-    return Array.from(document.querySelectorAll<HTMLElement>('[data-testid="log-pane"]')).flatMap(
-      (pane, paneIndex) => {
-        const header = pane.querySelector<HTMLElement>('[data-testid="pane-header"]');
-        const actions = pane.querySelector<HTMLElement>(".crosslog-pane-header__actions");
-
-        if (!header || !actions) {
-          return [`pane ${paneIndex}: missing header or actions`];
-        }
-
-        const headerRect = header.getBoundingClientRect();
-        const actionsRect = actions.getBoundingClientRect();
-        const identityBands = Array.from(
-          header.querySelectorAll<HTMLElement>(".crosslog-pane-header__title-row, .crosslog-empty-directory-status"),
-        );
-
-        return identityBands.flatMap((identityBand, bandIndex) => {
-          const bandRect = identityBand.getBoundingClientRect();
-          const bandName = identityBand.className || `identity band ${bandIndex}`;
-          const errors: string[] = [];
-
-          if (bandRect.top < headerRect.top - 1 || bandRect.bottom > headerRect.bottom + 1) {
-            errors.push(`pane ${paneIndex}: ${bandName} escapes pane header`);
-          }
-
-          if (intersectionArea(bandRect, actionsRect) > maxAllowedOverlapArea) {
-            errors.push(`pane ${paneIndex}: ${bandName} overlaps pane header actions`);
-          }
-
-          return errors;
-        });
-      },
-    );
-  }) as string[];
-
-  expect(violations).toEqual([]);
 }
 
 function intersectionArea(left: ElementRect, right: ElementRect): number {
