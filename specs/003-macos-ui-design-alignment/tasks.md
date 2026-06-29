@@ -233,9 +233,9 @@
 - [X] T116 Run `bash scripts/macos/test-ui.sh` and record the final UI gate in `specs/003-macos-ui-design-alignment/validation-log.md`
 - [X] T117 Run `bash scripts/macos/perf.sh` after rendering/scrolling changes and record the result in `specs/003-macos-ui-design-alignment/validation-log.md`
 - [X] T118 Run `bash scripts/macos/build.sh` before release readiness and record the result in `specs/003-macos-ui-design-alignment/validation-log.md`
-- [ ] T119 Verify GitHub Actions Windows automated/UI/build gates, including default Windows shell chrome evidence, and record links/results in `specs/003-macos-ui-design-alignment/validation-log.md`
-- [ ] T120 Verify GitHub Actions macOS automated/UI/build gates and record links/results in `specs/003-macos-ui-design-alignment/validation-log.md`
-- [ ] T121 Verify GitHub Actions Linux automated/UI/build gates, including default Linux shell chrome evidence, and record links/results in `specs/003-macos-ui-design-alignment/validation-log.md`
+- [X] T119 Verify GitHub Actions Windows automated/UI/build gates, including default Windows shell chrome evidence, and record links/results in `specs/003-macos-ui-design-alignment/validation-log.md`
+- [X] T120 Verify GitHub Actions macOS automated/UI/build gates and record links/results in `specs/003-macos-ui-design-alignment/validation-log.md`
+- [X] T121 Verify GitHub Actions Linux automated/UI/build gates, including default Linux shell chrome evidence, and record links/results in `specs/003-macos-ui-design-alignment/validation-log.md`
 
 ---
 

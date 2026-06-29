@@ -82,8 +82,6 @@ restate the full 001 or 002 validation history.
 | 2026-06-29 | T116 final local UI gate | `bash scripts/macos/test-ui.sh` | Pass | Playwright Web UI passed 21 tests; macOS Desktop app and XCTest runner built successfully; XCTest passed 11 tests with empty workspace, shell region, platform chrome, obsolete-control, resize, session, search, sync, and offset state evidence. |
 | 2026-06-29 | T117 final performance gate | `bash scripts/macos/perf.sh` | Pass | Performance benchmark gate completed for source opening, search, synchronization, session writing, directory navigation, virtualization, live append, and memory pressure scenarios. |
 | 2026-06-29 | T118 final macOS build gate | `bash scripts/macos/build.sh` | Pass | Web Vite production build completed; Desktop Tauri release build completed and produced `apps/desktop/src-tauri/target/release/crosslog-desktop`. |
-
-## Future Evidence Slots
-
-- Release readiness: Windows, macOS, and Linux automated/UI/build GitHub
-  Actions evidence.
+| 2026-06-29 | T119 Windows GitHub Actions release gate | GitHub Actions run `28370394309` for commit `874d3f7528392a5a943cdc370538674c516af81a` | Pass | `Automated tests (windows)` passed in 4m54s; `UI/E2E tests (windows)` passed in 3m45s with default Windows shell chrome coverage from the Desktop WDIO platform variant gate; `Build Desktop (windows)` passed in 3m37s. Run: `https://github.com/vZulin/Crosslog/actions/runs/28370394309`. |
+| 2026-06-29 | T120 macOS GitHub Actions release gate | GitHub Actions run `28370394309` for commit `874d3f7528392a5a943cdc370538674c516af81a` | Pass | `Automated tests (macos)` passed in 1m08s; `UI/E2E tests (macos)` passed in 2m55s with macOS shell chrome and shared product region evidence; `Build Desktop (macos)` passed in 1m19s. Run: `https://github.com/vZulin/Crosslog/actions/runs/28370394309`. |
+| 2026-06-29 | T121 Linux GitHub Actions release gate | GitHub Actions run `28370394309` for commit `874d3f7528392a5a943cdc370538674c516af81a` | Pass | `Automated tests (linux)` passed in 1m35s; `UI/E2E tests (linux)` passed in 9m09s with default Linux shell chrome coverage from the Desktop WDIO platform variant gate; `Build Desktop (linux)` passed in 1m24s. `Build Web` passed in 22s. Run: `https://github.com/vZulin/Crosslog/actions/runs/28370394309`. |
