@@ -157,49 +157,6 @@ jobs:
             linux_ui_prerequisites: false
             playwright_required: true
             linux_playwright_deps: false
-          - os: windows
-            label: windows-desktop-layout
-            runner: windows-latest
-            ui-command: pwsh scripts/windows/test-ui.ps1 desktop
-            wdio_specs: >-
-              apps/desktop/tests/ui/multi-pane-layout.spec.ts,
-              apps/desktop/tests/ui/platform-shell-variants.spec.ts,
-              apps/desktop/tests/ui/redesigned-shell-viewports.spec.ts
-            rust_required: true
-            tauri_driver_required: true
-            linux_ui_prerequisites: false
-            playwright_required: false
-            linux_playwright_deps: false
-          - os: windows
-            label: windows-desktop-pane-tools
-            runner: windows-latest
-            ui-command: pwsh scripts/windows/test-ui.ps1 desktop
-            wdio_specs: >-
-              apps/desktop/tests/ui/log-search.spec.ts,
-              apps/desktop/tests/ui/log-text-copy.spec.ts,
-              apps/desktop/tests/ui/synchronized-scrolling.spec.ts,
-              apps/desktop/tests/ui/time-offset-popover.spec.ts
-            rust_required: true
-            tauri_driver_required: true
-            linux_ui_prerequisites: false
-            playwright_required: false
-            linux_playwright_deps: false
-          - os: windows
-            label: windows-desktop-lifecycle
-            runner: windows-latest
-            ui-command: pwsh scripts/windows/test-ui.ps1 desktop
-            wdio_specs: >-
-              apps/desktop/tests/ui/directory-navigation.spec.ts,
-              apps/desktop/tests/ui/empty-directory.spec.ts,
-              apps/desktop/tests/ui/live-file-updates.spec.ts,
-              apps/desktop/tests/ui/manual-encoding.spec.ts,
-              apps/desktop/tests/ui/session-restore.spec.ts,
-              apps/desktop/tests/ui/source-loading.spec.ts
-            rust_required: true
-            tauri_driver_required: true
-            linux_ui_prerequisites: false
-            playwright_required: false
-            linux_playwright_deps: false
 
     steps:
       - name: Check out repository
@@ -279,6 +236,139 @@ jobs:
         env:
           CROSSLOG_WDIO_SPECS: ${{ matrix.wdio_specs }}
         run: ${{ matrix.ui-command }}
+
+  windows-desktop-ui-app:
+    name: Windows Desktop UI app
+    runs-on: windows-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Resolve pnpm store path
+        id: pnpm-store
+        shell: bash
+        run: echo "path=$(corepack pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop/src-tauri
+
+      - name: Install JavaScript dependencies
+        run: corepack pnpm install --frozen-lockfile
+
+      - name: Build Windows Desktop UI app
+        env:
+          CROSSLOG_UI_TEST: "1"
+        run: corepack pnpm --filter @crosslog/desktop tauri build --debug --no-bundle -- --locked
+
+      - name: Upload Windows Desktop UI app
+        uses: actions/upload-artifact@v4
+        with:
+          name: crosslog-windows-desktop-ui-app
+          path: apps/desktop/src-tauri/target/debug/crosslog-desktop.exe
+          if-no-files-found: error
+
+  windows-desktop-ui-tests:
+    name: UI/E2E tests (${{ matrix.label }})
+    runs-on: windows-latest
+    needs: windows-desktop-ui-app
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: windows-desktop-layout
+            wdio_specs: >-
+              apps/desktop/tests/ui/multi-pane-layout.spec.ts,
+              apps/desktop/tests/ui/platform-shell-variants.spec.ts,
+              apps/desktop/tests/ui/redesigned-shell-viewports.spec.ts
+          - label: windows-desktop-pane-tools
+            wdio_specs: >-
+              apps/desktop/tests/ui/log-search.spec.ts,
+              apps/desktop/tests/ui/log-text-copy.spec.ts,
+              apps/desktop/tests/ui/synchronized-scrolling.spec.ts,
+              apps/desktop/tests/ui/time-offset-popover.spec.ts
+          - label: windows-desktop-lifecycle
+            wdio_specs: >-
+              apps/desktop/tests/ui/directory-navigation.spec.ts,
+              apps/desktop/tests/ui/empty-directory.spec.ts,
+              apps/desktop/tests/ui/live-file-updates.spec.ts,
+              apps/desktop/tests/ui/manual-encoding.spec.ts,
+              apps/desktop/tests/ui/session-restore.spec.ts,
+              apps/desktop/tests/ui/source-loading.spec.ts
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Resolve pnpm store path
+        id: pnpm-store
+        shell: bash
+        run: echo "path=$(corepack pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop/src-tauri
+          cache-targets: false
+
+      - name: Install tauri-driver
+        run: cargo install tauri-driver --locked
+
+      - name: Install JavaScript dependencies
+        run: corepack pnpm install --frozen-lockfile
+
+      - name: Download Windows Desktop UI app
+        uses: actions/download-artifact@v4
+        with:
+          name: crosslog-windows-desktop-ui-app
+          path: apps/desktop/src-tauri/target/debug
+
+      - name: Run UI tests
+        env:
+          CROSSLOG_DESKTOP_UI_SKIP_APP_BUILD: "true"
+          CROSSLOG_TAURI_APP_PATH: apps/desktop/src-tauri/target/debug/crosslog-desktop.exe
+          CROSSLOG_WDIO_SPECS: ${{ matrix.wdio_specs }}
+        run: pwsh scripts/windows/test-ui.ps1 desktop
 
   build-web:
     name: Build Web
