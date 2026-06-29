@@ -1,6 +1,7 @@
 import React from "react";
 import type { TimeOffset } from "@crosslog/core";
 import { normalizeTimeOffset } from "@crosslog/core";
+import { CrosslogIcon } from "../app-shell/icons";
 import { Popover, type PopoverFocusReturnRef } from "../app-shell/Popover";
 import { redesignedShellTestIds } from "../app-shell/testIds";
 
@@ -16,20 +17,20 @@ type TimeOffsetField = keyof TimeOffset;
 type TimeOffsetDraft = Record<TimeOffsetField, string>;
 
 const offsetFields = [
-  { field: "days", label: "Days", shortLabel: "d", testId: redesignedShellTestIds.timeOffsetDays },
-  { field: "hours", label: "Hours", shortLabel: "h", testId: redesignedShellTestIds.timeOffsetHours },
-  { field: "minutes", label: "Minutes", shortLabel: "m", testId: redesignedShellTestIds.timeOffsetMinutes },
-  { field: "seconds", label: "Seconds", shortLabel: "s", testId: redesignedShellTestIds.timeOffsetSeconds },
+  { field: "days", label: "Days", visualLabel: "Days", testId: redesignedShellTestIds.timeOffsetDays },
+  { field: "hours", label: "Hours", visualLabel: "Hours", testId: redesignedShellTestIds.timeOffsetHours },
+  { field: "minutes", label: "Minutes", visualLabel: "Min", testId: redesignedShellTestIds.timeOffsetMinutes },
+  { field: "seconds", label: "Seconds", visualLabel: "Sec", testId: redesignedShellTestIds.timeOffsetSeconds },
   {
     field: "milliseconds",
     label: "Milliseconds",
-    shortLabel: "ms",
+    visualLabel: "Ms",
     testId: redesignedShellTestIds.timeOffsetMilliseconds,
   },
 ] as const satisfies readonly {
   readonly field: TimeOffsetField;
   readonly label: string;
-  readonly shortLabel: string;
+  readonly visualLabel: string;
   readonly testId: string;
 }[];
 
@@ -72,10 +73,17 @@ export function TimeOffsetPopover({ title, value, returnFocusRef, onApply, onClo
       testId={redesignedShellTestIds.timeOffsetPopover}
     >
       <div className="crosslog-time-offset-popover__content">
+        <CrosslogIcon className="crosslog-time-offset-popover__title-icon" name="time-offset" />
+        <h3 className="crosslog-time-offset-popover__title">Time Offset</h3>
+        <span className="crosslog-time-offset-popover__source" title={title}>
+          {title}
+        </span>
         <div className="crosslog-time-offset-popover__grid">
-          {offsetFields.map(({ field, label, shortLabel, testId }, index) => (
+          {offsetFields.map(({ field, label, visualLabel, testId }, index) => (
             <label className="crosslog-time-offset-popover__field" key={field}>
-              <span aria-hidden="true">{shortLabel}</span>
+              <span className="crosslog-time-offset-popover__field-label" aria-hidden="true">
+                {visualLabel}
+              </span>
               <input
                 aria-invalid={!isValidIntegerDraft(draft[field])}
                 aria-label={`${label} offset for ${title}`}
@@ -91,21 +99,19 @@ export function TimeOffsetPopover({ title, value, returnFocusRef, onApply, onClo
         </div>
         {!parsedDraft.valid ? (
           <span className="crosslog-time-offset-popover__error" role="alert">
-            Enter whole-number offset values before applying.
+            Use whole-number values.
           </span>
         ) : null}
-        <div className="crosslog-time-offset-popover__actions">
-          <button
-            className="crosslog-time-offset-popover__apply"
-            data-testid={redesignedShellTestIds.timeOffsetApply}
-            disabled={!parsedDraft.valid}
-            onClick={applyDraft}
-            type="button"
-            aria-label={`Apply time offset for ${title}`}
-          >
-            Apply
-          </button>
-        </div>
+        <button
+          className="crosslog-time-offset-popover__apply"
+          data-testid={redesignedShellTestIds.timeOffsetApply}
+          disabled={!parsedDraft.valid}
+          onClick={applyDraft}
+          type="button"
+          aria-label={`Apply time offset for ${title}`}
+        >
+          Apply
+        </button>
       </div>
     </Popover>
   );

@@ -53,6 +53,7 @@ import {
 
 export interface AppShellProps {
   readonly platform: CrosslogPlatform;
+  readonly renderMacosTrafficLights?: boolean;
   readonly shellPresentation?: ShellPresentation;
 }
 
@@ -60,7 +61,11 @@ const uiTestClipboardWriter: ClipboardWriter = {
   writeText: async () => undefined,
 };
 
-export function AppShell({ platform, shellPresentation: shellPresentationOverride }: AppShellProps) {
+export function AppShell({
+  platform,
+  renderMacosTrafficLights = true,
+  shellPresentation: shellPresentationOverride,
+}: AppShellProps) {
   const shellPresentation =
     shellPresentationOverride ?? resolveShellPresentation({ runtimeKind: platform.kind });
   const [state, dispatch] = React.useReducer(logPaneReducer, createLogPaneState());
@@ -260,6 +265,7 @@ export function AppShell({ platform, shellPresentation: shellPresentationOverrid
         openSearchPaneId !== null,
         openTimeOffsetPaneId !== null,
         shellPresentation.platformShellVariant,
+        renderMacosTrafficLights,
       ),
       directoryName: publishedDirectorySource?.displayName ?? null,
       directorySelectedFileTitle: publishedDirectorySelectedFile?.name ?? null,
@@ -281,6 +287,7 @@ export function AppShell({ platform, shellPresentation: shellPresentationOverrid
     activePaneOffsetLabel,
     paneSearchStatus,
     platform.uiTestBridge,
+    renderMacosTrafficLights,
     shellPresentation.platformShellVariant,
     shellPresentation.themeVariant,
     publishedDirectorySelectedFile,
@@ -739,6 +746,7 @@ export function AppShell({ platform, shellPresentation: shellPresentationOverrid
       onDrop={handleDrop}
       paneWorkspace={paneWorkspace}
       platformShellVariant={shellPresentation.platformShellVariant}
+      renderMacosTrafficLights={renderMacosTrafficLights}
       statusBar={
         <StatusBar
           activeSourceLabel={activePaneTitle}
@@ -772,7 +780,9 @@ function getPublishedRedesignedRegions(
   searchOpen: boolean,
   timeOffsetOpen: boolean,
   platformShellVariant: ShellPresentation["platformShellVariant"],
+  renderMacosTrafficLights: boolean,
 ): readonly string[] {
+  const platformChromeRegion = getPlatformChromeRegion(platformShellVariant, renderMacosTrafficLights);
   const persistentRegions = [
     redesignedShellTestIds.crosslogShell,
     redesignedShellTestIds.topbar,
@@ -780,11 +790,11 @@ function getPublishedRedesignedRegions(
     redesignedShellTestIds.themeVariant,
     redesignedShellTestIds.platformChrome,
     redesignedShellTestIds.platformChromeTitle,
-    getPlatformChromeRegion(platformShellVariant),
+    platformChromeRegion,
     redesignedShellTestIds.activityRail,
     redesignedShellTestIds.paneWorkspace,
     redesignedShellTestIds.statusBar,
-  ];
+  ].filter(Boolean) as RedesignedShellTestId[];
 
   if (paneCount === 0) {
     return [
@@ -813,10 +823,11 @@ function getPublishedRedesignedRegions(
 
 function getPlatformChromeRegion(
   platformShellVariant: ShellPresentation["platformShellVariant"],
-): RedesignedShellTestId {
+  renderMacosTrafficLights: boolean,
+): RedesignedShellTestId | null {
   switch (platformShellVariant) {
     case "macos":
-      return redesignedShellTestIds.platformChromeMacosTrafficLights;
+      return renderMacosTrafficLights ? redesignedShellTestIds.platformChromeMacosTrafficLights : null;
     case "windows":
       return redesignedShellTestIds.platformChromeWindowsCaptionControls;
     case "linux":

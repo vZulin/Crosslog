@@ -21,13 +21,13 @@ describe("Desktop live file updates", () => {
     const appPane = await activateLogPaneByTitle("app.log");
     const appHeader = await appPane.$(byTestId(redesignedShellTestIds.paneHeader));
     await waitForUiTestTitleFragment("lifecycle=app.log:live");
-    await expectElementTextContent(await appHeader.$(byTestId(redesignedShellTestIds.paneHeaderLive)), "Live");
+    await expectLiveDot(await appHeader.$(byTestId(redesignedShellTestIds.paneHeaderLive)));
 
     enqueueDesktopUiTestAction("appendActiveFile");
     await waitForUiTestTitleFragment("lifecycle=app.log:live");
     await expectObsoleteControlsAbsent();
     await expect(await appPane.$("code*=live appended line")).toBeExisting();
-    await expectElementTextContent(await appHeader.$(byTestId(redesignedShellTestIds.paneHeaderLive)), "Live");
+    await expectLiveDot(await appHeader.$(byTestId(redesignedShellTestIds.paneHeaderLive)));
 
     enqueueDesktopUiTestAction("deleteActiveFile");
     await waitForUiTestTitleFragment("lifecycle=app.log:deleted");
@@ -77,4 +77,9 @@ async function expectElementTextContent(element: WebdriverIO.Element, expectedTe
       timeoutMsg: `Expected element textContent to equal: ${expectedText}`,
     },
   );
+}
+
+async function expectLiveDot(element: WebdriverIO.Element): Promise<void> {
+  await element.waitForExist();
+  await expect(await element.$(".crosslog-pane-header__live-dot")).toBeExisting();
 }

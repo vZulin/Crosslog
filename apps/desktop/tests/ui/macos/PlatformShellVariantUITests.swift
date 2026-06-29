@@ -8,7 +8,6 @@ final class PlatformShellVariantUITests: CrosslogUITests {
         RedesignedShellAssertions.assertPlatformVariant("macos", in: app)
         waitForUiTestTitle(RedesignedShellAssertions.platformChrome, in: app)
         waitForUiTestTitle(RedesignedShellAssertions.platformChromeTitle, in: app)
-        waitForUiTestTitle(RedesignedShellAssertions.platformChromeMacosTrafficLights, in: app)
         RedesignedShellAssertions.assertEmptyWorkspacePublished(in: app)
 
         openSampleLogs(in: app)
@@ -16,6 +15,5 @@ final class PlatformShellVariantUITests: CrosslogUITests {
         RedesignedShellAssertions.assertPaneCount(3, in: app)
         RedesignedShellAssertions.assertObsoleteControlsAbsent(in: app)
         waitForUiTestTitle(RedesignedShellAssertions.platformChrome, in: app)
-        waitForUiTestTitle(RedesignedShellAssertions.platformChromeMacosTrafficLights, in: app)
     }
 }

@@ -24,7 +24,8 @@ describe("Desktop time offset popover", () => {
     const appOffsetPopover = await appPane.$(byTestId(redesignedShellTestIds.timeOffsetPopover));
     const appOffsetMinutes = await appPane.$(byTestId(redesignedShellTestIds.timeOffsetMinutes));
     await expect(appOffsetPopover).toBeExisting();
-    await expectCompactPopoverInsidePane(appPane, appOffsetPopover, 100);
+    await expectCompactPopoverInsidePane(appPane, appOffsetPopover, 120);
+    await expectMockupTimeOffsetPopover(appOffsetPopover, "app.log");
     await expect(appOffsetMinutes).toBeExisting();
     await expect(await appPane.$(byTestId(redesignedShellTestIds.timeOffsetApply))).toBeExisting();
     await expect(await appOffsetPopover.$$('[aria-label^="Close time offset"]')).toBeElementsArrayOfSize(0);
@@ -54,12 +55,14 @@ describe("Desktop time offset popover", () => {
     await clickElementWithJavaScript(await servicePane.$(byTestId(redesignedShellTestIds.paneHeaderOffset)));
     const serviceOffsetPopover = await servicePane.$(byTestId(redesignedShellTestIds.timeOffsetPopover));
     await expect(serviceOffsetPopover).toBeExisting();
-    await expectCompactPopoverInsidePane(servicePane, serviceOffsetPopover, 100);
+    await expectCompactPopoverInsidePane(servicePane, serviceOffsetPopover, 120);
+    await expectMockupTimeOffsetPopover(serviceOffsetPopover, "service.log");
 
     await clickElementWithJavaScript(await directoryPane.$(byTestId(redesignedShellTestIds.paneHeaderOffset)));
     const directoryOffsetPopover = await directoryPane.$(byTestId(redesignedShellTestIds.timeOffsetPopover));
     await expect(directoryOffsetPopover).toBeExisting();
-    await expectCompactPopoverInsidePane(directoryPane, directoryOffsetPopover, 100);
+    await expectCompactPopoverInsidePane(directoryPane, directoryOffsetPopover, 120);
+    await expectMockupTimeOffsetPopover(directoryOffsetPopover, "app-2026-06-16.log");
     await expect(await servicePane.$$(byTestId(redesignedShellTestIds.timeOffsetPopover))).toBeElementsArrayOfSize(0);
   });
 });
@@ -93,6 +96,84 @@ async function isFocused(element: WebdriverIO.Element): Promise<boolean> {
   return browser.execute((target: HTMLElement) => document.activeElement === target, element);
 }
 
+async function expectMockupTimeOffsetPopover(
+  popover: WebdriverIO.Element,
+  sourceName: string,
+): Promise<void> {
+  await expect(await popover.$("h3")).toHaveText("Time Offset");
+  await expect(await popover.$(".crosslog-time-offset-popover__source")).toHaveText(sourceName);
+
+  const labels = await Promise.all(
+    (await popover.$$(".crosslog-time-offset-popover__field-label")).map((label) => label.getText()),
+  );
+  expect(labels).toEqual(["Days", "Hours", "Min", "Sec", "Ms"]);
+
+  const metrics = await browser.execute((element: HTMLElement) => {
+    const rectOf = (selector: string) => {
+      const target = element.querySelector<HTMLElement>(selector);
+
+      if (!target) {
+        throw new Error(`Missing selector in time offset popover: ${selector}`);
+      }
+
+      const rect = target.getBoundingClientRect();
+      return {
+        left: rect.left,
+        top: rect.top,
+        right: rect.right,
+        bottom: rect.bottom,
+        width: rect.width,
+        height: rect.height,
+      };
+    };
+
+    const popoverRect = element.getBoundingClientRect();
+    const inputs = Array.from(element.querySelectorAll<HTMLInputElement>(".crosslog-time-offset-popover__field input"))
+      .map((input) => {
+        const rect = input.getBoundingClientRect();
+        return {
+          left: rect.left,
+          top: rect.top,
+          right: rect.right,
+          bottom: rect.bottom,
+          width: rect.width,
+          height: rect.height,
+        };
+      });
+
+    return {
+      popover: {
+        width: popoverRect.width,
+        height: popoverRect.height,
+      },
+      titleIcon: rectOf(".crosslog-time-offset-popover__title-icon"),
+      title: rectOf(".crosslog-time-offset-popover__title"),
+      source: rectOf(".crosslog-time-offset-popover__source"),
+      inputs,
+      apply: rectOf(".crosslog-time-offset-popover__apply"),
+    };
+  }, popover);
+
+  expect(metrics.popover.width).toBeGreaterThanOrEqual(300);
+  expect(metrics.popover.width).toBeLessThanOrEqual(304);
+  expect(metrics.popover.height).toBeGreaterThanOrEqual(113);
+  expect(metrics.popover.height).toBeLessThanOrEqual(116);
+  expect(metrics.inputs).toHaveLength(5);
+
+  for (const input of metrics.inputs) {
+    expect(input.width).toBeGreaterThanOrEqual(49);
+    expect(input.width).toBeLessThanOrEqual(52);
+    expect(input.height).toBeGreaterThanOrEqual(24);
+    expect(input.height).toBeLessThanOrEqual(27);
+  }
+
+  expect(metrics.titleIcon.left).toBeLessThan(metrics.title.left);
+  expect(metrics.title.right).toBeLessThan(metrics.source.left);
+  expect(metrics.inputs[0]!.top).toBeGreaterThan(metrics.title.bottom);
+  expect(metrics.apply.top).toBeGreaterThan(metrics.inputs[0]!.bottom);
+  expect(Math.abs(metrics.apply.right - metrics.inputs[4]!.right)).toBeLessThanOrEqual(1);
+}
+
 async function expectCompactPopoverInsidePane(
   pane: WebdriverIO.Element,
   popover: WebdriverIO.Element,
@@ -100,18 +181,26 @@ async function expectCompactPopoverInsidePane(
 ): Promise<void> {
   const bounds = await browser.execute((paneElement: HTMLElement, popoverElement: HTMLElement) => {
     const paneRect = paneElement.getBoundingClientRect();
+    const paneHeaderRect = paneElement.querySelector<HTMLElement>('[data-testid="pane-header"]')?.getBoundingClientRect();
     const popoverRect = popoverElement.getBoundingClientRect();
+
+    if (!paneHeaderRect) {
+      throw new Error("Missing pane header while checking popover placement.");
+    }
 
     return {
       paneLeft: paneRect.left,
       paneRight: paneRect.right,
+      paneHeaderBottom: paneHeaderRect.bottom,
       popoverLeft: popoverRect.left,
       popoverRight: popoverRect.right,
+      popoverTop: popoverRect.top,
       popoverHeight: popoverRect.height,
     };
   }, pane, popover);
 
   expect(bounds.popoverLeft).toBeGreaterThanOrEqual(bounds.paneLeft - 1);
   expect(bounds.popoverRight).toBeLessThanOrEqual(bounds.paneRight + 1);
+  expect(bounds.popoverTop).toBeGreaterThanOrEqual(bounds.paneHeaderBottom - 1);
   expect(bounds.popoverHeight).toBeLessThan(maxHeight);
 }

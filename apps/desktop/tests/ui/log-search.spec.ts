@@ -104,19 +104,27 @@ async function expectCompactPopoverInsidePane(
 ): Promise<void> {
   const bounds = await browser.execute((paneElement: HTMLElement, popoverElement: HTMLElement) => {
     const paneRect = paneElement.getBoundingClientRect();
+    const paneHeaderRect = paneElement.querySelector<HTMLElement>('[data-testid="pane-header"]')?.getBoundingClientRect();
     const popoverRect = popoverElement.getBoundingClientRect();
+
+    if (!paneHeaderRect) {
+      throw new Error("Missing pane header while checking popover placement.");
+    }
 
     return {
       paneLeft: paneRect.left,
       paneRight: paneRect.right,
+      paneHeaderBottom: paneHeaderRect.bottom,
       popoverLeft: popoverRect.left,
       popoverRight: popoverRect.right,
+      popoverTop: popoverRect.top,
       popoverHeight: popoverRect.height,
     };
   }, pane, popover);
 
   expect(bounds.popoverLeft).toBeGreaterThanOrEqual(bounds.paneLeft - 1);
   expect(bounds.popoverRight).toBeLessThanOrEqual(bounds.paneRight + 1);
+  expect(bounds.popoverTop).toBeGreaterThanOrEqual(bounds.paneHeaderBottom - 1);
   expect(bounds.popoverHeight).toBeLessThan(maxHeight);
 }
 

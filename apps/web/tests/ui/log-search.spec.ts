@@ -65,16 +65,19 @@ async function expectCompactPopoverInsidePane(
   maxHeight: number,
 ): Promise<void> {
   const paneBox = await pane.boundingBox();
+  const paneHeaderBox = await pane.getByTestId(redesignedShellTestIds.paneHeader).boundingBox();
   const popoverBox = await popover.boundingBox();
 
   expect(paneBox, "pane bounds").not.toBeNull();
+  expect(paneHeaderBox, "pane header bounds").not.toBeNull();
   expect(popoverBox, "popover bounds").not.toBeNull();
 
-  if (!paneBox || !popoverBox) {
+  if (!paneBox || !paneHeaderBox || !popoverBox) {
     return;
   }
 
   expect(popoverBox.x).toBeGreaterThanOrEqual(paneBox.x - 1);
   expect(popoverBox.x + popoverBox.width).toBeLessThanOrEqual(paneBox.x + paneBox.width + 1);
+  expect(popoverBox.y).toBeGreaterThanOrEqual(paneHeaderBox.y + paneHeaderBox.height - 1);
   expect(popoverBox.height).toBeLessThan(maxHeight);
 }

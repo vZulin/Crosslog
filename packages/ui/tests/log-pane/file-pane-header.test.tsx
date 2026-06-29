@@ -30,7 +30,7 @@ describe("file pane header", () => {
     expect(header.getAttribute("aria-current")).toBe("true");
     expect(getByTitle(longFileName).className).toContain("crosslog-pane-header__title");
     expect(getByTestId(redesignedShellTestIds.paneHeaderLive).querySelector(".crosslog-pane-header__live-dot")).toBeTruthy();
-    expect(getByTestId(redesignedShellTestIds.paneHeaderOffset).textContent).toContain("Offset");
+    expect(getByTestId(redesignedShellTestIds.paneHeaderOffset).textContent).toContain("0 ms");
     expect(getByLabelText(`Search in ${longFileName}`)).toBeTruthy();
     expect(getByLabelText(`Close pane ${longFileName}`)).toBeTruthy();
     expect(queryByTestId(redesignedShellTestIds.paneHeaderDirectoryPrevious)).toBeNull();

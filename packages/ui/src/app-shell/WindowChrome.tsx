@@ -4,9 +4,13 @@ import { redesignedShellTestIds } from "./testIds";
 
 export interface WindowChromeProps {
   readonly platformShellVariant: PlatformShellVariant;
+  readonly renderMacosTrafficLights?: boolean;
 }
 
-export function WindowChrome({ platformShellVariant }: WindowChromeProps) {
+export function WindowChrome({
+  platformShellVariant,
+  renderMacosTrafficLights = true,
+}: WindowChromeProps) {
   return (
     <div
       aria-label={`${platformShellVariant} shell chrome`}
@@ -20,7 +24,7 @@ export function WindowChrome({ platformShellVariant }: WindowChromeProps) {
       >
         Crosslog
       </span>
-      {platformShellVariant === "macos" ? <MacosTrafficLights /> : null}
+      {platformShellVariant === "macos" && renderMacosTrafficLights ? <MacosTrafficLights /> : null}
       {platformShellVariant === "windows" ? <WindowsCaptionControls /> : null}
       {platformShellVariant === "linux" ? <LinuxCaptionControls /> : null}
       {platformShellVariant === "web" ? <WebTitleMarker /> : null}

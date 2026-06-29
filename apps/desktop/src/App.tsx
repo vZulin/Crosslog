@@ -13,9 +13,15 @@ export interface AppProps {
 }
 
 export function App({ platform }: AppProps) {
-  const shellPresentation = useCurrentShellPresentation(platform.kind);
+  const { hasPlatformOverride, shellPresentation } = useCurrentShellPresentation(platform.kind);
 
-  return <AppShell platform={platform} shellPresentation={shellPresentation} />;
+  return (
+    <AppShell
+      platform={platform}
+      renderMacosTrafficLights={platform.kind !== "desktop" || hasPlatformOverride}
+      shellPresentation={shellPresentation}
+    />
+  );
 }
 
 function resolveCurrentShellPresentation(runtimeKind: CrosslogPlatform["kind"], search = getCurrentSearch()) {
@@ -45,7 +51,10 @@ function useCurrentShellPresentation(runtimeKind: CrosslogPlatform["kind"]) {
   }, []);
 
   return React.useMemo(
-    () => resolveCurrentShellPresentation(runtimeKind, presentationSearch),
+    () => ({
+      hasPlatformOverride: hasShellPlatformOverride(presentationSearch),
+      shellPresentation: resolveCurrentShellPresentation(runtimeKind, presentationSearch),
+    }),
     [presentationSearch, runtimeKind],
   );
 }
@@ -60,4 +69,8 @@ function getNavigatorPlatform(): string | null {
 
 function getNavigatorUserAgent(): string | null {
   return typeof navigator === "undefined" ? null : navigator.userAgent;
+}
+
+function hasShellPlatformOverride(search: string): boolean {
+  return parseShellPresentationSearchParams(search).platformShellVariant !== null;
 }

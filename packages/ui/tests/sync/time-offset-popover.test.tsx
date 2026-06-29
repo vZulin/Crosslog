@@ -18,12 +18,21 @@ describe("redesigned time offset popover", () => {
     );
 
     expect(getByRole("dialog", { name: "Time offset for app.log" })).toBeTruthy();
+    expect(within(getByTestId(redesignedShellTestIds.timeOffsetPopover)).getByRole("heading", {
+      name: "Time Offset",
+    })).toBeTruthy();
+    expect(within(getByTestId(redesignedShellTestIds.timeOffsetPopover)).getByTitle("app.log").className).toContain(
+      "crosslog-time-offset-popover__source",
+    );
     expect(getByTestId(redesignedShellTestIds.timeOffsetPopover).classList.contains("crosslog-time-offset-popover")).toBe(
       true,
     );
     expect(within(getByTestId(redesignedShellTestIds.timeOffsetPopover)).queryByRole("button", {
       name: "Close time offset for app.log",
     })).toBeNull();
+    for (const label of ["Days", "Hours", "Min", "Sec", "Ms"]) {
+      expect(within(getByTestId(redesignedShellTestIds.timeOffsetPopover)).getByText(label)).toBeTruthy();
+    }
 
     fireEvent.change(getByTestId(redesignedShellTestIds.timeOffsetMinutes), {
       target: { value: "61" },

@@ -5,6 +5,7 @@ import { ClosePaneButton } from "./ClosePaneButton";
 import { DirectoryNavigator } from "./DirectoryNavigator";
 import { EmptyDirectoryStatus } from "./EmptyDirectoryStatus";
 import type { PaneHeaderLifecycleState } from "./useFileLifecycleEvents";
+import { CrosslogIcon } from "../app-shell/icons";
 import { IconButton } from "../app-shell/IconButton";
 import { redesignedShellTestIds } from "../app-shell/testIds";
 
@@ -60,6 +61,8 @@ export function PaneHeader({
   ].filter(Boolean).join(" ");
   const offsetLabel = formatTimeOffset(timeOffset);
   const lifecycleIndicators = getLifecycleIndicators(lifecycleState);
+  const liveIndicator = lifecycleIndicators.find((indicator) => indicator.kind === "live");
+  const visibleLifecycleIndicators = lifecycleIndicators.filter((indicator) => indicator.kind !== "live");
   const lifecycleLabel =
     lifecycleIndicators.length > 0
       ? `, file state ${lifecycleIndicators.map((indicator) => indicator.label).join(", ")}`
@@ -77,32 +80,52 @@ export function PaneHeader({
       <div className={identityClassName}>
         {directorySource ? (
           <>
-            <span
-              className="crosslog-pane-header__directory"
-              data-testid={redesignedShellTestIds.paneHeaderDirectoryTitle}
-              title={directorySource.displayName}
-            >
-              {directorySource.displayName}
+            <span className="crosslog-pane-header__title-row crosslog-pane-header__title-row--directory">
+              <CrosslogIcon className="crosslog-pane-header__identity-icon" name="folder" />
+              <span
+                className="crosslog-pane-header__directory"
+                data-testid={redesignedShellTestIds.paneHeaderDirectoryTitle}
+                title={directorySource.displayName}
+              >
+                {directorySource.displayName}
+              </span>
             </span>
-            <h2
-              className={[
-                "crosslog-pane-header__title",
-                selectedFile ? "crosslog-pane-header__selected-file" : null,
-              ].filter(Boolean).join(" ")}
-              data-testid={selectedFile ? redesignedShellTestIds.paneHeaderSelectedFile : undefined}
-              title={displayTitle}
-            >
-              {displayTitle}
-            </h2>
+            {selectedFile ? (
+              <span className="crosslog-pane-header__title-row crosslog-pane-header__title-row--selected-file">
+                <CrosslogIcon className="crosslog-pane-header__identity-icon" name="file" />
+                <h2
+                  className="crosslog-pane-header__title crosslog-pane-header__selected-file"
+                  data-testid={redesignedShellTestIds.paneHeaderSelectedFile}
+                  title={displayTitle}
+                >
+                  {displayTitle}
+                </h2>
+                {liveIndicator ? <LiveLifecycleIndicator indicator={liveIndicator} /> : null}
+              </span>
+            ) : null}
             {directorySource.files.length === 0 ? (
               <EmptyDirectoryStatus directoryName={directorySource.displayName} />
             ) : null}
           </>
         ) : (
-          <h2 className="crosslog-pane-header__title" title={displayTitle}>
-            {displayTitle}
-          </h2>
+          <span className="crosslog-pane-header__title-row crosslog-pane-header__title-row--file">
+            <CrosslogIcon className="crosslog-pane-header__identity-icon" name="file" />
+            <h2 className="crosslog-pane-header__title" title={displayTitle}>
+              {displayTitle}
+            </h2>
+            {liveIndicator ? <LiveLifecycleIndicator indicator={liveIndicator} /> : null}
+          </span>
         )}
+        {lifecycleIndicators.length > 0 ? (
+          <LifecycleStatus indicators={lifecycleIndicators} title={displayTitle} />
+        ) : null}
+        {visibleLifecycleIndicators.length > 0 ? (
+          <div className="crosslog-pane-header__lifecycle-badges">
+            {visibleLifecycleIndicators.map((indicator) => (
+              <LifecycleBadge indicator={indicator} key={indicator.kind} />
+            ))}
+          </div>
+        ) : null}
       </div>
       {directorySource && directorySource.files.length > 0 ? (
         <DirectoryNavigator
@@ -113,32 +136,6 @@ export function PaneHeader({
           onPrevious={() => onNavigateDirectory?.(paneId, "previous")}
           onNext={() => onNavigateDirectory?.(paneId, "next")}
         />
-      ) : null}
-      {lifecycleIndicators.length > 0 ? (
-        <div
-          aria-label={`File state for ${displayTitle}: ${lifecycleIndicators.map((indicator) => indicator.label).join(", ")}`}
-          className="crosslog-pane-header__lifecycle"
-          data-testid={redesignedShellTestIds.paneHeaderLifecycle}
-          role="status"
-        >
-          {lifecycleIndicators.map((indicator) => (
-            <span
-              className={`crosslog-pane-header__lifecycle-badge crosslog-pane-header__lifecycle-badge--${indicator.kind}`}
-              data-testid={indicator.testId}
-              key={indicator.kind}
-              title={indicator.description}
-            >
-              {indicator.kind === "live" ? (
-                <>
-                  <span aria-hidden="true" className="crosslog-pane-header__live-dot" />
-                  <span className="crosslog-sr-only">{indicator.label}</span>
-                </>
-              ) : (
-                indicator.label
-              )}
-            </span>
-          ))}
-        </div>
       ) : null}
       <div className="crosslog-pane-header__actions">
         <button
@@ -151,11 +148,13 @@ export function PaneHeader({
           ref={timeOffsetButtonRef}
           type="button"
         >
-          Offset {offsetLabel}
+          <span className="crosslog-sr-only">Offset </span>
+          {offsetLabel}
         </button>
         <IconButton
           aria-expanded={searchOpen}
           aria-haspopup="dialog"
+          className="crosslog-pane-header__find-button"
           icon="search"
           label={`Search in ${displayTitle}`}
           onClick={onOpenSearch}
@@ -163,12 +162,13 @@ export function PaneHeader({
           ref={searchButtonRef}
           testId={redesignedShellTestIds.paneHeaderSearch}
         />
-        <ClosePaneButton
-          testId={redesignedShellTestIds.paneHeaderClose}
-          title={displayTitle}
-          onClose={onClose}
-        />
       </div>
+      <ClosePaneButton
+        className="crosslog-pane-header__close"
+        testId={redesignedShellTestIds.paneHeaderClose}
+        title={displayTitle}
+        onClose={onClose}
+      />
     </header>
   );
 }
@@ -216,15 +216,6 @@ function getLifecycleIndicators(
     });
   }
 
-  if (lifecycleState.monitoringUnsupported) {
-    indicators.push({
-      kind: "unsupported",
-      label: "Monitoring unavailable",
-      description: "This platform cannot watch the file for changes.",
-      testId: redesignedShellTestIds.paneHeaderMonitoringUnsupported,
-    });
-  }
-
   if (lifecycleState.live) {
     indicators.push({
       kind: "live",
@@ -235,4 +226,48 @@ function getLifecycleIndicators(
   }
 
   return indicators;
+}
+
+function LiveLifecycleIndicator({ indicator }: { readonly indicator: LifecycleIndicator }) {
+  return (
+    <span
+      aria-hidden="true"
+      className="crosslog-pane-header__live-indicator"
+      data-testid={indicator.testId}
+      title={indicator.description}
+    >
+      <span className="crosslog-pane-header__live-dot" />
+    </span>
+  );
+}
+
+function LifecycleStatus({
+  indicators,
+  title,
+}: {
+  readonly indicators: readonly LifecycleIndicator[];
+  readonly title: string;
+}) {
+  return (
+    <span
+      aria-label={`File state for ${title}: ${indicators.map((indicator) => indicator.label).join(", ")}`}
+      className="crosslog-pane-header__lifecycle-status"
+      data-testid={redesignedShellTestIds.paneHeaderLifecycle}
+      role="status"
+    >
+      {indicators.map((indicator) => indicator.label).join(", ")}
+    </span>
+  );
+}
+
+function LifecycleBadge({ indicator }: { readonly indicator: LifecycleIndicator }) {
+  return (
+    <span
+      className={`crosslog-pane-header__lifecycle-badge crosslog-pane-header__lifecycle-badge--${indicator.kind}`}
+      data-testid={indicator.testId}
+      title={indicator.description}
+    >
+      {indicator.label}
+    </span>
+  );
 }

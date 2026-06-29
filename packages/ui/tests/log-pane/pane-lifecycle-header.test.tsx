@@ -26,7 +26,7 @@ describe("pane lifecycle header", () => {
       />,
     );
 
-    expect(getByTestId(redesignedShellTestIds.paneHeaderLive).textContent).toBe("Live");
+    expect(getByTestId(redesignedShellTestIds.paneHeaderLifecycle).textContent).toBe("Live");
     expect(getByTestId(redesignedShellTestIds.paneHeaderLive).querySelector(".crosslog-pane-header__live-dot")).toBeTruthy();
     expect(getByRole("status", { name: "File state for app.log: Live" })).toBeTruthy();
     expect(getByTestId(redesignedShellTestIds.paneHeader).getAttribute("aria-label")).toContain(
@@ -74,12 +74,12 @@ describe("pane lifecycle header", () => {
     );
 
     expect(getByTestId(redesignedShellTestIds.paneHeaderReplaced).textContent).toBe("Replaced");
-    expect(getByTestId(redesignedShellTestIds.paneHeaderLive).textContent).toBe("Live");
+    expect(getByTestId(redesignedShellTestIds.paneHeaderLifecycle).textContent).toBe("Replaced, Live");
     expect(getByRole("status", { name: "File state for app.log: Replaced, Live" })).toBeTruthy();
   });
 
-  it("renders unsupported monitoring and pane-local errors as header states", () => {
-    const { getByRole, getByTestId, rerender } = render(
+  it("hides unsupported monitoring while keeping pane-local errors as header states", () => {
+    const { getByRole, getByTestId, queryByRole, queryByTestId, rerender } = render(
       <PaneHeader
         active={false}
         lifecycleState={{
@@ -96,10 +96,8 @@ describe("pane lifecycle header", () => {
       />,
     );
 
-    expect(getByTestId(redesignedShellTestIds.paneHeaderMonitoringUnsupported).textContent).toBe(
-      "Monitoring unavailable",
-    );
-    expect(getByRole("status", { name: "File state for app.log: Monitoring unavailable" })).toBeTruthy();
+    expect(queryByTestId(redesignedShellTestIds.paneHeaderMonitoringUnsupported)).toBeNull();
+    expect(queryByRole("status", { name: "File state for app.log: Monitoring unavailable" })).toBeNull();
 
     rerender(
       <PaneHeader

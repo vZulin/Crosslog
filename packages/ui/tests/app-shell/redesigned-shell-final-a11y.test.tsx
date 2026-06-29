@@ -103,10 +103,22 @@ describe("final redesigned shell accessibility and no-overlap contracts", () => 
       /\.crosslog-shell\s*\{[^}]*grid-template:[^}]*"topbar topbar"[^}]*"rail workspace"[^}]*"status status"/s,
     );
     expect(themeCss).toMatch(
-      /\.crosslog-pane-header\s*\{[^}]*display:\s*flex;[^}]*gap:\s*10px;[^}]*min-inline-size:\s*0;/s,
+      /\.crosslog-pane-header\s*\{[^}]*block-size:\s*var\(--crosslog-pane-header-height\);[^}]*box-sizing:\s*border-box;[^}]*display:\s*grid;/s,
     );
     expect(themeCss).toMatch(
-      /\.crosslog-pane-header__actions\s*\{[^}]*flex:\s*0 0 auto;[^}]*gap:\s*8px;/s,
+      /\.crosslog-pane-header__actions\s*\{[^}]*position:\s*absolute;[^}]*inset-block-end:\s*7px;[^}]*justify-content:\s*center;[^}]*gap:\s*4px;/s,
+    );
+    expect(themeCss).toMatch(
+      /\.crosslog-pane-search-popover\s*\{[^}]*inset-block-start:\s*var\(--crosslog-pane-header-height\);/s,
+    );
+    expect(themeCss).toMatch(
+      /\.crosslog-time-offset-popover\s*\{[^}]*inset-block-start:\s*var\(--crosslog-pane-header-height\);/s,
+    );
+    expect(themeCss).toMatch(
+      /\.crosslog-time-offset-popover\s*\{[^}]*inline-size:\s*min\(302\.22px,\s*calc\(100% - 18px\)\);[^}]*block-size:\s*114\.08px;/s,
+    );
+    expect(themeCss).toMatch(
+      /\.crosslog-time-offset-popover__grid\s*\{[^}]*grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*50\.644px\)\);/s,
     );
     expect(themeCss).toMatch(
       /\.crosslog-pane-header__title,[^}]*\.crosslog-status-bar__active-source\s*\{[^}]*overflow:\s*hidden;[^}]*text-overflow:\s*ellipsis;[^}]*white-space:\s*nowrap;/s,

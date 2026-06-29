@@ -7,6 +7,7 @@ export interface ActivityRailShellProps {
   readonly activityRail: React.ReactNode;
   readonly paneWorkspace: React.ReactNode;
   readonly platformShellVariant: PlatformShellVariant;
+  readonly renderMacosTrafficLights?: boolean;
   readonly statusBar: React.ReactNode;
   readonly themeVariant: ThemeVariant;
   readonly topbar: React.ReactNode;
@@ -23,6 +24,7 @@ export function ActivityRailShell({
   paneWorkspace,
   platformShellVariant,
   popovers,
+  renderMacosTrafficLights,
   statusBar,
   themeVariant,
   systemBanners,
@@ -57,7 +59,10 @@ export function ActivityRailShell({
         data-testid={redesignedShellTestIds.topbar}
         id={redesignedShellTestIds.topbar}
       >
-        <WindowChrome platformShellVariant={platformShellVariant} />
+        <WindowChrome
+          platformShellVariant={platformShellVariant}
+          renderMacosTrafficLights={renderMacosTrafficLights}
+        />
         <div className="crosslog-shell__topbar-content">{topbar}</div>
       </section>
       <nav

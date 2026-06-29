@@ -6,8 +6,13 @@ export interface CapabilityLimitationsProps {
   readonly limitations: readonly CapabilityLimitation[];
 }
 
+const hiddenLimitationCapabilities = new Set(["local-monitoring"]);
+
 export function CapabilityLimitations({ limitations }: CapabilityLimitationsProps) {
-  const visibleLimitations = limitations.filter((limitation) => limitation.message.trim().length > 0);
+  const visibleLimitations = limitations.filter(
+    (limitation) =>
+      !hiddenLimitationCapabilities.has(limitation.capability) && limitation.message.trim().length > 0,
+  );
 
   if (visibleLimitations.length === 0) {
     return null;
