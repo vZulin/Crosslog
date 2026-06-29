@@ -11,4 +11,4 @@ fi
 corepack pnpm lint
 corepack pnpm test:unit
 corepack pnpm test:integration
-cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml
+cargo test --locked --manifest-path apps/desktop/src-tauri/Cargo.toml

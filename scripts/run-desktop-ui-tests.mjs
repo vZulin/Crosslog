@@ -243,7 +243,7 @@ function prepareWdioApplication() {
   if (process.env.CROSSLOG_DESKTOP_UI_SKIP_APP_BUILD !== "true") {
     timeSync("Tauri debug application build", () => runCommand(
       "corepack",
-      ["pnpm", "--filter", "@crosslog/desktop", "tauri", "build", "--debug", "--no-bundle"],
+      ["pnpm", "--filter", "@crosslog/desktop", "tauri", "build", "--debug", "--no-bundle", "--", "--locked"],
       { ...process.env, PATH: pathWithCargo(), CROSSLOG_UI_TEST: "1" },
     ));
   } else {
@@ -372,7 +372,19 @@ function prepareMacosAppBundle() {
   if (process.env.CROSSLOG_MACOS_UI_SKIP_APP_BUILD !== "true") {
     timeSync("Tauri macOS app bundle build", () => runCommand(
       "corepack",
-      ["pnpm", "--filter", "@crosslog/desktop", "tauri", "build", "--debug", "--bundles", "app", "--no-sign"],
+      [
+        "pnpm",
+        "--filter",
+        "@crosslog/desktop",
+        "tauri",
+        "build",
+        "--debug",
+        "--bundles",
+        "app",
+        "--no-sign",
+        "--",
+        "--locked",
+      ],
       { ...process.env, PATH: pathWithCargo() },
     ));
   } else {

@@ -13,4 +13,4 @@ command -v cargo >/dev/null || {
   exit 127
 }
 
-corepack pnpm build:desktop
+corepack pnpm --filter @crosslog/desktop tauri build -- --locked

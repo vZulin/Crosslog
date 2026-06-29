@@ -19,7 +19,7 @@ env:
 
 jobs:
   automated-tests:
-    name: Automated tests (${{ matrix.os }})
+    name: Automated tests (${{ matrix.label }})
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
     strategy:
@@ -27,14 +27,25 @@ jobs:
       matrix:
         include:
           - os: linux
+            label: linux
             runner: ubuntu-22.04
             test-command: bash scripts/linux/test.sh
+            rust_required: true
           - os: macos
+            label: macos
             runner: macos-latest
             test-command: bash scripts/macos/test.sh
+            rust_required: true
           - os: windows
+            label: windows-js
             runner: windows-latest
-            test-command: pwsh scripts/windows/test.ps1
+            test-command: pwsh scripts/windows/test.ps1 js
+            rust_required: false
+          - os: windows
+            label: windows-rust
+            runner: windows-latest
+            test-command: pwsh scripts/windows/test.ps1 rust
+            rust_required: true
 
     steps:
       - name: Check out repository
@@ -61,9 +72,11 @@ jobs:
           restore-keys: pnpm-${{ runner.os }}-
 
       - name: Set up Rust
+        if: matrix.rust_required
         uses: dtolnay/rust-toolchain@stable
 
       - name: Cache Rust dependencies
+        if: matrix.rust_required
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: apps/desktop/src-tauri
@@ -88,6 +101,8 @@ jobs:
     name: UI/E2E tests (${{ matrix.os }})
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 35
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.cache/ms-playwright
     strategy:
       fail-fast: false
       matrix:
@@ -160,6 +175,13 @@ jobs:
       - name: Install Linux Playwright dependencies
         if: matrix.os == 'linux'
         run: corepack pnpm exec playwright install-deps chromium
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: playwright-${{ runner.os }}-
 
       - name: Install Playwright browser
         run: corepack pnpm exec playwright install chromium
