@@ -282,11 +282,27 @@ jobs:
           CROSSLOG_UI_TEST: "1"
         run: corepack pnpm --filter @crosslog/desktop tauri build --debug --no-bundle -- --locked
 
+      - name: Install Windows tauri-driver
+        run: cargo install tauri-driver --locked
+
+      - name: Stage Windows tauri-driver
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force .build/tauri-driver | Out-Null
+          Copy-Item "$env:CARGO_HOME\bin\tauri-driver.exe" .build/tauri-driver/tauri-driver.exe
+
       - name: Upload Windows Desktop UI app
         uses: actions/upload-artifact@v4
         with:
           name: crosslog-windows-desktop-ui-app
           path: apps/desktop/src-tauri/target/debug/crosslog-desktop.exe
+          if-no-files-found: error
+
+      - name: Upload Windows tauri-driver
+        uses: actions/upload-artifact@v4
+        with:
+          name: crosslog-windows-tauri-driver
+          path: .build/tauri-driver/tauri-driver.exe
           if-no-files-found: error
 
   windows-desktop-ui-tests:
@@ -342,18 +358,6 @@ jobs:
           key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: pnpm-${{ runner.os }}-
 
-      - name: Set up Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Cache Rust dependencies
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: apps/desktop/src-tauri
-          cache-targets: false
-
-      - name: Install tauri-driver
-        run: cargo install tauri-driver --locked
-
       - name: Install JavaScript dependencies
         run: corepack pnpm install --frozen-lockfile
 
@@ -363,10 +367,17 @@ jobs:
           name: crosslog-windows-desktop-ui-app
           path: apps/desktop/src-tauri/target/debug
 
+      - name: Download Windows tauri-driver
+        uses: actions/download-artifact@v4
+        with:
+          name: crosslog-windows-tauri-driver
+          path: .build/tauri-driver
+
       - name: Run UI tests
         env:
           CROSSLOG_DESKTOP_UI_SKIP_APP_BUILD: "true"
           CROSSLOG_TAURI_APP_PATH: apps/desktop/src-tauri/target/debug/crosslog-desktop.exe
+          CROSSLOG_TAURI_DRIVER_PATH: .build/tauri-driver/tauri-driver.exe
           CROSSLOG_WDIO_SPECS: ${{ matrix.wdio_specs }}
         run: pwsh scripts/windows/test-ui.ps1 desktop
 
