@@ -14,12 +14,46 @@ const defaultMacosAppBundlePath =
 const defaultMacosAppBundleId = "dev.crosslog.desktop";
 
 if (platform === "darwin") {
-  runMacosXCTestHarness();
+  timeSync("macOS desktop UI harness", runMacosXCTestHarness);
 } else {
-  runWdioHarness().catch((error) => {
+  timeAsync("WDIO desktop UI harness", () => runWdioHarness()).catch((error) => {
     console.error(error);
     process.exit(1);
   });
+}
+
+function logRunnerEvent(message) {
+  console.log(`[crosslog-ui-runner] ${new Date().toISOString()} ${message}`);
+}
+
+function formatElapsed(milliseconds) {
+  if (milliseconds < 1_000) {
+    return `${milliseconds}ms`;
+  }
+
+  return `${(milliseconds / 1_000).toFixed(1)}s`;
+}
+
+function timeSync(label, action) {
+  const startedAt = Date.now();
+  logRunnerEvent(`${label} started`);
+
+  try {
+    return action();
+  } finally {
+    logRunnerEvent(`${label} finished in ${formatElapsed(Date.now() - startedAt)}`);
+  }
+}
+
+async function timeAsync(label, action) {
+  const startedAt = Date.now();
+  logRunnerEvent(`${label} started`);
+
+  try {
+    return await action();
+  } finally {
+    logRunnerEvent(`${label} finished in ${formatElapsed(Date.now() - startedAt)}`);
+  }
 }
 
 function runMacosXCTestHarness() {
@@ -40,15 +74,15 @@ function runMacosXCTestHarness() {
   registerMacosAppBundle(appBundlePath);
 
   if (xctestrunPath) {
-    sanitizeMacosBuildProducts(resolvePath(derivedDataPath));
-    runCommand("xcodebuild", [
+    timeSync("macOS XCTest build product signing", () => sanitizeMacosBuildProducts(resolvePath(derivedDataPath)));
+    timeSync("macOS XCTest execution", () => runCommand("xcodebuild", [
       "test-without-building",
       "-xctestrun",
       xctestrunPath,
       "-destination",
       destination,
       ...optionalDerivedDataArgs(derivedDataPath),
-    ], macosTestEnvironment(appBundlePath, appBundleId));
+    ], macosTestEnvironment(appBundlePath, appBundleId)));
     return;
   }
 
@@ -139,7 +173,7 @@ function runBuiltMacosXCTestHarness(
   const resolvedDerivedDataPath = resolvePath(derivedDataPath);
   const testEnvironment = macosTestEnvironment(appBundlePath, appBundleId);
 
-  runCommand("xcodebuild", [
+  timeSync("macOS XCTest build", () => runCommand("xcodebuild", [
     "build-for-testing",
     ...projectOrWorkspaceArgs,
     "-scheme",
@@ -147,18 +181,18 @@ function runBuiltMacosXCTestHarness(
     "-destination",
     destination,
     ...optionalDerivedDataArgs(derivedDataPath),
-  ], testEnvironment);
+  ], testEnvironment));
 
-  sanitizeMacosBuildProducts(resolvedDerivedDataPath);
+  timeSync("macOS XCTest build product signing", () => sanitizeMacosBuildProducts(resolvedDerivedDataPath));
 
-  runCommand("xcodebuild", [
+  timeSync("macOS XCTest execution", () => runCommand("xcodebuild", [
     "test-without-building",
     "-xctestrun",
     findMacosXCTestRunFile(resolvedDerivedDataPath),
     "-destination",
     destination,
     ...optionalDerivedDataArgs(derivedDataPath),
-  ], testEnvironment);
+  ], testEnvironment));
 }
 
 async function runWdioHarness() {
@@ -170,10 +204,11 @@ async function runWdioHarness() {
     process.exit(1);
   }
 
-  ensureTauriDriverAvailable(baseEnvironment);
+  timeSync("tauri-driver availability check", () => ensureTauriDriverAvailable(baseEnvironment));
   const appPath = prepareWdioApplication();
   const actionsPath = join(tmpdir(), `crosslog-ui-actions-${randomUUID()}.txt`);
   writeFileSync(actionsPath, "", "utf8");
+  logRunnerEvent(`Desktop UI action queue created at ${actionsPath}`);
 
   const wdioEnvironment = {
     ...baseEnvironment,
@@ -182,14 +217,18 @@ async function runWdioHarness() {
     CROSSLOG_UI_TEST: "1",
     CROSSLOG_UI_TEST_ACTIONS_PATH: actionsPath,
   };
-  const driver = startTauriDriver(driverPort, wdioEnvironment);
+  const driver = timeSync(`tauri-driver start on port ${driverPort}`, () => startTauriDriver(driverPort, wdioEnvironment));
 
   try {
-    await waitForTcpPort(driverPort);
-    runCommand("corepack", ["pnpm", "exec", "wdio", "run", "wdio.conf.ts"], wdioEnvironment);
+    await timeAsync(`tauri-driver TCP readiness on port ${driverPort}`, () => waitForTcpPort(driverPort));
+    timeSync("WDIO desktop UI specs", () =>
+      runCommand("corepack", ["pnpm", "exec", "wdio", "run", "wdio.conf.ts"], wdioEnvironment),
+    );
   } finally {
+    logRunnerEvent("tauri-driver stop started");
     driver.stop();
     rmSync(actionsPath, { force: true });
+    logRunnerEvent("tauri-driver stop finished");
   }
 }
 
@@ -197,15 +236,18 @@ function prepareWdioApplication() {
   const configuredApplicationPath = getOptionalPath("CROSSLOG_TAURI_APP_PATH");
 
   if (configuredApplicationPath) {
+    logRunnerEvent(`Using configured Desktop application: ${configuredApplicationPath}`);
     return configuredApplicationPath;
   }
 
   if (process.env.CROSSLOG_DESKTOP_UI_SKIP_APP_BUILD !== "true") {
-    runCommand(
+    timeSync("Tauri debug application build", () => runCommand(
       "corepack",
       ["pnpm", "--filter", "@crosslog/desktop", "tauri", "build", "--debug", "--no-bundle"],
       { ...process.env, PATH: pathWithCargo(), CROSSLOG_UI_TEST: "1" },
-    );
+    ));
+  } else {
+    logRunnerEvent("Tauri debug application build skipped by CROSSLOG_DESKTOP_UI_SKIP_APP_BUILD=true");
   }
 
   const applicationPath = resolvePath(
@@ -328,11 +370,13 @@ function prepareMacosAppBundle() {
   }
 
   if (process.env.CROSSLOG_MACOS_UI_SKIP_APP_BUILD !== "true") {
-    runCommand(
+    timeSync("Tauri macOS app bundle build", () => runCommand(
       "corepack",
       ["pnpm", "--filter", "@crosslog/desktop", "tauri", "build", "--debug", "--bundles", "app", "--no-sign"],
       { ...process.env, PATH: pathWithCargo() },
-    );
+    ));
+  } else {
+    logRunnerEvent("Tauri macOS app bundle build skipped by CROSSLOG_MACOS_UI_SKIP_APP_BUILD=true");
   }
 
   const appBundlePath = resolvePath(defaultMacosAppBundlePath);
