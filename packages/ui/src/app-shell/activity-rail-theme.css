@@ -8,6 +8,7 @@
   --crosslog-scrollbar-thumb: #a6a9af;
   --crosslog-accent: #007aff;
   --crosslog-accent-surface: #d9ebff;
+  --crosslog-tag-surface: #f3f6fb;
   --crosslog-text: #1d1d1f;
   --crosslog-muted-text: #6e6e73;
   --crosslog-line-number-text: #8e8e93;
@@ -153,12 +154,12 @@ body {
 .crosslog-popover {
   position: absolute;
   z-index: 20;
-  min-inline-size: 220px;
-  max-inline-size: min(360px, calc(100vw - 32px));
+  min-inline-size: 0;
+  max-inline-size: min(360px, calc(100% - 16px));
   border: 1px solid var(--crosslog-border);
   border-radius: var(--crosslog-control-radius);
   background: var(--crosslog-surface);
-  box-shadow: 0 12px 32px rgb(29 29 31 / 16%);
+  box-shadow: 0 10px 26px rgb(29 29 31 / 14%);
   color: var(--crosslog-text);
 }
 
@@ -519,41 +520,52 @@ body {
 }
 
 .crosslog-pane-search-popover {
-  inset-block-start: calc(var(--crosslog-pane-header-height) - 2px);
-  inset-inline-start: 8px;
+  inset-block-start: calc(var(--crosslog-pane-header-height) - 4px);
+  inset-inline-end: 38px;
+  inline-size: min(351px, calc(100% - 46px));
 }
 
 .crosslog-time-offset-popover {
-  inset-block-start: calc(var(--crosslog-pane-header-height) - 2px);
-  inset-inline-start: 8px;
+  inset-block-start: calc(var(--crosslog-pane-header-height) - 4px);
+  inset-inline-end: 38px;
+  inline-size: min(338px, calc(100% - 46px));
 }
 
 .crosslog-time-offset-popover__content {
-  display: grid;
-  gap: 10px;
-  padding: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
 }
 
 .crosslog-time-offset-popover__grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  flex: 1 1 246px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-inline-size: 0;
 }
 
 .crosslog-time-offset-popover__field {
-  display: grid;
-  gap: 4px;
+  flex: 1 1 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-inline-size: 0;
   color: var(--crosslog-muted-text);
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .crosslog-time-offset-popover__field input {
+  inline-size: 100%;
   min-inline-size: 0;
   border: 1px solid var(--crosslog-border);
   border-radius: var(--crosslog-control-radius);
-  padding: 5px 7px;
+  padding: 3px 5px;
   color: var(--crosslog-text);
   font: inherit;
+  text-align: right;
 }
 
 .crosslog-time-offset-popover__field input[aria-invalid="true"] {
@@ -561,84 +573,122 @@ body {
 }
 
 .crosslog-time-offset-popover__error {
+  flex: 1 0 100%;
   color: var(--crosslog-error-text);
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .crosslog-time-offset-popover__actions {
+  flex: 0 0 auto;
   display: flex;
   justify-content: flex-end;
-  gap: 6px;
 }
 
-.crosslog-time-offset-popover__apply,
-.crosslog-time-offset-popover__close {
-  min-block-size: 27px;
+.crosslog-time-offset-popover__apply {
+  min-block-size: 25px;
   border: 1px solid var(--crosslog-border);
   border-radius: var(--crosslog-control-radius);
   background: var(--crosslog-surface);
   color: var(--crosslog-muted-text);
   font: inherit;
-  padding-inline: 10px;
+  font-size: 12px;
+  padding-inline: 9px;
 }
 
-.crosslog-time-offset-popover__apply:not(:disabled),
-.crosslog-time-offset-popover__close:not(:disabled) {
+.crosslog-time-offset-popover__apply:not(:disabled) {
   cursor: pointer;
 }
 
-.crosslog-time-offset-popover__apply:not(:disabled):hover,
-.crosslog-time-offset-popover__close:not(:disabled):hover {
+.crosslog-time-offset-popover__apply:not(:disabled):hover {
   background: var(--crosslog-accent-surface);
   color: var(--crosslog-accent);
 }
 
 .crosslog-pane-search-popover__content {
-  display: grid;
-  gap: 8px;
-  padding: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
 }
 
 .crosslog-pane-search-popover__field {
-  display: grid;
-  gap: 4px;
+  flex: 1 1 122px;
+  display: flex;
+  min-inline-size: 96px;
   color: var(--crosslog-muted-text);
   font-size: 12px;
 }
 
 .crosslog-pane-search-popover__field input {
   min-inline-size: 0;
+  inline-size: 100%;
   border: 1px solid var(--crosslog-border);
   border-radius: var(--crosslog-control-radius);
-  padding: 5px 7px;
+  padding: 4px 7px;
   color: var(--crosslog-text);
   font: inherit;
 }
 
 .crosslog-pane-search-popover__match-count {
+  flex: 0 0 auto;
+  min-block-size: 23px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--crosslog-border);
+  border-radius: var(--crosslog-pill-radius);
+  background: var(--crosslog-tag-surface);
   color: var(--crosslog-muted-text);
-  font-size: 12px;
+  font-size: 11px;
+  line-height: 1;
+  padding-inline: 7px;
 }
 
 .crosslog-pane-search-popover__actions {
+  flex: 0 0 auto;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
+}
+
+.crosslog-pane-search-popover__actions .crosslog-icon-button {
+  inline-size: 25px;
+  block-size: 25px;
 }
 
 .crosslog-pane-search-popover__toggle {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  min-block-size: 27px;
+  min-block-size: 25px;
+  border: 1px solid var(--crosslog-border);
+  border-radius: var(--crosslog-pill-radius);
+  background: var(--crosslog-surface);
   color: var(--crosslog-muted-text);
-  font-size: 12px;
+  font-size: 11px;
+  line-height: 1;
+  padding-inline: 6px;
+}
+
+.crosslog-pane-search-popover__toggle input {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  opacity: 0;
+}
+
+.crosslog-pane-search-popover__toggle:has(input:focus-visible) {
+  outline: 2px solid var(--crosslog-accent);
+  outline-offset: 2px;
+}
+
+.crosslog-pane-search-popover__toggle span[data-active="true"] {
+  color: var(--crosslog-accent);
 }
 
 .crosslog-pane-search-popover__error {
+  flex: 1 0 100%;
   color: var(--crosslog-error-text);
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .crosslog-log-scroller {

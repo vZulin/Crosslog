@@ -24,10 +24,17 @@ describe("redesigned search entry points", () => {
     const servicePane = panes[1]!;
     const directoryPane = panes[2]!;
 
-    fireEvent.click(within(appPane).getByRole("button", { name: "Search in app.log" }));
+    const appPaneSearchButton = within(appPane).getByRole("button", { name: "Search in app.log" });
+
+    fireEvent.click(appPaneSearchButton);
     await waitFor(() =>
       expect(within(appPane).getByRole("dialog", { name: "Pane search for app.log" })).toBeTruthy(),
     );
+    fireEvent.keyDown(within(appPane).getByTestId(redesignedShellTestIds.paneSearchField), {
+      key: "Escape",
+    });
+    await waitFor(() => expect(within(appPane).queryByTestId(redesignedShellTestIds.paneSearchPopover)).toBeNull());
+    expect(document.activeElement).toBe(appPaneSearchButton);
 
     fireEvent.click(servicePane);
     fireEvent.click(getByTestId(redesignedShellTestIds.activityRailSearch));

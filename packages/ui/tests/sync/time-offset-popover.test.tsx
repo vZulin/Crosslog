@@ -18,6 +18,12 @@ describe("redesigned time offset popover", () => {
     );
 
     expect(getByRole("dialog", { name: "Time offset for app.log" })).toBeTruthy();
+    expect(getByTestId(redesignedShellTestIds.timeOffsetPopover).classList.contains("crosslog-time-offset-popover")).toBe(
+      true,
+    );
+    expect(within(getByTestId(redesignedShellTestIds.timeOffsetPopover)).queryByRole("button", {
+      name: "Close time offset for app.log",
+    })).toBeNull();
 
     fireEvent.change(getByTestId(redesignedShellTestIds.timeOffsetMinutes), {
       target: { value: "61" },
@@ -38,6 +44,20 @@ describe("redesigned time offset popover", () => {
       milliseconds: 250,
     });
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("closes on Escape and returns focus to the invoking offset tag", () => {
+    const onClose = vi.fn();
+    const { getByRole, getByTestId } = render(<TimeOffsetFocusHarness onClose={onClose} />);
+    const trigger = getByRole("button", { name: "Offset trigger" });
+    const days = getByTestId(redesignedShellTestIds.timeOffsetDays);
+
+    expect(document.activeElement).toBe(days);
+
+    fireEvent.keyDown(days, { key: "Escape" });
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(document.activeElement).toBe(trigger);
   });
 
   it("rejects invalid draft values without replacing the previous valid offset", () => {
@@ -66,3 +86,22 @@ describe("redesigned time offset popover", () => {
     expect(onApply).not.toHaveBeenCalled();
   });
 });
+
+function TimeOffsetFocusHarness({ onClose }: { readonly onClose: () => void }) {
+  const triggerRef = React.useRef<HTMLButtonElement | null>(null);
+
+  return (
+    <>
+      <button ref={triggerRef} type="button">
+        Offset trigger
+      </button>
+      <TimeOffsetPopover
+        title="app.log"
+        value={{ days: 0, hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }}
+        returnFocusRef={triggerRef}
+        onApply={vi.fn()}
+        onClose={onClose}
+      />
+    </>
+  );
+}

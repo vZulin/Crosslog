@@ -17,6 +17,8 @@ export interface PaneHeaderProps {
   readonly timeOffsetOpen?: boolean;
   readonly directorySource?: DirectorySource;
   readonly lifecycleState?: PaneHeaderLifecycleState;
+  readonly searchButtonRef?: React.Ref<HTMLButtonElement>;
+  readonly timeOffsetButtonRef?: React.Ref<HTMLButtonElement>;
   readonly onClose: () => void;
   readonly onOpenSearch?: () => void;
   readonly onOpenTimeOffset?: () => void;
@@ -32,6 +34,8 @@ export function PaneHeader({
   timeOffsetOpen = false,
   directorySource,
   lifecycleState,
+  searchButtonRef,
+  timeOffsetButtonRef,
   onClose,
   onOpenSearch,
   onOpenTimeOffset,
@@ -144,6 +148,7 @@ export function PaneHeader({
           className="crosslog-pane-header__offset-tag"
           data-testid={redesignedShellTestIds.paneHeaderOffset}
           onClick={onOpenTimeOffset}
+          ref={timeOffsetButtonRef}
           type="button"
         >
           Offset {offsetLabel}
@@ -155,6 +160,7 @@ export function PaneHeader({
           label={`Search in ${displayTitle}`}
           onClick={onOpenSearch}
           pressed={searchOpen}
+          ref={searchButtonRef}
           testId={redesignedShellTestIds.paneHeaderSearch}
         />
         <ClosePaneButton

@@ -1,13 +1,14 @@
 import React from "react";
 import type { SearchState } from "@crosslog/core";
 import { IconButton } from "../app-shell/IconButton";
-import { Popover } from "../app-shell/Popover";
+import { Popover, type PopoverFocusReturnRef } from "../app-shell/Popover";
 import { redesignedShellTestIds } from "../app-shell/testIds";
 
 export interface PaneSearchPopoverProps {
   readonly title: string;
   readonly searchState: SearchState;
   readonly focusRequestSequence?: number;
+  readonly returnFocusRef?: PopoverFocusReturnRef;
   readonly onQueryChange: (query: string) => void;
   readonly onRegexModeChange: (enabled: boolean) => void;
   readonly onCaseSensitiveChange: (enabled: boolean) => void;
@@ -20,6 +21,7 @@ export function PaneSearchPopover({
   focusRequestSequence = 0,
   title,
   searchState,
+  returnFocusRef,
   onQueryChange,
   onRegexModeChange,
   onCaseSensitiveChange,
@@ -42,11 +44,12 @@ export function PaneSearchPopover({
       label="Pane search"
       ownerLabel={title}
       onEscapeKeyDown={onClose}
+      returnFocusRef={returnFocusRef}
       testId={redesignedShellTestIds.paneSearchPopover}
     >
       <div className="crosslog-pane-search-popover__content">
         <label className="crosslog-pane-search-popover__field">
-          <span>Search</span>
+          <span className="crosslog-sr-only">Search</span>
           <input
             aria-label={`Search ${title}`}
             data-testid={redesignedShellTestIds.paneSearchField}
@@ -58,6 +61,7 @@ export function PaneSearchPopover({
         </label>
         <span
           aria-label={`Search match count for ${title}`}
+          aria-live="polite"
           className="crosslog-pane-search-popover__match-count"
           data-testid={redesignedShellTestIds.paneSearchMatchCount}
         >
@@ -90,7 +94,7 @@ export function PaneSearchPopover({
               onChange={(event) => onCaseSensitiveChange(event.currentTarget.checked)}
               type="checkbox"
             />
-            <span>Aa</span>
+            <span data-active={searchState.caseSensitive ? "true" : "false"}>Aa</span>
           </label>
           <label className="crosslog-pane-search-popover__toggle">
             <input
@@ -100,7 +104,7 @@ export function PaneSearchPopover({
               onChange={(event) => onRegexModeChange(event.currentTarget.checked)}
               type="checkbox"
             />
-            <span>.*</span>
+            <span data-active={searchState.mode === "regex" ? "true" : "false"}>.*</span>
           </label>
         </div>
         {searchState.error ? (

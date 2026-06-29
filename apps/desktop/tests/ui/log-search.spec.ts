@@ -14,10 +14,13 @@ describe("Desktop log search", () => {
 
     const appPane = await getLogPaneByTitle("app.log");
     const servicePane = await getLogPaneByTitle("service.log");
+    const directoryPane = await getLogPaneByTitle("app-2026-06-16.log");
+    const appSearchTrigger = await appPane.$(byTestId(redesignedShellTestIds.paneHeaderSearch));
 
-    await clickElementWithJavaScript(await appPane.$(byTestId(redesignedShellTestIds.paneHeaderSearch)));
+    await clickElementWithJavaScript(appSearchTrigger);
     const appSearch = await appPane.$(byTestId(redesignedShellTestIds.paneSearchPopover));
     await expect(appSearch).toBeExisting();
+    await expectCompactPopoverInsidePane(appPane, appSearch, 90);
 
     await setPaneSearchQuery(appSearch, "line");
     await expect(await appSearch.$(byTestId(redesignedShellTestIds.paneSearchMatchCount))).toHaveText(
@@ -36,15 +39,29 @@ describe("Desktop log search", () => {
     await clickElementWithJavaScript(await appSearch.$(byTestId(redesignedShellTestIds.paneSearchRegex)));
     await setPaneSearchQuery(appSearch, "[broken");
     await expect(await appSearch.$('[role="alert"]')).toHaveText(expect.stringContaining("Invalid regular expression"));
+    await pressEscapeInElement(await appSearch.$(byTestId(redesignedShellTestIds.paneSearchField)));
+    await expect(await appPane.$$(byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(0);
+    expect(await isFocused(appSearchTrigger)).toBe(true);
 
     await activatePane(servicePane);
     await clickElementWithJavaScript(await $(byTestId(redesignedShellTestIds.activityRailSearch)));
     await expect(await servicePane.$('[aria-label="Pane search for service.log"]')).toBeExisting();
+    await expectCompactPopoverInsidePane(
+      servicePane,
+      await servicePane.$(byTestId(redesignedShellTestIds.paneSearchPopover)),
+      90,
+    );
     await expect(await appPane.$$(byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(0);
 
     await activatePane(appPane);
     await focusElementWithJavaScript(await $(byTestId(redesignedShellTestIds.commandField)));
     await expect(await appPane.$('[aria-label="Pane search for app.log"]')).toBeExisting();
+
+    await clickElementWithJavaScript(await directoryPane.$(byTestId(redesignedShellTestIds.paneHeaderSearch)));
+    const directorySearch = await directoryPane.$(byTestId(redesignedShellTestIds.paneSearchPopover));
+    await expect(directorySearch).toBeExisting();
+    await expectCompactPopoverInsidePane(directoryPane, directorySearch, 90);
+    await expect(await appPane.$$(byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(0);
   });
 });
 
@@ -65,6 +82,42 @@ async function activatePane(pane: WebdriverIO.Element): Promise<void> {
 async function focusElementWithJavaScript(element: WebdriverIO.Element): Promise<void> {
   await element.waitForExist();
   await browser.execute((target: HTMLElement) => target.focus(), element);
+}
+
+async function pressEscapeInElement(element: WebdriverIO.Element): Promise<void> {
+  await element.waitForExist();
+  await browser.execute((target: HTMLElement) => {
+    target.focus();
+    target.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "Escape" }));
+  }, element);
+}
+
+async function isFocused(element: WebdriverIO.Element): Promise<boolean> {
+  await element.waitForExist();
+  return browser.execute((target: HTMLElement) => document.activeElement === target, element);
+}
+
+async function expectCompactPopoverInsidePane(
+  pane: WebdriverIO.Element,
+  popover: WebdriverIO.Element,
+  maxHeight: number,
+): Promise<void> {
+  const bounds = await browser.execute((paneElement: HTMLElement, popoverElement: HTMLElement) => {
+    const paneRect = paneElement.getBoundingClientRect();
+    const popoverRect = popoverElement.getBoundingClientRect();
+
+    return {
+      paneLeft: paneRect.left,
+      paneRight: paneRect.right,
+      popoverLeft: popoverRect.left,
+      popoverRight: popoverRect.right,
+      popoverHeight: popoverRect.height,
+    };
+  }, pane, popover);
+
+  expect(bounds.popoverLeft).toBeGreaterThanOrEqual(bounds.paneLeft - 1);
+  expect(bounds.popoverRight).toBeLessThanOrEqual(bounds.paneRight + 1);
+  expect(bounds.popoverHeight).toBeLessThan(maxHeight);
 }
 
 async function setPaneSearchQuery(searchPopover: WebdriverIO.Element, query: string): Promise<void> {

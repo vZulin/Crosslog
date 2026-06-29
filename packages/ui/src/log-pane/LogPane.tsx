@@ -65,6 +65,8 @@ export function LogPane({
   onCopied,
   clipboard,
 }: LogPaneProps) {
+  const searchButtonRef = React.useRef<HTMLButtonElement | null>(null);
+  const timeOffsetButtonRef = React.useRef<HTMLButtonElement | null>(null);
   const activeSearchMatch =
     pane.searchState.currentMatchIndex === null
       ? null
@@ -92,14 +94,26 @@ export function LogPane({
         timeOffsetOpen={timeOffsetOpen}
         directorySource={directorySource}
         lifecycleState={lifecycleState}
+        searchButtonRef={searchButtonRef}
+        timeOffsetButtonRef={timeOffsetButtonRef}
         onClose={() => onClose(pane.id)}
         onOpenSearch={() => {
           onActivate(pane.id);
+          if (searchOpen) {
+            onSearchOpenChange?.(pane.id, false);
+            return;
+          }
+
           onTimeOffsetOpenChange?.(pane.id, false);
           onSearchOpenChange?.(pane.id, true);
         }}
         onOpenTimeOffset={() => {
           onActivate(pane.id);
+          if (timeOffsetOpen) {
+            onTimeOffsetOpenChange?.(pane.id, false);
+            return;
+          }
+
           onSearchOpenChange?.(pane.id, false);
           onTimeOffsetOpenChange?.(pane.id, true);
         }}
@@ -110,6 +124,7 @@ export function LogPane({
           focusRequestSequence={searchFocusRequestSequence}
           title={pane.title}
           searchState={pane.searchState}
+          returnFocusRef={searchButtonRef}
           onQueryChange={(query) => onSearchQueryChange?.(pane.id, query)}
           onRegexModeChange={(enabled) => onSearchRegexModeChange?.(pane.id, enabled)}
           onCaseSensitiveChange={(enabled) => onSearchCaseSensitiveChange?.(pane.id, enabled)}
@@ -122,6 +137,7 @@ export function LogPane({
         <TimeOffsetPopover
           title={pane.title}
           value={pane.timeOffset}
+          returnFocusRef={timeOffsetButtonRef}
           onApply={(offset) => onTimeOffsetChange?.(pane.id, offset)}
           onClose={() => onTimeOffsetOpenChange?.(pane.id, false)}
         />

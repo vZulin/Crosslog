@@ -2,11 +2,16 @@ import React from "react";
 
 export type PopoverPlacement = "block-end" | "block-start" | "inline-end" | "inline-start";
 
+export interface PopoverFocusReturnRef {
+  readonly current: { focus: () => void } | null;
+}
+
 export interface PopoverProps extends Omit<React.HTMLAttributes<HTMLElement>, "children"> {
   readonly children: React.ReactNode;
   readonly label: string;
   readonly ownerLabel?: string;
   readonly placement?: PopoverPlacement;
+  readonly returnFocusRef?: PopoverFocusReturnRef;
   readonly testId?: string;
   readonly onEscapeKeyDown?: () => void;
 }
@@ -17,6 +22,7 @@ export function Popover({
   label,
   ownerLabel,
   placement = "block-end",
+  returnFocusRef,
   testId,
   onEscapeKeyDown,
   onKeyDown,
@@ -27,7 +33,11 @@ export function Popover({
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
     if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
       onEscapeKeyDown?.();
+      returnFocusRef?.current?.focus();
+      return;
     }
 
     onKeyDown?.(event);

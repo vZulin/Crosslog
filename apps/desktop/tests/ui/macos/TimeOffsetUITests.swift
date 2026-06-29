@@ -13,5 +13,6 @@ final class TimeOffsetUITests: CrosslogUITests {
         performUiTestAction(.setActivePaneTimeOffset)
         waitForUiTestTitle("timeOffset=closed", in: app)
         waitForUiTestTitle("activeOffset=+1m", in: app)
+        waitForUiTestTitle("timeOffsetPane=none", in: app)
     }
 }

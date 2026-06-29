@@ -12,5 +12,6 @@ final class PaneSearchUITests: CrosslogUITests {
 
         performUiTestAction(.setActivePaneInvalidSearch)
         waitForUiTestTitle("search=error", in: app)
+        waitForUiTestTitle("searchPane=app-2026-06-16.log", in: app)
     }
 }

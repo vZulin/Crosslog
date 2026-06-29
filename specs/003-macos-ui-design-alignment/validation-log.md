@@ -53,9 +53,18 @@ restate the full 001 or 002 validation history.
 | 2026-06-29 | T076 US5 automated gate | `bash scripts/macos/test.sh` | Pass | Lint passed; Vitest unit suites passed 47 files / 121 tests; integration suites passed 4 files / 5 tests; Rust tests passed 5 tests. |
 | 2026-06-29 | T076 US5 UI gate | `bash scripts/macos/test-ui.sh` | Pass | Playwright Web UI passed 14 tests; Desktop/macOS UI tests built the app and XCTest suite passed 10 tests with `obsolete=absent` evidence across session restore, live lifecycle, copy, and aligned shell preservation flows. |
 
+## Phase 6: User Story 3 Pane-Local Compact Popovers
+
+| Date | Scope | Command Or Evidence | Result | Notes |
+| --- | --- | --- | --- | --- |
+| 2026-06-29 | T077-T080 US3 component and AppShell popover coverage | `corepack pnpm exec vitest run packages/ui/tests/search/pane-search-popover.test.tsx packages/ui/tests/sync/time-offset-popover.test.tsx packages/ui/tests/app-shell/pane-local-popovers.test.tsx packages/ui/tests/app-shell/search-entry-points.test.tsx` | Pass | Targeted Vitest suite passed 4 files / 10 tests, covering compact controls, no persistent time-offset Close button, Escape focus return, invalid regex/offset handling, and left/middle/right pane-local ownership. |
+| 2026-06-29 | T081-T082 US3 Web UI popover coverage | `corepack pnpm exec playwright test --config playwright.config.ts apps/web/tests/ui/log-search.spec.ts apps/web/tests/ui/time-offset-popover.spec.ts` | Pass | Targeted Playwright suite passed 2 tests, covering compact popover bounds inside invoking left/middle/right panes, pane-local state isolation, Escape focus return, invalid drafts, and Apply behavior. |
+| 2026-06-29 | T077-T092 US3 full unit regression | `corepack pnpm lint` and `corepack pnpm test:unit` | Pass | ESLint completed successfully; Vitest unit suites passed 48 files / 126 tests after the popover alignment changes. |
+| 2026-06-29 | T093 US3 automated gate | `bash scripts/macos/test.sh` | Pass | Lint passed; Vitest unit suites passed 48 files / 126 tests; integration suites passed 4 files / 5 tests; Rust tests passed 5 tests. |
+| 2026-06-29 | T093 US3 local UI gate | `bash scripts/macos/test-ui.sh` | Blocked locally | Web Playwright passed 14 tests, including the updated pane search and time offset popover scenarios. The local macOS XCTest portion failed before any product assertion because `XCUIApplication.launch()` could not activate `dev.crosslog.desktop` and reported `Running Background`; Developer Mode was enabled and repeated runs reproduced the same local activation failure. |
+
 ## Future Evidence Slots
 
-- US3 gate: `bash scripts/macos/test.sh` and `bash scripts/macos/test-ui.sh`.
 - US4 shared implementation gate: `bash scripts/macos/test.sh` and
   `bash scripts/macos/test-ui.sh`.
 - Release readiness: Windows, macOS, and Linux automated/UI/build GitHub

@@ -163,26 +163,26 @@
 
 ### Tests for User Story 3 (MANDATORY)
 
-- [ ] T077 [P] [US3] Update pane search popover component tests for compact layout, Escape handling, focus return, and mode controls in `packages/ui/tests/search/pane-search-popover.test.tsx`
-- [ ] T078 [P] [US3] Update time offset popover component tests for compact layout, no persistent Close button, Escape handling, focus return, and Apply-only action in `packages/ui/tests/sync/time-offset-popover.test.tsx`
-- [ ] T079 [P] [US3] Add pane-local popover positioning tests for left, middle, and right panes in `packages/ui/tests/app-shell/pane-local-popovers.test.tsx`
-- [ ] T080 [P] [US3] Update search entry point tests for command field, activity rail, and pane find icon to use aligned controls in `packages/ui/tests/app-shell/search-entry-points.test.tsx`
-- [ ] T081 [P] [US3] Update Web pane search UI test for compact pane-local popover behavior in `apps/web/tests/ui/log-search.spec.ts`
-- [ ] T082 [P] [US3] Update Web time offset UI test for compact pane-local popover behavior in `apps/web/tests/ui/time-offset-popover.spec.ts`
-- [ ] T083 [P] [US3] Update Desktop WDIO pane search UI test for compact pane-local popover behavior in `apps/desktop/tests/ui/log-search.spec.ts`
-- [ ] T084 [P] [US3] Update Desktop WDIO time offset UI test for compact pane-local popover behavior in `apps/desktop/tests/ui/time-offset-popover.spec.ts`
-- [ ] T085 [P] [US3] Update macOS pane search XCTest coverage for compact pane-local popover behavior in `apps/desktop/tests/ui/macos/PaneSearchUITests.swift`
-- [ ] T086 [P] [US3] Update macOS time offset XCTest coverage for compact pane-local popover behavior in `apps/desktop/tests/ui/macos/TimeOffsetUITests.swift`
+- [X] T077 [P] [US3] Update pane search popover component tests for compact layout, Escape handling, focus return, and mode controls in `packages/ui/tests/search/pane-search-popover.test.tsx`
+- [X] T078 [P] [US3] Update time offset popover component tests for compact layout, no persistent Close button, Escape handling, focus return, and Apply-only action in `packages/ui/tests/sync/time-offset-popover.test.tsx`
+- [X] T079 [P] [US3] Add pane-local popover positioning tests for left, middle, and right panes in `packages/ui/tests/app-shell/pane-local-popovers.test.tsx`
+- [X] T080 [P] [US3] Update search entry point tests for command field, activity rail, and pane find icon to use aligned controls in `packages/ui/tests/app-shell/search-entry-points.test.tsx`
+- [X] T081 [P] [US3] Update Web pane search UI test for compact pane-local popover behavior in `apps/web/tests/ui/log-search.spec.ts`
+- [X] T082 [P] [US3] Update Web time offset UI test for compact pane-local popover behavior in `apps/web/tests/ui/time-offset-popover.spec.ts`
+- [X] T083 [P] [US3] Update Desktop WDIO pane search UI test for compact pane-local popover behavior in `apps/desktop/tests/ui/log-search.spec.ts`
+- [X] T084 [P] [US3] Update Desktop WDIO time offset UI test for compact pane-local popover behavior in `apps/desktop/tests/ui/time-offset-popover.spec.ts`
+- [X] T085 [P] [US3] Update macOS pane search XCTest coverage for compact pane-local popover behavior in `apps/desktop/tests/ui/macos/PaneSearchUITests.swift`
+- [X] T086 [P] [US3] Update macOS time offset XCTest coverage for compact pane-local popover behavior in `apps/desktop/tests/ui/macos/TimeOffsetUITests.swift`
 
 ### Implementation for User Story 3
 
-- [ ] T087 [US3] Tighten shared popover anchoring, Escape dismissal, and focus return support in `packages/ui/src/app-shell/Popover.tsx`
-- [ ] T088 [US3] Align pane search popover compact content, controls, labels, and owner behavior in `packages/ui/src/search/PaneSearchPopover.tsx`
-- [ ] T089 [US3] Align time offset popover compact content, remove the persistent Close button, and keep Apply validation in `packages/ui/src/sync/TimeOffsetPopover.tsx`
-- [ ] T090 [US3] Wire pane find and offset trigger refs through the pane header for focus return in `packages/ui/src/log-pane/PaneHeader.tsx`
-- [ ] T091 [US3] Keep pane search and time offset popovers owned by the invoking pane in `packages/ui/src/log-pane/LogPane.tsx`
-- [ ] T092 [US3] Update popover positioning, compact dimensions, mode tags, count tags, and error styling in `packages/ui/src/app-shell/activity-rail-theme.css`
-- [ ] T093 [US3] Run `bash scripts/macos/test.sh` and `bash scripts/macos/test-ui.sh` for US3 and record the result in `specs/003-macos-ui-design-alignment/validation-log.md`
+- [X] T087 [US3] Tighten shared popover anchoring, Escape dismissal, and focus return support in `packages/ui/src/app-shell/Popover.tsx`
+- [X] T088 [US3] Align pane search popover compact content, controls, labels, and owner behavior in `packages/ui/src/search/PaneSearchPopover.tsx`
+- [X] T089 [US3] Align time offset popover compact content, remove the persistent Close button, and keep Apply validation in `packages/ui/src/sync/TimeOffsetPopover.tsx`
+- [X] T090 [US3] Wire pane find and offset trigger refs through the pane header for focus return in `packages/ui/src/log-pane/PaneHeader.tsx`
+- [X] T091 [US3] Keep pane search and time offset popovers owned by the invoking pane in `packages/ui/src/log-pane/LogPane.tsx`
+- [X] T092 [US3] Update popover positioning, compact dimensions, mode tags, count tags, and error styling in `packages/ui/src/app-shell/activity-rail-theme.css`
+- [X] T093 [US3] Run `bash scripts/macos/test.sh` and `bash scripts/macos/test-ui.sh` for US3 and record the result in `specs/003-macos-ui-design-alignment/validation-log.md`
 
 **Checkpoint**: User Story 3 is independently functional and search/offset behavior remains pane-local.
 

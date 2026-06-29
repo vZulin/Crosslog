@@ -1,12 +1,13 @@
 import React from "react";
 import type { TimeOffset } from "@crosslog/core";
 import { normalizeTimeOffset } from "@crosslog/core";
-import { Popover } from "../app-shell/Popover";
+import { Popover, type PopoverFocusReturnRef } from "../app-shell/Popover";
 import { redesignedShellTestIds } from "../app-shell/testIds";
 
 export interface TimeOffsetPopoverProps {
   readonly title: string;
   readonly value: TimeOffset;
+  readonly returnFocusRef?: PopoverFocusReturnRef;
   readonly onApply: (offset: TimeOffset) => void;
   readonly onClose: () => void;
 }
@@ -15,22 +16,24 @@ type TimeOffsetField = keyof TimeOffset;
 type TimeOffsetDraft = Record<TimeOffsetField, string>;
 
 const offsetFields = [
-  { field: "days", label: "Days", testId: redesignedShellTestIds.timeOffsetDays },
-  { field: "hours", label: "Hours", testId: redesignedShellTestIds.timeOffsetHours },
-  { field: "minutes", label: "Minutes", testId: redesignedShellTestIds.timeOffsetMinutes },
-  { field: "seconds", label: "Seconds", testId: redesignedShellTestIds.timeOffsetSeconds },
+  { field: "days", label: "Days", shortLabel: "d", testId: redesignedShellTestIds.timeOffsetDays },
+  { field: "hours", label: "Hours", shortLabel: "h", testId: redesignedShellTestIds.timeOffsetHours },
+  { field: "minutes", label: "Minutes", shortLabel: "m", testId: redesignedShellTestIds.timeOffsetMinutes },
+  { field: "seconds", label: "Seconds", shortLabel: "s", testId: redesignedShellTestIds.timeOffsetSeconds },
   {
     field: "milliseconds",
     label: "Milliseconds",
+    shortLabel: "ms",
     testId: redesignedShellTestIds.timeOffsetMilliseconds,
   },
 ] as const satisfies readonly {
   readonly field: TimeOffsetField;
   readonly label: string;
+  readonly shortLabel: string;
   readonly testId: string;
 }[];
 
-export function TimeOffsetPopover({ title, value, onApply, onClose }: TimeOffsetPopoverProps) {
+export function TimeOffsetPopover({ title, value, returnFocusRef, onApply, onClose }: TimeOffsetPopoverProps) {
   const [draft, setDraft] = React.useState<TimeOffsetDraft>(() => createDraft(value));
   const parsedDraft = parseDraft(draft);
   const firstInputRef = React.useRef<HTMLInputElement>(null);
@@ -65,13 +68,14 @@ export function TimeOffsetPopover({ title, value, onApply, onClose }: TimeOffset
       label="Time offset"
       ownerLabel={title}
       onEscapeKeyDown={onClose}
+      returnFocusRef={returnFocusRef}
       testId={redesignedShellTestIds.timeOffsetPopover}
     >
       <div className="crosslog-time-offset-popover__content">
         <div className="crosslog-time-offset-popover__grid">
-          {offsetFields.map(({ field, label, testId }, index) => (
+          {offsetFields.map(({ field, label, shortLabel, testId }, index) => (
             <label className="crosslog-time-offset-popover__field" key={field}>
-              <span>{label}</span>
+              <span aria-hidden="true">{shortLabel}</span>
               <input
                 aria-invalid={!isValidIntegerDraft(draft[field])}
                 aria-label={`${label} offset for ${title}`}
@@ -100,14 +104,6 @@ export function TimeOffsetPopover({ title, value, onApply, onClose }: TimeOffset
             aria-label={`Apply time offset for ${title}`}
           >
             Apply
-          </button>
-          <button
-            className="crosslog-time-offset-popover__close"
-            onClick={onClose}
-            type="button"
-            aria-label={`Close time offset for ${title}`}
-          >
-            Close
           </button>
         </div>
       </div>
