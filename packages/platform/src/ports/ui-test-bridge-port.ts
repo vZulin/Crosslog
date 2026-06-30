@@ -34,6 +34,18 @@ export interface UiTestPaneNavigationEvidence {
   readonly syncTargetLineNumber: number | null;
 }
 
+export interface UiTestSearchHighlightEvidence {
+  readonly visible: boolean;
+  readonly count: number;
+}
+
+export interface UiTestCopyActionEvidence {
+  readonly visible: boolean;
+  readonly pointerAnchored: boolean | null;
+  readonly viewportBounded: boolean | null;
+  readonly copiedProductTextVisible: boolean;
+}
+
 export type UiTestSourceOpeningStatus = "idle" | "pending" | "cancelled" | "opened" | "error";
 export type UiTestSourceOpeningEntryPoint =
   | "none"
@@ -88,6 +100,8 @@ export interface UiTestShellState {
   readonly obsoleteControlVisibility: UiTestObsoleteControlVisibility;
   readonly workspaceLayout: UiTestWorkspaceLayoutMeasurements;
   readonly paneNavigation: UiTestPaneNavigationEvidence;
+  readonly searchHighlights: UiTestSearchHighlightEvidence;
+  readonly copyAction: UiTestCopyActionEvidence;
   readonly sourceOpening: UiTestSourceOpeningEvidence;
   readonly futureControls: UiTestFutureControlState;
 }
@@ -100,7 +114,11 @@ export const uiTestActions = [
   "keyboardNavigateActivePaneDown",
   "wheelNavigateActivePaneDown",
   "openActivePaneSearch",
+  "setActivePaneSearchQuery",
   "setActivePaneInvalidSearch",
+  "closeActivePaneSearch",
+  "showFirstPaneCopyMenu",
+  "dismissCopyMenu",
   "openEmptyDirectory",
   "navigatePreviousDirectoryFile",
   "navigateNextDirectoryFile",
@@ -173,6 +191,12 @@ export function formatUiTestShellState(state: UiTestShellState): string {
     `maxGutterDigits=${formatNullableNumber(state.paneNavigation.maxGutterDigitCount)}`,
     `lastNavigation=${state.paneNavigation.lastNavigation}`,
     `syncTargetLine=${formatNullableNumber(state.paneNavigation.syncTargetLineNumber)}`,
+    `searchHighlights=${state.searchHighlights.visible ? "visible" : "hidden"}`,
+    `searchHighlightCount=${state.searchHighlights.count}`,
+    `copyAction=${state.copyAction.visible ? "visible" : "hidden"}`,
+    `copyActionAnchored=${formatNullableBoolean(state.copyAction.pointerAnchored)}`,
+    `copyActionBounded=${formatNullableBoolean(state.copyAction.viewportBounded)}`,
+    `copiedText=${state.copyAction.copiedProductTextVisible ? "visible" : "absent"}`,
     `regions=${state.redesignedRegions.length > 0 ? state.redesignedRegions.join(",") : "none"}`,
   ].join(";");
 }

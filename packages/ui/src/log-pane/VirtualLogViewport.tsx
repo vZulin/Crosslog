@@ -15,6 +15,7 @@ export interface VirtualLogViewportProps {
   readonly lines: readonly string[];
   readonly timestamps?: readonly (Date | null)[];
   readonly searchMatches?: readonly SearchMatch[];
+  readonly searchHighlightsVisible?: boolean;
   readonly activeSearchMatchLineNumber?: number | null;
   readonly maxVisibleLines?: number;
   readonly synchronizationTargetLineNumber?: number | null;
@@ -47,13 +48,17 @@ export function VirtualLogViewport({
   lines,
   timestamps,
   searchMatches = [],
+  searchHighlightsVisible = false,
   activeSearchMatchLineNumber,
   maxVisibleLines,
   synchronizationTargetLineNumber,
   onTimeAnchorChange,
 }: VirtualLogViewportProps) {
   const visibleLineCapacity = Math.max(1, Math.min(maxVisibleLines ?? 120, Math.max(lines.length, 1)));
-  const searchMatchLineNumbers = new Set(searchMatches.map((match) => match.lineNumber));
+  const searchMatchesByLineNumber = React.useMemo(
+    () => groupSearchMatchesByLineNumber(searchHighlightsVisible ? searchMatches : []),
+    [searchHighlightsVisible, searchMatches],
+  );
   const targetLineNumber = activeSearchMatchLineNumber ?? synchronizationTargetLineNumber ?? null;
   const [selectedLineNumber, setSelectedLineNumber] = React.useState(() =>
     clampLineNumber(targetLineNumber ?? 1, lines.length),
@@ -170,6 +175,7 @@ export function VirtualLogViewport({
       {visibleLines.map((line) => {
         const severity = inferLogLineSeverity(line.text);
         const selected = line.lineNumber === selectedLineNumber;
+        const lineSearchMatches = searchMatchesByLineNumber.get(line.lineNumber) ?? [];
 
         return (
           <li
@@ -177,8 +183,9 @@ export function VirtualLogViewport({
             key={line.lineNumber}
             data-line-number={line.lineNumber}
             data-severity={severity}
-            data-search-match={searchMatchLineNumbers.has(line.lineNumber) ? "true" : "false"}
-            data-active-search-match={line.lineNumber === activeSearchMatchLineNumber ? "true" : "false"}
+            data-active-search-match={
+              searchHighlightsVisible && line.lineNumber === activeSearchMatchLineNumber ? "true" : "false"
+            }
             data-selected-line={selected ? "true" : "false"}
             data-sync-target={line.lineNumber === synchronizationTargetLineNumber ? "true" : "false"}
             onClick={() => {
@@ -191,7 +198,9 @@ export function VirtualLogViewport({
             }}
           >
             <span className="crosslog-log-viewport__line-number">{line.lineNumber}</span>
-            <code className="crosslog-log-viewport__line-text">{line.text}</code>
+            <code className="crosslog-log-viewport__line-text">
+              {renderLineText(line.text, lineSearchMatches, line.lineNumber === activeSearchMatchLineNumber)}
+            </code>
           </li>
         );
       })}
@@ -264,6 +273,70 @@ function moveHorizontalScroller(viewport: HTMLElement, delta: number): void {
 
   scroller.scrollLeft = Math.max(0, scroller.scrollLeft + delta);
   scroller.dispatchEvent(new Event("scroll", { bubbles: true }));
+}
+
+function groupSearchMatchesByLineNumber(
+  matches: readonly SearchMatch[],
+): ReadonlyMap<number, readonly SearchMatch[]> {
+  const groupedMatches = new Map<number, SearchMatch[]>();
+
+  matches.forEach((match) => {
+    const lineMatches = groupedMatches.get(match.lineNumber) ?? [];
+
+    lineMatches.push(match);
+    groupedMatches.set(match.lineNumber, lineMatches);
+  });
+
+  groupedMatches.forEach((lineMatches) => {
+    lineMatches.sort((left, right) => left.range.start - right.range.start);
+  });
+
+  return groupedMatches;
+}
+
+function renderLineText(
+  text: string,
+  matches: readonly SearchMatch[],
+  lineIsActiveSearchMatch: boolean,
+): React.ReactNode {
+  if (matches.length === 0) {
+    return text;
+  }
+
+  const fragments: React.ReactNode[] = [];
+  let cursor = 0;
+
+  matches.forEach((match, matchIndex) => {
+    const start = Math.max(cursor, Math.min(text.length, match.range.start));
+    const end = Math.max(start, Math.min(text.length, match.range.end));
+
+    if (start > cursor) {
+      fragments.push(text.slice(cursor, start));
+    }
+
+    if (end > start) {
+      fragments.push(
+        <mark
+          className="crosslog-log-viewport__search-highlight"
+          data-active-search-highlight={
+            lineIsActiveSearchMatch && matchIndex === 0 ? "true" : "false"
+          }
+          data-search-highlight="true"
+          key={`${start}:${end}:${matchIndex}`}
+        >
+          {text.slice(start, end)}
+        </mark>,
+      );
+    }
+
+    cursor = end;
+  });
+
+  if (cursor < text.length) {
+    fragments.push(text.slice(cursor));
+  }
+
+  return fragments;
 }
 
 export function inferLogLineSeverity(text: string): LogLineSeverity {

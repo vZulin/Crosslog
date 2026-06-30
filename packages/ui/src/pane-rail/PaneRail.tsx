@@ -14,6 +14,7 @@ export interface PaneRailPane {
   readonly directorySource?: DirectorySource;
   readonly lifecycleState?: PaneHeaderLifecycleState;
   readonly synchronizationTargetLineNumber?: number | null;
+  readonly searchHighlightsVisible?: boolean;
 }
 
 export interface PaneRailProps {
@@ -164,6 +165,7 @@ export function PaneRail({
             directorySource={entry.directorySource}
             lifecycleState={entry.lifecycleState}
             synchronizationTargetLineNumber={entry.synchronizationTargetLineNumber}
+            searchHighlightsVisible={entry.searchHighlightsVisible}
             onClose={onClosePane}
             onActivate={onActivatePane}
             onReorderDragStart={handleReorderDragStart}

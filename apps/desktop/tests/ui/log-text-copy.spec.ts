@@ -1,8 +1,8 @@
-import { expect } from "@wdio/globals";
+import { browser, expect } from "@wdio/globals";
 import { redesignedShellTestIds } from "@crosslog/ui";
 import {
   byTestId,
-  enqueueDesktopUiTestAction,
+  clickElementWithJavaScript,
   expectObsoleteControlsAbsent,
   openSampleLogsWithUiBridge,
   waitForDesktopShell,
@@ -20,7 +20,90 @@ describe("Desktop log text copy", () => {
     await expect(await appPane.$$(".crosslog-pane-tools")).toBeElementsArrayOfSize(0);
     await expect(await appPane.$$(".crosslog-log-text-selection__copy")).toBeElementsArrayOfSize(0);
     await expectObsoleteControlsAbsent();
-    enqueueDesktopUiTestAction("copyFirstPane");
+
+    const textActions = await appPane.$('[aria-label="Log text actions for app.log"]');
+    const firstPlacement = await openCopyMenuAt(textActions, 160, 54);
+
+    expect(Math.abs(firstPlacement.actionLeft - firstPlacement.pointerX)).toBeLessThanOrEqual(2);
+    expect(Math.abs(firstPlacement.actionTop - firstPlacement.pointerY)).toBeLessThanOrEqual(2);
+
+    const edgePlacement = await openCopyMenuAt(textActions, 9_999, 9_999);
+
+    expect(edgePlacement.actionRight).toBeLessThanOrEqual(edgePlacement.groupRight + 1);
+    expect(edgePlacement.actionBottom).toBeLessThanOrEqual(edgePlacement.groupBottom + 1);
+
+    await dismissCopyMenu(textActions);
+    await expect(await appPane.$$('[role="menuitem"]')).toBeElementsArrayOfSize(0);
+
+    await openCopyMenuAt(textActions, 160, 54);
+    await clickElementWithJavaScript(await appPane.$('[role="menuitem"]'));
     await waitForUiTestTitleFragment("copied=app.log");
+    await expect(await appPane.$$('[role="status"]')).toBeElementsArrayOfSize(0);
+    await expect(await appPane.$$('//*[normalize-space()="Copied"]')).toBeElementsArrayOfSize(0);
   });
 });
+
+interface CopyMenuPlacement {
+  readonly pointerX: number;
+  readonly pointerY: number;
+  readonly groupRight: number;
+  readonly groupBottom: number;
+  readonly actionLeft: number;
+  readonly actionTop: number;
+  readonly actionRight: number;
+  readonly actionBottom: number;
+}
+
+async function openCopyMenuAt(
+  textActions: WebdriverIO.Element,
+  offsetX: number,
+  offsetY: number,
+): Promise<CopyMenuPlacement> {
+  await textActions.waitForExist();
+
+  return browser.execute((target: HTMLElement, requestedOffsetX: number, requestedOffsetY: number) => {
+    const groupRect = target.getBoundingClientRect();
+    const pointerX = Math.min(groupRect.right - 1, groupRect.left + requestedOffsetX);
+    const pointerY = Math.min(groupRect.bottom - 1, groupRect.top + requestedOffsetY);
+
+    target.dispatchEvent(new MouseEvent("contextmenu", {
+      bubbles: true,
+      button: 2,
+      cancelable: true,
+      clientX: pointerX,
+      clientY: pointerY,
+    }));
+
+    const action = target.querySelector<HTMLElement>('[role="menuitem"]');
+
+    if (!action) {
+      throw new Error("Copy action did not open.");
+    }
+
+    const actionRect = action.getBoundingClientRect();
+
+    return {
+      pointerX,
+      pointerY,
+      groupRight: groupRect.right,
+      groupBottom: groupRect.bottom,
+      actionLeft: actionRect.left,
+      actionTop: actionRect.top,
+      actionRight: actionRect.right,
+      actionBottom: actionRect.bottom,
+    };
+  }, textActions, offsetX, offsetY);
+}
+
+async function dismissCopyMenu(textActions: WebdriverIO.Element): Promise<void> {
+  await browser.execute((target: HTMLElement) => {
+    const rect = target.getBoundingClientRect();
+
+    target.dispatchEvent(new PointerEvent("pointerdown", {
+      bubbles: true,
+      button: 0,
+      clientX: rect.left + 8,
+      clientY: rect.top + 8,
+    }));
+  }, textActions);
+}

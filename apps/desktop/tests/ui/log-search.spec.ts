@@ -33,15 +33,28 @@ describe("Desktop log search", () => {
 
     await setPaneSearchQuery(appSearch, "line 180 token=outside-viewport");
     await expect(await appSearch.$(byTestId(redesignedShellTestIds.paneSearchMatchCount))).toHaveText("1 of 1");
-    await expect(await appPane.$('[data-search-match="true"][data-line-number="181"]')).toBeExisting();
+    const outsideViewportLine = await appPane.$('[data-line-number="181"]');
+    await expect(outsideViewportLine).toBeExisting();
+    expect(await outsideViewportLine.getAttribute("data-search-match")).toBeNull();
+    await expect(await outsideViewportLine.$('[data-search-highlight="true"]')).toHaveText(
+      "line 180 token=outside-viewport",
+    );
     await expect(await servicePane.$$(byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(0);
 
+    await pressEscapeInElement(await appSearch.$(byTestId(redesignedShellTestIds.paneSearchField)));
+    await expect(await appPane.$$(byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(0);
+    expect(await isFocused(appSearchTrigger)).toBe(true);
+    await expect(await appPane.$$('[data-search-highlight="true"]')).toHaveLength(0);
+
+    await clickElementWithJavaScript(appSearchTrigger);
+    await expect(appSearch).toBeExisting();
     await clickElementWithJavaScript(await appSearch.$(byTestId(redesignedShellTestIds.paneSearchRegex)));
     await setPaneSearchQuery(appSearch, "[broken");
     await expect(await appSearch.$('[role="alert"]')).toHaveText(expect.stringContaining("Invalid regular expression"));
     await pressEscapeInElement(await appSearch.$(byTestId(redesignedShellTestIds.paneSearchField)));
     await expect(await appPane.$$(byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(0);
     expect(await isFocused(appSearchTrigger)).toBe(true);
+    await expect(await appPane.$$('[data-search-highlight="true"]')).toHaveLength(0);
 
     await activatePane(servicePane);
     await expect(await $(byTestId(redesignedShellTestIds.activityRailSearch))).toBeDisabled();

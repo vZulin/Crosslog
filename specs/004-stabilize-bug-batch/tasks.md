@@ -131,28 +131,28 @@
 
 ### Tests for User Story 3 (MANDATORY)
 
-- [ ] T061 [P] [US3] Extend pane search popover tests for close cleanup, focus return, and search icon geometry in `packages/ui/tests/search/pane-search-popover.test.tsx`.
-- [ ] T062 [P] [US3] Add search highlight visibility state tests in `packages/ui/tests/search/search-state.test.tsx`.
-- [ ] T063 [P] [US3] Add inline search span rendering tests in `packages/ui/tests/log-pane/virtual-log-viewport.test.tsx`.
-- [ ] T064 [P] [US3] Update copy-selection positioning, lifecycle, and no-copied-text tests in `packages/ui/tests/log-pane/log-text-copy.test.tsx`.
-- [ ] T065 [P] [US3] Update Web search highlight, cleanup, and entry-point coverage in `apps/web/tests/ui/log-search.spec.ts`.
-- [ ] T066 [P] [US3] Update Web copy popover position, lifecycle, viewport-boundary, and no-copied-text coverage in `apps/web/tests/ui/log-text-copy.spec.ts`.
-- [ ] T067 [P] [US3] Update Desktop WDIO search highlight and cleanup coverage in `apps/desktop/tests/ui/log-search.spec.ts`.
-- [ ] T068 [P] [US3] Update Desktop WDIO copy popover position, lifecycle, and no-copied-text coverage in `apps/desktop/tests/ui/log-text-copy.spec.ts`.
-- [ ] T069 [P] [US3] Update macOS pane search highlight and close-cleanup coverage in `apps/desktop/tests/ui/macos/PaneSearchUITests.swift`.
-- [ ] T070 [P] [US3] Update macOS copy-selection position, lifecycle, and no-copied-text coverage in `apps/desktop/tests/ui/macos/LogTextCopyUITests.swift`.
+- [X] T061 [P] [US3] Extend pane search popover tests for close cleanup, focus return, and search icon geometry in `packages/ui/tests/search/pane-search-popover.test.tsx`.
+- [X] T062 [P] [US3] Add search highlight visibility state tests in `packages/ui/tests/search/search-state.test.tsx`.
+- [X] T063 [P] [US3] Add inline search span rendering tests in `packages/ui/tests/log-pane/virtual-log-viewport.test.tsx`.
+- [X] T064 [P] [US3] Update copy-selection positioning, lifecycle, and no-copied-text tests in `packages/ui/tests/log-pane/log-text-copy.test.tsx`.
+- [X] T065 [P] [US3] Update Web search highlight, cleanup, and entry-point coverage in `apps/web/tests/ui/log-search.spec.ts`.
+- [X] T066 [P] [US3] Update Web copy popover position, lifecycle, viewport-boundary, and no-copied-text coverage in `apps/web/tests/ui/log-text-copy.spec.ts`.
+- [X] T067 [P] [US3] Update Desktop WDIO search highlight and cleanup coverage in `apps/desktop/tests/ui/log-search.spec.ts`.
+- [X] T068 [P] [US3] Update Desktop WDIO copy popover position, lifecycle, and no-copied-text coverage in `apps/desktop/tests/ui/log-text-copy.spec.ts`.
+- [X] T069 [P] [US3] Update macOS pane search highlight and close-cleanup coverage in `apps/desktop/tests/ui/macos/PaneSearchUITests.swift`.
+- [X] T070 [P] [US3] Update macOS copy-selection position, lifecycle, and no-copied-text coverage in `apps/desktop/tests/ui/macos/LogTextCopyUITests.swift`.
 
 ### Implementation for User Story 3
 
-- [ ] T071 [US3] Add explicit highlight visibility state and close semantics in `packages/ui/src/search/usePaneSearchStore.ts`.
-- [ ] T072 [US3] Clear visible highlights while preserving the last navigated match on popover close in `packages/ui/src/search/PaneSearchPopover.tsx`.
-- [ ] T073 [US3] Render only matched text ranges as inline highlight spans in `packages/ui/src/log-pane/VirtualLogViewport.tsx`.
-- [ ] T074 [US3] Correct pane search button hover and focus geometry in `packages/ui/src/log-pane/PaneHeader.tsx`.
-- [ ] T075 [US3] Position the copy-selection action from the context-menu pointer with viewport collision handling in `packages/ui/src/log-pane/LogTextSelection.tsx`.
-- [ ] T076 [US3] Implement copy-selection left-click dismissal and valid right-click relocation in `packages/ui/src/log-pane/LogTextSelection.tsx`.
-- [ ] T077 [US3] Remove product-visible copied toast, banner, label, or status text from `packages/ui/src/app-shell/AppShell.tsx`.
-- [ ] T078 [US3] Update search and copy popover styles for no-overlap and edge positioning in `packages/ui/src/app-shell/activity-rail-theme.css`.
-- [ ] T079 [US3] Run targeted US3 pane search, inline highlight, copy-selection, and popover lifecycle tests from `packages/ui/tests/search/`, `packages/ui/tests/log-pane/`, and UI/E2E suites.
+- [X] T071 [US3] Add explicit highlight visibility state and close semantics in `packages/ui/src/search/usePaneSearchStore.ts`.
+- [X] T072 [US3] Clear visible highlights while preserving the last navigated match on popover close in `packages/ui/src/search/PaneSearchPopover.tsx`.
+- [X] T073 [US3] Render only matched text ranges as inline highlight spans in `packages/ui/src/log-pane/VirtualLogViewport.tsx`.
+- [X] T074 [US3] Correct pane search button hover and focus geometry in `packages/ui/src/log-pane/PaneHeader.tsx`.
+- [X] T075 [US3] Position the copy-selection action from the context-menu pointer with viewport collision handling in `packages/ui/src/log-pane/LogTextSelection.tsx`.
+- [X] T076 [US3] Implement copy-selection left-click dismissal and valid right-click relocation in `packages/ui/src/log-pane/LogTextSelection.tsx`.
+- [X] T077 [US3] Remove product-visible copied toast, banner, label, or status text from `packages/ui/src/app-shell/AppShell.tsx`.
+- [X] T078 [US3] Update search and copy popover styles for no-overlap and edge positioning in `packages/ui/src/app-shell/activity-rail-theme.css`.
+- [X] T079 [US3] Run targeted US3 pane search, inline highlight, copy-selection, and popover lifecycle tests from `packages/ui/tests/search/`, `packages/ui/tests/log-pane/`, and UI/E2E suites.
 
 **Checkpoint**: Bugs 5, 6, 7, 8, 9, and 21 are covered and independently testable.
 

@@ -3,6 +3,7 @@ import { fireEvent, render, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { SearchState } from "@crosslog/core";
 import { PaneSearchPopover } from "../../src/search/PaneSearchPopover";
+import { PaneHeader } from "../../src/log-pane/PaneHeader";
 import { redesignedShellTestIds } from "../../src/app-shell/testIds";
 
 describe("redesigned pane search popover", () => {
@@ -105,6 +106,26 @@ describe("redesigned pane search popover", () => {
     expect(getByTestId(redesignedShellTestIds.paneSearchMatchCount).textContent).toBe("0 of 0");
     expect(getByTestId(redesignedShellTestIds.paneSearchPrevious).hasAttribute("disabled")).toBe(true);
     expect(getByTestId(redesignedShellTestIds.paneSearchNext).hasAttribute("disabled")).toBe(true);
+  });
+
+  it("keeps the pane search icon hit target aligned with the compact header control", () => {
+    const { getByTestId } = render(
+      <PaneHeader
+        paneId="pane-app"
+        title="app.log"
+        active
+        searchOpen
+        timeOffset={{ days: 0, hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }}
+        onClose={vi.fn()}
+        onOpenSearch={vi.fn()}
+      />,
+    );
+    const searchButton = getByTestId(redesignedShellTestIds.paneHeaderSearch);
+
+    expect(searchButton.classList.contains("crosslog-pane-header__find-button")).toBe(true);
+    expect(searchButton.getAttribute("aria-expanded")).toBe("true");
+    expect(searchButton.getAttribute("aria-haspopup")).toBe("dialog");
+    expect(searchButton.textContent?.trim()).toBe("");
   });
 });
 

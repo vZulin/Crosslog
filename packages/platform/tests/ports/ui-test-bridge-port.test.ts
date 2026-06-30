@@ -43,6 +43,12 @@ describe("UI test bridge shell state contract", () => {
     expect(formatUiTestShellState(state)).toContain("maxGutterDigits=3");
     expect(formatUiTestShellState(state)).toContain("lastNavigation=keyboard");
     expect(formatUiTestShellState(state)).toContain("syncTargetLine=2");
+    expect(formatUiTestShellState(state)).toContain("searchHighlights=visible");
+    expect(formatUiTestShellState(state)).toContain("searchHighlightCount=2");
+    expect(formatUiTestShellState(state)).toContain("copyAction=visible");
+    expect(formatUiTestShellState(state)).toContain("copyActionAnchored=on");
+    expect(formatUiTestShellState(state)).toContain("copyActionBounded=on");
+    expect(formatUiTestShellState(state)).toContain("copiedText=absent");
     expect(formatUiTestShellState(state)).toContain("sourceOpening=opened");
     expect(formatUiTestShellState(state)).toContain("sourceEntry=empty-workspace");
     expect(formatUiTestShellState(state)).toContain("futureFiles=disabled");
@@ -93,7 +99,11 @@ describe("UI test bridge shell state contract", () => {
       "keyboardNavigateActivePaneDown",
       "wheelNavigateActivePaneDown",
       "openActivePaneSearch",
+      "setActivePaneSearchQuery",
       "setActivePaneInvalidSearch",
+      "closeActivePaneSearch",
+      "showFirstPaneCopyMenu",
+      "dismissCopyMenu",
       "openEmptyDirectory",
       "navigatePreviousDirectoryFile",
       "navigateNextDirectoryFile",
@@ -105,6 +115,7 @@ describe("UI test bridge shell state contract", () => {
       "replaceActiveFile",
     ]);
     expect(isUiTestAction("appendActiveFile")).toBe(true);
+    expect(isUiTestAction("showFirstPaneCopyMenu")).toBe(true);
     expect(isUiTestAction("openEmptyDirectory")).toBe(true);
     expect(isUiTestAction("showProductLifecycleToolbar")).toBe(false);
   });
@@ -145,6 +156,16 @@ function createShellState(overrides: {
       maxGutterDigitCount: 3,
       lastNavigation: "keyboard",
       syncTargetLineNumber: 2,
+    },
+    searchHighlights: {
+      visible: true,
+      count: 2,
+    },
+    copyAction: {
+      visible: true,
+      pointerAnchored: true,
+      viewportBounded: true,
+      copiedProductTextVisible: false,
     },
     sourceOpening: {
       status: "opened",

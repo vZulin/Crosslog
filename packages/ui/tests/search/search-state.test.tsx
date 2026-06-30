@@ -39,4 +39,24 @@ describe("pane search state", () => {
 
     expect(usePaneSearchStore.getState().getPaneSearchState("pane-a").currentMatchIndex).toBe(0);
   });
+
+  it("tracks visible highlights separately from the current navigated match", () => {
+    act(() => {
+      usePaneSearchStore.getState().reset();
+      usePaneSearchStore.getState().setPaneLines("pane-a", ["error", "ok", "error"]);
+      usePaneSearchStore.getState().setQuery("pane-a", "error");
+      usePaneSearchStore.getState().selectNextMatch("pane-a");
+      usePaneSearchStore.getState().hideHighlights("pane-a");
+    });
+
+    expect(usePaneSearchStore.getState().getPaneSearchHighlightsVisible("pane-a")).toBe(false);
+    expect(usePaneSearchStore.getState().getPaneSearchState("pane-a").currentMatchIndex).toBe(1);
+
+    act(() => {
+      usePaneSearchStore.getState().selectPreviousMatch("pane-a");
+    });
+
+    expect(usePaneSearchStore.getState().getPaneSearchHighlightsVisible("pane-a")).toBe(true);
+    expect(usePaneSearchStore.getState().getPaneSearchState("pane-a").currentMatchIndex).toBe(0);
+  });
 });

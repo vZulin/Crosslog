@@ -3,7 +3,9 @@ import type {
   CrosslogPlatform,
   UiTestFutureControlState,
   UiTestObsoleteControlVisibility,
+  UiTestCopyActionEvidence,
   UiTestPaneNavigationEvidence,
+  UiTestSearchHighlightEvidence,
   UiTestSourceKind,
   UiTestSourceOpeningEntryPoint,
   UiTestSourceOpeningEvidence,
@@ -80,6 +82,7 @@ export function AppShell({
   const [sourceOpeningEvidence, setSourceOpeningEvidence] = React.useState<UiTestSourceOpeningEvidence>(
     initialSourceOpeningEvidence,
   );
+  const [uiTestCopyActionPublishSequence, setUiTestCopyActionPublishSequence] = React.useState(0);
   const [openSearchPaneId, setOpenSearchPaneId] = React.useState<string | null>(null);
   const [openTimeOffsetPaneId, setOpenTimeOffsetPaneId] = React.useState<string | null>(null);
   const [searchFocusRequestSequence, setSearchFocusRequestSequence] = React.useState(0);
@@ -104,12 +107,15 @@ export function AppShell({
   const setPlanResult = useSynchronizationStore((store) => store.setPlanResult);
   const restoreSynchronizationSessionState = useSynchronizationStore((store) => store.restoreSessionState);
   const searchStates = usePaneSearchStore((store) => store.states);
+  const searchHighlightVisibility = usePaneSearchStore((store) => store.highlightVisibility);
   const setPaneSearchLines = usePaneSearchStore((store) => store.setPaneLines);
   const setSearchQuery = usePaneSearchStore((store) => store.setQuery);
   const setSearchMode = usePaneSearchStore((store) => store.setMode);
   const setSearchCaseSensitive = usePaneSearchStore((store) => store.setCaseSensitive);
   const selectPreviousSearchMatch = usePaneSearchStore((store) => store.selectPreviousMatch);
   const selectNextSearchMatch = usePaneSearchStore((store) => store.selectNextMatch);
+  const showSearchHighlights = usePaneSearchStore((store) => store.showHighlights);
+  const hideSearchHighlights = usePaneSearchStore((store) => store.hideHighlights);
   const publishFileLifecycleEvent = useFileLifecycleEvents(setFileSources);
   const restoreState = useSessionRestore(platform.sessionStore, {
     onSessionRestored: (session) => {
@@ -200,6 +206,7 @@ export function AppShell({
       ...entry.pane,
       searchState: searchStates[entry.pane.id] ?? emptySearchState,
     },
+    searchHighlightsVisible: searchHighlightVisibility[entry.pane.id] ?? false,
   }));
   const unsupportedPaneCount = excludedPaneIds.length;
   const activePane = state.panes.find((pane) => pane.id === state.activePaneId) ?? null;
@@ -286,6 +293,8 @@ export function AppShell({
       workspaceLayout: getPublishedWorkspaceLayoutMeasurements(),
       paneNavigation: getPublishedPaneNavigationEvidence(panes.map((entry) => entry.pane.title)),
       sourceOpening: sourceOpeningEvidence,
+      searchHighlights: getPublishedSearchHighlightEvidence(),
+      copyAction: getPublishedCopyActionEvidence(),
       futureControls: publishedFutureControlState,
     });
   }, [
@@ -306,8 +315,10 @@ export function AppShell({
     publishedFileLifecycleSummary,
     sessionSnapshotStatus,
     sourceOpeningEvidence,
+    searchHighlightVisibility,
     synchronizationEnabled,
     timeOffsetPopoverStatus,
+    uiTestCopyActionPublishSequence,
     uiTestCopiedPaneTitle,
     uiTestEnabled,
   ]);
@@ -352,26 +363,29 @@ export function AppShell({
   }, [setPlanResult, setSynchronizationEnabled]);
 
   const handleSearchOpenChange = React.useCallback((paneId: string, open: boolean) => {
-    setOpenSearchPaneId((currentPaneId) => {
-      if (open) {
-        setOpenTimeOffsetPaneId(null);
-        return paneId;
-      }
+    if (open) {
+      setOpenTimeOffsetPaneId(null);
+      showSearchHighlights(paneId);
+      setOpenSearchPaneId(paneId);
+      return;
+    }
 
-      return currentPaneId === paneId ? null : currentPaneId;
-    });
-  }, []);
+    hideSearchHighlights(paneId);
+    setOpenSearchPaneId((currentPaneId) => (currentPaneId === paneId ? null : currentPaneId));
+  }, [hideSearchHighlights, showSearchHighlights]);
 
   const handleTimeOffsetOpenChange = React.useCallback((paneId: string, open: boolean) => {
-    setOpenTimeOffsetPaneId((currentPaneId) => {
-      if (open) {
-        setOpenSearchPaneId(null);
-        return paneId;
+    if (open) {
+      if (openSearchPaneId) {
+        hideSearchHighlights(openSearchPaneId);
       }
+      setOpenSearchPaneId(null);
+      setOpenTimeOffsetPaneId(paneId);
+      return;
+    }
 
-      return currentPaneId === paneId ? null : currentPaneId;
-    });
-  }, []);
+    setOpenTimeOffsetPaneId((currentPaneId) => (currentPaneId === paneId ? null : currentPaneId));
+  }, [hideSearchHighlights, openSearchPaneId]);
 
   const requestActivePaneSearch = React.useCallback(() => {
     const paneId = state.activePaneId ?? state.panes[0]?.id ?? null;
@@ -382,8 +396,9 @@ export function AppShell({
 
     setOpenSearchPaneId(paneId);
     setOpenTimeOffsetPaneId(null);
+    showSearchHighlights(paneId);
     setSearchFocusRequestSequence((current) => current + 1);
-  }, [state.activePaneId, state.panes]);
+  }, [showSearchHighlights, state.activePaneId, state.panes]);
 
   const requestActivePaneTimeOffset = React.useCallback(() => {
     const paneId = state.activePaneId ?? state.panes[0]?.id ?? null;
@@ -392,9 +407,12 @@ export function AppShell({
       return;
     }
 
+    if (openSearchPaneId) {
+      hideSearchHighlights(openSearchPaneId);
+    }
     setOpenSearchPaneId(null);
     setOpenTimeOffsetPaneId(paneId);
-  }, [state.activePaneId, state.panes]);
+  }, [hideSearchHighlights, openSearchPaneId, state.activePaneId, state.panes]);
 
   const getFileLifecycleTarget = React.useCallback(() => {
     if (activeFileSource && activePane) {
@@ -499,6 +517,18 @@ export function AppShell({
         case "openActivePaneSearch":
           requestActivePaneSearch();
           break;
+        case "setActivePaneSearchQuery": {
+          const paneId = state.activePaneId ?? state.panes[0]?.id ?? null;
+
+          if (paneId) {
+            setOpenSearchPaneId(paneId);
+            setOpenTimeOffsetPaneId(null);
+            showSearchHighlights(paneId);
+            setSearchMode(paneId, "text");
+            setSearchQuery(paneId, "line 180 token=outside-viewport");
+          }
+          break;
+        }
         case "setActivePaneInvalidSearch": {
           const paneId = state.activePaneId ?? state.panes[0]?.id ?? null;
 
@@ -511,6 +541,20 @@ export function AppShell({
           }
           break;
         }
+        case "closeActivePaneSearch":
+          if (openSearchPaneId) {
+            hideSearchHighlights(openSearchPaneId);
+          }
+          setOpenSearchPaneId(null);
+          break;
+        case "showFirstPaneCopyMenu":
+          dispatchCopyMenuEventToFirstPane("contextmenu");
+          setUiTestCopyActionPublishSequence((current) => current + 1);
+          break;
+        case "dismissCopyMenu":
+          dispatchCopyMenuEventToFirstPane("dismiss");
+          setUiTestCopyActionPublishSequence((current) => current + 1);
+          break;
         case "openEmptyDirectory":
           dispatchDirectorySource({ type: "refreshFiles", files: [] });
           dispatch({
@@ -569,11 +613,14 @@ export function AppShell({
       firstPaneEntry,
       handleFileLifecycleTestAction,
       handleSynchronizationEnabledChange,
+      hideSearchHighlights,
+      openSearchPaneId,
       requestActivePaneSearch,
       requestActivePaneTimeOffset,
       setPaneOffset,
       setSearchMode,
       setSearchQuery,
+      showSearchHighlights,
       state.activePaneId,
       state.panes,
       synchronizationEnabled,
@@ -993,6 +1040,34 @@ function getPublishedPaneNavigationEvidence(paneOrder: readonly string[]): UiTes
   };
 }
 
+function getPublishedSearchHighlightEvidence(): UiTestSearchHighlightEvidence {
+  if (typeof document === "undefined") {
+    return emptySearchHighlightEvidence;
+  }
+
+  const highlights = getVisibleElements('[data-search-highlight="true"]');
+
+  return {
+    visible: highlights.length > 0,
+    count: highlights.length,
+  };
+}
+
+function getPublishedCopyActionEvidence(): UiTestCopyActionEvidence {
+  if (typeof document === "undefined") {
+    return emptyCopyActionEvidence;
+  }
+
+  const action = getVisibleElements(".crosslog-log-text-selection__menuitem")[0] ?? null;
+
+  return {
+    visible: action !== null,
+    pointerAnchored: action ? parseBooleanDataAttribute(action.dataset.pointerAnchored) : null,
+    viewportBounded: action ? parseBooleanDataAttribute(action.dataset.viewportBounded) : null,
+    copiedProductTextVisible: hasVisibleExactText("Copied"),
+  };
+}
+
 const emptyWorkspaceLayoutMeasurements: UiTestWorkspaceLayoutMeasurements = {
   workspaceWidthPx: null,
   workspaceContentWidthPx: null,
@@ -1009,6 +1084,18 @@ const emptyPaneNavigationEvidence: UiTestPaneNavigationEvidence = {
   maxGutterDigitCount: null,
   lastNavigation: "none",
   syncTargetLineNumber: null,
+};
+
+const emptySearchHighlightEvidence: UiTestSearchHighlightEvidence = {
+  visible: false,
+  count: 0,
+};
+
+const emptyCopyActionEvidence: UiTestCopyActionEvidence = {
+  visible: false,
+  pointerAnchored: null,
+  viewportBounded: null,
+  copiedProductTextVisible: false,
 };
 
 function dispatchNavigationEventToActiveViewport(mode: "keyboard" | "wheel"): void {
@@ -1033,6 +1120,39 @@ function dispatchNavigationEventToActiveViewport(mode: "keyboard" | "wheel"): vo
     bubbles: true,
     cancelable: true,
     deltaY: 120,
+  }));
+}
+
+function dispatchCopyMenuEventToFirstPane(mode: "contextmenu" | "dismiss"): void {
+  if (typeof document === "undefined") {
+    return;
+  }
+
+  const firstPane = queryAllTestElements(redesignedShellTestIds.logPane)[0] ?? null;
+  const textActions = firstPane?.querySelector<HTMLElement>(".crosslog-log-text-selection") ?? null;
+
+  if (!textActions) {
+    return;
+  }
+
+  const rect = textActions.getBoundingClientRect();
+
+  if (mode === "dismiss") {
+    textActions.dispatchEvent(new PointerEvent("pointerdown", {
+      bubbles: true,
+      button: 0,
+      clientX: rect.left + 8,
+      clientY: rect.top + 8,
+    }));
+    return;
+  }
+
+  textActions.dispatchEvent(new MouseEvent("contextmenu", {
+    bubbles: true,
+    button: 2,
+    cancelable: true,
+    clientX: Math.min(rect.right - 1, rect.left + 160),
+    clientY: Math.min(rect.bottom - 1, rect.top + 54),
   }));
 }
 
@@ -1084,6 +1204,10 @@ function hasVisibleText(text: string): boolean {
   return getVisibleElements("body *").some((element) => normalizeText(element.textContent).includes(text));
 }
 
+function hasVisibleExactText(text: string): boolean {
+  return getVisibleElements("body *").some((element) => normalizeText(element.textContent) === text);
+}
+
 function hasVisibleAriaLabel(label: string): boolean {
   return getVisibleElements("[aria-label]").some((element) => element.getAttribute("aria-label") === label);
 }
@@ -1130,6 +1254,18 @@ function parseNullableInteger(value: string | undefined): number | null {
   const parsedValue = Number.parseInt(value, 10);
 
   return Number.isFinite(parsedValue) ? parsedValue : null;
+}
+
+function parseBooleanDataAttribute(value: string | undefined): boolean | null {
+  if (value === "true") {
+    return true;
+  }
+
+  if (value === "false") {
+    return false;
+  }
+
+  return null;
 }
 
 function parseLastNavigation(value: string | undefined): UiTestPaneNavigationEvidence["lastNavigation"] {

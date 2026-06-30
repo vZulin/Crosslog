@@ -33,6 +33,7 @@ export interface LogPaneProps {
   readonly onPreviousSearchMatch?: (paneId: string) => void;
   readonly onNextSearchMatch?: (paneId: string) => void;
   readonly searchOpen?: boolean;
+  readonly searchHighlightsVisible?: boolean;
   readonly timeOffsetOpen?: boolean;
   readonly searchFocusRequestSequence?: number;
   readonly onSearchOpenChange?: (paneId: string, open: boolean) => void;
@@ -64,6 +65,7 @@ export function LogPane({
   onPreviousSearchMatch,
   onNextSearchMatch,
   searchOpen = false,
+  searchHighlightsVisible = false,
   timeOffsetOpen = false,
   searchFocusRequestSequence = 0,
   onSearchOpenChange,
@@ -165,7 +167,8 @@ export function LogPane({
             lines={lines}
             timestamps={timestamps}
             searchMatches={pane.searchState.matches}
-            activeSearchMatchLineNumber={activeSearchMatch?.lineNumber ?? null}
+            searchHighlightsVisible={searchHighlightsVisible}
+            activeSearchMatchLineNumber={searchHighlightsVisible ? activeSearchMatch?.lineNumber ?? null : null}
             maxVisibleLines={400}
             synchronizationTargetLineNumber={synchronizationTargetLineNumber}
             onTimeAnchorChange={(lineNumber, timestamp) => onTimeAnchorChange?.(pane.id, lineNumber, timestamp)}

@@ -9,7 +9,11 @@ enum CrosslogUITestAction: String {
     case keyboardNavigateActivePaneDown
     case wheelNavigateActivePaneDown
     case openActivePaneSearch
+    case setActivePaneSearchQuery
     case setActivePaneInvalidSearch
+    case closeActivePaneSearch
+    case showFirstPaneCopyMenu
+    case dismissCopyMenu
     case navigatePreviousDirectoryFile
     case navigateNextDirectoryFile
     case discoverNewerDirectoryFile

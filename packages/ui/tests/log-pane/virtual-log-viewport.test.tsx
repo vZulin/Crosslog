@@ -73,6 +73,42 @@ describe("virtual log viewport", () => {
     expect(scroller.scrollLeft).toBe(40);
     expect(onTimeAnchorChange).toHaveBeenLastCalledWith(2, timestamps[1]);
   });
+
+  it("renders search matches as inline text spans instead of row highlights", () => {
+    const { container } = render(
+      <VirtualLogViewport
+        title="app.log"
+        lines={["2026-06-16T09:00:00.000Z ERROR failed hard"]}
+        maxVisibleLines={5}
+        searchHighlightsVisible
+        searchMatches={[{ lineNumber: 1, range: { start: 25, end: 30 } }]}
+        activeSearchMatchLineNumber={1}
+      />,
+    );
+    const row = container.querySelector('[data-line-number="1"]');
+    const highlight = row?.querySelector('[data-search-highlight="true"]');
+
+    expect(row?.hasAttribute("data-search-match")).toBe(false);
+    expect(highlight?.textContent).toBe("ERROR");
+    expect(highlight?.getAttribute("data-active-search-highlight")).toBe("true");
+  });
+
+  it("hides search highlight spans while keeping inert line text rendered", () => {
+    const { container } = render(
+      <VirtualLogViewport
+        title="app.log"
+        lines={["2026-06-16T09:00:00.000Z ERROR failed hard"]}
+        maxVisibleLines={5}
+        searchHighlightsVisible={false}
+        searchMatches={[{ lineNumber: 1, range: { start: 25, end: 30 } }]}
+        activeSearchMatchLineNumber={1}
+      />,
+    );
+    const row = container.querySelector('[data-line-number="1"]');
+
+    expect(row?.querySelector('[data-search-highlight="true"]')).toBeNull();
+    expect(row?.textContent).toContain("ERROR failed hard");
+  });
 });
 
 function createNumberedLines(count: number): readonly string[] {

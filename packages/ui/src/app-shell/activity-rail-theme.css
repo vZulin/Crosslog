@@ -713,13 +713,15 @@ body {
 .crosslog-pane-header__find-button.crosslog-icon-button {
   inline-size: 15px;
   block-size: 15px;
+  box-sizing: border-box;
   border-radius: 4px;
   color: var(--crosslog-muted-text);
+  padding: 0;
 }
 
 .crosslog-pane-header__find-button svg {
-  inline-size: 15px;
-  block-size: 15px;
+  inline-size: 11px;
+  block-size: 11px;
 }
 
 .crosslog-pane-header__close {
@@ -819,9 +821,10 @@ body {
 
 .crosslog-log-text-selection__menuitem {
   position: absolute;
-  inset-block-start: 8px;
-  inset-inline-start: 8px;
+  inset-block-start: auto;
+  inset-inline-start: auto;
   z-index: 6;
+  inline-size: 156px;
   min-block-size: 27px;
   border: 1px solid var(--crosslog-border);
   border-radius: var(--crosslog-control-radius);
@@ -838,15 +841,6 @@ body {
 .crosslog-log-text-selection__menuitem:hover {
   background: var(--crosslog-accent-surface);
   color: var(--crosslog-accent);
-}
-
-.crosslog-log-text-selection [role="status"] {
-  position: absolute;
-  inset-block-start: 8px;
-  inset-inline-end: 8px;
-  z-index: 6;
-  color: var(--crosslog-muted-text);
-  font-size: 12px;
 }
 
 .crosslog-pane-search-popover {
@@ -1108,10 +1102,6 @@ body {
   color: var(--crosslog-text);
 }
 
-.crosslog-log-viewport__row[data-search-match="true"] {
-  background: var(--crosslog-warn-bg);
-}
-
 .crosslog-log-viewport__row[data-active-search-match="true"],
 .crosslog-log-viewport__row[data-selected-line="true"],
 .crosslog-log-viewport__row[data-sync-target="true"] {
@@ -1147,6 +1137,18 @@ body {
   min-width: 0;
   color: inherit;
   white-space: pre;
+}
+
+.crosslog-log-viewport__search-highlight {
+  border-radius: 2px;
+  background: var(--crosslog-warn-bg);
+  color: inherit;
+  padding: 0 1px;
+}
+
+.crosslog-log-viewport__search-highlight[data-active-search-highlight="true"] {
+  outline: 1px solid var(--crosslog-accent);
+  outline-offset: 1px;
 }
 
 .crosslog-pane-deleted-status {
