@@ -3,12 +3,13 @@ import { redesignedShellTestIds } from "@crosslog/ui";
 import {
   enqueueWebUiTestAction,
   gotoWithWebUiTestBridge,
+  openSampleLogsWithWebUiBridge,
   waitForWebUiTestTitleFragment,
 } from "./helpers/redesigned-shell";
 
 test("navigates directory files without auto-switching on refresh", async ({ page }) => {
   await gotoWithWebUiTestBridge(page);
-  await page.getByTestId(redesignedShellTestIds.emptyOpenSource).click();
+  await openSampleLogsWithWebUiBridge(page);
 
   await expect(page.getByTestId(redesignedShellTestIds.paneWorkspace)).toBeVisible();
   const directoryHeader = page.getByTestId(redesignedShellTestIds.paneHeader).filter({ hasText: "logs/2026" });

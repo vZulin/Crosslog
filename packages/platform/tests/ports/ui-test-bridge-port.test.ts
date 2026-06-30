@@ -38,6 +38,12 @@ describe("UI test bridge shell state contract", () => {
     expect(formatUiTestShellState(state)).toContain("workspaceWidth=1440");
     expect(formatUiTestShellState(state)).toContain("workspaceContentWidth=1680");
     expect(formatUiTestShellState(state)).toContain("rightEdgeGap=1");
+    expect(formatUiTestShellState(state)).toContain("sourceOpening=opened");
+    expect(formatUiTestShellState(state)).toContain("sourceEntry=empty-workspace");
+    expect(formatUiTestShellState(state)).toContain("futureFiles=disabled");
+    expect(formatUiTestShellState(state)).toContain("futureSearch=disabled");
+    expect(formatUiTestShellState(state)).toContain("futureCommand=disabled");
+    expect(formatUiTestShellState(state)).toContain("settings=enabled");
   });
 
   it("formats absent obsolete controls and unknown layout measurements", () => {
@@ -125,5 +131,20 @@ function createShellState(overrides: {
     fileLifecycleSummary: "none",
     obsoleteControlVisibility: overrides.obsoleteControlVisibility,
     workspaceLayout: overrides.workspaceLayout,
+    sourceOpening: {
+      status: "opened",
+      entryPoint: "empty-workspace",
+      selectedSourceKind: "file",
+      openedSourceCount: 1,
+      pickerRequestCount: 1,
+      cancelledPickerCount: 0,
+      fixtureSamplePaneCount: 0,
+    },
+    futureControls: {
+      activityRailOpenSources: "disabled",
+      activityRailSearch: "disabled",
+      topbarCommandField: "disabled",
+      activityRailSettings: "enabled",
+    },
   };
 }

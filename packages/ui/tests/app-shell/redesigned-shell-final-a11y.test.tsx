@@ -2,7 +2,8 @@ import { readFileSync } from "node:fs";
 import React, { act } from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { CrosslogPlatform } from "@crosslog/platform";
+import { appendRawLinesToChunks, type FileSource } from "@crosslog/core";
+import type { CrosslogPlatform, FileSourceRef } from "@crosslog/platform";
 import { AppShell } from "../../src/app-shell/AppShell";
 import { redesignedShellTestIds } from "../../src/app-shell/testIds";
 import { usePaneSearchStore } from "../../src/search/usePaneSearchStore";
@@ -30,6 +31,9 @@ describe("final redesigned shell accessibility and no-overlap contracts", () => 
       expect(getByRole("button", { name: "Add pane" })).toBeTruthy();
       expect(getByRole("button", { name: "Search logs" })).toBeTruthy();
       expect(getByRole("button", { name: "Open sources" })).toBeTruthy();
+      expect(getByRole("searchbox", { name: "Command or workspace search" }).hasAttribute("disabled")).toBe(true);
+      expect(getByRole("button", { name: "Search logs" }).hasAttribute("disabled")).toBe(true);
+      expect(getByRole("button", { name: "Open sources" }).hasAttribute("disabled")).toBe(true);
       expect(getByRole("button", { name: "Filters unavailable" }).hasAttribute("disabled")).toBe(true);
       expect(getByRole("button", { name: "Highlighting unavailable" }).hasAttribute("disabled")).toBe(true);
       expect(getByRole("button", { name: "Bookmarks unavailable" }).hasAttribute("disabled")).toBe(true);
@@ -46,7 +50,7 @@ describe("final redesigned shell accessibility and no-overlap contracts", () => 
       expect(getByRole("button", { name: "Search in app.log" })).toBeTruthy();
       expect(getByRole("button", { name: "Close pane app.log" })).toBeTruthy();
       expect(getByRole("button", { name: "Time offset for app.log: 0 ms" })).toBeTruthy();
-      expect(getByRole("status", { name: /3 panes, Sync on, active source app-2026-06-16\.log/ })).toBeTruthy();
+      expect(getByRole("status", { name: /3 panes, Sync on, active source worker\.log/ })).toBeTruthy();
 
       await act(async () => {
         fireEvent.click(getByRole("button", { name: "Search in app.log" }));
@@ -143,6 +147,8 @@ function setViewport(width: number, height: number): void {
 }
 
 function createMockPlatform(): CrosslogPlatform {
+  const selectedFiles = createSelectedFiles();
+
   return {
     kind: "web",
     capabilities: {
@@ -154,9 +160,9 @@ function createMockPlatform(): CrosslogPlatform {
       limitations: [],
     },
     fileAccess: {
-      openFileReadOnly: vi.fn(async () => ({
-        ok: false,
-        error: { code: "UnsupportedCapability", message: "File access is not used by this test." },
+      openFileReadOnly: vi.fn(async (sourceRef) => ({
+        ok: true,
+        source: createTestFileSource(sourceRef),
       })),
       decodeFile: vi.fn(async () => ""),
       getFileIdentity: vi.fn(async () => ""),
@@ -169,7 +175,7 @@ function createMockPlatform(): CrosslogPlatform {
       mapDroppedSources: vi.fn(async () => []),
     },
     sourcePicker: {
-      pickFiles: vi.fn(async () => []),
+      pickFiles: vi.fn(async () => selectedFiles),
       pickDirectory: vi.fn(async () => null),
     },
     sessionStore: {
@@ -177,6 +183,35 @@ function createMockPlatform(): CrosslogPlatform {
       writeSessionSnapshot: vi.fn(async () => undefined),
       recoverSession: vi.fn(async () => null),
     },
+  };
+}
+
+function createSelectedFiles(): readonly FileSourceRef[] {
+  return [
+    { id: "selected-app", name: "app.log" },
+    { id: "selected-service", name: "service.log" },
+    { id: "selected-worker", name: "worker.log" },
+  ];
+}
+
+function createTestFileSource(sourceRef: FileSourceRef): FileSource {
+  const lines = [
+    `2026-06-16T09:00:00.000Z ${sourceRef.name} boot sequence started`,
+    `2026-06-16T09:00:01.250Z ${sourceRef.name} connected to upstream service`,
+  ];
+
+  return {
+    id: sourceRef.id,
+    fileIdentity: { value: sourceRef.id, platform: "web" },
+    displayName: sourceRef.name,
+    pathLabel: sourceRef.name,
+    sizeBytes: lines.join("\n").length,
+    encoding: "utf-8",
+    lineChunks: appendRawLinesToChunks([], lines),
+    watchState: "unsupported",
+    deleted: false,
+    replaced: false,
+    readError: null,
   };
 }
 

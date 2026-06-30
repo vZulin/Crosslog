@@ -1,9 +1,13 @@
 import { expect, test, type Locator } from "@playwright/test";
 import { redesignedShellTestIds } from "@crosslog/ui";
+import {
+  gotoWithWebUiTestBridge,
+  openSampleLogsWithWebUiBridge,
+} from "./helpers/redesigned-shell";
 
 test("searches from the pane popover and isolates pane search state", async ({ page }) => {
-  await page.goto("/");
-  await page.getByTestId(redesignedShellTestIds.emptyOpenSource).click();
+  await gotoWithWebUiTestBridge(page);
+  await openSampleLogsWithWebUiBridge(page);
 
   const activityRail = page.getByTestId(redesignedShellTestIds.activityRail);
   const commandField = page.getByTestId(redesignedShellTestIds.commandField);
@@ -38,19 +42,12 @@ test("searches from the pane popover and isolates pane search state", async ({ p
   await expect(appSearch).toHaveCount(0);
   await expect(appSearchTrigger).toBeFocused();
 
+  await expect(activityRail.getByTestId(redesignedShellTestIds.activityRailSearch)).toBeDisabled();
   await servicePane.click();
-  await activityRail.getByTestId(redesignedShellTestIds.activityRailSearch).click();
-  await expect(servicePane.getByRole("dialog", { name: "Pane search for service.log" })).toBeVisible();
-  await expectCompactPopoverInsidePane(
-    servicePane,
-    servicePane.getByTestId(redesignedShellTestIds.paneSearchPopover),
-    90,
-  );
-  await expect(appPane.getByTestId(redesignedShellTestIds.paneSearchPopover)).toHaveCount(0);
+  await expect(servicePane.getByRole("dialog", { name: "Pane search for service.log" })).toHaveCount(0);
 
-  await appPane.click();
-  await commandField.focus();
-  await expect(appPane.getByRole("dialog", { name: "Pane search for app.log" })).toBeVisible();
+  await expect(commandField).toBeDisabled();
+  await expect(appPane.getByRole("dialog", { name: "Pane search for app.log" })).toHaveCount(0);
 
   await directoryPane.getByRole("button", { name: "Search in app-2026-06-16.log" }).click();
   const directorySearch = directoryPane.getByTestId(redesignedShellTestIds.paneSearchPopover);

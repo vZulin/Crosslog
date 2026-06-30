@@ -8,7 +8,7 @@ export class BrowserDragDropSource implements DragDropSourcePort {
     const sources: DragDropSource[] = [];
 
     for (const file of files) {
-      const relativePath = file.webkitRelativePath;
+      const relativePath = file.webkitRelativePath ?? "";
 
       if (relativePath.includes("/")) {
         const [directoryName, fileName] = relativePath.split("/");

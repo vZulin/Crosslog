@@ -1,10 +1,14 @@
 import { expect, test } from "@playwright/test";
 import { redesignedShellTestIds } from "@crosslog/ui";
-import { expectObsoleteControlsAbsent } from "./helpers/redesigned-shell";
+import {
+  expectObsoleteControlsAbsent,
+  gotoWithWebUiTestBridge,
+  openSampleLogsWithWebUiBridge,
+} from "./helpers/redesigned-shell";
 
 test("copies selected log text from a pane", async ({ page }) => {
-  await page.goto("/");
-  await page.getByTestId(redesignedShellTestIds.emptyOpenSource).click();
+  await gotoWithWebUiTestBridge(page);
+  await openSampleLogsWithWebUiBridge(page);
 
   const appPane = page.getByTestId(redesignedShellTestIds.logPane).filter({ hasText: "app.log" }).first();
 

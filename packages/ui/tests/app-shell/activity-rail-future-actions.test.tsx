@@ -11,21 +11,21 @@ import { ActivityRail } from "../../src/app-shell/ActivityRail";
 import { redesignedShellTestIds } from "../../src/app-shell/testIds";
 
 describe("activity rail future action guards", () => {
-  it("keeps MVP rail items executable", () => {
+  it("keeps Settings executable as the remaining MVP rail item for this phase", () => {
     const action = vi.fn();
-    const searchItem = getActivityRailItems().find((item) => item.id === "search");
+    const settingsItem = getActivityRailItems().find((item) => item.id === "settings");
 
-    expect(searchItem).toBeDefined();
-    expect(canExecuteActivityRailItem(searchItem!)).toBe(true);
-    expect(executeActivityRailAction(searchItem!, action)).toBe(true);
-    expect(action).toHaveBeenCalledWith(searchItem);
+    expect(settingsItem).toBeDefined();
+    expect(canExecuteActivityRailItem(settingsItem!)).toBe(true);
+    expect(executeActivityRailAction(settingsItem!, action)).toBe(true);
+    expect(action).toHaveBeenCalledWith(settingsItem);
   });
 
-  it("marks future rail items disabled and non-executable", () => {
+  it("marks future and unavailable rail items disabled and non-executable", () => {
     const action = vi.fn();
     const futureItems = getActivityRailItems().filter(isFutureActivityRailItem);
 
-    expect(futureItems.map((item) => item.id)).toEqual(["filter", "palette", "bookmark"]);
+    expect(futureItems.map((item) => item.id)).toEqual(["search", "filter", "palette", "files", "bookmark"]);
 
     for (const item of futureItems) {
       expect(item.state).toBe("disabled");
@@ -39,14 +39,15 @@ describe("activity rail future action guards", () => {
   it("can omit future controls where visible disabled controls would be misleading", () => {
     const items = getActivityRailItems({ includeFutureItems: false });
 
-    expect(items.map((item) => item.id)).toEqual(["search", "files", "settings"]);
+    expect(items.map((item) => item.id)).toEqual(["settings"]);
   });
 
-  it("renders the target rail order and keeps future controls unavailable", () => {
+  it("renders the target rail order and keeps unavailable controls inert", () => {
     const onOpenSources = vi.fn();
     const onSearch = vi.fn();
+    const onSettings = vi.fn();
     const { getAllByRole, getByTestId } = render(
-      <ActivityRail onOpenSources={onOpenSources} onSearch={onSearch} />,
+      <ActivityRail onOpenSources={onOpenSources} onSearch={onSearch} onSettings={onSettings} />,
     );
 
     expect(getAllByRole("button").map((button) => button.getAttribute("aria-label"))).toEqual([
@@ -57,6 +58,8 @@ describe("activity rail future action guards", () => {
       "Bookmarks unavailable",
       "Settings",
     ]);
+    expect(getByTestId(redesignedShellTestIds.activityRailSearch).hasAttribute("disabled")).toBe(true);
+    expect(getByTestId(redesignedShellTestIds.activityRailFiles).hasAttribute("disabled")).toBe(true);
     expect(getByTestId(redesignedShellTestIds.activityRailFilter).hasAttribute("disabled")).toBe(true);
     expect(getByTestId(redesignedShellTestIds.activityRailPalette).hasAttribute("disabled")).toBe(true);
     expect(getByTestId(redesignedShellTestIds.activityRailBookmark).hasAttribute("disabled")).toBe(true);
@@ -64,8 +67,10 @@ describe("activity rail future action guards", () => {
     fireEvent.click(getByTestId(redesignedShellTestIds.activityRailFiles));
     fireEvent.click(getByTestId(redesignedShellTestIds.activityRailSearch));
     fireEvent.click(getByTestId(redesignedShellTestIds.activityRailFilter));
+    fireEvent.click(getByTestId(redesignedShellTestIds.activityRailSettings));
 
-    expect(onOpenSources).toHaveBeenCalledTimes(1);
-    expect(onSearch).toHaveBeenCalledTimes(1);
+    expect(onOpenSources).not.toHaveBeenCalled();
+    expect(onSearch).not.toHaveBeenCalled();
+    expect(onSettings).toHaveBeenCalledTimes(1);
   });
 });

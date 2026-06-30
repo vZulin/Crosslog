@@ -1,7 +1,8 @@
 import React from "react";
 import { fireEvent, render, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { CrosslogPlatform } from "@crosslog/platform";
+import { appendRawLinesToChunks, type FileSource } from "@crosslog/core";
+import type { CrosslogPlatform, FileSourceRef } from "@crosslog/platform";
 import { AppShell } from "../../src/app-shell/AppShell";
 import { redesignedShellTestIds } from "../../src/app-shell/testIds";
 import { usePaneSearchStore } from "../../src/search/usePaneSearchStore";
@@ -13,22 +14,26 @@ describe("redesigned search entry points", () => {
     useSynchronizationStore.getState().reset();
   });
 
-  it("opens pane search from the pane header, activity rail, and command field", async () => {
-    const { getAllByTestId, getByRole, getByTestId } = render(<AppShell platform={createMockPlatform()} />);
+  it("keeps pane-local search in pane headers and leaves global search entry points disabled", async () => {
+    const { getAllByTestId, getByRole, getByTestId } = render(
+      <AppShell
+        platform={createMockPlatform({
+          selectedFiles: [{ id: "selected-app", name: "selected-app.log" }],
+        })}
+      />,
+    );
 
     fireEvent.click(getByRole("button", { name: "Open Source" }));
-    await waitFor(() => expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(3));
+    await waitFor(() => expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(1));
 
     const panes = getAllByTestId(redesignedShellTestIds.logPane);
     const appPane = panes[0]!;
-    const servicePane = panes[1]!;
-    const directoryPane = panes[2]!;
 
-    const appPaneSearchButton = within(appPane).getByRole("button", { name: "Search in app.log" });
+    const appPaneSearchButton = within(appPane).getByRole("button", { name: "Search in selected-app.log" });
 
     fireEvent.click(appPaneSearchButton);
     await waitFor(() =>
-      expect(within(appPane).getByRole("dialog", { name: "Pane search for app.log" })).toBeTruthy(),
+      expect(within(appPane).getByRole("dialog", { name: "Pane search for selected-app.log" })).toBeTruthy(),
     );
     fireEvent.keyDown(within(appPane).getByTestId(redesignedShellTestIds.paneSearchField), {
       key: "Escape",
@@ -36,26 +41,24 @@ describe("redesigned search entry points", () => {
     await waitFor(() => expect(within(appPane).queryByTestId(redesignedShellTestIds.paneSearchPopover)).toBeNull());
     expect(document.activeElement).toBe(appPaneSearchButton);
 
-    fireEvent.click(servicePane);
-    fireEvent.click(getByTestId(redesignedShellTestIds.activityRailSearch));
-    await waitFor(() =>
-      expect(within(servicePane).getByRole("dialog", { name: "Pane search for service.log" })).toBeTruthy(),
-    );
+    const railSearch = getByTestId(redesignedShellTestIds.activityRailSearch);
+    expect(railSearch.hasAttribute("disabled")).toBe(true);
+    fireEvent.click(railSearch);
     expect(within(appPane).queryByTestId(redesignedShellTestIds.paneSearchPopover)).toBeNull();
 
-    fireEvent.click(directoryPane);
-    fireEvent.focus(getByTestId(redesignedShellTestIds.commandField));
-    await waitFor(() =>
-      expect(
-        within(directoryPane).getByRole("dialog", {
-          name: "Pane search for app-2026-06-16.log",
-        }),
-      ).toBeTruthy(),
-    );
+    const commandField = getByTestId(redesignedShellTestIds.commandField);
+    expect(commandField.hasAttribute("disabled")).toBe(true);
+    fireEvent.focus(commandField);
+    fireEvent.keyDown(commandField, { key: "Enter" });
+    expect(within(appPane).queryByTestId(redesignedShellTestIds.paneSearchPopover)).toBeNull();
   });
 });
 
-function createMockPlatform(): CrosslogPlatform {
+interface MockPlatformOptions {
+  readonly selectedFiles?: readonly FileSourceRef[];
+}
+
+function createMockPlatform(options: MockPlatformOptions = {}): CrosslogPlatform {
   return {
     kind: "web",
     capabilities: {
@@ -67,9 +70,9 @@ function createMockPlatform(): CrosslogPlatform {
       limitations: [],
     },
     fileAccess: {
-      openFileReadOnly: vi.fn(async () => ({
-        ok: false,
-        error: { code: "UnsupportedCapability", message: "File access is not used by this test." },
+      openFileReadOnly: vi.fn(async (sourceRef) => ({
+        ok: true,
+        source: createTestFileSource(sourceRef),
       })),
       decodeFile: vi.fn(async () => ""),
       getFileIdentity: vi.fn(async () => ""),
@@ -82,7 +85,7 @@ function createMockPlatform(): CrosslogPlatform {
       mapDroppedSources: vi.fn(async () => []),
     },
     sourcePicker: {
-      pickFiles: vi.fn(async () => []),
+      pickFiles: vi.fn(async () => options.selectedFiles ?? []),
       pickDirectory: vi.fn(async () => null),
     },
     sessionStore: {
@@ -90,5 +93,26 @@ function createMockPlatform(): CrosslogPlatform {
       writeSessionSnapshot: vi.fn(async () => undefined),
       recoverSession: vi.fn(async () => null),
     },
+  };
+}
+
+function createTestFileSource(sourceRef: FileSourceRef): FileSource {
+  const lines = [
+    `${sourceRef.name} opened from selected source`,
+    `${sourceRef.name} second line`,
+  ];
+
+  return {
+    id: sourceRef.id,
+    fileIdentity: { value: sourceRef.id, platform: "web" },
+    displayName: sourceRef.name,
+    pathLabel: sourceRef.name,
+    sizeBytes: lines.join("\n").length,
+    encoding: "utf-8",
+    lineChunks: appendRawLinesToChunks([], lines),
+    watchState: "unsupported",
+    deleted: false,
+    replaced: false,
+    readError: null,
   };
 }

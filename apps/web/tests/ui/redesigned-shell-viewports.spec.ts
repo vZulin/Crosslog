@@ -1,6 +1,11 @@
 import { expect, test, type Locator } from "@playwright/test";
 import { redesignedShellTestIds } from "@crosslog/ui";
-import { getRedesignedShell, shellPresentationUrl } from "./helpers/redesigned-shell";
+import {
+  getRedesignedShell,
+  gotoWithWebUiTestBridge,
+  openSampleLogsWithWebUiBridge,
+  shellPresentationUrl,
+} from "./helpers/redesigned-shell";
 
 const viewportScenarios = [
   { name: "desktop", width: 1280, height: 720 },
@@ -11,7 +16,7 @@ test.describe("redesigned shell viewport coverage", () => {
   for (const viewport of viewportScenarios) {
     test(`keeps primary controls visible and distinct at ${viewport.name} width`, async ({ page }) => {
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
-      await page.goto("/");
+      await gotoWithWebUiTestBridge(page);
 
       const shell = getRedesignedShell(page);
       await expect(shell.shell).toBeVisible();
@@ -20,7 +25,7 @@ test.describe("redesigned shell viewport coverage", () => {
       await expect(shell.paneWorkspace).toBeVisible();
       await expect(shell.statusBar).toBeVisible();
 
-      await shell.emptyOpenSource.click();
+      await openSampleLogsWithWebUiBridge(page);
       await expect(shell.logPanes).toHaveCount(3);
       await expect(shell.workspaceScrollbar).toBeVisible();
       await expect(shell.statusBar).toContainText("3 panes");

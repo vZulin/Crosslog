@@ -122,6 +122,13 @@ export async function enqueueWebUiTestAction(page: Page, action: UiTestAction): 
   }, action);
 }
 
+export async function openSampleLogsWithWebUiBridge(page: Page): Promise<void> {
+  await enqueueWebUiTestAction(page, "openSampleLogs");
+  await waitForWebUiTestTitleFragment(page, "state=logs");
+  await waitForWebUiTestTitleFragment(page, "panes=3");
+  await expect(byTestId(page, redesignedShellTestIds.logPane)).toHaveCount(3);
+}
+
 export async function waitForWebUiTestTitleFragment(
   page: Page,
   fragment: string,

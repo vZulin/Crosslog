@@ -13,6 +13,7 @@ export interface DirectorySourceInput {
 }
 
 export type DirectorySourceAction =
+  | { readonly type: "replaceSource"; readonly source: DirectorySource }
   | { readonly type: "selectFile"; readonly fileId: string }
   | { readonly type: "navigate"; readonly direction: "previous" | "next" }
   | { readonly type: "addFiles"; readonly files: readonly DirectoryFileEntry[] }
@@ -39,6 +40,9 @@ export function directorySourceReducer(
   action: DirectorySourceAction,
 ): DirectorySource {
   switch (action.type) {
+    case "replaceSource":
+      return action.source;
+
     case "selectFile": {
       const navigationIndex = selectNavigationFile(source.navigationIndex, action.fileId);
 

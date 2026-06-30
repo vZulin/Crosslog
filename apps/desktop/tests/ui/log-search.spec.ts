@@ -44,18 +44,13 @@ describe("Desktop log search", () => {
     expect(await isFocused(appSearchTrigger)).toBe(true);
 
     await activatePane(servicePane);
-    await clickElementWithJavaScript(await $(byTestId(redesignedShellTestIds.activityRailSearch)));
-    await expect(await servicePane.$('[aria-label="Pane search for service.log"]')).toBeExisting();
-    await expectCompactPopoverInsidePane(
-      servicePane,
-      await servicePane.$(byTestId(redesignedShellTestIds.paneSearchPopover)),
-      90,
-    );
+    await expect(await $(byTestId(redesignedShellTestIds.activityRailSearch))).toBeDisabled();
+    await expect(await servicePane.$('[aria-label="Pane search for service.log"]')).not.toBeExisting();
     await expect(await appPane.$$(byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(0);
 
     await activatePane(appPane);
-    await focusElementWithJavaScript(await $(byTestId(redesignedShellTestIds.commandField)));
-    await expect(await appPane.$('[aria-label="Pane search for app.log"]')).toBeExisting();
+    await expect(await $(byTestId(redesignedShellTestIds.commandField))).toBeDisabled();
+    await expect(await appPane.$('[aria-label="Pane search for app.log"]')).not.toBeExisting();
 
     await clickElementWithJavaScript(await directoryPane.$(byTestId(redesignedShellTestIds.paneHeaderSearch)));
     const directorySearch = await directoryPane.$(byTestId(redesignedShellTestIds.paneSearchPopover));
@@ -77,11 +72,6 @@ async function getLogPaneByTitle(title: string): Promise<WebdriverIO.Element> {
 async function activatePane(pane: WebdriverIO.Element): Promise<void> {
   await clickElementWithJavaScript(pane);
   await expect(pane).toHaveAttribute("data-active", "true");
-}
-
-async function focusElementWithJavaScript(element: WebdriverIO.Element): Promise<void> {
-  await element.waitForExist();
-  await browser.execute((target: HTMLElement) => target.focus(), element);
 }
 
 async function pressEscapeInElement(element: WebdriverIO.Element): Promise<void> {

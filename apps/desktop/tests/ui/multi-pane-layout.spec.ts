@@ -1,6 +1,6 @@
 import { $, $$, browser, expect } from "@wdio/globals";
 import {
-  clickElementWithJavaScript,
+  dropDesktopFileOnWorkspace,
   dragPaneResizeBoundary,
   expectObsoleteControlsAbsent,
   getRedesignedShell,
@@ -17,6 +17,7 @@ describe("Desktop multi-pane layout", () => {
     await expect(shell.shell).toBeExisting();
     await expect(shell.topbar).toBeExisting();
     await expect(shell.commandField).toBeExisting();
+    await expect(shell.commandField).toBeDisabled();
     await expect(shell.activityRail).toBeExisting();
     await expect(shell.paneWorkspace).toBeExisting();
 
@@ -31,7 +32,10 @@ describe("Desktop multi-pane layout", () => {
 
     await browser.setWindowSize(960, 720);
     await waitForDesktopWorkspaceOverflow();
-    await clickElementWithJavaScript(await shell.topbar.$('[data-testid="topbar-add-pane"]'));
+    await dropDesktopFileOnWorkspace({
+      name: "desktop-extra.log",
+      contents: "2026-06-16T09:12:00.000Z extra dropped source\n",
+    });
     await expect($$('[data-testid="log-pane"]')).toBeElementsArrayOfSize(4);
 
     const appPaneWidthBefore = await getPaneWidth("app.log");

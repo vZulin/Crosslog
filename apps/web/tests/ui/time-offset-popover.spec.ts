@@ -1,10 +1,14 @@
 import { expect, test, type Locator } from "@playwright/test";
 import { redesignedShellTestIds } from "@crosslog/ui";
-import { getRedesignedShell } from "./helpers/redesigned-shell";
+import {
+  getRedesignedShell,
+  gotoWithWebUiTestBridge,
+  openSampleLogsWithWebUiBridge,
+} from "./helpers/redesigned-shell";
 
 test("applies valid pane offsets and rejects invalid offset drafts", async ({ page }) => {
-  await page.goto("/");
-  await page.getByTestId(redesignedShellTestIds.emptyOpenSource).click();
+  await gotoWithWebUiTestBridge(page);
+  await openSampleLogsWithWebUiBridge(page);
 
   const shell = getRedesignedShell(page);
   const appPane = page.getByTestId(redesignedShellTestIds.logPane).filter({

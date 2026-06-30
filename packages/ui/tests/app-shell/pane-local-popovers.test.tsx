@@ -1,7 +1,8 @@
 import React from "react";
 import { fireEvent, render, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { CrosslogPlatform } from "@crosslog/platform";
+import { appendRawLinesToChunks, type FileSource } from "@crosslog/core";
+import type { CrosslogPlatform, FileSourceRef } from "@crosslog/platform";
 import { AppShell } from "../../src/app-shell/AppShell";
 import { redesignedShellTestIds } from "../../src/app-shell/testIds";
 import { usePaneSearchStore } from "../../src/search/usePaneSearchStore";
@@ -82,6 +83,8 @@ async function openSamplePanes(
 }
 
 function createMockPlatform(): CrosslogPlatform {
+  const selectedFiles = createSelectedFiles();
+
   return {
     kind: "web",
     capabilities: {
@@ -93,9 +96,9 @@ function createMockPlatform(): CrosslogPlatform {
       limitations: [],
     },
     fileAccess: {
-      openFileReadOnly: vi.fn(async () => ({
-        ok: false,
-        error: { code: "UnsupportedCapability", message: "File access is not used by this test." },
+      openFileReadOnly: vi.fn(async (sourceRef) => ({
+        ok: true,
+        source: createTestFileSource(sourceRef),
       })),
       decodeFile: vi.fn(async () => ""),
       getFileIdentity: vi.fn(async () => ""),
@@ -108,7 +111,7 @@ function createMockPlatform(): CrosslogPlatform {
       mapDroppedSources: vi.fn(async () => []),
     },
     sourcePicker: {
-      pickFiles: vi.fn(async () => []),
+      pickFiles: vi.fn(async () => selectedFiles),
       pickDirectory: vi.fn(async () => null),
     },
     sessionStore: {
@@ -116,5 +119,34 @@ function createMockPlatform(): CrosslogPlatform {
       writeSessionSnapshot: vi.fn(async () => undefined),
       recoverSession: vi.fn(async () => null),
     },
+  };
+}
+
+function createSelectedFiles(): readonly FileSourceRef[] {
+  return [
+    { id: "selected-left", name: "left.log" },
+    { id: "selected-middle", name: "middle.log" },
+    { id: "selected-right", name: "right.log" },
+  ];
+}
+
+function createTestFileSource(sourceRef: FileSourceRef): FileSource {
+  const lines = [
+    `2026-06-16T09:00:00.000Z ${sourceRef.name} boot sequence started`,
+    `2026-06-16T09:00:01.250Z ${sourceRef.name} connected to upstream service`,
+  ];
+
+  return {
+    id: sourceRef.id,
+    fileIdentity: { value: sourceRef.id, platform: "web" },
+    displayName: sourceRef.name,
+    pathLabel: sourceRef.name,
+    sizeBytes: lines.join("\n").length,
+    encoding: "utf-8",
+    lineChunks: appendRawLinesToChunks([], lines),
+    watchState: "unsupported",
+    deleted: false,
+    replaced: false,
+    readError: null,
   };
 }

@@ -193,6 +193,46 @@ export async function expectObsoleteControlsAbsent(): Promise<void> {
   }
 }
 
+export async function dropDesktopFileOnWorkspace(options: {
+  readonly name: string;
+  readonly contents: string;
+  readonly relativePath?: string;
+  readonly targetTestId?: RedesignedShellTestId;
+}): Promise<void> {
+  await browser.execute((dropOptions) => {
+    const target = document.querySelector<HTMLElement>(
+      `[data-testid="${dropOptions.targetTestId ?? "pane-workspace"}"]`,
+    );
+
+    if (!target) {
+      throw new Error(`Missing drop target: ${dropOptions.targetTestId ?? "pane-workspace"}`);
+    }
+
+    const file = new File([dropOptions.contents], dropOptions.name);
+
+    if (dropOptions.relativePath) {
+      Object.defineProperty(file, "webkitRelativePath", {
+        configurable: true,
+        value: dropOptions.relativePath,
+      });
+    }
+
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(file);
+
+    target.dispatchEvent(new DragEvent("dragover", {
+      bubbles: true,
+      cancelable: true,
+      dataTransfer,
+    }));
+    target.dispatchEvent(new DragEvent("drop", {
+      bubbles: true,
+      cancelable: true,
+      dataTransfer,
+    }));
+  }, options);
+}
+
 export function shellPresentationSearchParams(options: {
   readonly theme?: ShellThemeVariant;
   readonly platform?: ShellPlatformVariant;

@@ -27,8 +27,9 @@ const activityRailItemDefinitions = [
     id: "search",
     label: "Search logs",
     icon: "search",
-    capability: "mvp",
+    capability: "future",
     testId: redesignedShellTestIds.activityRailSearch,
+    unavailableReason: "All-pane search is not available yet.",
   },
   {
     id: "filter",
@@ -50,8 +51,9 @@ const activityRailItemDefinitions = [
     id: "files",
     label: "Open sources",
     icon: "files",
-    capability: "mvp",
+    capability: "future",
     testId: redesignedShellTestIds.activityRailFiles,
+    unavailableReason: "The source list panel is not available yet.",
   },
   {
     id: "bookmark",

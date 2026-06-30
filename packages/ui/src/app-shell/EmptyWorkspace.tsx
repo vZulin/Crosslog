@@ -4,13 +4,11 @@ import { redesignedShellTestIds } from "./testIds";
 
 export interface EmptyWorkspaceProps {
   readonly onOpenSource: () => void;
-  readonly onFilesSelected?: React.ChangeEventHandler<HTMLInputElement>;
   readonly onDragOver?: React.DragEventHandler<HTMLElement>;
   readonly onDrop?: React.DragEventHandler<HTMLElement>;
 }
 
 export function EmptyWorkspace({
-  onFilesSelected,
   onOpenSource,
   onDragOver,
   onDrop,
@@ -48,22 +46,12 @@ export function EmptyWorkspace({
         <button
           className="crosslog-empty-workspace__open-source"
           data-testid={redesignedShellTestIds.emptyOpenSource}
-          data-ui-test-action="openSampleLogs"
           id={redesignedShellTestIds.emptyOpenSource}
           onClick={onOpenSource}
           type="button"
         >
           Open Source
         </button>
-        {onFilesSelected ? (
-          <input
-            aria-label="Select log source files"
-            hidden
-            multiple
-            onChange={onFilesSelected}
-            type="file"
-          />
-        ) : null}
       </div>
     </section>
   );

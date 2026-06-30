@@ -146,6 +146,39 @@ enum RedesignedShellAssertions {
         )
     }
 
+    static func assertFutureSourceControlsDisabled(
+        in app: XCUIApplication,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        [
+            "futureFiles=disabled",
+            "futureSearch=disabled",
+            "futureCommand=disabled",
+            "settings=enabled",
+        ].forEach { fragment in
+            XCTAssertTrue(
+                waitForUiTestTitleFragment(fragment, in: app, timeout: 5),
+                "Expected future-control state '\(fragment)'",
+                file: file,
+                line: line
+            )
+        }
+    }
+
+    static func assertSourceOpeningIdle(
+        in app: XCUIApplication,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        XCTAssertTrue(
+            waitForUiTestTitleFragment("sourceOpening=idle", in: app, timeout: 5),
+            "Expected source opening state to start idle",
+            file: file,
+            line: line
+        )
+    }
+
     static func assertStatusContains(
         _ text: String,
         in app: XCUIApplication,

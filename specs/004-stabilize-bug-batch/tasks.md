@@ -57,31 +57,31 @@
 
 ### Tests for User Story 1 (MANDATORY)
 
-- [ ] T019 [P] [US1] Update empty workspace source selection and cancellation tests in `packages/ui/tests/app-shell/empty-workspace.test.tsx`.
-- [ ] T020 [P] [US1] Update topbar add-pane source selection tests in `packages/ui/tests/app-shell/redesigned-workspace.test.tsx`.
-- [ ] T021 [P] [US1] Update future entry-point disabled/inert tests in `packages/ui/tests/app-shell/search-entry-points.test.tsx`.
-- [ ] T022 [P] [US1] Update activity rail future action tests for Open sources, search, and Settings availability in `packages/ui/tests/app-shell/activity-rail-future-actions.test.tsx`.
-- [ ] T023 [P] [US1] Add Web UI coverage for selected source opening, cancellation, disabled future controls, and empty drag/drop in `apps/web/tests/ui/multi-pane-layout.spec.ts`.
-- [ ] T024 [P] [US1] Extend Web drag/drop source opening coverage for the empty workspace in `apps/web/tests/ui/browser-drag-drop.spec.ts`.
-- [ ] T025 [P] [US1] Add Desktop WDIO empty workspace drag/drop coverage in `apps/desktop/tests/ui/source-loading.spec.ts`.
-- [ ] T026 [P] [US1] Add macOS empty workspace drag/drop coverage in `apps/desktop/tests/ui/macos/EmptyStateUITests.swift`.
-- [ ] T027 [P] [US1] Update Desktop WDIO source opening and future-control coverage in `apps/desktop/tests/ui/source-loading.spec.ts`.
-- [ ] T028 [P] [US1] Update Desktop WDIO multi-pane add-source coverage in `apps/desktop/tests/ui/multi-pane-layout.spec.ts`.
-- [ ] T029 [P] [US1] Update macOS empty state source opening and disabled future-control coverage in `apps/desktop/tests/ui/macos/EmptyStateUITests.swift`.
+- [X] T019 [P] [US1] Update empty workspace source selection and cancellation tests in `packages/ui/tests/app-shell/empty-workspace.test.tsx`.
+- [X] T020 [P] [US1] Update topbar add-pane source selection tests in `packages/ui/tests/app-shell/redesigned-workspace.test.tsx`.
+- [X] T021 [P] [US1] Update future entry-point disabled/inert tests in `packages/ui/tests/app-shell/search-entry-points.test.tsx`.
+- [X] T022 [P] [US1] Update activity rail future action tests for Open sources, search, and Settings availability in `packages/ui/tests/app-shell/activity-rail-future-actions.test.tsx`.
+- [X] T023 [P] [US1] Add Web UI coverage for selected source opening, cancellation, disabled future controls, and empty drag/drop in `apps/web/tests/ui/multi-pane-layout.spec.ts`.
+- [X] T024 [P] [US1] Extend Web drag/drop source opening coverage for the empty workspace in `apps/web/tests/ui/browser-drag-drop.spec.ts`.
+- [X] T025 [P] [US1] Add Desktop WDIO empty workspace drag/drop coverage in `apps/desktop/tests/ui/source-loading.spec.ts`.
+- [X] T026 [P] [US1] Add macOS empty workspace drag/drop coverage in `apps/desktop/tests/ui/macos/EmptyStateUITests.swift`.
+- [X] T027 [P] [US1] Update Desktop WDIO source opening and future-control coverage in `apps/desktop/tests/ui/source-loading.spec.ts`.
+- [X] T028 [P] [US1] Update Desktop WDIO multi-pane add-source coverage in `apps/desktop/tests/ui/multi-pane-layout.spec.ts`.
+- [X] T029 [P] [US1] Update macOS empty state source opening and disabled future-control coverage in `apps/desktop/tests/ui/macos/EmptyStateUITests.swift`.
 
 ### Implementation for User Story 1
 
-- [ ] T030 [US1] Replace product empty-workspace sample opening with source picker flow in `packages/ui/src/app-shell/AppShell.tsx`.
-- [ ] T031 [US1] Replace product add-pane sample or adhoc pane creation with source picker flow in `packages/ui/src/app-shell/AppShell.tsx`.
-- [ ] T032 [US1] Preserve fixture-only sample pane setup behind UI test bridge actions in `packages/ui/src/app-shell/AppShell.tsx`.
-- [ ] T033 [US1] Disable or make inert the activity rail Open sources action until the source-list side panel exists in `packages/ui/src/app-shell/ActivityRail.tsx`.
-- [ ] T034 [US1] Disable or make inert activity rail all-pane search while preserving pane-header search in `packages/ui/src/app-shell/ActivityRail.tsx`.
-- [ ] T035 [US1] Disable or make inert the topbar command field without opening pane search in `packages/ui/src/app-shell/Topbar.tsx`.
-- [ ] T036 [US1] Keep disabled/inert future controls accessible and non-trapping in `packages/ui/src/app-shell/activity-rail-theme.css`.
-- [ ] T037 [US1] Ensure empty workspace drag/drop maps supported dropped files and directories into panes in `packages/ui/src/app-shell/AppShell.tsx`.
-- [ ] T038 [US1] Update empty workspace drop zone states and source-opening callback names in `packages/ui/src/app-shell/EmptyWorkspace.tsx`.
-- [ ] T039 [US1] Publish source opening and future-control UI test evidence through `packages/platform/src/ports/ui-test-bridge-port.ts`.
-- [ ] T040 [US1] Run targeted US1 source opening, future-control, and drag/drop tests from `packages/ui/tests/app-shell/`, `apps/web/tests/ui/`, and `apps/desktop/tests/ui/`.
+- [X] T030 [US1] Replace product empty-workspace sample opening with source picker flow in `packages/ui/src/app-shell/AppShell.tsx`.
+- [X] T031 [US1] Replace product add-pane sample or adhoc pane creation with source picker flow in `packages/ui/src/app-shell/AppShell.tsx`.
+- [X] T032 [US1] Preserve fixture-only sample pane setup behind UI test bridge actions in `packages/ui/src/app-shell/AppShell.tsx`.
+- [X] T033 [US1] Disable or make inert the activity rail Open sources action until the source-list side panel exists in `packages/ui/src/app-shell/ActivityRail.tsx`.
+- [X] T034 [US1] Disable or make inert activity rail all-pane search while preserving pane-header search in `packages/ui/src/app-shell/ActivityRail.tsx`.
+- [X] T035 [US1] Disable or make inert the topbar command field without opening pane search in `packages/ui/src/app-shell/Topbar.tsx`.
+- [X] T036 [US1] Keep disabled/inert future controls accessible and non-trapping in `packages/ui/src/app-shell/activity-rail-theme.css`.
+- [X] T037 [US1] Ensure empty workspace drag/drop maps supported dropped files and directories into panes in `packages/ui/src/app-shell/AppShell.tsx`.
+- [X] T038 [US1] Update empty workspace drop zone states and source-opening callback names in `packages/ui/src/app-shell/EmptyWorkspace.tsx`.
+- [X] T039 [US1] Publish source opening and future-control UI test evidence through `packages/platform/src/ports/ui-test-bridge-port.ts`.
+- [X] T040 [US1] Run targeted US1 source opening, future-control, and drag/drop tests from `packages/ui/tests/app-shell/`, `apps/web/tests/ui/`, and `apps/desktop/tests/ui/`.
 
 **Checkpoint**: Bugs 1, 2, 12, 13, 16, and 19 are covered and independently testable.
 

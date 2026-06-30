@@ -1,14 +1,19 @@
 import { expect, test } from "@playwright/test";
 import { redesignedShellTestIds } from "@crosslog/ui";
-import { expectObsoleteControlsAbsent, getRedesignedShell } from "./helpers/redesigned-shell";
+import {
+  expectObsoleteControlsAbsent,
+  getRedesignedShell,
+  gotoWithWebUiTestBridge,
+  openSampleLogsWithWebUiBridge,
+} from "./helpers/redesigned-shell";
 
 test("hides unsupported local monitoring messaging in the browser", async ({ page }) => {
-  await page.goto("/");
+  await gotoWithWebUiTestBridge(page);
   const shell = getRedesignedShell(page);
 
   await expect(shell.shell).toBeVisible();
   await expect(page.getByText("Browser sessions cannot monitor local filesystem changes.")).toHaveCount(0);
-  await page.getByTestId(redesignedShellTestIds.emptyOpenSource).click();
+  await openSampleLogsWithWebUiBridge(page);
   await expect(page.getByText("Browser sessions cannot monitor local filesystem changes.")).toHaveCount(0);
   await expectObsoleteControlsAbsent(page);
   await expect(page.getByRole("button", { name: "Append live line" })).toHaveCount(0);

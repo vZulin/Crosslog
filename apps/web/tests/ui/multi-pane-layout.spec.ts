@@ -1,20 +1,22 @@
 import { expect, test } from "@playwright/test";
-import { expectObsoleteControlsAbsent, getRedesignedShell } from "./helpers/redesigned-shell";
+import {
+  expectObsoleteControlsAbsent,
+  getRedesignedShell,
+  gotoWithWebUiTestBridge,
+  openSampleLogsWithWebUiBridge,
+  waitForWebUiTestTitleFragment,
+} from "./helpers/redesigned-shell";
 
 test("opens and manages multiple log panes", async ({ page }) => {
   await page.setViewportSize({ width: 1920, height: 720 });
-  await page.goto("/");
+  await gotoWithWebUiTestBridge(page);
+  await openSampleLogsWithWebUiBridge(page);
 
   const shell = getRedesignedShell(page);
   await expect(shell.shell).toBeVisible();
   await expect(shell.topbar).toBeVisible();
   await expect(shell.commandField).toBeVisible();
   await expect(shell.activityRail).toBeVisible();
-  await expect(shell.paneWorkspace).toBeVisible();
-  await expect(shell.statusBar).toContainText("0 panes");
-
-  await shell.emptyOpenSource.click();
-
   await expect(shell.paneWorkspace).toBeVisible();
   await expect(page.getByRole("heading", { name: "app.log" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "service.log" })).toBeVisible();
@@ -27,7 +29,14 @@ test("opens and manages multiple log panes", async ({ page }) => {
 
   await page.setViewportSize({ width: 960, height: 720 });
   await expect(shell.workspaceScrollbar).toBeVisible();
+  const addPaneChooser = page.waitForEvent("filechooser");
   await page.getByTestId("topbar-add-pane").click();
+  await (await addPaneChooser).setFiles({
+    name: "selected-topbar.log",
+    mimeType: "text/plain",
+    buffer: Buffer.from("2026-06-16T09:10:00.000Z topbar selected source\n"),
+  });
+  await waitForWebUiTestTitleFragment(page, "sourceEntry=topbar-add-pane");
   await expect(shell.logPanes).toHaveCount(4);
 
   const appPaneWidthBefore = await paneWidth(page, "app.log");
@@ -50,6 +59,30 @@ test("opens and manages multiple log panes", async ({ page }) => {
     element.dispatchEvent(new Event("scroll", { bubbles: true }));
   });
   await expect(scroller).toHaveJSProperty("scrollLeft", 120);
+});
+
+test("opens a selected source from the empty workspace and leaves future controls disabled", async ({ page }) => {
+  await gotoWithWebUiTestBridge(page);
+
+  const shell = getRedesignedShell(page);
+  await expect(shell.emptyOpenSource).toBeVisible();
+  await expect(shell.commandField).toBeDisabled();
+  await expect(page.getByTestId("activity-rail-files")).toBeDisabled();
+  await expect(page.getByTestId("activity-rail-search")).toBeDisabled();
+
+  const chooser = page.waitForEvent("filechooser");
+  await shell.emptyOpenSource.click();
+  await (await chooser).setFiles({
+    name: "selected-empty.log",
+    mimeType: "text/plain",
+    buffer: Buffer.from("2026-06-16T09:00:00.000Z selected empty workspace source\n"),
+  });
+
+  await expect(page.getByRole("heading", { name: "selected-empty.log" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "app.log" })).toHaveCount(0);
+  await waitForWebUiTestTitleFragment(page, "sourceOpening=opened");
+  await waitForWebUiTestTitleFragment(page, "sourceEntry=empty-workspace");
+  await waitForWebUiTestTitleFragment(page, "sourceKind=file");
 });
 
 async function dragResizeBoundary(page: Parameters<typeof getRedesignedShell>[0], title: string, deltaX: number) {

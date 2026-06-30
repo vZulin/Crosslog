@@ -33,6 +33,26 @@ export class TauriDirectoryAccess implements DirectoryAccessPort {
     command: "list_top_level_directory_files" | "refresh_directory_files",
     directoryRef: DirectorySourceRef,
   ): Promise<readonly DirectoryFileEntry[]> {
+    if (directoryRef.entries) {
+      return sortDirectoryFileEntries(
+        directoryRef.entries.flatMap((entry) => {
+          if (entry.kind !== "file") {
+            return [];
+          }
+
+          return [
+            createDirectoryFileEntry({
+              identity: { value: entry.id, platform: "desktop" },
+              name: entry.name,
+              createdAt: entry.createdAt ?? null,
+              fallbackOrderKey: entry.name,
+              sizeBytes: entry.sizeBytes ?? 0,
+            }),
+          ];
+        }),
+      );
+    }
+
     const path = directoryRef.path ?? directoryRef.id;
     const payload = await this.commandInvoker(command, { path });
     const files = payload.map((entry) =>

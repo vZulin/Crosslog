@@ -134,7 +134,7 @@ function RedesignedShellFixture({
       <section aria-label="Topbar" data-testid={redesignedShellTestIds.topbar}>
         <label>
           Command or workspace search
-          <input data-testid={redesignedShellTestIds.commandField} type="search" />
+          <input data-testid={redesignedShellTestIds.commandField} disabled type="search" />
         </label>
         <button
           aria-pressed={syncEnabled}
@@ -330,7 +330,7 @@ function PaneSearchPopoverFixture() {
 
 const activityRailButtons: ReactNode = (
   <>
-    <button data-testid={redesignedShellTestIds.activityRailSearch} type="button">
+    <button aria-disabled="true" data-testid={redesignedShellTestIds.activityRailSearch} disabled type="button">
       Search
     </button>
     <button aria-disabled="true" data-testid={redesignedShellTestIds.activityRailFilter} type="button">
@@ -339,7 +339,7 @@ const activityRailButtons: ReactNode = (
     <button aria-disabled="true" data-testid={redesignedShellTestIds.activityRailPalette} type="button">
       Highlighting unavailable
     </button>
-    <button data-testid={redesignedShellTestIds.activityRailFiles} type="button">
+    <button aria-disabled="true" data-testid={redesignedShellTestIds.activityRailFiles} disabled type="button">
       Files
     </button>
     <button

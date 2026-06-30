@@ -1,7 +1,8 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { CrosslogPlatform } from "@crosslog/platform";
+import { appendRawLinesToChunks, type FileSource } from "@crosslog/core";
+import type { CrosslogPlatform, FileSourceRef } from "@crosslog/platform";
 import { AppShell } from "../../src/app-shell/AppShell";
 import { redesignedShellTestIds } from "../../src/app-shell/testIds";
 import { usePaneSearchStore } from "../../src/search/usePaneSearchStore";
@@ -14,7 +15,13 @@ describe("redesigned workspace shell", () => {
   });
 
   it("renders topbar, activity rail, pane workspace, and status bar around opened panes", async () => {
-    const { getAllByTestId, getByRole, getByTestId } = render(<AppShell platform={createMockPlatform()} />);
+    const { getAllByTestId, getByRole, getByTestId, queryByRole } = render(
+      <AppShell
+        platform={createMockPlatform({
+          selectedFileBatches: [[{ id: "selected-app", name: "selected-app.log" }]],
+        })}
+      />,
+    );
 
     expect(getByTestId(redesignedShellTestIds.crosslogShell)).toBeTruthy();
     expect(getByTestId(redesignedShellTestIds.topbar)).toBeTruthy();
@@ -27,23 +34,28 @@ describe("redesigned workspace shell", () => {
 
     fireEvent.click(getByRole("button", { name: "Open Source" }));
 
-    await waitFor(() => expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(3));
-    expect(getAllByTestId(redesignedShellTestIds.paneHeader)).toHaveLength(3);
+    await waitFor(() => expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(1));
+    expect(getAllByTestId(redesignedShellTestIds.paneHeader)).toHaveLength(1);
     expect(getByTestId(redesignedShellTestIds.workspaceScrollbar)).toBeTruthy();
-    expect(getByTestId(redesignedShellTestIds.statusBar).textContent).toContain("3 panes");
+    expect(getByTestId(redesignedShellTestIds.statusBar).textContent).toContain("1 pane");
     expect(getByTestId(redesignedShellTestIds.statusBar).textContent).toContain("Sync on");
-    expect(getByTestId(redesignedShellTestIds.statusBar).textContent).toContain(
-      "Active: app-2026-06-16.log",
-    );
+    expect(getByTestId(redesignedShellTestIds.statusBar).textContent).toContain("Active: selected-app.log");
+    expect(queryByRole("heading", { name: "app.log" })).toBeNull();
   });
 
   it("routes compact topbar controls and keeps future rail actions unavailable", async () => {
+    const platform = createMockPlatform({
+      selectedFileBatches: [
+        [{ id: "selected-app", name: "selected-app.log" }],
+        [{ id: "selected-service", name: "selected-service.log" }],
+      ],
+    });
     const { getAllByTestId, getByRole, getByTestId, queryByLabelText, queryByText } = render(
-      <AppShell platform={createMockPlatform()} />,
+      <AppShell platform={platform} />,
     );
 
     fireEvent.click(getByRole("button", { name: "Open Source" }));
-    await waitFor(() => expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(3));
+    await waitFor(() => expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(1));
 
     const topbar = getByTestId(redesignedShellTestIds.topbar);
     expect(topbar.textContent).not.toContain("Sync on");
@@ -53,16 +65,27 @@ describe("redesigned workspace shell", () => {
     expect(getByRole("button", { name: "Toggle time synchronization" }).getAttribute("aria-pressed")).toBe("true");
 
     fireEvent.click(getByTestId(redesignedShellTestIds.topbarAddPane));
-    expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(4);
-    await waitFor(() => expect(getByTestId(redesignedShellTestIds.statusBar).textContent).toContain("4 panes"));
+    await waitFor(() => expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(2));
+    await waitFor(() => expect(getByTestId(redesignedShellTestIds.statusBar).textContent).toContain("2 panes"));
+    expect(platform.sourcePicker.pickFiles).toHaveBeenCalledTimes(2);
+    expect(getByRole("heading", { name: "selected-service.log" })).toBeTruthy();
 
+    expect(getByTestId(redesignedShellTestIds.activityRailFiles).hasAttribute("disabled")).toBe(true);
+    expect(getByTestId(redesignedShellTestIds.activityRailSearch).hasAttribute("disabled")).toBe(true);
     expect(getByTestId(redesignedShellTestIds.activityRailFilter).hasAttribute("disabled")).toBe(true);
     expect(getByTestId(redesignedShellTestIds.activityRailPalette).hasAttribute("disabled")).toBe(true);
     expect(getByTestId(redesignedShellTestIds.activityRailBookmark).hasAttribute("disabled")).toBe(true);
+    expect(getByTestId(redesignedShellTestIds.commandField).hasAttribute("disabled")).toBe(true);
   });
 });
 
-function createMockPlatform(): CrosslogPlatform {
+interface MockPlatformOptions {
+  readonly selectedFileBatches?: readonly (readonly FileSourceRef[])[];
+}
+
+function createMockPlatform(options: MockPlatformOptions = {}): CrosslogPlatform {
+  const selectedFileBatches = [...(options.selectedFileBatches ?? [])];
+
   return {
     kind: "web",
     capabilities: {
@@ -74,9 +97,9 @@ function createMockPlatform(): CrosslogPlatform {
       limitations: [],
     },
     fileAccess: {
-      openFileReadOnly: vi.fn(async () => ({
-        ok: false,
-        error: { code: "UnsupportedCapability", message: "File access is not used by this test." },
+      openFileReadOnly: vi.fn(async (sourceRef) => ({
+        ok: true,
+        source: createTestFileSource(sourceRef),
       })),
       decodeFile: vi.fn(async () => ""),
       getFileIdentity: vi.fn(async () => ""),
@@ -89,7 +112,7 @@ function createMockPlatform(): CrosslogPlatform {
       mapDroppedSources: vi.fn(async () => []),
     },
     sourcePicker: {
-      pickFiles: vi.fn(async () => []),
+      pickFiles: vi.fn(async () => selectedFileBatches.shift() ?? []),
       pickDirectory: vi.fn(async () => null),
     },
     sessionStore: {
@@ -97,5 +120,26 @@ function createMockPlatform(): CrosslogPlatform {
       writeSessionSnapshot: vi.fn(async () => undefined),
       recoverSession: vi.fn(async () => null),
     },
+  };
+}
+
+function createTestFileSource(sourceRef: FileSourceRef): FileSource {
+  const lines = [
+    `${sourceRef.name} opened from selected source`,
+    `${sourceRef.name} second line`,
+  ];
+
+  return {
+    id: sourceRef.id,
+    fileIdentity: { value: sourceRef.id, platform: "web" },
+    displayName: sourceRef.name,
+    pathLabel: sourceRef.name,
+    sizeBytes: lines.join("\n").length,
+    encoding: "utf-8",
+    lineChunks: appendRawLinesToChunks([], lines),
+    watchState: "unsupported",
+    deleted: false,
+    replaced: false,
+    readError: null,
   };
 }

@@ -26,6 +26,34 @@ export interface UiTestWorkspaceLayoutMeasurements {
   readonly horizontalOverflow: boolean;
 }
 
+export type UiTestSourceOpeningStatus = "idle" | "pending" | "cancelled" | "opened" | "error";
+export type UiTestSourceOpeningEntryPoint =
+  | "none"
+  | "empty-workspace"
+  | "topbar-add-pane"
+  | "drag-drop"
+  | "ui-test-fixture";
+export type UiTestSourceKind = "none" | "file" | "directory" | "mixed";
+
+export interface UiTestSourceOpeningEvidence {
+  readonly status: UiTestSourceOpeningStatus;
+  readonly entryPoint: UiTestSourceOpeningEntryPoint;
+  readonly selectedSourceKind: UiTestSourceKind;
+  readonly openedSourceCount: number;
+  readonly pickerRequestCount: number;
+  readonly cancelledPickerCount: number;
+  readonly fixtureSamplePaneCount: number;
+}
+
+export type UiTestControlAvailability = "enabled" | "disabled" | "hidden";
+
+export interface UiTestFutureControlState {
+  readonly activityRailOpenSources: UiTestControlAvailability;
+  readonly activityRailSearch: UiTestControlAvailability;
+  readonly topbarCommandField: UiTestControlAvailability;
+  readonly activityRailSettings: UiTestControlAvailability;
+}
+
 export interface UiTestShellState {
   readonly status: "empty" | "logs";
   readonly themeVariant: UiTestThemeVariant;
@@ -51,6 +79,8 @@ export interface UiTestShellState {
   readonly fileLifecycleSummary: string;
   readonly obsoleteControlVisibility: UiTestObsoleteControlVisibility;
   readonly workspaceLayout: UiTestWorkspaceLayoutMeasurements;
+  readonly sourceOpening: UiTestSourceOpeningEvidence;
+  readonly futureControls: UiTestFutureControlState;
 }
 
 export const uiTestActions = [
@@ -107,6 +137,17 @@ export function formatUiTestShellState(state: UiTestShellState): string {
     `directoryFiles=${state.directoryFileCount}`,
     `emptyDirectory=${state.directoryEmptyVisible ? "on" : "off"}`,
     `lifecycle=${state.fileLifecycleSummary}`,
+    `sourceOpening=${state.sourceOpening.status}`,
+    `sourceEntry=${state.sourceOpening.entryPoint}`,
+    `sourceKind=${state.sourceOpening.selectedSourceKind}`,
+    `sourceOpened=${state.sourceOpening.openedSourceCount}`,
+    `sourcePickerRequests=${state.sourceOpening.pickerRequestCount}`,
+    `sourcePickerCancels=${state.sourceOpening.cancelledPickerCount}`,
+    `fixtureSamplePanes=${state.sourceOpening.fixtureSamplePaneCount}`,
+    `futureFiles=${state.futureControls.activityRailOpenSources}`,
+    `futureSearch=${state.futureControls.activityRailSearch}`,
+    `futureCommand=${state.futureControls.topbarCommandField}`,
+    `settings=${state.futureControls.activityRailSettings}`,
     `obsolete=${hasVisibleObsoleteControls(state) ? "visible" : "absent"}`,
     `workspaceOverflow=${state.workspaceLayout.horizontalOverflow ? "on" : "off"}`,
     `rightEdgeAligned=${formatNullableBoolean(state.workspaceLayout.rightmostPaneAlignedToWorkspace)}`,

@@ -1,7 +1,11 @@
 import React from "react";
 import type {
   CrosslogPlatform,
+  UiTestFutureControlState,
   UiTestObsoleteControlVisibility,
+  UiTestSourceKind,
+  UiTestSourceOpeningEntryPoint,
+  UiTestSourceOpeningEvidence,
   UiTestWorkspaceLayoutMeasurements,
 } from "@crosslog/platform";
 import type { DirectorySourceRef, DragDropSource, FileSourceRef, UiTestAction } from "@crosslog/platform";
@@ -72,6 +76,9 @@ export function AppShell({
   const [fileSources, setFileSources] = React.useState<FileSourceMap>(() => createInitialFileSources(platform.kind));
   const [uiTestEnabled, setUiTestEnabled] = React.useState(false);
   const [uiTestCopiedPaneTitle, setUiTestCopiedPaneTitle] = React.useState<string | null>(null);
+  const [sourceOpeningEvidence, setSourceOpeningEvidence] = React.useState<UiTestSourceOpeningEvidence>(
+    initialSourceOpeningEvidence,
+  );
   const [openSearchPaneId, setOpenSearchPaneId] = React.useState<string | null>(null);
   const [openTimeOffsetPaneId, setOpenTimeOffsetPaneId] = React.useState<string | null>(null);
   const [searchFocusRequestSequence, setSearchFocusRequestSequence] = React.useState(0);
@@ -276,6 +283,8 @@ export function AppShell({
       fileLifecycleSummary: publishedFileLifecycleSummary,
       obsoleteControlVisibility: getPublishedObsoleteControlVisibility(),
       workspaceLayout: getPublishedWorkspaceLayoutMeasurements(),
+      sourceOpening: sourceOpeningEvidence,
+      futureControls: publishedFutureControlState,
     });
   }, [
     activePaneTitle,
@@ -294,6 +303,7 @@ export function AppShell({
     publishedDirectorySource,
     publishedFileLifecycleSummary,
     sessionSnapshotStatus,
+    sourceOpeningEvidence,
     synchronizationEnabled,
     timeOffsetPopoverStatus,
     uiTestCopiedPaneTitle,
@@ -454,6 +464,13 @@ export function AppShell({
         case "openSampleLogs":
           if (state.panes.length === 0) {
             samplePanes.forEach((pane) => dispatch({ type: "addPane", pane }));
+            setSourceOpeningEvidence((current) => ({
+              ...current,
+              status: "opened",
+              entryPoint: "ui-test-fixture",
+              selectedSourceKind: "mixed",
+              fixtureSamplePaneCount: current.fixtureSamplePaneCount + samplePanes.length,
+            }));
           }
           break;
         case "copyFirstPane":
@@ -590,14 +607,13 @@ export function AppShell({
     const result = await platform.fileAccess.openFileReadOnly(sourceRef, defaultFileOpenPolicy);
 
     if (!result.ok) {
-      dispatch({
-        type: "addPane",
-        pane: {
-          id: `pane-error-${sourceRef.id}`,
-          title: sourceRef.name,
-          sourceRef: null,
-          width: 520,
-          status: result.error.code === "FileTooLarge" ? "memory-limited" : "error",
+    dispatch({
+      type: "addPane",
+      pane: {
+        title: sourceRef.name,
+        sourceRef: null,
+        width: 520,
+        status: result.error.code === "FileTooLarge" ? "memory-limited" : "error",
         },
       });
       return;
@@ -610,7 +626,6 @@ export function AppShell({
     dispatch({
       type: "addPane",
       pane: {
-        id: `pane-${result.source.id}`,
         title: result.source.displayName,
         sourceRef: result.source.id,
         width: 520,
@@ -622,11 +637,19 @@ export function AppShell({
   const openDirectorySource = async (sourceRef: DirectorySourceRef) => {
     const files = await platform.directoryAccess.listTopLevelFiles(sourceRef);
 
-    dispatchDirectorySource({ type: "refreshFiles", files });
+    dispatchDirectorySource({
+      type: "replaceSource",
+      source: createDirectorySource({
+        id: directorySource.id,
+        directoryIdentity: { value: sourceRef.id, platform: platform.kind },
+        displayName: sourceRef.name,
+        files,
+        watchState: platform.capabilities.canDiscoverNewDirectoryFiles ? "watching" : "unsupported",
+      }),
+    });
     dispatch({
       type: "addPane",
       pane: {
-        id: `pane-directory-${sourceRef.id}`,
         title: sourceRef.name,
         sourceRef: directorySource.id,
         width: 520,
@@ -643,54 +666,91 @@ export function AppShell({
         await openDirectorySource(source.source);
       }
     }
-  };
 
-  const handleBrowserFileInput = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.currentTarget.files ?? []);
-
-    void Promise.all(
-      files.map((file) =>
-        openFileSource({
-          id: `browser-file-${sanitizeSourceId(file.name)}-${file.size}-${file.lastModified}`,
-          name: file.name,
-          file,
-        }),
-      ),
-    );
-    event.currentTarget.value = "";
+    if (sources.length > 0) {
+      publishOpenedSources("drag-drop", getSourceKind(sources), sources.length);
+    }
   };
 
   const handleDrop = (event: React.DragEvent<HTMLElement>) => {
     event.preventDefault();
+    event.stopPropagation();
     void platform.dragDropSource.mapDroppedSources(event.nativeEvent).then(openDroppedSources);
   };
 
-  const handleOpenSampleLogs = () => {
-    samplePanes.forEach((pane) => dispatch({ type: "addPane", pane }));
+  const publishSourceSelectionStarted = (entryPoint: UiTestSourceOpeningEntryPoint) => {
+    setSourceOpeningEvidence((current) => ({
+      ...current,
+      status: "pending",
+      entryPoint,
+      selectedSourceKind: "none",
+      pickerRequestCount: current.pickerRequestCount + 1,
+    }));
+  };
+
+  const publishSourceSelectionCancelled = (entryPoint: UiTestSourceOpeningEntryPoint) => {
+    setSourceOpeningEvidence((current) => ({
+      ...current,
+      status: "cancelled",
+      entryPoint,
+      selectedSourceKind: "none",
+      cancelledPickerCount: current.cancelledPickerCount + 1,
+    }));
+  };
+
+  const publishOpenedSources = (
+    entryPoint: UiTestSourceOpeningEntryPoint,
+    selectedSourceKind: UiTestSourceKind,
+    sourceCount: number,
+  ) => {
+    setSourceOpeningEvidence((current) => ({
+      ...current,
+      status: "opened",
+      entryPoint,
+      selectedSourceKind,
+      openedSourceCount: current.openedSourceCount + sourceCount,
+    }));
+  };
+
+  const requestSourceSelection = async (entryPoint: UiTestSourceOpeningEntryPoint) => {
+    publishSourceSelectionStarted(entryPoint);
+
+    try {
+      const selectedFiles = await platform.sourcePicker.pickFiles();
+
+      if (selectedFiles.length > 0) {
+        for (const selectedFile of selectedFiles) {
+          await openFileSource(selectedFile);
+        }
+        publishOpenedSources(entryPoint, "file", selectedFiles.length);
+        return;
+      }
+
+      const selectedDirectory = await platform.sourcePicker.pickDirectory();
+
+      if (selectedDirectory) {
+        await openDirectorySource(selectedDirectory);
+        publishOpenedSources(entryPoint, "directory", 1);
+        return;
+      }
+
+      publishSourceSelectionCancelled(entryPoint);
+    } catch {
+      setSourceOpeningEvidence((current) => ({
+        ...current,
+        status: "error",
+        entryPoint,
+        selectedSourceKind: "none",
+      }));
+    }
+  };
+
+  const handleOpenSource = () => {
+    void requestSourceSelection("empty-workspace");
   };
 
   const handleAddPane = () => {
-    const rightmostPane = state.panes.at(-1);
-
-    if (rightmostPane) {
-      dispatch({
-        type: "splitPane",
-        paneId: rightmostPane.id,
-        pane: createAddedPane(state.nextPaneNumber),
-      });
-      return;
-    }
-
-    dispatch({ type: "addPane", pane: createAddedPane(state.nextPaneNumber) });
-  };
-
-  const handleOpenSourcesFromRail = () => {
-    if (state.panes.length === 0) {
-      handleOpenSampleLogs();
-      return;
-    }
-
-    handleAddPane();
+    void requestSourceSelection("topbar-add-pane");
   };
 
   const statusMessage =
@@ -702,8 +762,7 @@ export function AppShell({
       <EmptyWorkspace
         onDragOver={(event) => event.preventDefault()}
         onDrop={handleDrop}
-        onFilesSelected={platform.kind === "web" ? handleBrowserFileInput : undefined}
-        onOpenSource={handleOpenSampleLogs}
+        onOpenSource={handleOpenSource}
       />
     ) : (
       <PaneRail
@@ -736,8 +795,6 @@ export function AppShell({
     <ActivityRailShell
       activityRail={
         <ActivityRail
-          onOpenSources={handleOpenSourcesFromRail}
-          onSearch={requestActivePaneSearch}
           onSettings={() => undefined}
         />
       }
@@ -766,7 +823,6 @@ export function AppShell({
         <Topbar
           syncEnabled={synchronizationEnabled}
           onAddPane={handleAddPane}
-          onCommandSearch={requestActivePaneSearch}
           onSyncEnabledChange={handleSynchronizationEnabledChange}
         />
       }
@@ -1072,13 +1128,36 @@ const newerDirectoryFile = createDirectoryFileEntry({
 
 const uiTestActionPollIntervalMs = 100;
 
-function createAddedPane(nextPaneNumber: number) {
-  return {
-    title: `adhoc-${nextPaneNumber}.log`,
-    sourceRef: null,
-    width: 480,
-    status: "ready" as const,
-  };
+const initialSourceOpeningEvidence: UiTestSourceOpeningEvidence = {
+  status: "idle",
+  entryPoint: "none",
+  selectedSourceKind: "none",
+  openedSourceCount: 0,
+  pickerRequestCount: 0,
+  cancelledPickerCount: 0,
+  fixtureSamplePaneCount: 0,
+};
+
+const publishedFutureControlState: UiTestFutureControlState = {
+  activityRailOpenSources: "disabled",
+  activityRailSearch: "disabled",
+  topbarCommandField: "disabled",
+  activityRailSettings: "enabled",
+};
+
+function getSourceKind(sources: readonly DragDropSource[]): UiTestSourceKind {
+  const hasFile = sources.some((source) => source.type === "file");
+  const hasDirectory = sources.some((source) => source.type === "directory");
+
+  if (hasFile && hasDirectory) {
+    return "mixed";
+  }
+
+  if (hasFile) {
+    return "file";
+  }
+
+  return hasDirectory ? "directory" : "none";
 }
 
 function getSampleLines(title: string): readonly string[] {
@@ -1152,8 +1231,4 @@ function createSampleFileSource(
     replaced: false,
     readError: null,
   };
-}
-
-function sanitizeSourceId(name: string): string {
-  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
