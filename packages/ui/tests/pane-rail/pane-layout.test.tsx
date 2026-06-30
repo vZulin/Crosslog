@@ -97,6 +97,70 @@ describe("pane rail layout", () => {
     expect(onResizePane).toHaveBeenNthCalledWith(1, "pane-a", -40);
     expect(onResizePane).toHaveBeenNthCalledWith(2, "pane-a", 80);
   });
+
+  it("reorders panes by dragging the pane header affordance across another midpoint", async () => {
+    const onReorderPane = vi.fn();
+    const { getAllByTestId, getByLabelText } = render(
+      <PaneRail
+        panes={[
+          { pane: createLogPane({ id: "pane-a", title: "app.log", width: 420, status: "ready" }), lines: ["line a"] },
+          {
+            pane: createLogPane({ id: "pane-b", title: "service.log", width: 420, status: "ready" }),
+            lines: ["line b"],
+          },
+          {
+            pane: createLogPane({ id: "pane-c", title: "worker.log", width: 420, status: "ready" }),
+            lines: ["line c"],
+          },
+        ]}
+        onClosePane={vi.fn()}
+        onActivatePane={vi.fn()}
+        onResizePane={vi.fn()}
+        onHorizontalScroll={vi.fn()}
+        onReorderPane={onReorderPane}
+      />,
+    );
+    const panes = getAllByTestId("log-pane");
+    panes.forEach((pane, index) => {
+      mockElementRect(pane, {
+        left: index * 100,
+        right: index * 100 + 100,
+        width: 100,
+      });
+    });
+
+    await act(async () => {
+      dispatchPointerLikeEvent(getByLabelText("Reorder pane app.log"), "pointerdown", 50);
+    });
+    await act(async () => {
+      dispatchPointerLikeEvent(window, "pointermove", 175);
+      dispatchPointerLikeEvent(window, "pointerup", 175);
+    });
+
+    expect(onReorderPane).toHaveBeenCalledWith("pane-a", 1);
+  });
+
+  it("publishes a header reorder handle without overlapping pane actions", () => {
+    const { getByLabelText } = render(
+      <PaneRail
+        panes={[
+          { pane: createLogPane({ id: "pane-a", title: "app.log", width: 520, status: "ready" }), lines: ["line a"] },
+        ]}
+        onClosePane={vi.fn()}
+        onActivatePane={vi.fn()}
+        onResizePane={vi.fn()}
+        onHorizontalScroll={vi.fn()}
+        onReorderPane={vi.fn()}
+      />,
+    );
+
+    expect(getByLabelText("Reorder pane app.log").classList.contains("crosslog-pane-header__drag-handle")).toBe(true);
+    expect(getByLabelText("Time offset for app.log: 0 ms").classList.contains("crosslog-pane-header__offset-tag")).toBe(
+      true,
+    );
+    expect(getByLabelText("Search in app.log").classList.contains("crosslog-pane-header__find-button")).toBe(true);
+    expect(getByLabelText("Close pane app.log").classList.contains("crosslog-pane-header__close")).toBe(true);
+  });
 });
 
 function dispatchPointerLikeEvent(target: EventTarget, type: string, clientX: number): void {
@@ -107,4 +171,21 @@ function dispatchPointerLikeEvent(target: EventTarget, type: string, clientX: nu
       clientX,
     }),
   );
+}
+
+function mockElementRect(
+  element: Element,
+  rect: Pick<DOMRect, "left" | "right" | "width">,
+): void {
+  element.getBoundingClientRect = () => ({
+    bottom: 100,
+    height: 100,
+    top: 0,
+    x: rect.left,
+    y: 0,
+    left: rect.left,
+    right: rect.right,
+    width: rect.width,
+    toJSON: () => ({}),
+  });
 }

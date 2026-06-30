@@ -3,6 +3,7 @@ import {
   getRedesignedShell,
   gotoWithWebUiTestBridge,
   openSampleLogsWithWebUiBridge,
+  waitForWebUiTestTitleFragment,
 } from "./helpers/redesigned-shell";
 
 test("synchronizes timestamped panes and supports disabling synchronization", async ({ page }) => {
@@ -24,6 +25,20 @@ test("synchronizes timestamped panes and supports disabling synchronization", as
   await expect(appPane.getByTestId("pane-header")).toHaveAttribute("aria-current", "true");
   await expect(shell.statusBar).toContainText("Active: app.log");
   await expect(servicePane.locator('[data-line-number="3"]')).toHaveAttribute("data-sync-target", "true");
+  await waitForWebUiTestTitleFragment(page, "lastNavigation=click");
+
+  const appViewport = appPane.getByTestId("log-viewport");
+  await appViewport.focus();
+  await page.keyboard.press("ArrowDown");
+  await expect(appViewport).toHaveAttribute("data-selected-line-number", "4");
+  await expect(servicePane.locator('[data-line-number="4"]')).toHaveAttribute("data-sync-target", "true");
+  await waitForWebUiTestTitleFragment(page, "lastNavigation=keyboard");
+  await waitForWebUiTestTitleFragment(page, "syncTargetLine=4");
+
+  await appViewport.dispatchEvent("wheel", { deltaY: 120 });
+  await expect(appViewport).toHaveAttribute("data-last-navigation", "wheel");
+  await expect(servicePane.locator('[data-line-number="7"]')).toHaveAttribute("data-sync-target", "true");
+  await waitForWebUiTestTitleFragment(page, "syncTargetLine=7");
 
   await syncToggle.click();
   await expect(syncToggle).toHaveAttribute("aria-pressed", "false");

@@ -17,9 +17,12 @@ export interface LogPaneProps {
   readonly directorySource?: DirectorySource;
   readonly lifecycleState?: PaneHeaderLifecycleState;
   readonly renderedWidth?: number;
+  readonly horizontalContentWidth?: number;
   readonly synchronizationTargetLineNumber?: number | null;
   readonly onClose: (paneId: string) => void;
   readonly onActivate: (paneId: string) => void;
+  readonly onReorderDragStart?: (paneId: string, event: React.PointerEvent<HTMLElement>) => void;
+  readonly reorderDragging?: boolean;
   readonly onHorizontalScroll: (paneId: string, scrollLeft: number) => void;
   readonly onNavigateDirectory?: (paneId: string, direction: "previous" | "next") => void;
   readonly onTimeAnchorChange?: (paneId: string, lineNumber: number, timestamp: Date | null) => void;
@@ -45,9 +48,12 @@ export function LogPane({
   directorySource,
   lifecycleState,
   renderedWidth,
+  horizontalContentWidth,
   synchronizationTargetLineNumber,
   onClose,
   onActivate,
+  onReorderDragStart,
+  reorderDragging = false,
   onHorizontalScroll,
   onNavigateDirectory,
   onTimeAnchorChange,
@@ -79,6 +85,7 @@ export function LogPane({
       data-testid={redesignedShellTestIds.logPane}
       id={redesignedShellTestIds.logPane}
       data-active={pane.active}
+      data-pane-id={pane.id}
       style={{
         inlineSize: `${renderedWidth ?? pane.width}px`,
       }}
@@ -96,7 +103,11 @@ export function LogPane({
         lifecycleState={lifecycleState}
         searchButtonRef={searchButtonRef}
         timeOffsetButtonRef={timeOffsetButtonRef}
+        reorderDragging={reorderDragging}
         onClose={() => onClose(pane.id)}
+        onReorderDragStart={
+          onReorderDragStart ? (event) => onReorderDragStart(pane.id, event) : undefined
+        }
         onOpenSearch={() => {
           onActivate(pane.id);
           if (searchOpen) {
@@ -146,6 +157,7 @@ export function LogPane({
         <HorizontalLogScroller
           title={pane.title}
           scrollLeft={pane.horizontalScroll}
+          contentWidth={horizontalContentWidth}
           onScrollLeftChange={(scrollLeft) => onHorizontalScroll(pane.id, scrollLeft)}
         >
           <VirtualLogViewport

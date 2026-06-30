@@ -3,6 +3,7 @@ import type {
   CrosslogPlatform,
   UiTestFutureControlState,
   UiTestObsoleteControlVisibility,
+  UiTestPaneNavigationEvidence,
   UiTestSourceKind,
   UiTestSourceOpeningEntryPoint,
   UiTestSourceOpeningEvidence,
@@ -283,6 +284,7 @@ export function AppShell({
       fileLifecycleSummary: publishedFileLifecycleSummary,
       obsoleteControlVisibility: getPublishedObsoleteControlVisibility(),
       workspaceLayout: getPublishedWorkspaceLayoutMeasurements(),
+      paneNavigation: getPublishedPaneNavigationEvidence(panes.map((entry) => entry.pane.title)),
       sourceOpening: sourceOpeningEvidence,
       futureControls: publishedFutureControlState,
     });
@@ -482,6 +484,17 @@ export function AppShell({
           break;
         case "toggleSynchronization":
           handleSynchronizationEnabledChange(!synchronizationEnabled);
+          break;
+        case "reorderFirstPaneAfterSecond":
+          if (state.panes.length >= 2) {
+            dispatch({ type: "reorderPane", paneId: state.panes[0].id, targetIndex: 1 });
+          }
+          break;
+        case "keyboardNavigateActivePaneDown":
+          dispatchNavigationEventToActiveViewport("keyboard");
+          break;
+        case "wheelNavigateActivePaneDown":
+          dispatchNavigationEventToActiveViewport("wheel");
           break;
         case "openActivePaneSearch":
           requestActivePaneSearch();
@@ -770,6 +783,7 @@ export function AppShell({
         onClosePane={(paneId) => dispatch({ type: "closePane", paneId })}
         onActivatePane={(paneId) => dispatch({ type: "setActivePane", paneId })}
         onResizePane={(leftPaneId, delta) => dispatch({ type: "resizePane", leftPaneId, delta })}
+        onReorderPane={(paneId, targetIndex) => dispatch({ type: "reorderPane", paneId, targetIndex })}
         onHorizontalScroll={(paneId, scrollLeft) =>
           dispatch({ type: "setHorizontalScroll", paneId, scrollLeft })
         }
@@ -958,6 +972,27 @@ function getPublishedWorkspaceLayoutMeasurements(): UiTestWorkspaceLayoutMeasure
   };
 }
 
+function getPublishedPaneNavigationEvidence(paneOrder: readonly string[]): UiTestPaneNavigationEvidence {
+  if (typeof document === "undefined") {
+    return emptyPaneNavigationEvidence;
+  }
+
+  const viewports = queryAllTestElements(redesignedShellTestIds.logViewport);
+  const activeViewport = getActiveViewportElement() ?? viewports[0] ?? null;
+  const syncTarget = document.querySelector<HTMLElement>('[data-sync-target="true"]');
+  const gutterDigitCounts = viewports
+    .map((viewport) => parseNullableInteger(viewport.dataset.gutterDigits))
+    .filter((value): value is number => value !== null);
+
+  return {
+    paneOrder,
+    selectedLineNumber: parseNullableInteger(activeViewport?.dataset.selectedLineNumber),
+    maxGutterDigitCount: gutterDigitCounts.length > 0 ? Math.max(...gutterDigitCounts) : null,
+    lastNavigation: parseLastNavigation(activeViewport?.dataset.lastNavigation),
+    syncTargetLineNumber: parseNullableInteger(syncTarget?.dataset.lineNumber),
+  };
+}
+
 const emptyWorkspaceLayoutMeasurements: UiTestWorkspaceLayoutMeasurements = {
   workspaceWidthPx: null,
   workspaceContentWidthPx: null,
@@ -967,6 +1002,51 @@ const emptyWorkspaceLayoutMeasurements: UiTestWorkspaceLayoutMeasurements = {
   rightmostPaneAlignedToWorkspace: null,
   horizontalOverflow: false,
 };
+
+const emptyPaneNavigationEvidence: UiTestPaneNavigationEvidence = {
+  paneOrder: [],
+  selectedLineNumber: null,
+  maxGutterDigitCount: null,
+  lastNavigation: "none",
+  syncTargetLineNumber: null,
+};
+
+function dispatchNavigationEventToActiveViewport(mode: "keyboard" | "wheel"): void {
+  const viewport = getActiveViewportElement();
+
+  if (!viewport) {
+    return;
+  }
+
+  viewport.focus();
+
+  if (mode === "keyboard") {
+    viewport.dispatchEvent(new KeyboardEvent("keydown", {
+      bubbles: true,
+      cancelable: true,
+      key: "ArrowDown",
+    }));
+    return;
+  }
+
+  viewport.dispatchEvent(new WheelEvent("wheel", {
+    bubbles: true,
+    cancelable: true,
+    deltaY: 120,
+  }));
+}
+
+function getActiveViewportElement(): HTMLElement | null {
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  const activePane = document.querySelector<HTMLElement>(
+    `[data-testid="${redesignedShellTestIds.logPane}"][data-active="true"]`,
+  );
+
+  return activePane?.querySelector<HTMLElement>(`[data-testid="${redesignedShellTestIds.logViewport}"]`) ?? null;
+}
 
 function queryTestElement(testId: RedesignedShellTestId): HTMLElement | null {
   if (typeof document === "undefined") {
@@ -1040,6 +1120,27 @@ function normalizeText(text: string | null): string {
 
 function normalizeMeasurement(value: number): number | null {
   return Number.isFinite(value) ? Math.round(value) : null;
+}
+
+function parseNullableInteger(value: string | undefined): number | null {
+  if (value === undefined) {
+    return null;
+  }
+
+  const parsedValue = Number.parseInt(value, 10);
+
+  return Number.isFinite(parsedValue) ? parsedValue : null;
+}
+
+function parseLastNavigation(value: string | undefined): UiTestPaneNavigationEvidence["lastNavigation"] {
+  switch (value) {
+    case "click":
+    case "keyboard":
+    case "wheel":
+      return value;
+    default:
+      return "none";
+  }
 }
 
 function formatFileLifecycleSummary(fileSources: readonly FileSource[]): string {

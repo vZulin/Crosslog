@@ -4,6 +4,7 @@ import type { UIEvent } from "react";
 export interface HorizontalLogScrollerProps {
   readonly title: string;
   readonly scrollLeft: number;
+  readonly contentWidth?: number;
   readonly onScrollLeftChange: (scrollLeft: number) => void;
   readonly children: React.ReactNode;
 }
@@ -11,6 +12,7 @@ export interface HorizontalLogScrollerProps {
 export function HorizontalLogScroller({
   title,
   scrollLeft,
+  contentWidth,
   onScrollLeftChange,
   children,
 }: HorizontalLogScrollerProps) {
@@ -35,7 +37,15 @@ export function HorizontalLogScroller({
       onScroll={handleScroll}
       style={{ overflowX: "auto" }}
     >
-      <div style={{ minWidth: "2400px" }}>{children}</div>
+      <div style={getContentStyle(contentWidth)}>{children}</div>
     </div>
   );
+}
+
+function getContentStyle(contentWidth: number | undefined): React.CSSProperties | undefined {
+  if (!Number.isFinite(contentWidth) || !contentWidth || contentWidth <= 0) {
+    return undefined;
+  }
+
+  return { minWidth: `${Math.round(contentWidth)}px` };
 }

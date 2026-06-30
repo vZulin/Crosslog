@@ -38,6 +38,11 @@ describe("UI test bridge shell state contract", () => {
     expect(formatUiTestShellState(state)).toContain("workspaceWidth=1440");
     expect(formatUiTestShellState(state)).toContain("workspaceContentWidth=1680");
     expect(formatUiTestShellState(state)).toContain("rightEdgeGap=1");
+    expect(formatUiTestShellState(state)).toContain("paneOrder=app.log,service.log");
+    expect(formatUiTestShellState(state)).toContain("selectedLine=2");
+    expect(formatUiTestShellState(state)).toContain("maxGutterDigits=3");
+    expect(formatUiTestShellState(state)).toContain("lastNavigation=keyboard");
+    expect(formatUiTestShellState(state)).toContain("syncTargetLine=2");
     expect(formatUiTestShellState(state)).toContain("sourceOpening=opened");
     expect(formatUiTestShellState(state)).toContain("sourceEntry=empty-workspace");
     expect(formatUiTestShellState(state)).toContain("futureFiles=disabled");
@@ -84,6 +89,9 @@ describe("UI test bridge shell state contract", () => {
       "openSampleLogs",
       "copyFirstPane",
       "toggleSynchronization",
+      "reorderFirstPaneAfterSecond",
+      "keyboardNavigateActivePaneDown",
+      "wheelNavigateActivePaneDown",
       "openActivePaneSearch",
       "setActivePaneInvalidSearch",
       "openEmptyDirectory",
@@ -131,6 +139,13 @@ function createShellState(overrides: {
     fileLifecycleSummary: "none",
     obsoleteControlVisibility: overrides.obsoleteControlVisibility,
     workspaceLayout: overrides.workspaceLayout,
+    paneNavigation: {
+      paneOrder: ["app.log", "service.log"],
+      selectedLineNumber: 2,
+      maxGutterDigitCount: 3,
+      lastNavigation: "keyboard",
+      syncTargetLineNumber: 2,
+    },
     sourceOpening: {
       status: "opened",
       entryPoint: "empty-workspace",

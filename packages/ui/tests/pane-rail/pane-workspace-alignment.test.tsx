@@ -52,4 +52,32 @@ describe("pane workspace alignment", () => {
     expect(layout.renderedWidths.map((entry) => entry.renderedWidth)).toEqual([580, 620]);
     expect(panes.map((entry) => entry.desiredWidth)).toEqual([480, 520]);
   });
+
+  it("fills a single narrow pane without creating blank horizontal content range", () => {
+    const layout = computePaneWorkspaceLayout(
+      [{ paneId: "pane-a", desiredWidth: 320, horizontalContentWidth: 240 }],
+      900,
+    );
+
+    expect(layout.overflowing).toBe(false);
+    expect(layout.renderedWidths[0].desiredWidth).toBe(320);
+    expect(layout.renderedWidths[0].renderedWidth).toBe(900);
+    expect(layout.renderedWidths[0].renderedHorizontalContentWidth).toBe(900);
+  });
+
+  it("keeps longest loaded lines reachable through horizontal content width", () => {
+    const layout = computePaneWorkspaceLayout(
+      [
+        { paneId: "pane-a", desiredWidth: 520, horizontalContentWidth: 1800 },
+        { paneId: "pane-b", desiredWidth: 520, horizontalContentWidth: 420 },
+      ],
+      1200,
+    );
+
+    expect(layout.overflowing).toBe(false);
+    expect(layout.totalRenderedWidth).toBe(1200);
+    expect(layout.renderedWidths.map((entry) => entry.renderedWidth)).toEqual([600, 600]);
+    expect(layout.renderedWidths.map((entry) => entry.renderedHorizontalContentWidth)).toEqual([1800, 600]);
+    expect(layout.renderedHorizontalContentWidthsByPaneId.get("pane-a")).toBe(1800);
+  });
 });

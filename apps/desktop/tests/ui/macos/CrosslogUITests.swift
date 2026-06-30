@@ -5,6 +5,9 @@ enum CrosslogUITestAction: String {
     case openSampleLogs
     case copyFirstPane
     case toggleSynchronization
+    case reorderFirstPaneAfterSecond
+    case keyboardNavigateActivePaneDown
+    case wheelNavigateActivePaneDown
     case openActivePaneSearch
     case setActivePaneInvalidSearch
     case navigatePreviousDirectoryFile

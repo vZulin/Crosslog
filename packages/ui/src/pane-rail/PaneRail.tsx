@@ -22,6 +22,7 @@ export interface PaneRailProps {
   readonly onActivatePane: (paneId: string) => void;
   readonly onResizePane: (leftPaneId: string, delta: number) => void;
   readonly onHorizontalScroll: (paneId: string, scrollLeft: number) => void;
+  readonly onReorderPane?: (paneId: string, targetIndex: number) => void;
   readonly onNavigateDirectory?: (paneId: string, direction: "previous" | "next") => void;
   readonly onTimeAnchorChange?: (paneId: string, lineNumber: number, timestamp: Date | null) => void;
   readonly onTimeOffsetChange?: (paneId: string, offset: LogPaneModel["timeOffset"]) => void;
@@ -45,6 +46,7 @@ export function PaneRail({
   onActivatePane,
   onResizePane,
   onHorizontalScroll,
+  onReorderPane,
   onNavigateDirectory,
   onTimeAnchorChange,
   onTimeOffsetChange,
@@ -62,7 +64,87 @@ export function PaneRail({
   clipboard,
 }: PaneRailProps) {
   const paneWorkspaceLayout = usePaneWorkspaceLayout(
-    panes.map((entry) => ({ paneId: entry.pane.id, desiredWidth: entry.pane.width })),
+    panes.map((entry) => ({
+      paneId: entry.pane.id,
+      desiredWidth: entry.pane.width,
+      horizontalContentWidth: estimateHorizontalContentWidth(entry.lines),
+    })),
+  );
+  const [dragState, setDragState] = React.useState<{
+    readonly paneId: string;
+    readonly pointerId: number;
+    readonly targetIndex: number;
+  } | null>(null);
+
+  React.useEffect(() => {
+    if (!dragState) {
+      return undefined;
+    }
+
+    const handlePointerMove = (event: PointerEvent) => {
+      if (!isCurrentReorderPointer(event, dragState.pointerId)) {
+        return;
+      }
+
+      const targetIndex = computeReorderTargetIndex(
+        paneWorkspaceLayout.workspaceRef.current,
+        dragState.paneId,
+        event.clientX,
+      );
+
+      setDragState((current) =>
+        current && isCurrentReorderPointer(event, current.pointerId) ? { ...current, targetIndex } : current,
+      );
+    };
+
+    const handlePointerEnd = (event: PointerEvent) => {
+      if (!isCurrentReorderPointer(event, dragState.pointerId)) {
+        return;
+      }
+
+      const targetIndex = computeReorderTargetIndex(
+        paneWorkspaceLayout.workspaceRef.current,
+        dragState.paneId,
+        event.clientX,
+      );
+
+      onReorderPane?.(dragState.paneId, targetIndex);
+      setDragState(null);
+    };
+    const handlePointerCancel = (event: PointerEvent) => {
+      if (isCurrentReorderPointer(event, dragState.pointerId)) {
+        setDragState(null);
+      }
+    };
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerEnd);
+    window.addEventListener("pointercancel", handlePointerCancel);
+
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerEnd);
+      window.removeEventListener("pointercancel", handlePointerCancel);
+    };
+  }, [dragState, onReorderPane, paneWorkspaceLayout.workspaceRef]);
+
+  const handleReorderDragStart = React.useCallback(
+    (paneId: string, event: React.PointerEvent<HTMLElement>) => {
+      if (!onReorderPane) {
+        return;
+      }
+
+      event.preventDefault();
+      const pointerId = typeof event.pointerId === "number" ? event.pointerId : primaryPointerId;
+      const targetIndex = computeReorderTargetIndex(
+        paneWorkspaceLayout.workspaceRef.current,
+        paneId,
+        event.clientX,
+      );
+
+      setDragState({ paneId, pointerId, targetIndex });
+    },
+    [onReorderPane, paneWorkspaceLayout.workspaceRef],
   );
 
   return (
@@ -76,6 +158,7 @@ export function PaneRail({
           <LogPane
             pane={entry.pane}
             renderedWidth={paneWorkspaceLayout.renderedWidthsByPaneId.get(entry.pane.id)}
+            horizontalContentWidth={paneWorkspaceLayout.renderedHorizontalContentWidthsByPaneId.get(entry.pane.id)}
             lines={entry.lines}
             timestamps={entry.timestamps}
             directorySource={entry.directorySource}
@@ -83,6 +166,8 @@ export function PaneRail({
             synchronizationTargetLineNumber={entry.synchronizationTargetLineNumber}
             onClose={onClosePane}
             onActivate={onActivatePane}
+            onReorderDragStart={handleReorderDragStart}
+            reorderDragging={dragState?.paneId === entry.pane.id}
             onHorizontalScroll={onHorizontalScroll}
             onNavigateDirectory={onNavigateDirectory}
             onTimeAnchorChange={onTimeAnchorChange}
@@ -114,4 +199,43 @@ export function PaneRail({
       ))}
     </PaneWorkspace>
   );
+}
+
+const averageLogCharacterWidthPx = 7.2;
+const horizontalContentPaddingPx = 48;
+const minimumHorizontalContentWidthPx = 320;
+const primaryPointerId = 1;
+
+function estimateHorizontalContentWidth(lines: readonly string[]): number {
+  const longestLineLength = lines.reduce((longest, line) => Math.max(longest, line.length), 0);
+
+  return Math.max(
+    minimumHorizontalContentWidthPx,
+    Math.ceil(longestLineLength * averageLogCharacterWidthPx + horizontalContentPaddingPx),
+  );
+}
+
+function computeReorderTargetIndex(
+  workspace: HTMLElement | null,
+  draggedPaneId: string,
+  clientX: number,
+): number {
+  if (!workspace) {
+    return 0;
+  }
+
+  const panes = Array.from(workspace.querySelectorAll<HTMLElement>('[data-testid="log-pane"]')).filter(
+    (pane) => pane.dataset.paneId !== draggedPaneId,
+  );
+
+  return panes.reduce((targetIndex, pane) => {
+    const rect = pane.getBoundingClientRect();
+    const midpoint = rect.left + rect.width / 2;
+
+    return clientX > midpoint ? targetIndex + 1 : targetIndex;
+  }, 0);
+}
+
+function isCurrentReorderPointer(event: PointerEvent, pointerId: number): boolean {
+  return typeof event.pointerId !== "number" || event.pointerId === pointerId;
 }

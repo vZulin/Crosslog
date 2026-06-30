@@ -3,15 +3,18 @@ import React from "react";
 export interface PaneWorkspaceLayoutPane {
   readonly paneId: string;
   readonly desiredWidth: number;
+  readonly horizontalContentWidth?: number;
 }
 
 export interface RenderedPaneWorkspaceWidth extends PaneWorkspaceLayoutPane {
   readonly renderedWidth: number;
+  readonly renderedHorizontalContentWidth: number;
 }
 
 export interface PaneWorkspaceLayout {
   readonly renderedWidths: readonly RenderedPaneWorkspaceWidth[];
   readonly renderedWidthsByPaneId: ReadonlyMap<string, number>;
+  readonly renderedHorizontalContentWidthsByPaneId: ReadonlyMap<string, number>;
   readonly workspaceWidth: number;
   readonly totalDesiredWidth: number;
   readonly totalRenderedWidth: number;
@@ -93,7 +96,12 @@ export function computePaneWorkspaceLayout(
     return {
       paneId: pane.paneId,
       desiredWidth,
+      horizontalContentWidth: pane.horizontalContentWidth,
       renderedWidth: desiredWidth + baseExtraWidth + remainderWidth,
+      renderedHorizontalContentWidth: Math.max(
+        desiredWidth + baseExtraWidth + remainderWidth,
+        normalizeWidth(pane.horizontalContentWidth ?? 0),
+      ),
     };
   });
   const totalRenderedWidth = renderedWidths.reduce((total, pane) => total + pane.renderedWidth, 0);
@@ -101,6 +109,9 @@ export function computePaneWorkspaceLayout(
   return {
     renderedWidths,
     renderedWidthsByPaneId: new Map(renderedWidths.map((pane) => [pane.paneId, pane.renderedWidth])),
+    renderedHorizontalContentWidthsByPaneId: new Map(
+      renderedWidths.map((pane) => [pane.paneId, pane.renderedHorizontalContentWidth]),
+    ),
     workspaceWidth: normalizedWorkspaceWidth,
     totalDesiredWidth,
     totalRenderedWidth,

@@ -69,4 +69,43 @@ describe("log pane reducer", () => {
     expect(next.panes[0].horizontalScroll).toBe(0);
     expect(next.panes[1].horizontalScroll).toBe(128);
   });
+
+  it("reorders panes while preserving intervening pane order and active state", () => {
+    const state = createLogPaneState([
+      createLogPane({ id: "pane-a", title: "app.log", width: 410, status: "ready" }),
+      createLogPane({ id: "pane-b", title: "service.log", width: 420, status: "ready" }),
+      createLogPane({ id: "pane-c", title: "worker.log", width: 430, active: true, status: "ready" }),
+      createLogPane({ id: "pane-d", title: "audit.log", width: 440, status: "ready" }),
+    ]);
+    const next = logPaneReducer(state, {
+      type: "reorderPane",
+      paneId: "pane-c",
+      targetIndex: 1,
+    });
+
+    expect(next.panes.map((pane) => pane.id)).toEqual(["pane-a", "pane-c", "pane-b", "pane-d"]);
+    expect(next.panes.map((pane) => pane.width)).toEqual([410, 430, 420, 440]);
+    expect(next.activePaneId).toBe("pane-c");
+    expect(next.panes.find((pane) => pane.id === "pane-c")?.active).toBe(true);
+  });
+
+  it("ignores invalid pane reorder requests without corrupting order", () => {
+    const state = createLogPaneState([
+      createLogPane({ id: "pane-a", status: "ready" }),
+      createLogPane({ id: "pane-b", status: "ready" }),
+    ]);
+    const missingPane = logPaneReducer(state, {
+      type: "reorderPane",
+      paneId: "pane-missing",
+      targetIndex: 1,
+    });
+    const invalidIndex = logPaneReducer(state, {
+      type: "reorderPane",
+      paneId: "pane-a",
+      targetIndex: Number.NaN,
+    });
+
+    expect(missingPane).toBe(state);
+    expect(invalidIndex).toBe(state);
+  });
 });

@@ -20,7 +20,9 @@ export interface PaneHeaderProps {
   readonly lifecycleState?: PaneHeaderLifecycleState;
   readonly searchButtonRef?: React.Ref<HTMLButtonElement>;
   readonly timeOffsetButtonRef?: React.Ref<HTMLButtonElement>;
+  readonly reorderDragging?: boolean;
   readonly onClose: () => void;
+  readonly onReorderDragStart?: React.PointerEventHandler<HTMLButtonElement>;
   readonly onOpenSearch?: () => void;
   readonly onOpenTimeOffset?: () => void;
   readonly onNavigateDirectory?: (paneId: string, direction: "previous" | "next") => void;
@@ -37,7 +39,9 @@ export function PaneHeader({
   lifecycleState,
   searchButtonRef,
   timeOffsetButtonRef,
+  reorderDragging = false,
   onClose,
+  onReorderDragStart,
   onOpenSearch,
   onOpenTimeOffset,
   onNavigateDirectory,
@@ -74,9 +78,21 @@ export function PaneHeader({
       aria-label={`${headerLabel}${active ? " active pane" : ""}${lifecycleLabel}`}
       className="crosslog-pane-header"
       data-active={active ? "true" : "false"}
+      data-reorder-dragging={reorderDragging ? "true" : "false"}
       data-testid={redesignedShellTestIds.paneHeader}
       id={redesignedShellTestIds.paneHeader}
     >
+      <button
+        aria-label={`Reorder pane ${displayTitle}`}
+        aria-pressed={reorderDragging}
+        className="crosslog-pane-header__drag-handle"
+        data-dragging={reorderDragging ? "true" : "false"}
+        onPointerDown={onReorderDragStart}
+        title="Reorder pane"
+        type="button"
+      >
+        <CrosslogIcon name="resize-boundary" />
+      </button>
       <div className={identityClassName}>
         {directorySource ? (
           <>

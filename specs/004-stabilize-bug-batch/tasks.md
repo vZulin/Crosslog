@@ -95,29 +95,29 @@
 
 ### Tests for User Story 2 (MANDATORY)
 
-- [ ] T041 [P] [US2] Add pane reorder reducer and order preservation tests in `packages/core/tests/log-pane/log-pane-reducer.test.ts`.
-- [ ] T042 [P] [US2] Extend pane layout sizing, longest-line reachability, and overflow tests in `packages/ui/tests/pane-rail/pane-workspace-alignment.test.tsx`.
-- [ ] T043 [P] [US2] Extend pane rail drag reorder and header no-overlap tests in `packages/ui/tests/pane-rail/pane-layout.test.tsx`.
-- [ ] T044 [P] [US2] Add viewport vertical scroll, keyboard, gutter, and selected-line tests in `packages/ui/tests/log-pane/virtual-log-viewport.test.tsx`.
-- [ ] T045 [P] [US2] Update Web UI pane width, reorder, gutter, keyboard, and scroll coverage in `apps/web/tests/ui/multi-pane-layout.spec.ts`.
-- [ ] T046 [P] [US2] Update Web synchronized wheel and keyboard navigation coverage in `apps/web/tests/ui/synchronized-scrolling.spec.ts`.
-- [ ] T047 [P] [US2] Update Desktop WDIO pane width, reorder, gutter, keyboard, and scroll coverage in `apps/desktop/tests/ui/multi-pane-layout.spec.ts`.
-- [ ] T048 [P] [US2] Update Desktop WDIO synchronized wheel and keyboard navigation coverage in `apps/desktop/tests/ui/synchronized-scrolling.spec.ts`.
-- [ ] T049 [P] [US2] Update macOS pane layout and reorder coverage in `apps/desktop/tests/ui/macos/MultiPaneLayoutUITests.swift`.
-- [ ] T050 [P] [US2] Update macOS synchronized scrolling coverage for keyboard and wheel navigation in `apps/desktop/tests/ui/macos/SynchronizedScrollingUITests.swift`.
+- [X] T041 [P] [US2] Add pane reorder reducer and order preservation tests in `packages/core/tests/log-pane/log-pane-reducer.test.ts`.
+- [X] T042 [P] [US2] Extend pane layout sizing, longest-line reachability, and overflow tests in `packages/ui/tests/pane-rail/pane-workspace-alignment.test.tsx`.
+- [X] T043 [P] [US2] Extend pane rail drag reorder and header no-overlap tests in `packages/ui/tests/pane-rail/pane-layout.test.tsx`.
+- [X] T044 [P] [US2] Add viewport vertical scroll, keyboard, gutter, and selected-line tests in `packages/ui/tests/log-pane/virtual-log-viewport.test.tsx`.
+- [X] T045 [P] [US2] Update Web UI pane width, reorder, gutter, keyboard, and scroll coverage in `apps/web/tests/ui/multi-pane-layout.spec.ts`.
+- [X] T046 [P] [US2] Update Web synchronized wheel and keyboard navigation coverage in `apps/web/tests/ui/synchronized-scrolling.spec.ts`.
+- [X] T047 [P] [US2] Update Desktop WDIO pane width, reorder, gutter, keyboard, and scroll coverage in `apps/desktop/tests/ui/multi-pane-layout.spec.ts`.
+- [X] T048 [P] [US2] Update Desktop WDIO synchronized wheel and keyboard navigation coverage in `apps/desktop/tests/ui/synchronized-scrolling.spec.ts`.
+- [X] T049 [P] [US2] Update macOS pane layout and reorder coverage in `apps/desktop/tests/ui/macos/MultiPaneLayoutUITests.swift`.
+- [X] T050 [P] [US2] Update macOS synchronized scrolling coverage for keyboard and wheel navigation in `apps/desktop/tests/ui/macos/SynchronizedScrollingUITests.swift`.
 
 ### Implementation for User Story 2
 
-- [ ] T051 [US2] Add pane reorder state transitions and midpoint-order semantics in `packages/core/src/log-pane/log-pane-reducer.ts`.
-- [ ] T052 [US2] Preserve desired pane widths while computing efficient visible pane widths and horizontal content ranges in `packages/ui/src/pane-rail/usePaneWorkspaceLayout.ts`.
-- [ ] T053 [US2] Implement header drag reorder interactions in `packages/ui/src/pane-rail/PaneRail.tsx`.
-- [ ] T054 [US2] Add reorder affordance and accessible drag state to pane headers in `packages/ui/src/log-pane/PaneHeader.tsx`.
-- [ ] T055 [US2] Implement vertical wheel scrolling, selected-line state, and arrow-key navigation in `packages/ui/src/log-pane/VirtualLogViewport.tsx`.
-- [ ] T056 [US2] Emit synchronization anchor changes from wheel and keyboard navigation in `packages/ui/src/log-pane/VirtualLogViewport.tsx`.
-- [ ] T057 [US2] Size the line-number gutter by total line-count digit count in `packages/ui/src/log-pane/VirtualLogViewport.tsx`.
-- [ ] T058 [US2] Update pane, gutter, header, and viewport no-overlap styles in `packages/ui/src/app-shell/activity-rail-theme.css`.
-- [ ] T059 [US2] Publish pane order, gutter, keyboard, and scroll layout evidence through `packages/platform/src/ports/ui-test-bridge-port.ts`.
-- [ ] T060 [US2] Run targeted US2 pane layout, reorder, gutter, keyboard, and synchronized-scrolling tests from `packages/core/tests/log-pane/`, `packages/ui/tests/pane-rail/`, and UI/E2E suites.
+- [X] T051 [US2] Add pane reorder state transitions and midpoint-order semantics in `packages/core/src/log-pane/log-pane-reducer.ts`.
+- [X] T052 [US2] Preserve desired pane widths while computing efficient visible pane widths and horizontal content ranges in `packages/ui/src/pane-rail/usePaneWorkspaceLayout.ts`.
+- [X] T053 [US2] Implement header drag reorder interactions in `packages/ui/src/pane-rail/PaneRail.tsx`.
+- [X] T054 [US2] Add reorder affordance and accessible drag state to pane headers in `packages/ui/src/log-pane/PaneHeader.tsx`.
+- [X] T055 [US2] Implement vertical wheel scrolling, selected-line state, and arrow-key navigation in `packages/ui/src/log-pane/VirtualLogViewport.tsx`.
+- [X] T056 [US2] Emit synchronization anchor changes from wheel and keyboard navigation in `packages/ui/src/log-pane/VirtualLogViewport.tsx`.
+- [X] T057 [US2] Size the line-number gutter by total line-count digit count in `packages/ui/src/log-pane/VirtualLogViewport.tsx`.
+- [X] T058 [US2] Update pane, gutter, header, and viewport no-overlap styles in `packages/ui/src/app-shell/activity-rail-theme.css`.
+- [X] T059 [US2] Publish pane order, gutter, keyboard, and scroll layout evidence through `packages/platform/src/ports/ui-test-bridge-port.ts`.
+- [X] T060 [US2] Run targeted US2 pane layout, reorder, gutter, keyboard, and synchronized-scrolling tests from `packages/core/tests/log-pane/`, `packages/ui/tests/pane-rail/`, and UI/E2E suites.
 
 **Checkpoint**: Bugs 3, 4, 17, 18, and 20 are covered and independently testable.
 

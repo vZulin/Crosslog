@@ -26,6 +26,14 @@ export interface UiTestWorkspaceLayoutMeasurements {
   readonly horizontalOverflow: boolean;
 }
 
+export interface UiTestPaneNavigationEvidence {
+  readonly paneOrder: readonly string[];
+  readonly selectedLineNumber: number | null;
+  readonly maxGutterDigitCount: number | null;
+  readonly lastNavigation: "none" | "click" | "keyboard" | "wheel";
+  readonly syncTargetLineNumber: number | null;
+}
+
 export type UiTestSourceOpeningStatus = "idle" | "pending" | "cancelled" | "opened" | "error";
 export type UiTestSourceOpeningEntryPoint =
   | "none"
@@ -79,6 +87,7 @@ export interface UiTestShellState {
   readonly fileLifecycleSummary: string;
   readonly obsoleteControlVisibility: UiTestObsoleteControlVisibility;
   readonly workspaceLayout: UiTestWorkspaceLayoutMeasurements;
+  readonly paneNavigation: UiTestPaneNavigationEvidence;
   readonly sourceOpening: UiTestSourceOpeningEvidence;
   readonly futureControls: UiTestFutureControlState;
 }
@@ -87,6 +96,9 @@ export const uiTestActions = [
   "openSampleLogs",
   "copyFirstPane",
   "toggleSynchronization",
+  "reorderFirstPaneAfterSecond",
+  "keyboardNavigateActivePaneDown",
+  "wheelNavigateActivePaneDown",
   "openActivePaneSearch",
   "setActivePaneInvalidSearch",
   "openEmptyDirectory",
@@ -156,6 +168,11 @@ export function formatUiTestShellState(state: UiTestShellState): string {
     `workspaceRight=${formatNullableNumber(state.workspaceLayout.workspaceRightPx)}`,
     `rightmostPaneRight=${formatNullableNumber(state.workspaceLayout.rightmostPaneRightPx)}`,
     `rightEdgeGap=${formatNullableNumber(state.workspaceLayout.rightEdgeGapPx)}`,
+    `paneOrder=${state.paneNavigation.paneOrder.length > 0 ? state.paneNavigation.paneOrder.join(",") : "none"}`,
+    `selectedLine=${formatNullableNumber(state.paneNavigation.selectedLineNumber)}`,
+    `maxGutterDigits=${formatNullableNumber(state.paneNavigation.maxGutterDigitCount)}`,
+    `lastNavigation=${state.paneNavigation.lastNavigation}`,
+    `syncTargetLine=${formatNullableNumber(state.paneNavigation.syncTargetLineNumber)}`,
     `regions=${state.redesignedRegions.length > 0 ? state.redesignedRegions.join(",") : "none"}`,
   ].join(";");
 }

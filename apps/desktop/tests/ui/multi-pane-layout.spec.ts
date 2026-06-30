@@ -6,6 +6,7 @@ import {
   getRedesignedShell,
   openSampleLogsWithUiBridge,
   waitForDesktopShell,
+  waitForUiTestTitleFragment,
 } from "./helpers/redesigned-shell";
 
 describe("Desktop multi-pane layout", () => {
@@ -29,6 +30,29 @@ describe("Desktop multi-pane layout", () => {
     await expect($('aria/service.log')).toBeExisting();
     await expectObsoleteControlsAbsent();
     await waitForDesktopRightEdgeAlignment();
+    await waitForUiTestTitleFragment("paneOrder=app.log,service.log,app-2026-06-16.log");
+    await waitForUiTestTitleFragment("maxGutterDigits=3");
+
+    await browser.execute(() => {
+      const viewport = document
+        .querySelector<HTMLElement>('[aria-label="Log pane app.log"]')
+        ?.querySelector<HTMLElement>('[data-testid="log-viewport"]');
+
+      if (!viewport) {
+        throw new Error("Missing app.log viewport.");
+      }
+
+      viewport.focus();
+      viewport.dispatchEvent(new KeyboardEvent("keydown", {
+        bubbles: true,
+        cancelable: true,
+        key: "ArrowDown",
+      }));
+    });
+    await waitForUiTestTitleFragment("lastNavigation=keyboard");
+
+    await dragPaneReorder("app.log", "service.log");
+    await waitForUiTestTitleFragment("paneOrder=service.log,app.log,app-2026-06-16.log");
 
     await browser.setWindowSize(960, 720);
     await waitForDesktopWorkspaceOverflow();
@@ -57,6 +81,62 @@ describe("Desktop multi-pane layout", () => {
     await expect(shell.workspaceScrollbar).toBeExisting();
   });
 });
+
+async function dragPaneReorder(draggedTitle: string, targetTitle: string): Promise<void> {
+  await browser.execute((draggedPaneTitle: string) => {
+    const draggedHandle = document.querySelector<HTMLElement>(
+      `[aria-label="${`Reorder pane ${draggedPaneTitle}`}"]`,
+    );
+
+    if (!draggedHandle) {
+      throw new Error(`Missing reorder drag handle for ${draggedPaneTitle}.`);
+    }
+
+    const startRect = draggedHandle.getBoundingClientRect();
+    const startX = startRect.left + startRect.width / 2;
+    const startY = startRect.top + startRect.height / 2;
+
+    draggedHandle.dispatchEvent(new PointerEvent("pointerdown", {
+      bubbles: true,
+      button: 0,
+      clientX: startX,
+      clientY: startY,
+      pointerId: 9,
+    }));
+  }, draggedTitle);
+
+  await browser.pause(0);
+  await browser.execute((draggedPaneTitle: string, targetPaneTitle: string) => {
+    const draggedHandle = document.querySelector<HTMLElement>(
+      `[aria-label="${`Reorder pane ${draggedPaneTitle}`}"]`,
+    );
+    const targetPane = Array.from(document.querySelectorAll<HTMLElement>('[data-testid="log-pane"]')).find(
+      (pane) => pane.getAttribute("aria-label") === `Log pane ${targetPaneTitle}`,
+    );
+
+    if (!draggedHandle || !targetPane) {
+      throw new Error(`Missing reorder drag target for ${draggedPaneTitle} -> ${targetPaneTitle}.`);
+    }
+
+    const startRect = draggedHandle.getBoundingClientRect();
+    const targetRect = targetPane.getBoundingClientRect();
+    const startY = startRect.top + startRect.height / 2;
+    const targetX = targetRect.left + targetRect.width * 0.75;
+
+    window.dispatchEvent(new PointerEvent("pointermove", {
+      bubbles: true,
+      clientX: targetX,
+      clientY: startY,
+      pointerId: 9,
+    }));
+    window.dispatchEvent(new PointerEvent("pointerup", {
+      bubbles: true,
+      clientX: targetX,
+      clientY: startY,
+      pointerId: 9,
+    }));
+  }, draggedTitle, targetTitle);
+}
 
 async function getPaneWidth(title: string): Promise<number> {
   return browser.execute((paneTitle: string) => {

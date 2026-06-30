@@ -30,6 +30,44 @@ describe("Desktop synchronized scrolling", () => {
     await expect(await panes[0].$('[data-testid="pane-header"]').getAttribute("aria-current")).toBe("true");
     await expect(await statusSummary.getAttribute("data-active-source")).toBe("app.log");
     await expect(await panes[1].$('[data-line-number="3"]').getAttribute("data-sync-target")).toBe("true");
+    await waitForUiTestTitleFragment("lastNavigation=click");
+
+    await browser.execute(() => {
+      const viewport = document
+        .querySelector<HTMLElement>('[aria-label="Log pane app.log"]')
+        ?.querySelector<HTMLElement>('[data-testid="log-viewport"]');
+
+      if (!viewport) {
+        throw new Error("Missing app.log viewport.");
+      }
+
+      viewport.focus();
+      viewport.dispatchEvent(new KeyboardEvent("keydown", {
+        bubbles: true,
+        cancelable: true,
+        key: "ArrowDown",
+      }));
+    });
+    await waitForUiTestTitleFragment("lastNavigation=keyboard");
+    await waitForUiTestTitleFragment("syncTargetLine=4");
+
+    await browser.execute(() => {
+      const viewport = document
+        .querySelector<HTMLElement>('[aria-label="Log pane app.log"]')
+        ?.querySelector<HTMLElement>('[data-testid="log-viewport"]');
+
+      if (!viewport) {
+        throw new Error("Missing app.log viewport.");
+      }
+
+      viewport.dispatchEvent(new WheelEvent("wheel", {
+        bubbles: true,
+        cancelable: true,
+        deltaY: 120,
+      }));
+    });
+    await waitForUiTestTitleFragment("lastNavigation=wheel");
+    await waitForUiTestTitleFragment("syncTargetLine=7");
 
     enqueueDesktopUiTestAction("toggleSynchronization");
     await waitForUiTestTitleFragment("sync=off");

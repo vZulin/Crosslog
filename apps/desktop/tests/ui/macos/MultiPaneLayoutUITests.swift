@@ -17,5 +17,10 @@ final class MultiPaneLayoutUITests: CrosslogUITests {
         waitForUiTestTitle("active=app-2026-06-16.log", in: app)
         waitForUiTestTitle("workspaceOverflow=on", in: app)
         waitForUiTestTitle("rightEdgeAligned=on", in: app)
+        waitForUiTestTitle("paneOrder=app.log,service.log,app-2026-06-16.log", in: app)
+        waitForUiTestTitle("maxGutterDigits=3", in: app)
+
+        performUiTestAction(.reorderFirstPaneAfterSecond)
+        waitForUiTestTitle("paneOrder=service.log,app.log,app-2026-06-16.log", in: app)
     }
 }

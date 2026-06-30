@@ -5,6 +5,7 @@ import {
   DEFAULT_PANE_WIDTH,
   closePaneLayout,
   normalizePaneLayout,
+  reorderPaneLayout,
   resizeAdjacentPanes,
   splitPaneLayout,
 } from "./pane-layout";
@@ -20,6 +21,7 @@ export type LogPaneAction =
   | { readonly type: "splitPane"; readonly paneId?: LogPaneId; readonly pane?: Partial<LogPane> }
   | { readonly type: "closePane"; readonly paneId: LogPaneId }
   | { readonly type: "resizePane"; readonly leftPaneId: LogPaneId; readonly delta: number }
+  | { readonly type: "reorderPane"; readonly paneId: LogPaneId; readonly targetIndex: number }
   | { readonly type: "setHorizontalScroll"; readonly paneId: LogPaneId; readonly scrollLeft: number }
   | { readonly type: "setActivePane"; readonly paneId: LogPaneId }
   | { readonly type: "replaceState"; readonly state: LogPaneState };
@@ -109,6 +111,12 @@ export function logPaneReducer(state: LogPaneState, action: LogPaneAction): LogP
         ...state,
         panes: resizeAdjacentPanes(state.panes, action.leftPaneId, action.delta),
       };
+
+    case "reorderPane": {
+      const nextPanes = reorderPaneLayout(state.panes, action.paneId, action.targetIndex);
+
+      return nextPanes === state.panes ? state : { ...state, panes: nextPanes };
+    }
 
     case "setHorizontalScroll":
       return {
