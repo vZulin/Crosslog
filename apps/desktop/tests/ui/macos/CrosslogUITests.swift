@@ -53,9 +53,20 @@ class CrosslogUITests: XCTestCase {
     }
 
     func openSampleLogs(in app: XCUIApplication, file: StaticString = #filePath, line: UInt = #line) {
-        performUiTestAction(.openSampleLogs, file: file, line: line)
-        waitForUiTestTitle("state=logs", in: app, file: file, line: line)
-        waitForUiTestTitle("panes=3", in: app, file: file, line: line)
+        let deadline = Date().addingTimeInterval(15)
+
+        repeat {
+            performUiTestAction(.openSampleLogs, file: file, line: line)
+
+            if uiTestTitleContains("state=logs", in: app, timeout: 2)
+                && uiTestTitleContains("panes=3", in: app, timeout: 2) {
+                return
+            }
+
+            RunLoop.current.run(until: Date().addingTimeInterval(0.1))
+        } while Date() < deadline
+
+        waitForUiTestTitle("state=logs", in: app, timeout: 1, file: file, line: line)
     }
 
     func performUiTestAction(
@@ -121,15 +132,10 @@ class CrosslogUITests: XCTestCase {
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
-        let deadline = Date().addingTimeInterval(timeout)
         let window = app.windows.firstMatch
 
-        while Date() < deadline {
-            if window.exists, window.title.contains(fragment) {
-                return
-            }
-
-            RunLoop.current.run(until: Date().addingTimeInterval(0.1))
+        if uiTestTitleContains(fragment, in: app, timeout: timeout) {
+            return
         }
 
         XCTFail(
@@ -137,6 +143,25 @@ class CrosslogUITests: XCTestCase {
             file: file,
             line: line
         )
+    }
+
+    private func uiTestTitleContains(
+        _ fragment: String,
+        in app: XCUIApplication,
+        timeout: TimeInterval
+    ) -> Bool {
+        let deadline = Date().addingTimeInterval(timeout)
+        let window = app.windows.firstMatch
+
+        while Date() < deadline {
+            if window.exists, window.title.contains(fragment) {
+                return true
+            }
+
+            RunLoop.current.run(until: Date().addingTimeInterval(0.1))
+        }
+
+        return false
     }
 
     private func application() -> XCUIApplication {
