@@ -11,6 +11,8 @@ const longPaneTitles = [
   "directory-with-a-very-long-name/currently-selected-log-file-with-extra-context-and-timestamp.log",
   "observability-ingest-worker-shard-003-archive-rotation-output.log",
 ] as const;
+const fixtureSourceSetupBoundary = "test-fixture-only";
+const fixtureSourceOrigin = "test-fixture";
 
 export type RedesignedShellFixtureWorkspaceState = "populated" | "empty";
 export type RedesignedShellFixtureThemeVariant = "light" | "dark";
@@ -65,11 +67,33 @@ export function renderRedesignedShell(
     />,
   );
 
+  assertRedesignedShellFixtureSourceSetupBoundary(result.container);
+
   return {
     ...result,
     testIds: redesignedShellTestIds,
     getRegion: (testId) => result.getByTestId(testId),
   };
+}
+
+export function assertRedesignedShellFixtureSourceSetupBoundary(container: HTMLElement): void {
+  const shell = container.querySelector<HTMLElement>(`[data-testid="${redesignedShellTestIds.crosslogShell}"]`);
+
+  if (shell?.dataset.sourceOpeningBoundary !== fixtureSourceSetupBoundary) {
+    throw new Error("Redesigned shell fixture must declare test-only source setup.");
+  }
+
+  const panes = Array.from(container.querySelectorAll<HTMLElement>(`[data-testid="${redesignedShellTestIds.logPane}"]`));
+
+  for (const pane of panes) {
+    if (pane.dataset.sourceOrigin !== fixtureSourceOrigin) {
+      throw new Error("Redesigned shell fixture panes must be marked as test fixtures.");
+    }
+  }
+
+  if (container.querySelector("[data-product-source-opening='true']")) {
+    throw new Error("Redesigned shell fixture must not model product source opening.");
+  }
 }
 
 interface RedesignedShellFixtureProps {
@@ -99,6 +123,7 @@ function RedesignedShellFixture({
     <main
       aria-label="Crosslog workspace"
       data-platform={platformVariant}
+      data-source-opening-boundary={fixtureSourceSetupBoundary}
       data-testid={redesignedShellTestIds.crosslogShell}
       data-theme={themeVariant}
     >
@@ -136,6 +161,7 @@ function RedesignedShellFixture({
               <article
                 aria-label={`Log pane ${title}`}
                 data-active={title === activeSource ? "true" : "false"}
+                data-source-origin={fixtureSourceOrigin}
                 data-testid={redesignedShellTestIds.logPane}
                 key={title}
               >

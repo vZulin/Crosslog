@@ -96,6 +96,10 @@ function createMockPlatform(): CrosslogPlatform {
     dragDropSource: {
       mapDroppedSources: vi.fn(async () => []),
     },
+    sourcePicker: {
+      pickFiles: vi.fn(async () => []),
+      pickDirectory: vi.fn(async () => null),
+    },
     sessionStore: {
       loadLastValidSession: vi.fn(async () => null),
       writeSessionSnapshot: vi.fn(async () => undefined),

@@ -3,6 +3,7 @@ import type { CrosslogError, FileOpenPolicy, FileSource } from "@crosslog/core";
 export interface FileSourceRef {
   readonly id: string;
   readonly name: string;
+  readonly path?: string;
   readonly file?: File;
 }
 

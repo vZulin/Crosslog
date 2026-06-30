@@ -7,7 +7,7 @@ Create the project constitution for "Crosslog".
 
 Include these mandatory principles:
 
-1. The code should be clean, well-structured, and annotated. 
+1. The code should be clean, well-structured, and annotated.
 2. No unnecessary dependencies
 3. Performance and low resource consumption are critical.
 4. Every development phase must include automated tests.
@@ -343,3 +343,76 @@ Prompt for speckit specify
   - The plan must explicitly say which tests are updated versus newly added.
   - The plan must not create tasks for new product capabilities.
   - The plan must treat obsolete-control removal and rightmost-pane alignment as first-class acceptance criteria.
+
+
+
+
+
+
+
+
+  Prompt For speckit specify
+
+  Create a Crosslog bug-fix stabilization specification for the full bug batch described in docs/Bugs_1.txt.
+
+  Authoritative inputs:
+  - docs/Bugs_1.txt: every numbered bug is in scope and its expected result is authoritative.
+  - specs/001-multi-log-analysis: MVP functional baseline.
+  - specs/003-macos-ui-design-alignment: current macOS UI alignment baseline.
+  - Existing contracts under those specs, especially UI behavior and test automation contracts.
+
+  Scope guardrails:
+  - Preserve all functionality not explicitly described in docs/Bugs_1.txt or the prior specs.
+  - Source opening must use user-selected files/directories, not predefined demo sources, except where automated tests intentionally use fixtures through existing test helpers.
+
+
+  Group the requirements around these areas:
+  1. Source opening and empty workspace behavior: bugs 1, 2, 12, 16, 19.
+  2. Pane layout, scrolling, reordering, gutter, and keyboard navigation: bugs 3, 4, 17, 18, 20.
+  3. Pane search, search highlighting, copy-selection popover, and popover lifecycle: bugs 5, 6, 7, 8, 9, 21.
+  4. Time offset validation: bugs 10 and 22.
+  5. Sync icon state, settings, and default theme behavior: bugs 11, 13, 14, 15.
+
+
+  Testing requirements:
+  - Audit existing automated and UI/E2E tests.
+  - Keep valid tests unchanged.
+  - Update tests only when they encode the incorrect behavior described in docs/Bugs_1.txt.
+  - Add missing test cases for every bug scenario not currently covered.
+  - Include accessibility, viewport/no-overlap, popover positioning, keyboard, drag/drop, and pane layout coverage where relevant.
+  - The specification must state that before commit, local automated tests and local UI/E2E tests for the current OS must pass.
+  - The specification must state that after push, CI/CD results for Windows, macOS, and Linux must be monitored and failures fixed until green.
+
+  Write the spec as testable product requirements and success criteria. Avoid implementation details, framework-specific instructions, and code-level design decisions.
+
+  Prompt For speckit plan
+
+  Create an implementation plan for the current bug-fix stabilization spec.
+
+  Planning constraints:
+  - Use the newly created spec as the source of truth.
+  - Read docs/Bugs_1.txt and the prior specs under specs/001-multi-log-analysis and specs/003-macos-ui-design-alignment before planning.
+  - Preserve all behavior not explicitly changed by the bug specification.
+  - Keep changes minimal and aligned with the existing React/Vite/Zustand/TanStack Virtual/Tauri 2 architecture.
+  - Do not add new dependencies unless the plan documents a clear need and asks for approval.
+  - Keep platform-specific behavior behind existing platform ports.
+
+  The plan must include:
+  1. A bug-to-requirement traceability section mapping every item from docs/Bugs_1.txt to planned work and tests.
+  2. A test inventory:
+     - Existing tests that remain valid and unchanged.
+     - Existing tests that must be updated because they assert the incorrect behavior from the bug report.
+     - New automated or UI/E2E tests required for uncovered bug scenarios.
+  3. UI validation coverage for pane width, pane header controls, search highlighting, copy popover position/lifecycle, time offset validation, settings/theme behavior, disabled future
+  controls, drag/drop, pane reordering, gutter width, keyboard navigation, and sync-scroll behavior.
+  5. Accessibility and viewport/no-overlap checks for every changed visible UI surface.
+  6. Local validation gates before commit:
+     - Run targeted tests during implementation.
+     - Run the local OS automated test script.
+     - Run the local OS UI/E2E test script.
+  7. CI/CD gates after push:
+     - Monitor GitHub Actions or the configured CI/CD checks.
+     - Windows, macOS, and Linux automated tests, UI/E2E tests, and build checks must pass.
+     - Any CI/CD failure found after push must be investigated and fixed before the work is considered complete.
+
+  The plan must be concrete enough for implementation, but it must not broaden scope beyond docs/Bugs_1.txt and the existing specifications.

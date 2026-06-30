@@ -1,6 +1,6 @@
 # Crosslog Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-06-28
+Auto-generated from all feature plans. Last updated: 2026-06-30
 
 ## Active Technologies
 - TypeScript 5.x for shared UI/domain code; React 19; Rust 1.77+ stable for
@@ -21,6 +21,12 @@ Auto-generated from all feature plans. Last updated: 2026-06-28
 - UI alignment reuses existing IndexedDB and Desktop application-data session
   storage; pane widths remain persisted as desired widths while right-edge fill
   widths are view-computed. (003-macos-ui-design-alignment)
+- Bug batch stabilization keeps the existing TypeScript/React/Tauri shared
+  Web/Desktop stack and plans no new dependencies unless native source picking
+  requires explicit approval. (004-stabilize-bug-batch)
+- Stabilization reuses Browser IndexedDB and Desktop application-data session
+  storage; product source-opening actions must use user-selected sources, while
+  fixtures remain test-helper only. (004-stabilize-bug-batch)
 
 - TypeScript 5.x for shared domain/UI and Web shell; Rust stable compatible with
   Tauri 2 for Desktop adapters; Node.js active LTS for tooling.
@@ -77,6 +83,9 @@ scripts/
 - Preserve expected test results unless the underlying requirement changes.
 
 ## Recent Changes
+- 004-stabilize-bug-batch: Planned full bug batch stabilization with
+  source-opening guardrails, pane layout/navigation fixes, search/copy/offset
+  corrections, settings/theme behavior, and cross-OS validation gates.
 - 003-macos-ui-design-alignment: Planned the delta UI alignment for updated
   mockups, including theme/platform shell variants, obsolete-control removal,
   pane right-edge alignment, drag resize, compact popovers, and test migration.
