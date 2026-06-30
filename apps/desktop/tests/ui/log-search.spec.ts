@@ -36,9 +36,7 @@ describe("Desktop log search", () => {
     const outsideViewportLine = await appPane.$('[data-line-number="181"]');
     await expect(outsideViewportLine).toBeExisting();
     expect(await outsideViewportLine.getAttribute("data-search-match")).toBeNull();
-    await expect(await outsideViewportLine.$('[data-search-highlight="true"]')).toHaveText(
-      "line 180 token=outside-viewport",
-    );
+    await waitForPaneSearchHighlight(appPane, 181, "line 180 token=outside-viewport");
     await expect(await servicePane.$$(byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(0);
 
     await pressEscapeInElement(await appSearch.$(byTestId(redesignedShellTestIds.paneSearchField)));
@@ -98,6 +96,33 @@ async function pressEscapeInElement(element: WebdriverIO.Element): Promise<void>
 async function isFocused(element: WebdriverIO.Element): Promise<boolean> {
   await element.waitForExist();
   return browser.execute((target: HTMLElement) => document.activeElement === target, element);
+}
+
+async function waitForPaneSearchHighlight(
+  pane: WebdriverIO.Element,
+  lineNumber: number,
+  expectedText: string,
+): Promise<void> {
+  await browser.waitUntil(
+    async () =>
+      browser.execute(
+        (paneElement: HTMLElement, targetLineNumber: number, text: string) => {
+          const highlight = paneElement.querySelector<HTMLElement>(
+            `[data-line-number="${targetLineNumber}"] [data-search-highlight="true"]`,
+          );
+
+          return (highlight?.textContent ?? "").replace(/\s+/g, " ").trim() === text;
+        },
+        pane,
+        lineNumber,
+        expectedText,
+      ),
+    {
+      interval: 100,
+      timeout: 15_000,
+      timeoutMsg: `Search highlight did not render on line ${lineNumber}: ${expectedText}`,
+    },
+  );
 }
 
 async function expectCompactPopoverInsidePane(

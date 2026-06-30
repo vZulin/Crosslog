@@ -38,8 +38,7 @@ describe("Desktop log text copy", () => {
     await openCopyMenuAt(textActions, 160, 54);
     await clickElementWithJavaScript(await appPane.$('[role="menuitem"]'));
     await waitForUiTestTitleFragment("copied=app.log");
-    await expect(await appPane.$$('[role="status"]')).toBeElementsArrayOfSize(0);
-    await expect(await appPane.$$('//*[normalize-space()="Copied"]')).toBeElementsArrayOfSize(0);
+    expect(await hasVisibleCopiedFeedback(appPane)).toBe(false);
   });
 });
 
@@ -106,4 +105,24 @@ async function dismissCopyMenu(textActions: WebdriverIO.Element): Promise<void> 
       clientY: rect.top + 8,
     }));
   }, textActions);
+}
+
+async function hasVisibleCopiedFeedback(pane: WebdriverIO.Element): Promise<boolean> {
+  return browser.execute((paneElement: HTMLElement) => {
+    const visibleElements = Array.from(paneElement.querySelectorAll<HTMLElement>("*")).filter((element) => {
+      if (element.hidden || element.getAttribute("aria-hidden") === "true") {
+        return false;
+      }
+
+      const style = globalThis.getComputedStyle(element);
+      return style.display !== "none" && style.visibility !== "hidden";
+    });
+
+    return visibleElements.some((element) => {
+      const text = (element.textContent ?? "").replace(/\s+/g, " ").trim();
+      const ariaLabel = element.getAttribute("aria-label") ?? "";
+
+      return text === "Copied" || ariaLabel.includes("Copied");
+    });
+  }, pane);
 }

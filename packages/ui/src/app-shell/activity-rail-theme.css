@@ -824,8 +824,9 @@ body {
   inset-block-start: auto;
   inset-inline-start: auto;
   z-index: 6;
+  box-sizing: border-box;
   inline-size: 156px;
-  min-block-size: 27px;
+  block-size: 33px;
   border: 1px solid var(--crosslog-border);
   border-radius: var(--crosslog-control-radius);
   background: var(--crosslog-surface);
