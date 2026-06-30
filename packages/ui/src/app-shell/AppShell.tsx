@@ -502,8 +502,8 @@ export function AppShell({
           break;
         case "discoverNewerDirectoryFile":
           dispatchDirectorySource({
-            type: "refreshFiles",
-            files: [newerDirectoryFile, ...directorySource.files],
+            type: "addFiles",
+            files: [newerDirectoryFile],
           });
           break;
         case "openActivePaneTimeOffset":
@@ -536,7 +536,6 @@ export function AppShell({
       }
     },
     [
-      directorySource.files,
       firstPaneEntry,
       handleFileLifecycleTestAction,
       handleSynchronizationEnabledChange,

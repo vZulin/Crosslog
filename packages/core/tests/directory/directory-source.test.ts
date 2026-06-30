@@ -50,6 +50,30 @@ describe("directory source reducer", () => {
     expect(refreshed.currentFileId).toBe("current");
     expect(refreshed.navigationIndex.previousFileId).toBe("newer");
   });
+
+  it("adds discovered files against the latest navigation state", () => {
+    const source = createDirectorySource({
+      id: "directory",
+      directoryIdentity: { value: "directory", platform: "web" },
+      displayName: "logs",
+      files: [
+        entry("current", "2026-06-16"),
+        entry("selected", "2026-06-15"),
+        entry("older", "2026-06-14"),
+      ],
+      currentFileId: "selected",
+    });
+
+    const navigated = directorySourceReducer(source, { type: "navigate", direction: "previous" });
+    const refreshed = directorySourceReducer(navigated, {
+      type: "addFiles",
+      files: [entry("newer", "2026-06-17")],
+    });
+
+    expect(refreshed.currentFileId).toBe("current");
+    expect(refreshed.navigationIndex.previousFileId).toBe("newer");
+    expect(refreshed.navigationIndex.nextFileId).toBe("selected");
+  });
 });
 
 function entry(id: string, day: string) {
