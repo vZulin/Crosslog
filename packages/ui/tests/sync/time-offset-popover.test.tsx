@@ -5,7 +5,7 @@ import { TimeOffsetPopover } from "../../src/sync/TimeOffsetPopover";
 import { redesignedShellTestIds } from "../../src/app-shell/testIds";
 
 describe("redesigned time offset popover", () => {
-  it("keeps edits as draft values until apply", () => {
+  it("keeps valid edits as draft values until apply", () => {
     const onApply = vi.fn();
     const onClose = vi.fn();
     const { getByRole, getByTestId } = render(
@@ -35,7 +35,7 @@ describe("redesigned time offset popover", () => {
     }
 
     fireEvent.change(getByTestId(redesignedShellTestIds.timeOffsetMinutes), {
-      target: { value: "61" },
+      target: { value: "1" },
     });
     fireEvent.change(getByTestId(redesignedShellTestIds.timeOffsetMilliseconds), {
       target: { value: "250" },
@@ -47,7 +47,7 @@ describe("redesigned time offset popover", () => {
 
     expect(onApply).toHaveBeenCalledWith({
       days: 0,
-      hours: 1,
+      hours: 0,
       minutes: 1,
       seconds: 0,
       milliseconds: 250,
@@ -69,7 +69,49 @@ describe("redesigned time offset popover", () => {
     expect(document.activeElement).toBe(trigger);
   });
 
-  it("rejects invalid draft values without replacing the previous valid offset", () => {
+  it("rejects out-of-range draft fields before apply and identifies invalid fields accessibly", () => {
+    const onApply = vi.fn();
+    const { getByRole, getByTestId } = render(
+      <TimeOffsetPopover
+        title="service.log"
+        value={{ days: 0, hours: 0, minutes: 5, seconds: 0, milliseconds: 0 }}
+        onApply={onApply}
+        onClose={vi.fn()}
+      />,
+    );
+    const popover = getByTestId(redesignedShellTestIds.timeOffsetPopover);
+
+    fireEvent.change(getByTestId(redesignedShellTestIds.timeOffsetHours), {
+      target: { value: "24" },
+    });
+    fireEvent.change(getByTestId(redesignedShellTestIds.timeOffsetMinutes), {
+      target: { value: "60" },
+    });
+    fireEvent.change(getByTestId(redesignedShellTestIds.timeOffsetSeconds), {
+      target: { value: "60" },
+    });
+    fireEvent.change(getByTestId(redesignedShellTestIds.timeOffsetMilliseconds), {
+      target: { value: "1000" },
+    });
+
+    expect(within(popover).getByRole("alert").textContent).toContain("Hours must be 0-23");
+    expect(getByTestId(redesignedShellTestIds.timeOffsetHours).getAttribute("aria-invalid")).toBe("true");
+    expect(getByTestId(redesignedShellTestIds.timeOffsetMinutes).getAttribute("aria-invalid")).toBe("true");
+    expect(getByTestId(redesignedShellTestIds.timeOffsetSeconds).getAttribute("aria-invalid")).toBe("true");
+    expect(getByTestId(redesignedShellTestIds.timeOffsetMilliseconds).getAttribute("aria-invalid")).toBe("true");
+    expect(getByTestId(redesignedShellTestIds.timeOffsetHours).getAttribute("aria-describedby")).toContain(
+      "time-offset-hours-error",
+    );
+    expect(getByRole("button", { name: "Apply time offset for service.log" }).hasAttribute("disabled")).toBe(
+      true,
+    );
+
+    fireEvent.click(getByTestId(redesignedShellTestIds.timeOffsetApply));
+
+    expect(onApply).not.toHaveBeenCalled();
+  });
+
+  it("rejects non-whole draft values without replacing the previous valid offset", () => {
     const onApply = vi.fn();
     const { getByRole, getByTestId } = render(
       <TimeOffsetPopover
@@ -85,7 +127,7 @@ describe("redesigned time offset popover", () => {
       target: { value: "invalid" },
     });
 
-    expect(within(popover).getByRole("alert").textContent).toContain("whole-number");
+    expect(within(popover).getByRole("alert").textContent).toContain("Minutes must be a whole number");
     expect(getByRole("button", { name: "Apply time offset for service.log" }).hasAttribute("disabled")).toBe(
       true,
     );
@@ -93,6 +135,43 @@ describe("redesigned time offset popover", () => {
     fireEvent.click(getByTestId(redesignedShellTestIds.timeOffsetApply));
 
     expect(onApply).not.toHaveBeenCalled();
+  });
+
+  it("applies blank fields as zero without a validation warning", () => {
+    const onApply = vi.fn();
+    const onClose = vi.fn();
+    const { getByTestId, queryByRole } = render(
+      <TimeOffsetPopover
+        title="service.log"
+        value={{ days: 3, hours: 2, minutes: 5, seconds: 4, milliseconds: 9 }}
+        onApply={onApply}
+        onClose={onClose}
+      />,
+    );
+
+    for (const testId of [
+      redesignedShellTestIds.timeOffsetDays,
+      redesignedShellTestIds.timeOffsetHours,
+      redesignedShellTestIds.timeOffsetMinutes,
+      redesignedShellTestIds.timeOffsetSeconds,
+      redesignedShellTestIds.timeOffsetMilliseconds,
+    ]) {
+      fireEvent.change(getByTestId(testId), { target: { value: "" } });
+      expect(getByTestId(testId).getAttribute("aria-invalid")).toBeNull();
+    }
+
+    expect(queryByRole("alert")).toBeNull();
+
+    fireEvent.click(getByTestId(redesignedShellTestIds.timeOffsetApply));
+
+    expect(onApply).toHaveBeenCalledWith({
+      days: 0,
+      hours: 0,
+      minutes: 0,
+      seconds: 0,
+      milliseconds: 0,
+    });
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });
 

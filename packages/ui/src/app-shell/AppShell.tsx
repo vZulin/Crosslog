@@ -9,6 +9,7 @@ import type {
   UiTestSourceKind,
   UiTestSourceOpeningEntryPoint,
   UiTestSourceOpeningEvidence,
+  UiTestTimeOffsetValidationEvidence,
   UiTestWorkspaceLayoutMeasurements,
 } from "@crosslog/platform";
 import type { DirectorySourceRef, DragDropSource, FileSourceRef, UiTestAction } from "@crosslog/platform";
@@ -31,6 +32,7 @@ import {
   getCurrentDirectoryFile,
   logPaneReducer,
   restoreLogPaneStateFromSession,
+  validateTimeOffsetDraft,
   type DirectoryFileEntry,
   type FileSource,
   type Session,
@@ -295,6 +297,7 @@ export function AppShell({
       sourceOpening: sourceOpeningEvidence,
       searchHighlights: getPublishedSearchHighlightEvidence(),
       copyAction: getPublishedCopyActionEvidence(),
+      timeOffsetValidation: getPublishedTimeOffsetValidationEvidence(),
       futureControls: publishedFutureControlState,
     });
   }, [
@@ -935,6 +938,43 @@ function getPublishedRedesignedRegions(
     ...(searchOpen ? [redesignedShellTestIds.paneSearchPopover] : []),
     ...(timeOffsetOpen ? [redesignedShellTestIds.timeOffsetPopover] : []),
   ];
+}
+
+function getPublishedTimeOffsetValidationEvidence(): UiTestTimeOffsetValidationEvidence {
+  const validBoundary = validateTimeOffsetDraft({
+    days: "123456",
+    hours: "23",
+    minutes: "59",
+    seconds: "59",
+    milliseconds: "999",
+  });
+  const invalidBoundary = validateTimeOffsetDraft({
+    days: "0",
+    hours: "24",
+    minutes: "60",
+    seconds: "60",
+    milliseconds: "1000",
+  });
+  const blankDraft = validateTimeOffsetDraft({
+    days: "",
+    hours: "",
+    minutes: "",
+    seconds: "",
+    milliseconds: "",
+  });
+
+  return {
+    validBoundaryAccepted: validBoundary.valid,
+    invalidBoundaryRejected: !invalidBoundary.valid,
+    blankFieldAppliesAsZero:
+      blankDraft.valid &&
+      blankDraft.offset.days === 0 &&
+      blankDraft.offset.hours === 0 &&
+      blankDraft.offset.minutes === 0 &&
+      blankDraft.offset.seconds === 0 &&
+      blankDraft.offset.milliseconds === 0,
+    invalidFields: invalidBoundary.valid ? [] : invalidBoundary.errors.map((error) => error.field),
+  };
 }
 
 function getPlatformChromeRegion(

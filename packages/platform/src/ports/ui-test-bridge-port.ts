@@ -46,6 +46,15 @@ export interface UiTestCopyActionEvidence {
   readonly copiedProductTextVisible: boolean;
 }
 
+export type UiTestTimeOffsetValidationField = "days" | "hours" | "minutes" | "seconds" | "milliseconds";
+
+export interface UiTestTimeOffsetValidationEvidence {
+  readonly validBoundaryAccepted: boolean;
+  readonly invalidBoundaryRejected: boolean;
+  readonly blankFieldAppliesAsZero: boolean;
+  readonly invalidFields: readonly UiTestTimeOffsetValidationField[];
+}
+
 export type UiTestSourceOpeningStatus = "idle" | "pending" | "cancelled" | "opened" | "error";
 export type UiTestSourceOpeningEntryPoint =
   | "none"
@@ -102,6 +111,7 @@ export interface UiTestShellState {
   readonly paneNavigation: UiTestPaneNavigationEvidence;
   readonly searchHighlights: UiTestSearchHighlightEvidence;
   readonly copyAction: UiTestCopyActionEvidence;
+  readonly timeOffsetValidation: UiTestTimeOffsetValidationEvidence;
   readonly sourceOpening: UiTestSourceOpeningEvidence;
   readonly futureControls: UiTestFutureControlState;
 }
@@ -197,6 +207,12 @@ export function formatUiTestShellState(state: UiTestShellState): string {
     `copyActionAnchored=${formatNullableBoolean(state.copyAction.pointerAnchored)}`,
     `copyActionBounded=${formatNullableBoolean(state.copyAction.viewportBounded)}`,
     `copiedText=${state.copyAction.copiedProductTextVisible ? "visible" : "absent"}`,
+    `timeOffsetValidBoundary=${state.timeOffsetValidation.validBoundaryAccepted ? "accepted" : "rejected"}`,
+    `timeOffsetInvalidBoundary=${state.timeOffsetValidation.invalidBoundaryRejected ? "rejected" : "accepted"}`,
+    `timeOffsetBlankField=${state.timeOffsetValidation.blankFieldAppliesAsZero ? "zero" : "invalid"}`,
+    `timeOffsetInvalidFields=${
+      state.timeOffsetValidation.invalidFields.length > 0 ? state.timeOffsetValidation.invalidFields.join(",") : "none"
+    }`,
     `regions=${state.redesignedRegions.length > 0 ? state.redesignedRegions.join(",") : "none"}`,
   ].join(";");
 }

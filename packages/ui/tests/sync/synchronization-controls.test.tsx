@@ -17,7 +17,7 @@ describe("synchronization controls", () => {
     expect(onEnabledChange).toHaveBeenCalledWith(false);
   });
 
-  it("normalizes edited per-pane offsets", () => {
+  it("applies only valid per-pane offset edits", () => {
     const onChange = vi.fn();
     const { getByLabelText } = render(
       <TimeOffsetEditor
@@ -29,10 +29,15 @@ describe("synchronization controls", () => {
 
     fireEvent.change(getByLabelText("minutes offset for app.log"), { target: { value: "61" } });
 
+    expect(getByLabelText("minutes offset for app.log").getAttribute("aria-invalid")).toBe("true");
+    expect(onChange).not.toHaveBeenCalled();
+
+    fireEvent.change(getByLabelText("minutes offset for app.log"), { target: { value: "59" } });
+
     expect(onChange).toHaveBeenCalledWith({
       days: 0,
-      hours: 1,
-      minutes: 1,
+      hours: 0,
+      minutes: 59,
       seconds: 0,
       milliseconds: 0,
     });

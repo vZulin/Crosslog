@@ -1,6 +1,6 @@
 import React from "react";
-import type { TimeOffset } from "@crosslog/core";
-import { normalizeTimeOffset } from "@crosslog/core";
+import type { TimeOffset, TimeOffsetDraft, TimeOffsetDraftFieldError, TimeOffsetField } from "@crosslog/core";
+import { createTimeOffsetDraft, validateTimeOffsetDraft } from "@crosslog/core";
 import { CrosslogIcon } from "../app-shell/icons";
 import { Popover, type PopoverFocusReturnRef } from "../app-shell/Popover";
 import { redesignedShellTestIds } from "../app-shell/testIds";
@@ -12,9 +12,6 @@ export interface TimeOffsetPopoverProps {
   readonly onApply: (offset: TimeOffset) => void;
   readonly onClose: () => void;
 }
-
-type TimeOffsetField = keyof TimeOffset;
-type TimeOffsetDraft = Record<TimeOffsetField, string>;
 
 const offsetFields = [
   { field: "days", label: "Days", visualLabel: "Days", testId: redesignedShellTestIds.timeOffsetDays },
@@ -36,7 +33,9 @@ const offsetFields = [
 
 export function TimeOffsetPopover({ title, value, returnFocusRef, onApply, onClose }: TimeOffsetPopoverProps) {
   const [draft, setDraft] = React.useState<TimeOffsetDraft>(() => createDraft(value));
-  const parsedDraft = parseDraft(draft);
+  const validation = validateTimeOffsetDraft(draft);
+  const errorsByField = createErrorMap(validation.errors);
+  const firstError = validation.errors[0] ?? null;
   const firstInputRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
@@ -55,11 +54,11 @@ export function TimeOffsetPopover({ title, value, returnFocusRef, onApply, onClo
   };
 
   const applyDraft = () => {
-    if (!parsedDraft.valid) {
+    if (!validation.valid) {
       return;
     }
 
-    onApply(normalizeTimeOffset(parsedDraft.offset));
+    onApply(validation.offset);
     onClose();
   };
 
@@ -84,8 +83,15 @@ export function TimeOffsetPopover({ title, value, returnFocusRef, onApply, onClo
               <span className="crosslog-time-offset-popover__field-label" aria-hidden="true">
                 {visualLabel}
               </span>
+              {errorsByField[field] ? (
+                <span className="crosslog-time-offset-popover__field-error" id={fieldErrorId(title, field)}>
+                  {errorsByField[field]?.message}
+                </span>
+              ) : null}
               <input
-                aria-invalid={!isValidIntegerDraft(draft[field])}
+                aria-describedby={errorsByField[field] ? fieldErrorId(title, field) : undefined}
+                aria-errormessage={errorsByField[field] ? fieldErrorId(title, field) : undefined}
+                aria-invalid={errorsByField[field] ? true : undefined}
                 aria-label={`${label} offset for ${title}`}
                 data-testid={testId}
                 inputMode="numeric"
@@ -97,15 +103,15 @@ export function TimeOffsetPopover({ title, value, returnFocusRef, onApply, onClo
             </label>
           ))}
         </div>
-        {!parsedDraft.valid ? (
+        {firstError ? (
           <span className="crosslog-time-offset-popover__error" role="alert">
-            Use whole-number values.
+            {firstError.message}
           </span>
         ) : null}
         <button
           className="crosslog-time-offset-popover__apply"
           data-testid={redesignedShellTestIds.timeOffsetApply}
-          disabled={!parsedDraft.valid}
+          disabled={!validation.valid}
           onClick={applyDraft}
           type="button"
           aria-label={`Apply time offset for ${title}`}
@@ -118,38 +124,21 @@ export function TimeOffsetPopover({ title, value, returnFocusRef, onApply, onClo
 }
 
 function createDraft(offset: TimeOffset): TimeOffsetDraft {
-  const normalized = normalizeTimeOffset(offset);
-
-  return {
-    days: String(normalized.days),
-    hours: String(normalized.hours),
-    minutes: String(normalized.minutes),
-    seconds: String(normalized.seconds),
-    milliseconds: String(normalized.milliseconds),
-  };
+  return createTimeOffsetDraft(offset);
 }
 
-function parseDraft(draft: TimeOffsetDraft): { readonly valid: true; readonly offset: TimeOffset } | { readonly valid: false } {
-  if (!offsetFields.every(({ field }) => isValidIntegerDraft(draft[field]))) {
-    return { valid: false };
+function createErrorMap(
+  errors: readonly TimeOffsetDraftFieldError[],
+): Partial<Record<TimeOffsetField, TimeOffsetDraftFieldError>> {
+  const errorMap: Partial<Record<TimeOffsetField, TimeOffsetDraftFieldError>> = {};
+
+  for (const error of errors) {
+    errorMap[error.field] = error;
   }
 
-  return {
-    valid: true,
-    offset: {
-      days: Number.parseInt(draft.days, 10),
-      hours: Number.parseInt(draft.hours, 10),
-      minutes: Number.parseInt(draft.minutes, 10),
-      seconds: Number.parseInt(draft.seconds, 10),
-      milliseconds: Number.parseInt(draft.milliseconds, 10),
-    },
-  };
+  return errorMap;
 }
 
-function isValidIntegerDraft(value: string): boolean {
-  if (!/^[+-]?\d+$/.test(value.trim())) {
-    return false;
-  }
-
-  return Number.isSafeInteger(Number.parseInt(value, 10));
+function fieldErrorId(title: string, field: TimeOffsetField): string {
+  return `time-offset-${field}-error-${title.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
 }

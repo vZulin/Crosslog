@@ -30,12 +30,44 @@ test("applies valid pane offsets and rejects invalid offset drafts", async ({ pa
   await expect(appOffsetPopover.getByRole("button", { name: /Close time offset/u })).toHaveCount(0);
 
   await appPane.getByTestId(redesignedShellTestIds.timeOffsetMinutes).fill("invalid");
-  await expect(appPane.getByRole("alert")).toContainText("whole-number");
+  await expect(appPane.getByRole("alert")).toContainText("Minutes must be a whole number");
+  await expect(appPane.getByTestId(redesignedShellTestIds.timeOffsetMinutes)).toHaveAttribute("aria-invalid", "true");
+  await expect(appPane.getByTestId(redesignedShellTestIds.timeOffsetApply)).toBeDisabled();
+
+  await appPane.getByTestId(redesignedShellTestIds.timeOffsetMinutes).fill("60");
+  await appPane.getByTestId(redesignedShellTestIds.timeOffsetHours).fill("24");
+  await appPane.getByTestId(redesignedShellTestIds.timeOffsetSeconds).fill("60");
+  await appPane.getByTestId(redesignedShellTestIds.timeOffsetMilliseconds).fill("1000");
+  await expect(appPane.getByRole("alert")).toContainText("Hours must be 0-23");
+  await expect(appPane.getByTestId(redesignedShellTestIds.timeOffsetHours)).toHaveAttribute("aria-invalid", "true");
+  await expect(appPane.getByTestId(redesignedShellTestIds.timeOffsetMinutes)).toHaveAttribute("aria-invalid", "true");
+  await expect(appPane.getByTestId(redesignedShellTestIds.timeOffsetSeconds)).toHaveAttribute("aria-invalid", "true");
+  await expect(appPane.getByTestId(redesignedShellTestIds.timeOffsetMilliseconds)).toHaveAttribute("aria-invalid", "true");
   await expect(appPane.getByTestId(redesignedShellTestIds.timeOffsetApply)).toBeDisabled();
   await expect(appPane.getByTestId(redesignedShellTestIds.paneHeaderOffset)).toContainText("0 ms");
-  await page.keyboard.press("Escape");
+
+  await appPane.getByTestId(redesignedShellTestIds.timeOffsetDays).fill("123456");
+  await appPane.getByTestId(redesignedShellTestIds.timeOffsetHours).fill("23");
+  await appPane.getByTestId(redesignedShellTestIds.timeOffsetMinutes).fill("59");
+  await appPane.getByTestId(redesignedShellTestIds.timeOffsetSeconds).fill("59");
+  await appPane.getByTestId(redesignedShellTestIds.timeOffsetMilliseconds).fill("999");
+  await expect(appPane.getByRole("alert")).toHaveCount(0);
+  await expect(appPane.getByTestId(redesignedShellTestIds.timeOffsetApply)).toBeEnabled();
+
+  for (const testId of [
+    redesignedShellTestIds.timeOffsetDays,
+    redesignedShellTestIds.timeOffsetHours,
+    redesignedShellTestIds.timeOffsetMinutes,
+    redesignedShellTestIds.timeOffsetSeconds,
+    redesignedShellTestIds.timeOffsetMilliseconds,
+  ]) {
+    await appPane.getByTestId(testId).fill("");
+    await expect(appPane.getByTestId(testId)).not.toHaveAttribute("aria-invalid", "true");
+  }
+  await expect(appPane.getByRole("alert")).toHaveCount(0);
+  await appPane.getByTestId(redesignedShellTestIds.timeOffsetApply).click();
   await expect(appOffsetPopover).toHaveCount(0);
-  await expect(appOffsetTag).toBeFocused();
+  await expect(appPane.getByTestId(redesignedShellTestIds.paneHeaderOffset)).toContainText("0 ms");
 
   await appOffsetTag.click();
   await appPane.getByTestId(redesignedShellTestIds.timeOffsetMinutes).fill("1");

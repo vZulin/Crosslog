@@ -6,6 +6,27 @@ export interface TimeOffset {
   readonly milliseconds: number;
 }
 
+export type TimeOffsetField = keyof TimeOffset;
+export type TimeOffsetDraft = Record<TimeOffsetField, string>;
+export type TimeOffsetDraftErrorCode = "notWholeNumber" | "outOfRange";
+
+export interface TimeOffsetDraftFieldError {
+  readonly field: TimeOffsetField;
+  readonly code: TimeOffsetDraftErrorCode;
+  readonly message: string;
+}
+
+export type TimeOffsetDraftValidationResult =
+  | {
+      readonly valid: true;
+      readonly offset: TimeOffset;
+      readonly errors: readonly [];
+    }
+  | {
+      readonly valid: false;
+      readonly errors: readonly TimeOffsetDraftFieldError[];
+    };
+
 export const zeroTimeOffset: TimeOffset = {
   days: 0,
   hours: 0,
@@ -14,10 +35,27 @@ export const zeroTimeOffset: TimeOffset = {
   milliseconds: 0,
 };
 
+export const timeOffsetFields = ["days", "hours", "minutes", "seconds", "milliseconds"] as const satisfies readonly TimeOffsetField[];
+
 const MILLISECONDS_PER_SECOND = 1_000;
 const MILLISECONDS_PER_MINUTE = 60 * MILLISECONDS_PER_SECOND;
 const MILLISECONDS_PER_HOUR = 60 * MILLISECONDS_PER_MINUTE;
 const MILLISECONDS_PER_DAY = 24 * MILLISECONDS_PER_HOUR;
+
+const fieldLabels = {
+  days: "Days",
+  hours: "Hours",
+  minutes: "Minutes",
+  seconds: "Seconds",
+  milliseconds: "Milliseconds",
+} as const satisfies Record<TimeOffsetField, string>;
+
+const boundedFieldRanges = {
+  hours: { min: 0, max: 23 },
+  minutes: { min: 0, max: 59 },
+  seconds: { min: 0, max: 59 },
+  milliseconds: { min: 0, max: 999 },
+} as const satisfies Partial<Record<TimeOffsetField, { readonly min: number; readonly max: number }>>;
 
 export function timeOffsetToMilliseconds(offset: TimeOffset): number {
   return (
@@ -51,6 +89,85 @@ export function normalizeTimeOffset(offset: TimeOffset): TimeOffset {
   };
 }
 
+export function createTimeOffsetDraft(offset: TimeOffset): TimeOffsetDraft {
+  const totalMilliseconds = timeOffsetToMilliseconds(offset);
+
+  if (totalMilliseconds >= 0) {
+    const normalized = normalizeTimeOffset(offset);
+
+    return {
+      days: String(normalized.days),
+      hours: String(normalized.hours),
+      minutes: String(normalized.minutes),
+      seconds: String(normalized.seconds),
+      milliseconds: String(normalized.milliseconds),
+    };
+  }
+
+  let remaining = Math.abs(totalMilliseconds);
+  const wholeDays = Math.trunc(remaining / MILLISECONDS_PER_DAY);
+  remaining %= MILLISECONDS_PER_DAY;
+
+  if (remaining === 0) {
+    return {
+      days: String(-wholeDays),
+      hours: "0",
+      minutes: "0",
+      seconds: "0",
+      milliseconds: "0",
+    };
+  }
+
+  const subDayMilliseconds = MILLISECONDS_PER_DAY - remaining;
+  const subDayOffset = normalizeTimeOffset({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+    milliseconds: subDayMilliseconds,
+  });
+
+  return {
+    days: String(-(wholeDays + 1)),
+    hours: String(subDayOffset.hours),
+    minutes: String(subDayOffset.minutes),
+    seconds: String(subDayOffset.seconds),
+    milliseconds: String(subDayOffset.milliseconds),
+  };
+}
+
+export function validateTimeOffsetDraft(draft: TimeOffsetDraft): TimeOffsetDraftValidationResult {
+  const parsedFields: Partial<Record<TimeOffsetField, number>> = {};
+  const errors: TimeOffsetDraftFieldError[] = [];
+
+  for (const field of timeOffsetFields) {
+    const fieldResult = parseTimeOffsetDraftField(field, draft[field]);
+
+    if (fieldResult.valid) {
+      parsedFields[field] = fieldResult.value;
+      continue;
+    }
+
+    errors.push(fieldResult.error);
+  }
+
+  if (errors.length > 0) {
+    return { valid: false, errors };
+  }
+
+  return {
+    valid: true,
+    offset: {
+      days: parsedFields.days ?? 0,
+      hours: parsedFields.hours ?? 0,
+      minutes: parsedFields.minutes ?? 0,
+      seconds: parsedFields.seconds ?? 0,
+      milliseconds: parsedFields.milliseconds ?? 0,
+    },
+    errors: [],
+  };
+}
+
 export function applyTimeOffset(timestamp: Date, offset: TimeOffset): Date {
   return new Date(timestamp.getTime() + timeOffsetToMilliseconds(offset));
 }
@@ -74,4 +191,54 @@ export function formatTimeOffset(offset: TimeOffset): string {
     .map(([unit, value]) => `${Math.abs(value)}${unit}`);
 
   return `${totalMilliseconds < 0 ? "-" : "+"}${parts.join(" ")}`;
+}
+
+function parseTimeOffsetDraftField(
+  field: TimeOffsetField,
+  rawValue: string,
+): { readonly valid: true; readonly value: number } | { readonly valid: false; readonly error: TimeOffsetDraftFieldError } {
+  const value = rawValue.trim();
+
+  if (value === "") {
+    return { valid: true, value: 0 };
+  }
+
+  if (!/^[+-]?\d+$/.test(value)) {
+    return {
+      valid: false,
+      error: {
+        field,
+        code: "notWholeNumber",
+        message: `${fieldLabels[field]} must be a whole number.`,
+      },
+    };
+  }
+
+  const parsedValue = Number.parseInt(value, 10);
+
+  if (!Number.isSafeInteger(parsedValue)) {
+    return {
+      valid: false,
+      error: {
+        field,
+        code: "notWholeNumber",
+        message: `${fieldLabels[field]} must be a safe whole number.`,
+      },
+    };
+  }
+
+  const range = boundedFieldRanges[field];
+
+  if (range && (parsedValue < range.min || parsedValue > range.max)) {
+    return {
+      valid: false,
+      error: {
+        field,
+        code: "outOfRange",
+        message: `${fieldLabels[field]} must be ${range.min}-${range.max}.`,
+      },
+    };
+  }
+
+  return { valid: true, value: parsedValue };
 }

@@ -9,6 +9,10 @@ final class TimeOffsetUITests: CrosslogUITests {
         waitForUiTestTitle("timeOffset=open", in: app)
         waitForUiTestTitle("timeOffsetPane=app-2026-06-16.log", in: app)
         waitForUiTestTitle(RedesignedShellAssertions.timeOffsetPopover, in: app)
+        waitForUiTestTitle("timeOffsetValidBoundary=accepted", in: app)
+        waitForUiTestTitle("timeOffsetInvalidBoundary=rejected", in: app)
+        waitForUiTestTitle("timeOffsetBlankField=zero", in: app)
+        waitForUiTestTitle("timeOffsetInvalidFields=hours,minutes,seconds,milliseconds", in: app)
 
         performUiTestAction(.setActivePaneTimeOffset)
         waitForUiTestTitle("timeOffset=closed", in: app)

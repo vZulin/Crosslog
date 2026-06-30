@@ -945,6 +945,26 @@ body {
 
 .crosslog-time-offset-popover__field input[aria-invalid="true"] {
   border-color: var(--crosslog-error-text);
+  box-shadow: 0 0 0 1px var(--crosslog-error-text);
+}
+
+.crosslog-time-offset-popover__field input:focus-visible {
+  outline: 2px solid var(--crosslog-accent);
+  outline-offset: 1px;
+}
+
+.crosslog-time-offset-popover__field input[aria-invalid="true"]:focus-visible {
+  outline-color: var(--crosslog-error-text);
+}
+
+.crosslog-time-offset-popover__field-error,
+.crosslog-time-offset-editor__field-error {
+  position: absolute;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  inline-size: 1px;
+  block-size: 1px;
+  white-space: nowrap;
 }
 
 .crosslog-time-offset-popover__error {

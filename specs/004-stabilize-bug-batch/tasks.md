@@ -166,22 +166,22 @@
 
 ### Tests for User Story 4 (MANDATORY)
 
-- [ ] T080 [P] [US4] Extend core time offset parsing and formatting boundary tests in `packages/core/tests/sync/time-offset.test.ts`.
-- [ ] T081 [P] [US4] Update component boundary, blank-field, and accessible invalid-state tests in `packages/ui/tests/sync/time-offset-popover.test.tsx`.
-- [ ] T082 [P] [US4] Update Web time offset boundary and blank-as-zero coverage in `apps/web/tests/ui/time-offset-popover.spec.ts`.
-- [ ] T083 [P] [US4] Update Desktop WDIO time offset boundary and blank-as-zero coverage in `apps/desktop/tests/ui/time-offset-popover.spec.ts`.
-- [ ] T084 [P] [US4] Update macOS time offset boundary and blank-as-zero coverage in `apps/desktop/tests/ui/macos/TimeOffsetUITests.swift`.
-- [ ] T085 [P] [US4] Add synchronization-after-valid-offset regression coverage in `packages/core/tests/sync/sync-engine.test.ts`.
+- [X] T080 [P] [US4] Extend core time offset parsing and formatting boundary tests in `packages/core/tests/sync/time-offset.test.ts`.
+- [X] T081 [P] [US4] Update component boundary, blank-field, and accessible invalid-state tests in `packages/ui/tests/sync/time-offset-popover.test.tsx`.
+- [X] T082 [P] [US4] Update Web time offset boundary and blank-as-zero coverage in `apps/web/tests/ui/time-offset-popover.spec.ts`.
+- [X] T083 [P] [US4] Update Desktop WDIO time offset boundary and blank-as-zero coverage in `apps/desktop/tests/ui/time-offset-popover.spec.ts`.
+- [X] T084 [P] [US4] Update macOS time offset boundary and blank-as-zero coverage in `apps/desktop/tests/ui/macos/TimeOffsetUITests.swift`.
+- [X] T085 [P] [US4] Add synchronization-after-valid-offset regression coverage in `packages/core/tests/sync/sync-engine.test.ts`.
 
 ### Implementation for User Story 4
 
-- [ ] T086 [US4] Implement field-specific draft validation and blank-as-zero conversion in `packages/core/src/sync/time-offset.ts`.
-- [ ] T087 [US4] Apply validation before offset normalization in `packages/ui/src/sync/TimeOffsetEditor.tsx`.
-- [ ] T088 [US4] Prevent invalid drafts from replacing the previous valid offset in `packages/ui/src/sync/TimeOffsetPopover.tsx`.
-- [ ] T089 [US4] Expose accessible invalid states and field-specific errors in `packages/ui/src/sync/TimeOffsetEditor.tsx`.
-- [ ] T090 [US4] Update time offset invalid-state and focus styles in `packages/ui/src/app-shell/activity-rail-theme.css`.
-- [ ] T091 [US4] Publish time offset boundary and blank-field UI test evidence through `packages/platform/src/ports/ui-test-bridge-port.ts`.
-- [ ] T092 [US4] Run targeted US4 time offset validation and synchronization-offset tests from `packages/core/tests/sync/`, `packages/ui/tests/sync/`, and UI/E2E suites.
+- [X] T086 [US4] Implement field-specific draft validation and blank-as-zero conversion in `packages/core/src/sync/time-offset.ts`.
+- [X] T087 [US4] Apply validation before offset normalization in `packages/ui/src/sync/TimeOffsetEditor.tsx`.
+- [X] T088 [US4] Prevent invalid drafts from replacing the previous valid offset in `packages/ui/src/sync/TimeOffsetPopover.tsx`.
+- [X] T089 [US4] Expose accessible invalid states and field-specific errors in `packages/ui/src/sync/TimeOffsetEditor.tsx`.
+- [X] T090 [US4] Update time offset invalid-state and focus styles in `packages/ui/src/app-shell/activity-rail-theme.css`.
+- [X] T091 [US4] Publish time offset boundary and blank-field UI test evidence through `packages/platform/src/ports/ui-test-bridge-port.ts`.
+- [X] T092 [US4] Run targeted US4 time offset validation and synchronization-offset tests from `packages/core/tests/sync/`, `packages/ui/tests/sync/`, and UI/E2E suites.
 
 **Checkpoint**: Bugs 10 and 22 are covered and independently testable.
 

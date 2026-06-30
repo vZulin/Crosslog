@@ -61,7 +61,8 @@ describe("pane-local popovers", () => {
     const middleMinutesField = within(middlePane).getByTestId(redesignedShellTestIds.timeOffsetMinutes);
 
     fireEvent.change(middleMinutesField, { target: { value: "invalid" } });
-    expect(within(middlePane).getByRole("alert").textContent).toContain("whole-number");
+    expect(within(middlePane).getByRole("alert").textContent).toContain("Minutes must be a whole number");
+    expect(middleMinutesField.getAttribute("aria-invalid")).toBe("true");
 
     fireEvent.keyDown(middleMinutesField, { key: "Escape" });
 

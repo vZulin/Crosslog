@@ -49,6 +49,10 @@ describe("UI test bridge shell state contract", () => {
     expect(formatUiTestShellState(state)).toContain("copyActionAnchored=on");
     expect(formatUiTestShellState(state)).toContain("copyActionBounded=on");
     expect(formatUiTestShellState(state)).toContain("copiedText=absent");
+    expect(formatUiTestShellState(state)).toContain("timeOffsetValidBoundary=accepted");
+    expect(formatUiTestShellState(state)).toContain("timeOffsetInvalidBoundary=rejected");
+    expect(formatUiTestShellState(state)).toContain("timeOffsetBlankField=zero");
+    expect(formatUiTestShellState(state)).toContain("timeOffsetInvalidFields=hours,minutes,seconds,milliseconds");
     expect(formatUiTestShellState(state)).toContain("sourceOpening=opened");
     expect(formatUiTestShellState(state)).toContain("sourceEntry=empty-workspace");
     expect(formatUiTestShellState(state)).toContain("futureFiles=disabled");
@@ -166,6 +170,12 @@ function createShellState(overrides: {
       pointerAnchored: true,
       viewportBounded: true,
       copiedProductTextVisible: false,
+    },
+    timeOffsetValidation: {
+      validBoundaryAccepted: true,
+      invalidBoundaryRejected: true,
+      blankFieldAppliesAsZero: true,
+      invalidFields: ["hours", "minutes", "seconds", "milliseconds"],
     },
     sourceOpening: {
       status: "opened",

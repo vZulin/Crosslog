@@ -32,13 +32,51 @@ describe("Desktop time offset popover", () => {
     expect(await appOffsetTag.getAttribute("aria-label")).toContain("0 ms");
 
     await setInputValue(appOffsetMinutes, "invalid");
-    await expect(await appOffsetPopover.$('[role="alert"]')).toHaveText(expect.stringContaining("whole-number"));
+    await expect(await appOffsetPopover.$('[role="alert"]')).toHaveText(
+      expect.stringContaining("Minutes must be a whole number"),
+    );
+    expect(await appOffsetMinutes.getAttribute("aria-invalid")).toBe("true");
     const appOffsetApply = await appPane.$(byTestId(redesignedShellTestIds.timeOffsetApply));
 
     expect(await appOffsetApply.getAttribute("disabled")).not.toBeNull();
-    await pressEscapeInElement(appOffsetMinutes);
+
+    await setInputValue(await appPane.$(byTestId(redesignedShellTestIds.timeOffsetHours)), "24");
+    await setInputValue(appOffsetMinutes, "60");
+    await setInputValue(await appPane.$(byTestId(redesignedShellTestIds.timeOffsetSeconds)), "60");
+    await setInputValue(await appPane.$(byTestId(redesignedShellTestIds.timeOffsetMilliseconds)), "1000");
+    await expect(await appOffsetPopover.$('[role="alert"]')).toHaveText(expect.stringContaining("Hours must be 0-23"));
+    expect(await appPane.$(byTestId(redesignedShellTestIds.timeOffsetHours)).getAttribute("aria-invalid")).toBe("true");
+    expect(await appOffsetMinutes.getAttribute("aria-invalid")).toBe("true");
+    expect(await appPane.$(byTestId(redesignedShellTestIds.timeOffsetSeconds)).getAttribute("aria-invalid")).toBe("true");
+    expect(await appPane.$(byTestId(redesignedShellTestIds.timeOffsetMilliseconds)).getAttribute("aria-invalid")).toBe(
+      "true",
+    );
+    expect(await appOffsetApply.getAttribute("disabled")).not.toBeNull();
+
+    await setInputValue(await appPane.$(byTestId(redesignedShellTestIds.timeOffsetDays)), "123456");
+    await setInputValue(await appPane.$(byTestId(redesignedShellTestIds.timeOffsetHours)), "23");
+    await setInputValue(appOffsetMinutes, "59");
+    await setInputValue(await appPane.$(byTestId(redesignedShellTestIds.timeOffsetSeconds)), "59");
+    await setInputValue(await appPane.$(byTestId(redesignedShellTestIds.timeOffsetMilliseconds)), "999");
+    await expect(await appOffsetPopover.$$('[role="alert"]')).toBeElementsArrayOfSize(0);
+    expect(await appOffsetApply.getAttribute("disabled")).toBeNull();
+
+    for (const testId of [
+      redesignedShellTestIds.timeOffsetDays,
+      redesignedShellTestIds.timeOffsetHours,
+      redesignedShellTestIds.timeOffsetMinutes,
+      redesignedShellTestIds.timeOffsetSeconds,
+      redesignedShellTestIds.timeOffsetMilliseconds,
+    ]) {
+      const field = await appPane.$(byTestId(testId));
+
+      await setInputValue(field, "");
+      expect(await field.getAttribute("aria-invalid")).toBeNull();
+    }
+    await expect(await appOffsetPopover.$$('[role="alert"]')).toBeElementsArrayOfSize(0);
+    await clickElementWithJavaScript(appOffsetApply);
     await expect(await appPane.$$(byTestId(redesignedShellTestIds.timeOffsetPopover))).toBeElementsArrayOfSize(0);
-    expect(await isFocused(appOffsetTag)).toBe(true);
+    expect(await appOffsetTag.getAttribute("aria-label")).toContain("0 ms");
 
     enqueueDesktopUiTestAction("setActivePaneTimeOffset");
     await waitForUiTestTitleFragment("activeOffset=+1m");
@@ -81,19 +119,6 @@ async function setInputValue(element: WebdriverIO.Element, value: string): Promi
     value,
   );
   await expect(element).toHaveValue(value);
-}
-
-async function pressEscapeInElement(element: WebdriverIO.Element): Promise<void> {
-  await element.waitForExist();
-  await browser.execute((target: HTMLElement) => {
-    target.focus();
-    target.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "Escape" }));
-  }, element);
-}
-
-async function isFocused(element: WebdriverIO.Element): Promise<boolean> {
-  await element.waitForExist();
-  return browser.execute((target: HTMLElement) => document.activeElement === target, element);
 }
 
 async function expectMockupTimeOffsetPopoverStructure(

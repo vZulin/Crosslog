@@ -1,6 +1,6 @@
 import React from "react";
-import type { TimeOffset } from "@crosslog/core";
-import { normalizeTimeOffset, zeroTimeOffset } from "@crosslog/core";
+import type { TimeOffset, TimeOffsetDraft, TimeOffsetDraftFieldError, TimeOffsetField } from "@crosslog/core";
+import { createTimeOffsetDraft, timeOffsetFields, validateTimeOffsetDraft, zeroTimeOffset } from "@crosslog/core";
 
 export interface TimeOffsetEditorProps {
   readonly title: string;
@@ -9,29 +9,80 @@ export interface TimeOffsetEditorProps {
 }
 
 export function TimeOffsetEditor({ title, value, onChange }: TimeOffsetEditorProps) {
-  const update = (field: keyof TimeOffset, nextValue: number) => {
-    onChange(normalizeTimeOffset({ ...value, [field]: nextValue }));
+  const [draft, setDraft] = React.useState<TimeOffsetDraft>(() => createTimeOffsetDraft(value));
+  const validation = validateTimeOffsetDraft(draft);
+  const errorsByField = createErrorMap(validation.errors);
+
+  React.useEffect(() => {
+    setDraft(createTimeOffsetDraft(value));
+  }, [value]);
+
+  const update = (field: TimeOffsetField, nextValue: string) => {
+    const nextDraft = {
+      ...draft,
+      [field]: nextValue,
+    };
+    const nextValidation = validateTimeOffsetDraft(nextDraft);
+
+    setDraft(nextDraft);
+
+    if (nextValidation.valid) {
+      onChange(nextValidation.offset);
+    }
+  };
+
+  const reset = () => {
+    setDraft(createTimeOffsetDraft(zeroTimeOffset));
+    onChange(zeroTimeOffset);
   };
 
   return (
     <fieldset aria-label={`Time offset for ${title}`}>
       <legend>Offset</legend>
-      {offsetFields.map((field) => (
+      {timeOffsetFields.map((field) => (
         <label key={field}>
           {field}
+          {errorsByField[field] ? (
+            <span className="crosslog-time-offset-editor__field-error" id={fieldErrorId(title, field)}>
+              {errorsByField[field]?.message}
+            </span>
+          ) : null}
           <input
-            type="number"
+            type="text"
+            inputMode="numeric"
+            aria-describedby={errorsByField[field] ? fieldErrorId(title, field) : undefined}
+            aria-errormessage={errorsByField[field] ? fieldErrorId(title, field) : undefined}
+            aria-invalid={errorsByField[field] ? true : undefined}
             aria-label={`${field} offset for ${title}`}
-            value={value[field]}
-            onChange={(event) => update(field, Number.parseInt(event.currentTarget.value || "0", 10))}
+            value={draft[field]}
+            onChange={(event) => update(field, event.currentTarget.value)}
           />
         </label>
       ))}
-      <button type="button" aria-label={`Reset time offset for ${title}`} onClick={() => onChange(zeroTimeOffset)}>
+      {!validation.valid ? (
+        <span className="crosslog-time-offset-editor__error" role="alert">
+          {validation.errors[0]?.message}
+        </span>
+      ) : null}
+      <button type="button" aria-label={`Reset time offset for ${title}`} onClick={reset}>
         Reset
       </button>
     </fieldset>
   );
 }
 
-const offsetFields: readonly (keyof TimeOffset)[] = ["days", "hours", "minutes", "seconds", "milliseconds"];
+function createErrorMap(
+  errors: readonly TimeOffsetDraftFieldError[],
+): Partial<Record<TimeOffsetField, TimeOffsetDraftFieldError>> {
+  const errorMap: Partial<Record<TimeOffsetField, TimeOffsetDraftFieldError>> = {};
+
+  for (const error of errors) {
+    errorMap[error.field] = error;
+  }
+
+  return errorMap;
+}
+
+function fieldErrorId(title: string, field: TimeOffsetField): string {
+  return `time-offset-editor-${field}-error-${title.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+}
