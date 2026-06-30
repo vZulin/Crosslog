@@ -5,6 +5,11 @@ enum CrosslogUITestAction: String {
     case openSampleLogs
     case copyFirstPane
     case toggleSynchronization
+    case openSettings
+    case closeSettings
+    case setThemeSystem
+    case setThemeLight
+    case setThemeDark
     case reorderFirstPaneAfterSecond
     case keyboardNavigateActivePaneDown
     case wheelNavigateActivePaneDown

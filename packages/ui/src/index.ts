@@ -6,6 +6,7 @@ export * from "./app-shell/EmptyWorkspace";
 export * from "./app-shell/IconButton";
 export * from "./app-shell/IconPreview";
 export * from "./app-shell/Popover";
+export * from "./app-shell/SettingsSurface";
 export * from "./app-shell/StatusBar";
 export * from "./app-shell/Topbar";
 export * from "./app-shell/WindowChrome";

@@ -24,6 +24,15 @@ test.describe("redesigned shell viewport coverage", () => {
       await expect(shell.activityRail).toBeVisible();
       await expect(shell.paneWorkspace).toBeVisible();
       await expect(shell.statusBar).toBeVisible();
+      await expect(shell.topbarSync).toHaveAttribute("data-sync-state", "active");
+      await expect(shell.topbarSync.getByRole("button", { name: "Toggle time synchronization" })).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
+
+      await page.getByRole("button", { name: "Settings" }).click();
+      await expect(shell.settingsSurface).toBeVisible();
+      await expect(shell.settingsThemeSystem).toBeChecked();
 
       await openSampleLogsWithWebUiBridge(page);
       await expect(shell.logPanes).toHaveCount(3);
@@ -41,6 +50,13 @@ test.describe("redesigned shell viewport coverage", () => {
         { name: "topbar", locator: shell.topbar },
         { name: "activity rail", locator: shell.activityRail },
         { name: "pane workspace", locator: shell.paneWorkspace },
+        { name: "status bar", locator: shell.statusBar },
+      ]);
+
+      await expectPairwiseNoOverlap([
+        { name: "settings", locator: shell.settingsSurface },
+        { name: "topbar", locator: shell.topbar },
+        { name: "activity rail", locator: shell.activityRail },
         { name: "status bar", locator: shell.statusBar },
       ]);
 

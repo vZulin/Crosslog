@@ -1,4 +1,5 @@
 export type UiTestThemeVariant = "light" | "dark";
+export type UiTestThemePreference = "system" | "light" | "dark";
 export type UiTestPlatformShellVariant = "macos" | "windows" | "linux" | "web";
 
 export interface UiTestObsoleteControlVisibility {
@@ -83,18 +84,25 @@ export interface UiTestFutureControlState {
   readonly activityRailSettings: UiTestControlAvailability;
 }
 
+export type UiTestSettingsSurfaceStatus = "closed" | "open";
+export type UiTestSyncVisualState = "inactive" | "active";
+
 export interface UiTestShellState {
   readonly status: "empty" | "logs";
   readonly themeVariant: UiTestThemeVariant;
+  readonly themePreference: UiTestThemePreference;
   readonly platformShellVariant: UiTestPlatformShellVariant;
   readonly paneCount: number;
   readonly paneTitles: readonly string[];
   readonly activePaneTitle: string | null;
   readonly synchronizationEnabled: boolean;
+  readonly syncVisualState: UiTestSyncVisualState;
+  readonly syncPressedState: boolean;
   readonly paneSearchStatus: "closed" | "open" | "error";
   readonly paneSearchPaneTitle: string | null;
   readonly timeOffsetPopoverStatus: "closed" | "open";
   readonly timeOffsetPaneTitle: string | null;
+  readonly settingsSurfaceStatus: UiTestSettingsSurfaceStatus;
   readonly activePaneOffsetLabel: string | null;
   readonly copiedPaneTitle: string | null;
   readonly sessionSnapshotStatus: "idle" | "pending" | "written" | "error";
@@ -120,6 +128,11 @@ export const uiTestActions = [
   "openSampleLogs",
   "copyFirstPane",
   "toggleSynchronization",
+  "openSettings",
+  "closeSettings",
+  "setThemeSystem",
+  "setThemeLight",
+  "setThemeDark",
   "reorderFirstPaneAfterSecond",
   "keyboardNavigateActivePaneDown",
   "wheelNavigateActivePaneDown",
@@ -158,13 +171,17 @@ export function formatUiTestShellState(state: UiTestShellState): string {
   return [
     `state=${state.status}`,
     `theme=${state.themeVariant}`,
+    `themePreference=${state.themePreference}`,
     `platform=${state.platformShellVariant}`,
     `panes=${state.paneCount}`,
     `sync=${state.synchronizationEnabled ? "on" : "off"}`,
+    `syncVisual=${state.syncVisualState}`,
+    `syncPressed=${state.syncPressedState ? "on" : "off"}`,
     `search=${state.paneSearchStatus}`,
     `searchPane=${state.paneSearchPaneTitle ?? "none"}`,
     `timeOffset=${state.timeOffsetPopoverStatus}`,
     `timeOffsetPane=${state.timeOffsetPaneTitle ?? "none"}`,
+    `settingsSurface=${state.settingsSurfaceStatus}`,
     `activeOffset=${state.activePaneOffsetLabel ?? "none"}`,
     `session=${state.sessionSnapshotStatus}`,
     `copied=${state.copiedPaneTitle ?? "none"}`,

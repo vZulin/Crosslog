@@ -32,7 +32,11 @@ export function Topbar({
           type="search"
         />
       </label>
-      <div className="crosslog-topbar__sync" data-testid={redesignedShellTestIds.topbarSync}>
+      <div
+        className="crosslog-topbar__sync"
+        data-sync-state={syncEnabled ? "active" : "inactive"}
+        data-testid={redesignedShellTestIds.topbarSync}
+      >
         <SynchronizationToggle
           enabled={syncEnabled}
           onEnabledChange={onSyncEnabledChange}

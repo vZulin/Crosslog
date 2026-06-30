@@ -14,13 +14,19 @@ export interface AppProps {
 }
 
 export function App({ platform }: AppProps) {
-  const shellPresentation = useCurrentShellPresentation(platform.kind);
+  const { hasThemeOverride, shellPresentation } = useCurrentShellPresentation(platform.kind);
 
   if (shouldShowIconPreview()) {
     return <IconPreview />;
   }
 
-  return <AppShell platform={platform} shellPresentation={shellPresentation} />;
+  return (
+    <AppShell
+      platform={platform}
+      shellPresentation={shellPresentation}
+      useShellPresentationTheme={hasThemeOverride}
+    />
+  );
 }
 
 function shouldShowIconPreview(): boolean {
@@ -58,7 +64,10 @@ function useCurrentShellPresentation(runtimeKind: CrosslogPlatform["kind"]) {
   }, []);
 
   return React.useMemo(
-    () => resolveCurrentShellPresentation(runtimeKind, presentationSearch),
+    () => ({
+      hasThemeOverride: hasShellThemeOverride(presentationSearch),
+      shellPresentation: resolveCurrentShellPresentation(runtimeKind, presentationSearch),
+    }),
     [presentationSearch, runtimeKind],
   );
 }
@@ -73,4 +82,8 @@ function getNavigatorPlatform(): string | null {
 
 function getNavigatorUserAgent(): string | null {
   return typeof navigator === "undefined" ? null : navigator.userAgent;
+}
+
+function hasShellThemeOverride(search: string): boolean {
+  return parseShellPresentationSearchParams(search).themeVariant !== null;
 }

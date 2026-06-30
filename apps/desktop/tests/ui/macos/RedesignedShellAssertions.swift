@@ -14,6 +14,7 @@ enum RedesignedShellAssertions {
     static let platformChromeLinuxCaptionControls = "platform-chrome-linux-caption-controls"
     static let platformChromeWebTitle = "platform-chrome-web-title"
     static let activityRail = "activity-rail"
+    static let settingsSurface = "settings-surface"
     static let emptyWorkspace = "empty-workspace"
     static let emptyDropZone = "empty-drop-zone"
     static let emptyOpenSource = "empty-open-source"
@@ -164,6 +165,25 @@ enum RedesignedShellAssertions {
                 line: line
             )
         }
+    }
+
+    static func assertSettingsSurfaceOpen(
+        in app: XCUIApplication,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        XCTAssertTrue(
+            waitForUiTestTitleFragment("settingsSurface=open", in: app, timeout: 5),
+            "Expected settings surface to be open",
+            file: file,
+            line: line
+        )
+        XCTAssertTrue(
+            waitForUiTestTitleFragment("regions=", containing: settingsSurface, in: app, timeout: 5),
+            "Expected settings surface region to be published",
+            file: file,
+            line: line
+        )
     }
 
     static func assertSourceOpeningIdle(

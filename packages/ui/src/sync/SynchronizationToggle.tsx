@@ -15,6 +15,8 @@ export function SynchronizationToggle({
   return (
     <IconButton
       aria-describedby={describedBy}
+      className="crosslog-sync-toggle"
+      data-sync-state={enabled ? "active" : "inactive"}
       data-ui-test-action="toggleSynchronization"
       icon="sync"
       label="Toggle time synchronization"

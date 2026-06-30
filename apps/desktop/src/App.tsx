@@ -13,13 +13,14 @@ export interface AppProps {
 }
 
 export function App({ platform }: AppProps) {
-  const { hasPlatformOverride, shellPresentation } = useCurrentShellPresentation(platform.kind);
+  const { hasPlatformOverride, hasThemeOverride, shellPresentation } = useCurrentShellPresentation(platform.kind);
 
   return (
     <AppShell
       platform={platform}
       renderMacosTrafficLights={platform.kind !== "desktop" || hasPlatformOverride}
       shellPresentation={shellPresentation}
+      useShellPresentationTheme={hasThemeOverride}
     />
   );
 }
@@ -53,6 +54,7 @@ function useCurrentShellPresentation(runtimeKind: CrosslogPlatform["kind"]) {
   return React.useMemo(
     () => ({
       hasPlatformOverride: hasShellPlatformOverride(presentationSearch),
+      hasThemeOverride: hasShellThemeOverride(presentationSearch),
       shellPresentation: resolveCurrentShellPresentation(runtimeKind, presentationSearch),
     }),
     [presentationSearch, runtimeKind],
@@ -73,4 +75,8 @@ function getNavigatorUserAgent(): string | null {
 
 function hasShellPlatformOverride(search: string): boolean {
   return parseShellPresentationSearchParams(search).platformShellVariant !== null;
+}
+
+function hasShellThemeOverride(search: string): boolean {
+  return parseShellPresentationSearchParams(search).themeVariant !== null;
 }

@@ -4,7 +4,7 @@ final class PlatformShellVariantUITests: CrosslogUITests {
     func testMacosChromeAndSharedProductRegionsArePublished() {
         let app = launchApplication()
 
-        RedesignedShellAssertions.assertThemeVariant("light", in: app)
+        waitForUiTestTitle("themePreference=system", in: app)
         RedesignedShellAssertions.assertPlatformVariant("macos", in: app)
         waitForUiTestTitle(RedesignedShellAssertions.platformChrome, in: app)
         waitForUiTestTitle(RedesignedShellAssertions.platformChromeTitle, in: app)

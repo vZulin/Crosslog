@@ -2,6 +2,7 @@ import { browser, expect } from "@wdio/globals";
 import { redesignedShellTestIds } from "@crosslog/ui";
 import {
   byTestId,
+  enqueueDesktopUiTestAction,
   openSampleLogsWithUiBridge,
   waitForDesktopShell,
   waitForUiTestTitleFragment,
@@ -34,6 +35,17 @@ describe("Desktop redesigned shell viewport coverage", () => {
       await expect(browser.$(byTestId(redesignedShellTestIds.activityRail))).toBeExisting();
       await expect(browser.$(byTestId(redesignedShellTestIds.paneWorkspace))).toBeExisting();
       await expect(browser.$(byTestId(redesignedShellTestIds.statusBar))).toBeExisting();
+      await expect(await browser.$(byTestId(redesignedShellTestIds.topbarSync)).getAttribute("data-sync-state")).toBe(
+        "active",
+      );
+      await expect(
+        await browser.$(`${byTestId(redesignedShellTestIds.topbarSync)} button`).getAttribute("aria-pressed"),
+      ).toBe("true");
+
+      enqueueDesktopUiTestAction("openSettings");
+      await waitForUiTestTitleFragment("settingsSurface=open");
+      await expect(browser.$(byTestId(redesignedShellTestIds.settingsSurface))).toBeExisting();
+      await expect(await browser.$(byTestId(redesignedShellTestIds.settingsThemeSystem)).isSelected()).toBe(true);
 
       await expectSelectorsDoNotOverlap([
         { name: `${windowScenario.name} command field`, selector: byTestId(redesignedShellTestIds.commandField) },
@@ -45,6 +57,13 @@ describe("Desktop redesigned shell viewport coverage", () => {
         { name: `${windowScenario.name} topbar`, selector: byTestId(redesignedShellTestIds.topbar) },
         { name: `${windowScenario.name} activity rail`, selector: byTestId(redesignedShellTestIds.activityRail) },
         { name: `${windowScenario.name} pane workspace`, selector: byTestId(redesignedShellTestIds.paneWorkspace) },
+        { name: `${windowScenario.name} status bar`, selector: byTestId(redesignedShellTestIds.statusBar) },
+      ]);
+
+      await expectSelectorsDoNotOverlap([
+        { name: `${windowScenario.name} settings`, selector: byTestId(redesignedShellTestIds.settingsSurface) },
+        { name: `${windowScenario.name} topbar`, selector: byTestId(redesignedShellTestIds.topbar) },
+        { name: `${windowScenario.name} activity rail`, selector: byTestId(redesignedShellTestIds.activityRail) },
         { name: `${windowScenario.name} status bar`, selector: byTestId(redesignedShellTestIds.statusBar) },
       ]);
 

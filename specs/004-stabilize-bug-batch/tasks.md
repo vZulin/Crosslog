@@ -195,29 +195,29 @@
 
 ### Tests for User Story 5 (MANDATORY)
 
-- [ ] T093 [P] [US5] Update sync icon active, inactive, hover, and pressed-state tests in `packages/ui/tests/sync/redesigned-sync-controls.test.tsx`.
-- [ ] T094 [P] [US5] Update shell accessibility tests for Settings and theme controls in `packages/ui/tests/app-shell/redesigned-shell-final-a11y.test.tsx`.
-- [ ] T095 [P] [US5] Update theme default, System/Light/Dark selection, and live System theme tests in `packages/ui/tests/app-shell/theme-variants.test.tsx`.
-- [ ] T096 [P] [US5] Update shell presentation tests for product theme preference compatibility in `packages/ui/tests/app-shell/shell-presentation.test.tsx`.
-- [ ] T097 [P] [US5] Add settings surface component tests in `packages/ui/tests/app-shell/settings-surface.test.tsx`.
-- [ ] T098 [P] [US5] Update Web viewport/no-overlap coverage for Settings, sync, and theme controls in `apps/web/tests/ui/redesigned-shell-viewports.spec.ts`.
-- [ ] T099 [P] [US5] Add Web settings, theme, and live System theme workflow coverage in `apps/web/tests/ui/settings-theme.spec.ts`.
-- [ ] T100 [P] [US5] Update Desktop WDIO viewport/no-overlap coverage for Settings, sync, and theme controls in `apps/desktop/tests/ui/redesigned-shell-viewports.spec.ts`.
-- [ ] T101 [P] [US5] Add Desktop WDIO settings, theme, and live System theme workflow coverage in `apps/desktop/tests/ui/settings-theme.spec.ts`.
-- [ ] T102 [P] [US5] Update macOS viewport assertions for Settings, sync, and theme controls in `apps/desktop/tests/ui/macos/RedesignedShellViewportUITests.swift`.
-- [ ] T103 [P] [US5] Add macOS settings, theme, and live System theme workflow coverage in `apps/desktop/tests/ui/macos/SettingsThemeUITests.swift`.
+- [X] T093 [P] [US5] Update sync icon active, inactive, hover, and pressed-state tests in `packages/ui/tests/sync/redesigned-sync-controls.test.tsx`.
+- [X] T094 [P] [US5] Update shell accessibility tests for Settings and theme controls in `packages/ui/tests/app-shell/redesigned-shell-final-a11y.test.tsx`.
+- [X] T095 [P] [US5] Update theme default, System/Light/Dark selection, and live System theme tests in `packages/ui/tests/app-shell/theme-variants.test.tsx`.
+- [X] T096 [P] [US5] Update shell presentation tests for product theme preference compatibility in `packages/ui/tests/app-shell/shell-presentation.test.tsx`.
+- [X] T097 [P] [US5] Add settings surface component tests in `packages/ui/tests/app-shell/settings-surface.test.tsx`.
+- [X] T098 [P] [US5] Update Web viewport/no-overlap coverage for Settings, sync, and theme controls in `apps/web/tests/ui/redesigned-shell-viewports.spec.ts`.
+- [X] T099 [P] [US5] Add Web settings, theme, and live System theme workflow coverage in `apps/web/tests/ui/settings-theme.spec.ts`.
+- [X] T100 [P] [US5] Update Desktop WDIO viewport/no-overlap coverage for Settings, sync, and theme controls in `apps/desktop/tests/ui/redesigned-shell-viewports.spec.ts`.
+- [X] T101 [P] [US5] Add Desktop WDIO settings, theme, and live System theme workflow coverage in `apps/desktop/tests/ui/settings-theme.spec.ts`.
+- [X] T102 [P] [US5] Update macOS viewport assertions for Settings, sync, and theme controls in `apps/desktop/tests/ui/macos/RedesignedShellViewportUITests.swift`.
+- [X] T103 [P] [US5] Add macOS settings, theme, and live System theme workflow coverage in `apps/desktop/tests/ui/macos/SettingsThemeUITests.swift`.
 
 ### Implementation for User Story 5
 
-- [ ] T104 [US5] Add System, Light, and Dark theme preference state, default System resolution, and live System theme updates in `packages/ui/src/app-shell/shellPresentation.ts`.
-- [ ] T105 [US5] Add minimal settings surface UI in `packages/ui/src/app-shell/SettingsSurface.tsx`.
-- [ ] T106 [US5] Wire Settings open, close, focus return, and theme changes in `packages/ui/src/app-shell/AppShell.tsx`.
-- [ ] T107 [US5] Wire the activity rail Settings action to the settings surface in `packages/ui/src/app-shell/ActivityRail.tsx`.
-- [ ] T108 [US5] Update sync inactive, active, hover, and focus visual states in `packages/ui/src/sync/SynchronizationToggle.tsx`.
-- [ ] T109 [US5] Update topbar sync, settings surface, and theme styles in `packages/ui/src/app-shell/activity-rail-theme.css`.
-- [ ] T110 [US5] Export settings surface and related types from `packages/ui/src/index.ts`.
-- [ ] T111 [US5] Publish settings, theme preference, and sync visual state evidence through `packages/platform/src/ports/ui-test-bridge-port.ts`.
-- [ ] T112 [US5] Run targeted US5 sync, settings, theme, live System theme, and viewport/no-overlap tests from `packages/ui/tests/`, `apps/web/tests/ui/`, and `apps/desktop/tests/ui/`.
+- [X] T104 [US5] Add System, Light, and Dark theme preference state, default System resolution, and live System theme updates in `packages/ui/src/app-shell/shellPresentation.ts`.
+- [X] T105 [US5] Add minimal settings surface UI in `packages/ui/src/app-shell/SettingsSurface.tsx`.
+- [X] T106 [US5] Wire Settings open, close, focus return, and theme changes in `packages/ui/src/app-shell/AppShell.tsx`.
+- [X] T107 [US5] Wire the activity rail Settings action to the settings surface in `packages/ui/src/app-shell/ActivityRail.tsx`.
+- [X] T108 [US5] Update sync inactive, active, hover, and focus visual states in `packages/ui/src/sync/SynchronizationToggle.tsx`.
+- [X] T109 [US5] Update topbar sync, settings surface, and theme styles in `packages/ui/src/app-shell/activity-rail-theme.css`.
+- [X] T110 [US5] Export settings surface and related types from `packages/ui/src/index.ts`.
+- [X] T111 [US5] Publish settings, theme preference, and sync visual state evidence through `packages/platform/src/ports/ui-test-bridge-port.ts`.
+- [X] T112 [US5] Run targeted US5 sync, settings, theme, live System theme, and viewport/no-overlap tests from `packages/ui/tests/`, `apps/web/tests/ui/`, and `apps/desktop/tests/ui/`.
 
 **Checkpoint**: Bugs 11, 14, and 15 are covered and independently testable.
 

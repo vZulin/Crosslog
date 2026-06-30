@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import React from "react";
 import { fireEvent, render, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -24,6 +25,8 @@ describe("redesigned synchronization controls", () => {
     const syncToggle = within(topbarSync).getByRole("button", { name: "Toggle time synchronization" });
 
     expect(syncToggle.getAttribute("aria-pressed")).toBe("true");
+    expect(topbarSync.getAttribute("data-sync-state")).toBe("active");
+    expect(syncToggle.getAttribute("data-sync-state")).toBe("active");
     expect(topbarSync.textContent).not.toContain("Sync on");
     expect(topbarSync.textContent).not.toContain("Sync off");
     expect(getByTestId(redesignedShellTestIds.statusBar).textContent).toContain("Sync on");
@@ -31,7 +34,23 @@ describe("redesigned synchronization controls", () => {
     fireEvent.click(syncToggle);
 
     await waitFor(() => expect(syncToggle.getAttribute("aria-pressed")).toBe("false"));
+    expect(topbarSync.getAttribute("data-sync-state")).toBe("inactive");
+    expect(syncToggle.getAttribute("data-sync-state")).toBe("inactive");
     expect(getByTestId(redesignedShellTestIds.statusBar).textContent).toContain("Sync off");
+  });
+
+  it("defines distinct inactive, active, and hover styles for the topbar sync control", () => {
+    const themeCss = readFileSync("packages/ui/src/app-shell/activity-rail-theme.css", "utf8");
+
+    expect(themeCss).toMatch(
+      /\.crosslog-topbar__sync\[data-sync-state="inactive"\]\s+\.crosslog-sync-toggle\s*\{[^}]*background:\s*var\(--crosslog-tag-surface\);[^}]*color:\s*var\(--crosslog-muted-text\);/s,
+    );
+    expect(themeCss).toMatch(
+      /\.crosslog-topbar__sync\[data-sync-state="active"\]\s+\.crosslog-sync-toggle\s*\{[^}]*background:\s*var\(--crosslog-accent\);[^}]*color:\s*#fff;/s,
+    );
+    expect(themeCss).toMatch(
+      /\.crosslog-topbar__sync\s+\.crosslog-sync-toggle:not\(:disabled\):hover\s*\{[^}]*background:\s*var\(--crosslog-accent-surface\);[^}]*color:\s*var\(--crosslog-accent\);/s,
+    );
   });
 
   it("marks the active pane header and updates the active source summary", async () => {

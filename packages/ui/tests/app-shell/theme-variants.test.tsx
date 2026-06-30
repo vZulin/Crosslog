@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { act, fireEvent, render, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { appendRawLinesToChunks, type FileSource } from "@crosslog/core";
 import type { CrosslogPlatform, FileSourceRef } from "@crosslog/platform";
 import { AppShell } from "../../src/app-shell/AppShell";
@@ -10,9 +10,18 @@ import { usePaneSearchStore } from "../../src/search/usePaneSearchStore";
 import { useSynchronizationStore } from "../../src/sync/useSynchronizationStore";
 
 describe("theme variants", () => {
+  let restoreMatchMedia: (() => void) | null = null;
+
   beforeEach(() => {
+    restoreMatchMedia?.();
+    restoreMatchMedia = null;
     usePaneSearchStore.getState().reset();
     useSynchronizationStore.getState().reset();
+  });
+
+  afterEach(() => {
+    restoreMatchMedia?.();
+    restoreMatchMedia = null;
   });
 
   it("defines independent light and dark design tokens", () => {
@@ -49,6 +58,66 @@ describe("theme variants", () => {
     fireEvent.click(getByRole("button", { name: "Open Source" }));
     await waitFor(() => expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(3));
     expect(getAllByTestId(redesignedShellTestIds.logPane)[0]?.className).toContain("crosslog-log-pane");
+  });
+
+  it("defaults product theme preference to System and resolves from the current system theme", async () => {
+    restoreMatchMedia = installMatchMediaMock(true).restore;
+    const { getByRole, getByTestId } = render(<AppShell platform={createMockPlatform()} />);
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(getByTestId(redesignedShellTestIds.crosslogShell).getAttribute("data-theme")).toBe("dark");
+
+    fireEvent.click(getByRole("button", { name: "Settings" }));
+
+    expect((getByRole("radio", { name: "System" }) as HTMLInputElement).checked).toBe(true);
+    expect((getByRole("radio", { name: "Light" }) as HTMLInputElement).checked).toBe(false);
+    expect((getByRole("radio", { name: "Dark" }) as HTMLInputElement).checked).toBe(false);
+  });
+
+  it("updates live System theme resolution while the app is open", async () => {
+    const matchMediaMock = installMatchMediaMock(false);
+    restoreMatchMedia = matchMediaMock.restore;
+    const { getByTestId } = render(<AppShell platform={createMockPlatform()} />);
+    const shell = getByTestId(redesignedShellTestIds.crosslogShell);
+
+    expect(shell.getAttribute("data-theme")).toBe("light");
+
+    await act(async () => {
+      matchMediaMock.setPrefersDark(true);
+    });
+
+    expect(shell.getAttribute("data-theme")).toBe("dark");
+  });
+
+  it("switches theme without resetting panes, search, or synchronization state", async () => {
+    restoreMatchMedia = installMatchMediaMock(false).restore;
+    const { getAllByTestId, getByRole, getByTestId } = render(<AppShell platform={createMockPlatform()} />);
+
+    fireEvent.click(getByRole("button", { name: "Open Source" }));
+    await waitFor(() => expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(3));
+
+    fireEvent.click(getByRole("button", { name: "Search in app.log" }));
+    const searchField = getByRole("searchbox", { name: "Search app.log" }) as HTMLInputElement;
+    fireEvent.change(searchField, { target: { value: "processed" } });
+    fireEvent.click(getByRole("button", { name: "Toggle time synchronization" }));
+    await waitFor(() =>
+      expect(getByRole("button", { name: "Toggle time synchronization" }).getAttribute("aria-pressed")).toBe("false"),
+    );
+
+    fireEvent.click(getByRole("button", { name: "Settings" }));
+    fireEvent.click(getByRole("radio", { name: "Dark" }));
+
+    expect(getByTestId(redesignedShellTestIds.crosslogShell).getAttribute("data-theme")).toBe("dark");
+    expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(3);
+    expect(getByRole("dialog", { name: "Pane search for app.log" })).toBeTruthy();
+    expect(searchField.value).toBe("processed");
+    expect(getByRole("button", { name: "Toggle time synchronization" }).getAttribute("aria-pressed")).toBe("false");
+
+    fireEvent.click(getByRole("radio", { name: "System" }));
+    expect(getByTestId(redesignedShellTestIds.crosslogShell).getAttribute("data-theme")).toBe("light");
+    expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(3);
   });
 
   it("maps app surfaces, popovers, status, and log severity rows through theme tokens", () => {
@@ -151,5 +220,53 @@ function createTestFileSource(sourceRef: FileSourceRef): FileSource {
     deleted: false,
     replaced: false,
     readError: null,
+  };
+}
+
+function installMatchMediaMock(initialPrefersDark: boolean): {
+  readonly restore: () => void;
+  readonly setPrefersDark: (prefersDark: boolean) => void;
+} {
+  const originalMatchMedia = window.matchMedia;
+  let prefersDark = initialPrefersDark;
+  const listeners = new Set<(event: MediaQueryListEvent) => void>();
+  const mediaQueryList = {
+    get matches() {
+      return prefersDark;
+    },
+    media: "(prefers-color-scheme: dark)",
+    onchange: null,
+    addEventListener: vi.fn((_event: "change", listener: (event: MediaQueryListEvent) => void) => {
+      listeners.add(listener);
+    }),
+    removeEventListener: vi.fn((_event: "change", listener: (event: MediaQueryListEvent) => void) => {
+      listeners.delete(listener);
+    }),
+    addListener: vi.fn((listener: (event: MediaQueryListEvent) => void) => {
+      listeners.add(listener);
+    }),
+    removeListener: vi.fn((listener: (event: MediaQueryListEvent) => void) => {
+      listeners.delete(listener);
+    }),
+    dispatchEvent: vi.fn(),
+  } as unknown as MediaQueryList;
+
+  Object.defineProperty(window, "matchMedia", {
+    configurable: true,
+    value: vi.fn(() => mediaQueryList),
+  });
+
+  return {
+    restore: () => {
+      Object.defineProperty(window, "matchMedia", {
+        configurable: true,
+        value: originalMatchMedia,
+      });
+    },
+    setPrefersDark: (nextPrefersDark: boolean) => {
+      prefersDark = nextPrefersDark;
+      const event = { matches: prefersDark, media: mediaQueryList.media } as MediaQueryListEvent;
+      listeners.forEach((listener) => listener(event));
+    },
   };
 }

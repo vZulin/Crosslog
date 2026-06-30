@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  defaultThemePreference,
   parseShellPresentationSearchParams,
+  resolveThemePreference,
+  resolveThemePreferenceVariant,
   resolveRuntimePlatformShellVariant,
   resolveShellPresentation,
+  resolveSystemThemeVariant,
   shellPresentationQueryParams,
 } from "../../src/app-shell/shellPresentation";
 
@@ -70,5 +74,22 @@ describe("shell presentation helpers", () => {
       themeVariant: "light",
       platformShellVariant: "macos",
     });
+  });
+
+  it("resolves product theme preference independently from presentation overrides", () => {
+    expect(defaultThemePreference).toBe("system");
+    expect(resolveThemePreference(undefined)).toBe("system");
+    expect(resolveThemePreference(" DARK ")).toBe("dark");
+    expect(resolveThemePreference("sepia")).toBe("system");
+    expect(resolveThemePreferenceVariant("system", "dark")).toBe("dark");
+    expect(resolveThemePreferenceVariant("system", "light")).toBe("light");
+    expect(resolveThemePreferenceVariant("light", "dark")).toBe("light");
+    expect(resolveThemePreferenceVariant("dark", "light")).toBe("dark");
+  });
+
+  it("maps system theme media state to a resolved shell theme variant", () => {
+    expect(resolveSystemThemeVariant(true)).toBe("dark");
+    expect(resolveSystemThemeVariant(false)).toBe("light");
+    expect(resolveSystemThemeVariant(null)).toBe("light");
   });
 });

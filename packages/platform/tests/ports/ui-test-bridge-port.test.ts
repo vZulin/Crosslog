@@ -31,6 +31,7 @@ describe("UI test bridge shell state contract", () => {
     });
 
     expect(formatUiTestShellState(state)).toContain("theme=dark");
+    expect(formatUiTestShellState(state)).toContain("themePreference=system");
     expect(formatUiTestShellState(state)).toContain("platform=windows");
     expect(formatUiTestShellState(state)).toContain("obsolete=visible");
     expect(formatUiTestShellState(state)).toContain("workspaceOverflow=on");
@@ -59,6 +60,9 @@ describe("UI test bridge shell state contract", () => {
     expect(formatUiTestShellState(state)).toContain("futureSearch=disabled");
     expect(formatUiTestShellState(state)).toContain("futureCommand=disabled");
     expect(formatUiTestShellState(state)).toContain("settings=enabled");
+    expect(formatUiTestShellState(state)).toContain("settingsSurface=open");
+    expect(formatUiTestShellState(state)).toContain("syncVisual=active");
+    expect(formatUiTestShellState(state)).toContain("syncPressed=on");
   });
 
   it("formats absent obsolete controls and unknown layout measurements", () => {
@@ -99,6 +103,11 @@ describe("UI test bridge shell state contract", () => {
       "openSampleLogs",
       "copyFirstPane",
       "toggleSynchronization",
+      "openSettings",
+      "closeSettings",
+      "setThemeSystem",
+      "setThemeLight",
+      "setThemeDark",
       "reorderFirstPaneAfterSecond",
       "keyboardNavigateActivePaneDown",
       "wheelNavigateActivePaneDown",
@@ -119,6 +128,7 @@ describe("UI test bridge shell state contract", () => {
       "replaceActiveFile",
     ]);
     expect(isUiTestAction("appendActiveFile")).toBe(true);
+    expect(isUiTestAction("setThemeDark")).toBe(true);
     expect(isUiTestAction("showFirstPaneCopyMenu")).toBe(true);
     expect(isUiTestAction("openEmptyDirectory")).toBe(true);
     expect(isUiTestAction("showProductLifecycleToolbar")).toBe(false);
@@ -132,15 +142,19 @@ function createShellState(overrides: {
   return {
     status: "logs",
     themeVariant: "dark",
+    themePreference: "system",
     platformShellVariant: "windows",
     paneCount: 2,
     paneTitles: ["app.log", "service.log"],
     activePaneTitle: "app.log",
     synchronizationEnabled: true,
+    syncVisualState: "active",
+    syncPressedState: true,
     paneSearchStatus: "closed",
     paneSearchPaneTitle: null,
     timeOffsetPopoverStatus: "closed",
     timeOffsetPaneTitle: null,
+    settingsSurfaceStatus: "open",
     activePaneOffsetLabel: "+0000-00-00 00:00:00.000",
     copiedPaneTitle: null,
     sessionSnapshotStatus: "written",

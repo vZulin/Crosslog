@@ -14,6 +14,9 @@ final class RedesignedShellViewportUITests: CrosslogUITests {
         waitForUiTestTitle(RedesignedShellAssertions.activityRail, in: app)
         waitForUiTestTitle(RedesignedShellAssertions.paneWorkspace, in: app)
         waitForUiTestTitle(RedesignedShellAssertions.statusBar, in: app)
+        waitForUiTestTitle("themePreference=system", in: app)
+        waitForUiTestTitle("syncVisual=active", in: app)
+        waitForUiTestTitle("syncPressed=on", in: app)
 
         openSampleLogs(in: app)
         RedesignedShellAssertions.assertRequiredRegions(in: app)
@@ -21,6 +24,9 @@ final class RedesignedShellViewportUITests: CrosslogUITests {
         RedesignedShellAssertions.assertStatusContains("3 panes", in: app)
         RedesignedShellAssertions.assertStatusContains("Sync on", in: app)
         waitForUiTestTitle("active=app-2026-06-16.log", in: app)
+
+        performUiTestAction(.openSettings)
+        RedesignedShellAssertions.assertSettingsSurfaceOpen(in: app)
 
         performUiTestAction(.openActivePaneSearch)
         waitForUiTestTitle("search=open", in: app)

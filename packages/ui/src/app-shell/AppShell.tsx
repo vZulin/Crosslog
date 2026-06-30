@@ -49,9 +49,19 @@ import { usePaneSearchStore } from "../search/usePaneSearchStore";
 import { SessionRecoveryBanner } from "../session/SessionRecoveryBanner";
 import { useSessionRestore, useSessionSnapshotWriter } from "../session/useSessionRestore";
 import { StatusBar } from "./StatusBar";
+import { SettingsSurface } from "./SettingsSurface";
 import { TimestampConfigError } from "../sync/TimestampConfigError";
 import { Topbar } from "./Topbar";
-import { resolveShellPresentation, type ShellPresentation } from "./shellPresentation";
+import {
+  defaultThemePreference,
+  resolveShellPresentation,
+  resolveSystemThemeVariant,
+  resolveThemePreferenceVariant,
+  systemThemeMediaQuery,
+  type ShellPresentation,
+  type ThemePreference,
+  type ThemeVariant,
+} from "./shellPresentation";
 import { redesignedShellTestIds, type RedesignedShellTestId } from "./testIds";
 import { getPaneOffset, useSynchronizationStore } from "../sync/useSynchronizationStore";
 import {
@@ -64,6 +74,7 @@ export interface AppShellProps {
   readonly platform: CrosslogPlatform;
   readonly renderMacosTrafficLights?: boolean;
   readonly shellPresentation?: ShellPresentation;
+  readonly useShellPresentationTheme?: boolean;
 }
 
 const uiTestClipboardWriter: ClipboardWriter = {
@@ -74,9 +85,17 @@ export function AppShell({
   platform,
   renderMacosTrafficLights = true,
   shellPresentation: shellPresentationOverride,
+  useShellPresentationTheme = true,
 }: AppShellProps) {
   const shellPresentation =
     shellPresentationOverride ?? resolveShellPresentation({ runtimeKind: platform.kind });
+  const systemThemeVariant = useSystemThemeVariant();
+  const [themePreference, setThemePreference] = React.useState<ThemePreference>(defaultThemePreference);
+  const resolvedProductThemeVariant = resolveThemePreferenceVariant(themePreference, systemThemeVariant);
+  const effectiveThemeVariant =
+    useShellPresentationTheme && shellPresentationOverride
+      ? shellPresentation.themeVariant
+      : resolvedProductThemeVariant;
   const [state, dispatch] = React.useReducer(logPaneReducer, createLogPaneState());
   const [fileSources, setFileSources] = React.useState<FileSourceMap>(() => createInitialFileSources(platform.kind));
   const [uiTestEnabled, setUiTestEnabled] = React.useState(false);
@@ -87,7 +106,9 @@ export function AppShell({
   const [uiTestCopyActionPublishSequence, setUiTestCopyActionPublishSequence] = React.useState(0);
   const [openSearchPaneId, setOpenSearchPaneId] = React.useState<string | null>(null);
   const [openTimeOffsetPaneId, setOpenTimeOffsetPaneId] = React.useState<string | null>(null);
+  const [settingsOpen, setSettingsOpen] = React.useState(false);
   const [searchFocusRequestSequence, setSearchFocusRequestSequence] = React.useState(0);
+  const settingsButtonRef = React.useRef<HTMLButtonElement>(null);
   const liveAppendCounter = React.useRef(1);
   const [directorySource, dispatchDirectorySource] = React.useReducer(
     directorySourceReducer,
@@ -264,16 +285,20 @@ export function AppShell({
 
     void platform.uiTestBridge?.publishShellState({
       status: panes.length === 0 ? "empty" : "logs",
-      themeVariant: shellPresentation.themeVariant,
+      themeVariant: effectiveThemeVariant,
+      themePreference,
       platformShellVariant: shellPresentation.platformShellVariant,
       paneCount: panes.length,
       paneTitles: panes.map((entry) => entry.pane.title),
       activePaneTitle,
       synchronizationEnabled,
+      syncVisualState: synchronizationEnabled ? "active" : "inactive",
+      syncPressedState: synchronizationEnabled,
       paneSearchStatus,
       paneSearchPaneTitle: openSearchPane?.pane.title ?? null,
       timeOffsetPopoverStatus,
       timeOffsetPaneTitle: openTimeOffsetPane?.pane.title ?? null,
+      settingsSurfaceStatus: settingsOpen ? "open" : "closed",
       activePaneOffsetLabel,
       copiedPaneTitle: uiTestCopiedPaneTitle,
       sessionSnapshotStatus,
@@ -281,6 +306,7 @@ export function AppShell({
         panes.length,
         openSearchPaneId !== null,
         openTimeOffsetPaneId !== null,
+        settingsOpen,
         shellPresentation.platformShellVariant,
         renderMacosTrafficLights,
       ),
@@ -302,6 +328,7 @@ export function AppShell({
     });
   }, [
     activePaneTitle,
+    effectiveThemeVariant,
     openSearchPane,
     openSearchPaneId,
     openTimeOffsetPane,
@@ -311,8 +338,8 @@ export function AppShell({
     paneSearchStatus,
     platform.uiTestBridge,
     renderMacosTrafficLights,
+    settingsOpen,
     shellPresentation.platformShellVariant,
-    shellPresentation.themeVariant,
     publishedDirectorySelectedFile,
     publishedDirectorySource,
     publishedFileLifecycleSummary,
@@ -320,6 +347,7 @@ export function AppShell({
     sourceOpeningEvidence,
     searchHighlightVisibility,
     synchronizationEnabled,
+    themePreference,
     timeOffsetPopoverStatus,
     uiTestCopyActionPublishSequence,
     uiTestCopiedPaneTitle,
@@ -389,6 +417,19 @@ export function AppShell({
 
     setOpenTimeOffsetPaneId((currentPaneId) => (currentPaneId === paneId ? null : currentPaneId));
   }, [hideSearchHighlights, openSearchPaneId]);
+
+  const handleSettingsOpen = React.useCallback(() => {
+    setSettingsOpen(true);
+  }, []);
+
+  const handleSettingsClose = React.useCallback(() => {
+    setSettingsOpen(false);
+    globalThis.setTimeout(() => settingsButtonRef.current?.focus(), 0);
+  }, []);
+
+  const handleThemePreferenceChange = React.useCallback((nextThemePreference: ThemePreference) => {
+    setThemePreference(nextThemePreference);
+  }, []);
 
   const requestActivePaneSearch = React.useCallback(() => {
     const paneId = state.activePaneId ?? state.panes[0]?.id ?? null;
@@ -506,6 +547,21 @@ export function AppShell({
         case "toggleSynchronization":
           handleSynchronizationEnabledChange(!synchronizationEnabled);
           break;
+        case "openSettings":
+          handleSettingsOpen();
+          break;
+        case "closeSettings":
+          handleSettingsClose();
+          break;
+        case "setThemeSystem":
+          setThemePreference("system");
+          break;
+        case "setThemeLight":
+          setThemePreference("light");
+          break;
+        case "setThemeDark":
+          setThemePreference("dark");
+          break;
         case "reorderFirstPaneAfterSecond":
           if (state.panes.length >= 2) {
             dispatch({ type: "reorderPane", paneId: state.panes[0].id, targetIndex: 1 });
@@ -615,6 +671,8 @@ export function AppShell({
     [
       firstPaneEntry,
       handleFileLifecycleTestAction,
+      handleSettingsClose,
+      handleSettingsOpen,
       handleSynchronizationEnabledChange,
       hideSearchHighlights,
       openSearchPaneId,
@@ -859,13 +917,26 @@ export function AppShell({
     <ActivityRailShell
       activityRail={
         <ActivityRail
-          onSettings={() => undefined}
+          activeItemId={settingsOpen ? "settings" : null}
+          onSettings={handleSettingsOpen}
+          settingsButtonRef={settingsButtonRef}
         />
       }
       onDragOver={(event) => event.preventDefault()}
       onDrop={handleDrop}
       paneWorkspace={paneWorkspace}
       platformShellVariant={shellPresentation.platformShellVariant}
+      popovers={
+        settingsOpen ? (
+          <SettingsSurface
+            onClose={handleSettingsClose}
+            onThemePreferenceChange={handleThemePreferenceChange}
+            resolvedThemeVariant={effectiveThemeVariant}
+            returnFocusRef={settingsButtonRef}
+            themePreference={themePreference}
+          />
+        ) : null
+      }
       renderMacosTrafficLights={renderMacosTrafficLights}
       statusBar={
         <StatusBar
@@ -882,7 +953,7 @@ export function AppShell({
           <TimestampConfigError message={null} />
         </>
       }
-      themeVariant={shellPresentation.themeVariant}
+      themeVariant={effectiveThemeVariant}
       topbar={
         <Topbar
           syncEnabled={synchronizationEnabled}
@@ -894,10 +965,44 @@ export function AppShell({
   );
 }
 
+function useSystemThemeVariant(): ThemeVariant {
+  const [systemThemeVariant, setSystemThemeVariant] = React.useState<ThemeVariant>(() => readSystemThemeVariant());
+
+  React.useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return;
+    }
+
+    const mediaQueryList = window.matchMedia(systemThemeMediaQuery);
+    const updateThemeVariant = () => setSystemThemeVariant(resolveSystemThemeVariant(mediaQueryList.matches));
+
+    if (typeof mediaQueryList.addEventListener === "function") {
+      mediaQueryList.addEventListener("change", updateThemeVariant);
+      return () => mediaQueryList.removeEventListener("change", updateThemeVariant);
+    }
+
+    if (typeof mediaQueryList.addListener === "function") {
+      mediaQueryList.addListener(updateThemeVariant);
+      return () => mediaQueryList.removeListener(updateThemeVariant);
+    }
+  }, []);
+
+  return systemThemeVariant;
+}
+
+function readSystemThemeVariant(): ThemeVariant {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return resolveSystemThemeVariant(null);
+  }
+
+  return resolveSystemThemeVariant(window.matchMedia(systemThemeMediaQuery).matches);
+}
+
 function getPublishedRedesignedRegions(
   paneCount: number,
   searchOpen: boolean,
   timeOffsetOpen: boolean,
+  settingsOpen: boolean,
   platformShellVariant: ShellPresentation["platformShellVariant"],
   renderMacosTrafficLights: boolean,
 ): readonly string[] {
@@ -921,6 +1026,7 @@ function getPublishedRedesignedRegions(
       redesignedShellTestIds.emptyWorkspace,
       redesignedShellTestIds.emptyDropZone,
       redesignedShellTestIds.emptyOpenSource,
+      ...(settingsOpen ? [redesignedShellTestIds.settingsSurface] : []),
     ];
   }
 
@@ -937,6 +1043,7 @@ function getPublishedRedesignedRegions(
     ...(paneCount > 1 ? [redesignedShellTestIds.paneResizeBoundary] : []),
     ...(searchOpen ? [redesignedShellTestIds.paneSearchPopover] : []),
     ...(timeOffsetOpen ? [redesignedShellTestIds.timeOffsetPopover] : []),
+    ...(settingsOpen ? [redesignedShellTestIds.settingsSurface] : []),
   ];
 }
 

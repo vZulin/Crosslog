@@ -37,6 +37,15 @@ describe("final redesigned shell accessibility and no-overlap contracts", () => 
       expect(getByRole("button", { name: "Filters unavailable" }).hasAttribute("disabled")).toBe(true);
       expect(getByRole("button", { name: "Highlighting unavailable" }).hasAttribute("disabled")).toBe(true);
       expect(getByRole("button", { name: "Bookmarks unavailable" }).hasAttribute("disabled")).toBe(true);
+      expect(getByRole("button", { name: "Settings" })).toBeTruthy();
+
+      fireEvent.click(getByRole("button", { name: "Settings" }));
+      expect(getByRole("dialog", { name: "Settings" })).toBeTruthy();
+      expect(getByRole("group", { name: "Theme" })).toBeTruthy();
+      expect(getByRole("radio", { name: "System" })).toBeTruthy();
+      expect(getByRole("radio", { name: "Light" })).toBeTruthy();
+      expect(getByRole("radio", { name: "Dark" })).toBeTruthy();
+      fireEvent.click(getByRole("button", { name: "Close Settings" }));
 
       await waitFor(() => expect(platform.sessionStore.recoverSession).toHaveBeenCalled());
       await act(async () => {
@@ -72,7 +81,7 @@ describe("final redesigned shell accessibility and no-overlap contracts", () => 
     });
   }
 
-  it("publishes theme and platform variants without adding product selectors", async () => {
+  it("publishes presentation variants while product theme choices stay in Settings", async () => {
     setViewport(1280, 720);
 
     const { getByLabelText, getByRole, getByTestId, queryByRole } = render(
@@ -91,10 +100,13 @@ describe("final redesigned shell accessibility and no-overlap contracts", () => 
     expect(getByTestId(redesignedShellTestIds.themeVariant).textContent).toBe("dark");
     expect(getByTestId(redesignedShellTestIds.platformChrome)).toBeTruthy();
     expect(getByLabelText("Windows caption controls")).toBeTruthy();
-    expect(queryByRole("button", { name: /theme/i })).toBeNull();
     expect(queryByRole("button", { name: /platform/i })).toBeNull();
     expect(getByRole("searchbox", { name: "Command or workspace search" })).toBeTruthy();
     expect(getByRole("button", { name: "Open Source" })).toBeTruthy();
+    fireEvent.click(getByRole("button", { name: "Settings" }));
+    expect((getByRole("radio", { name: "System" }) as HTMLInputElement).checked).toBe(true);
+    expect(getByRole("radio", { name: "Light" })).toBeTruthy();
+    expect(getByRole("radio", { name: "Dark" })).toBeTruthy();
   });
 
   it("keeps no-overlap responsive layout constraints in the shared shell stylesheet", () => {
@@ -123,6 +135,9 @@ describe("final redesigned shell accessibility and no-overlap contracts", () => 
     );
     expect(themeCss).toMatch(
       /\.crosslog-time-offset-popover__grid\s*\{[^}]*grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*50\.644px\)\);/s,
+    );
+    expect(themeCss).toMatch(
+      /\.crosslog-settings-surface\s*\{[^}]*inset-inline-start:\s*calc\(var\(--crosslog-rail-width\) \+ 8px\);[^}]*inline-size:\s*min\(280px,\s*calc\(100% - var\(--crosslog-rail-width\) - 16px\)\);/s,
     );
     expect(themeCss).toMatch(
       /\.crosslog-pane-header__title,[^}]*\.crosslog-status-bar__active-source\s*\{[^}]*overflow:\s*hidden;[^}]*text-overflow:\s*ellipsis;[^}]*white-space:\s*nowrap;/s,

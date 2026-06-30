@@ -12,6 +12,7 @@ export interface ActivityRailProps {
   readonly onOpenSources?: () => void;
   readonly onSearch?: () => void;
   readonly onSettings?: () => void;
+  readonly settingsButtonRef?: React.Ref<HTMLButtonElement>;
 }
 
 export function ActivityRail({
@@ -19,6 +20,7 @@ export function ActivityRail({
   onOpenSources,
   onSearch,
   onSettings,
+  settingsButtonRef,
 }: ActivityRailProps) {
   const items = getActivityRailItems({ activeItemId });
 
@@ -31,6 +33,7 @@ export function ActivityRail({
           key={item.id}
           label={item.label}
           onClick={() => executeActivityRailAction(item, () => runRailAction(item, { onOpenSources, onSearch, onSettings }))}
+          ref={item.id === "settings" ? settingsButtonRef : undefined}
           testId={item.testId}
           tooltip={item.unavailableReason ?? item.label}
           unavailable={item.state === "disabled"}

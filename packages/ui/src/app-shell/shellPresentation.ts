@@ -1,6 +1,9 @@
 export const themeVariants = ["light", "dark"] as const;
 export type ThemeVariant = (typeof themeVariants)[number];
 
+export const themePreferences = ["system", "light", "dark"] as const;
+export type ThemePreference = (typeof themePreferences)[number];
+
 export const platformShellVariants = ["macos", "windows", "linux", "web"] as const;
 export type PlatformShellVariant = (typeof platformShellVariants)[number];
 
@@ -30,8 +33,10 @@ export interface ShellPresentationResolutionInput
 }
 
 export const defaultThemeVariant: ThemeVariant = "light";
+export const defaultThemePreference: ThemePreference = "system";
 export const defaultWebPlatformShellVariant: PlatformShellVariant = "web";
 export const defaultDesktopPlatformShellVariant: PlatformShellVariant = "macos";
+export const systemThemeMediaQuery = "(prefers-color-scheme: dark)";
 
 export const shellPresentationQueryParams = {
   theme: "crosslog-theme",
@@ -42,6 +47,10 @@ export const shellPresentationChangeEventName = "crosslog:shell-presentation-cha
 
 export function isThemeVariant(value: unknown): value is ThemeVariant {
   return themeVariants.includes(value as ThemeVariant);
+}
+
+export function isThemePreference(value: unknown): value is ThemePreference {
+  return themePreferences.includes(value as ThemePreference);
 }
 
 export function isPlatformShellVariant(value: unknown): value is PlatformShellVariant {
@@ -55,6 +64,33 @@ export function resolveThemeVariant(
   const normalized = normalizeVariantToken(value);
 
   return isThemeVariant(normalized) ? normalized : fallback;
+}
+
+export function resolveThemePreference(
+  value: unknown,
+  fallback: ThemePreference = defaultThemePreference,
+): ThemePreference {
+  const normalized = normalizeVariantToken(value);
+
+  return isThemePreference(normalized) ? normalized : fallback;
+}
+
+export function resolveThemePreferenceVariant(
+  preference: ThemePreference,
+  systemThemeVariant: ThemeVariant = defaultThemeVariant,
+): ThemeVariant {
+  return preference === "system" ? systemThemeVariant : preference;
+}
+
+export function resolveSystemThemeVariant(
+  prefersDark: boolean | null | undefined,
+  fallback: ThemeVariant = defaultThemeVariant,
+): ThemeVariant {
+  if (typeof prefersDark !== "boolean") {
+    return fallback;
+  }
+
+  return prefersDark ? "dark" : "light";
 }
 
 export function resolvePlatformShellVariant(

@@ -28,6 +28,10 @@ export interface RedesignedShellLocators {
   readonly themeVariant: Locator;
   readonly platformChrome: Locator;
   readonly activityRail: Locator;
+  readonly settingsSurface: Locator;
+  readonly settingsThemeSystem: Locator;
+  readonly settingsThemeLight: Locator;
+  readonly settingsThemeDark: Locator;
   readonly emptyWorkspace: Locator;
   readonly emptyDropZone: Locator;
   readonly emptyOpenSource: Locator;
@@ -51,6 +55,10 @@ export function getRedesignedShell(page: Page): RedesignedShellLocators {
     themeVariant: byTestId(page, redesignedShellTestIds.themeVariant),
     platformChrome: byTestId(page, redesignedShellTestIds.platformChrome),
     activityRail: byTestId(page, redesignedShellTestIds.activityRail),
+    settingsSurface: byTestId(page, redesignedShellTestIds.settingsSurface),
+    settingsThemeSystem: byTestId(page, redesignedShellTestIds.settingsThemeSystem),
+    settingsThemeLight: byTestId(page, redesignedShellTestIds.settingsThemeLight),
+    settingsThemeDark: byTestId(page, redesignedShellTestIds.settingsThemeDark),
     emptyWorkspace: byTestId(page, redesignedShellTestIds.emptyWorkspace),
     emptyDropZone: byTestId(page, redesignedShellTestIds.emptyDropZone),
     emptyOpenSource: byTestId(page, redesignedShellTestIds.emptyOpenSource),
