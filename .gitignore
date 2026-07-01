@@ -5,6 +5,7 @@ Thumbs.db
 *.swp
 .vscode/
 .idea/
+.codex/skills/macos-design/
 
 # Local environment
 .env

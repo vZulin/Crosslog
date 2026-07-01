@@ -73,11 +73,13 @@ test.describe("redesigned shell viewport coverage", () => {
 
   for (const theme of ["light", "dark"] as const) {
     test(`applies ${theme} theme tokens to actual Web shell surfaces`, async ({ page }) => {
-      await page.goto(shellPresentationUrl("/", { theme, platform: "web" }));
+      await page.goto(shellPresentationUrl("/", { theme, platform: "web", uiTestBridge: true }));
 
       const shell = getRedesignedShell(page);
       await expect(shell.shell).toHaveAttribute("data-theme", theme);
       await expect(shell.themeVariant).toHaveText(theme);
+      await openSampleLogsWithWebUiBridge(page);
+      await expect(shell.logPanes).toHaveCount(3);
 
       const colors = await page.evaluate(() => {
         const read = (selector: string) => {
@@ -99,6 +101,10 @@ test.describe("redesigned shell viewport coverage", () => {
           topbar: read('[data-testid="topbar"]'),
           rail: read('[data-testid="activity-rail"]'),
           status: read('[data-testid="status-bar"]'),
+          commandField: read(".crosslog-command-field"),
+          syncButton: read('[data-ui-test-action="toggleSynchronization"]'),
+          railSearchButton: read('[data-testid="activity-rail-search"]'),
+          paneHeader: read('[data-testid="pane-header"]'),
         };
       });
 
@@ -107,11 +113,23 @@ test.describe("redesigned shell viewport coverage", () => {
         expect(colors.topbar.backgroundColor).toBe("rgb(37, 38, 42)");
         expect(colors.rail.backgroundColor).toBe("rgb(31, 32, 36)");
         expect(colors.status.backgroundColor).toBe("rgb(31, 32, 36)");
+        expect(colors.commandField.backgroundColor).toBe("rgb(32, 33, 36)");
+        expect(colors.syncButton.backgroundColor).toBe("rgba(10, 132, 255, 0.24)");
+        expect(colors.syncButton.color).toBe("rgb(10, 132, 255)");
+        expect(colors.railSearchButton.backgroundColor).toBe("rgb(37, 38, 42)");
+        expect(colors.railSearchButton.color).toBe("rgb(161, 161, 166)");
+        expect(colors.paneHeader.backgroundColor).toBe("rgb(32, 33, 36)");
       } else {
         expect(colors.shell.backgroundColor).toBe("rgb(245, 245, 247)");
         expect(colors.topbar.backgroundColor).toBe("rgb(250, 250, 250)");
         expect(colors.rail.backgroundColor).toBe("rgb(240, 240, 243)");
         expect(colors.status.backgroundColor).toBe("rgb(240, 240, 243)");
+        expect(colors.commandField.backgroundColor).toBe("rgb(255, 255, 255)");
+        expect(colors.syncButton.backgroundColor).toBe("rgb(217, 235, 255)");
+        expect(colors.syncButton.color).toBe("rgb(0, 122, 255)");
+        expect(colors.railSearchButton.backgroundColor).toBe("rgb(250, 250, 250)");
+        expect(colors.railSearchButton.color).toBe("rgb(110, 110, 115)");
+        expect(colors.paneHeader.backgroundColor).toBe("rgb(255, 255, 255)");
       }
     });
   }

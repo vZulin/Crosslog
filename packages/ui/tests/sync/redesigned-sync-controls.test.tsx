@@ -43,10 +43,10 @@ describe("redesigned synchronization controls", () => {
     const themeCss = readFileSync("packages/ui/src/app-shell/activity-rail-theme.css", "utf8");
 
     expect(themeCss).toMatch(
-      /\.crosslog-topbar__sync\[data-sync-state="inactive"\]\s+\.crosslog-sync-toggle\s*\{[^}]*background:\s*var\(--crosslog-tag-surface\);[^}]*color:\s*var\(--crosslog-muted-text\);/s,
+      /\.crosslog-topbar__sync\[data-sync-state="inactive"\]\s+\.crosslog-sync-toggle\s*\{[^}]*background:\s*var\(--crosslog-toolbar-surface\);[^}]*color:\s*var\(--crosslog-muted-text\);/s,
     );
     expect(themeCss).toMatch(
-      /\.crosslog-topbar__sync\[data-sync-state="active"\]\s+\.crosslog-sync-toggle\s*\{[^}]*background:\s*var\(--crosslog-accent\);[^}]*color:\s*#fff;/s,
+      /\.crosslog-topbar__sync\[data-sync-state="active"\]\s+\.crosslog-sync-toggle\s*\{[^}]*background:\s*var\(--crosslog-accent-surface\);[^}]*color:\s*var\(--crosslog-accent\);/s,
     );
     expect(themeCss).toMatch(
       /\.crosslog-topbar__sync\s+\.crosslog-sync-toggle:not\(:disabled\):hover\s*\{[^}]*background:\s*var\(--crosslog-accent-surface\);[^}]*color:\s*var\(--crosslog-accent\);/s,

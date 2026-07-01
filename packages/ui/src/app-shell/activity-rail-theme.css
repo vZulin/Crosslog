@@ -18,7 +18,7 @@
   --crosslog-error-text: #ff3b30;
   --crosslog-tag-bg: #f0f1f3;
   --crosslog-window-shadow: 0 15.805px 47.414px rgb(0 0 0 / 13%);
-  --crosslog-window-border: 0.988px solid rgb(0 0 0 / 9%);
+  --crosslog-window-border: 0.988px solid var(--crosslog-border);
   --crosslog-shell-bg: var(--crosslog-window-bg);
   --crosslog-surface: var(--crosslog-pane-bg);
   --crosslog-toolbar-surface: var(--crosslog-topbar-bg);
@@ -65,7 +65,20 @@
   --crosslog-error-text: #ff453a;
   --crosslog-tag-bg: #2c2d31;
   --crosslog-window-shadow: 0 15.805px 47.414px rgb(0 0 0 / 38%);
-  --crosslog-window-border: 0.988px solid rgb(255 255 255 / 9%);
+  --crosslog-window-border: 0.988px solid var(--crosslog-border);
+  --crosslog-shell-bg: var(--crosslog-window-bg);
+  --crosslog-surface: var(--crosslog-pane-bg);
+  --crosslog-toolbar-surface: var(--crosslog-topbar-bg);
+  --crosslog-rail-surface: var(--crosslog-rail-bg);
+  --crosslog-scrollbar-track: var(--crosslog-scroll-track);
+  --crosslog-scrollbar-thumb: var(--crosslog-scroll-thumb);
+  --crosslog-accent-surface: var(--crosslog-accent-bg);
+  --crosslog-tag-surface: var(--crosslog-tag-bg);
+  --crosslog-muted-text: var(--crosslog-muted);
+  --crosslog-line-number-text: var(--crosslog-line-number);
+  --crosslog-warning-surface: var(--crosslog-warn-bg);
+  --crosslog-warning-text: var(--crosslog-warn-text);
+  --crosslog-error-surface: var(--crosslog-error-bg);
 }
 
 html,
@@ -273,9 +286,9 @@ body {
   block-size: 27px;
   display: inline-grid;
   place-items: center;
-  border: 1px solid transparent;
+  border: 1px solid var(--crosslog-border);
   border-radius: var(--crosslog-control-radius);
-  background: transparent;
+  background: var(--crosslog-toolbar-surface);
   color: var(--crosslog-muted-text);
 }
 
@@ -295,7 +308,7 @@ body {
 }
 
 .crosslog-icon-button:disabled {
-  opacity: 0.45;
+  opacity: 1;
 }
 
 .crosslog-icon-button[data-unavailable="true"] {
@@ -348,7 +361,7 @@ body {
 }
 
 .crosslog-command-field[data-unavailable="true"] {
-  opacity: 0.68;
+  opacity: 1;
 }
 
 .crosslog-command-field__input {
@@ -384,22 +397,19 @@ body {
 }
 
 .crosslog-topbar__sync[data-sync-state="inactive"] .crosslog-sync-toggle {
-  background: var(--crosslog-tag-surface);
+  background: var(--crosslog-toolbar-surface);
   color: var(--crosslog-muted-text);
 }
 
 .crosslog-topbar__sync[data-sync-state="active"] .crosslog-sync-toggle {
-  border-color: var(--crosslog-accent);
-  background: var(--crosslog-accent);
-  color: #fff;
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 28%);
+  background: var(--crosslog-accent-surface);
+  color: var(--crosslog-accent);
 }
 
 .crosslog-topbar__sync .crosslog-sync-toggle:not(:disabled):hover {
   border-color: var(--crosslog-accent);
   background: var(--crosslog-accent-surface);
   color: var(--crosslog-accent);
-  box-shadow: inset 0 0 0 1px rgb(0 122 255 / 22%);
 }
 
 .crosslog-activity-rail {
@@ -469,7 +479,7 @@ body {
   overflow: hidden;
   padding: 0 35px;
   border-block-end: 1px solid var(--crosslog-border);
-  background: var(--crosslog-toolbar-surface);
+  background: var(--crosslog-surface);
 }
 
 .crosslog-pane-header[data-active="true"] {
