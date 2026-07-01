@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { SynchronizationTarget, TimeAnchorPane, TimeOffset } from "@crosslog/core";
+import type { Session, SynchronizationTarget, TimeAnchorPane, TimeOffset } from "@crosslog/core";
 import { zeroTimeOffset } from "@crosslog/core";
 
 export interface SynchronizationStoreState {
@@ -12,6 +12,7 @@ export interface SynchronizationStoreState {
   readonly setAnchor: (anchor: TimeAnchorPane | null) => void;
   readonly setPaneOffset: (paneId: string, offset: TimeOffset) => void;
   readonly setPlanResult: (targets: readonly SynchronizationTarget[], excludedPaneIds: readonly string[]) => void;
+  readonly restoreSessionState: (session: Session) => void;
   readonly reset: () => void;
 }
 
@@ -43,6 +44,14 @@ export const useSynchronizationStore = create<SynchronizationStoreState>((set) =
     set({
       targets: Object.fromEntries(targets.map((target) => [target.paneId, target.lineNumber])),
       excludedPaneIds,
+    }),
+  restoreSessionState: (session) =>
+    set({
+      enabled: session.synchronizationEnabled,
+      anchor: null,
+      offsets: Object.fromEntries(session.panes.map((pane) => [pane.id, pane.timeOffset])),
+      targets: {},
+      excludedPaneIds: [],
     }),
   reset: () =>
     set({

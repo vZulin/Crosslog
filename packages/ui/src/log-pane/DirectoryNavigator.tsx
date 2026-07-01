@@ -1,4 +1,6 @@
 import React from "react";
+import { IconButton } from "../app-shell/IconButton";
+import { redesignedShellTestIds } from "../app-shell/testIds";
 
 export interface DirectoryNavigatorProps {
   readonly directoryName: string;
@@ -17,28 +19,28 @@ export function DirectoryNavigator({
   onPrevious,
   onNext,
 }: DirectoryNavigatorProps) {
+  const navigationLabel = selectedFileName
+    ? `Directory navigation for ${selectedFileName} in ${directoryName}`
+    : `Directory navigation for ${directoryName}`;
+
   return (
-    <div aria-label={`Directory navigation for ${directoryName}`}>
-      <p>
-        <span>{directoryName}</span>
-        {selectedFileName ? <span> / {selectedFileName}</span> : null}
-      </p>
-      <button
-        type="button"
-        aria-label={`Previous file in ${directoryName}`}
+    <div className="crosslog-directory-navigator" aria-label={navigationLabel}>
+      <IconButton
         disabled={!previousFileName}
+        icon="previous"
+        label={`Previous file in ${directoryName}`}
         onClick={onPrevious}
-      >
-        Previous
-      </button>
-      <button
-        type="button"
-        aria-label={`Next file in ${directoryName}`}
+        testId={redesignedShellTestIds.paneHeaderDirectoryPrevious}
+        tooltip={previousFileName ? `Previous file: ${previousFileName}` : `No previous file in ${directoryName}`}
+      />
+      <IconButton
         disabled={!nextFileName}
+        icon="next"
+        label={`Next file in ${directoryName}`}
         onClick={onNext}
-      >
-        Next
-      </button>
+        testId={redesignedShellTestIds.paneHeaderDirectoryNext}
+        tooltip={nextFileName ? `Next file: ${nextFileName}` : `No next file in ${directoryName}`}
+      />
     </div>
   );
 }

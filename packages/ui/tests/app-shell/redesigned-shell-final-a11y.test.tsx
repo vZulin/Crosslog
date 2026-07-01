@@ -1,0 +1,236 @@
+import { readFileSync } from "node:fs";
+import React, { act } from "react";
+import { fireEvent, render, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { appendRawLinesToChunks, type FileSource } from "@crosslog/core";
+import type { CrosslogPlatform, FileSourceRef } from "@crosslog/platform";
+import { AppShell } from "../../src/app-shell/AppShell";
+import { redesignedShellTestIds } from "../../src/app-shell/testIds";
+import { usePaneSearchStore } from "../../src/search/usePaneSearchStore";
+import { useSynchronizationStore } from "../../src/sync/useSynchronizationStore";
+
+describe("final redesigned shell accessibility and no-overlap contracts", () => {
+  beforeEach(() => {
+    usePaneSearchStore.getState().reset();
+    useSynchronizationStore.getState().reset();
+  });
+
+  for (const viewport of supportedViewports) {
+    it(`keeps primary controls accessible at the ${viewport.name} viewport`, async () => {
+      setViewport(viewport.width, viewport.height);
+
+      const platform = createMockPlatform();
+      const { getAllByTestId, getByRole } = render(<AppShell platform={platform} />);
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      expect(getByRole("main", { name: "Crosslog workspace" })).toBeTruthy();
+      expect(getByRole("searchbox", { name: "Command or workspace search" })).toBeTruthy();
+      expect(getByRole("button", { name: "Toggle time synchronization" })).toBeTruthy();
+      expect(getByRole("button", { name: "Add pane" })).toBeTruthy();
+      expect(getByRole("button", { name: "Search logs" })).toBeTruthy();
+      expect(getByRole("button", { name: "Open sources" })).toBeTruthy();
+      expect(getByRole("searchbox", { name: "Command or workspace search" }).hasAttribute("disabled")).toBe(true);
+      expect(getByRole("button", { name: "Search logs" }).hasAttribute("disabled")).toBe(true);
+      expect(getByRole("button", { name: "Open sources" }).hasAttribute("disabled")).toBe(true);
+      expect(getByRole("button", { name: "Filters unavailable" }).hasAttribute("disabled")).toBe(true);
+      expect(getByRole("button", { name: "Highlighting unavailable" }).hasAttribute("disabled")).toBe(true);
+      expect(getByRole("button", { name: "Bookmarks unavailable" }).hasAttribute("disabled")).toBe(true);
+      expect(getByRole("button", { name: "Settings" })).toBeTruthy();
+
+      fireEvent.click(getByRole("button", { name: "Settings" }));
+      expect(getByRole("dialog", { name: "Settings" })).toBeTruthy();
+      expect(getByRole("group", { name: "Theme" })).toBeTruthy();
+      expect(getByRole("radio", { name: "System" })).toBeTruthy();
+      expect(getByRole("radio", { name: "Light" })).toBeTruthy();
+      expect(getByRole("radio", { name: "Dark" })).toBeTruthy();
+      fireEvent.click(getByRole("button", { name: "Close Settings" }));
+
+      await waitFor(() => expect(platform.sessionStore.recoverSession).toHaveBeenCalled());
+      await act(async () => {
+        fireEvent.click(getByRole("button", { name: "Open Source" }));
+        await Promise.resolve();
+      });
+
+      await waitFor(() => expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(3));
+      await waitFor(() => expect(platform.sessionStore.writeSessionSnapshot).toHaveBeenCalled());
+      expect(getByRole("button", { name: "Add pane" })).toBeTruthy();
+      expect(getByRole("button", { name: "Search in app.log" })).toBeTruthy();
+      expect(getByRole("button", { name: "Close pane app.log" })).toBeTruthy();
+      expect(getByRole("button", { name: "Time offset for app.log: 0 ms" })).toBeTruthy();
+      expect(getByRole("status", { name: /3 panes, Sync on, active source worker\.log/ })).toBeTruthy();
+
+      await act(async () => {
+        fireEvent.click(getByRole("button", { name: "Search in app.log" }));
+        await Promise.resolve();
+      });
+      expect(getByRole("dialog", { name: "Pane search for app.log" })).toBeTruthy();
+      expect(getByRole("searchbox", { name: "Search app.log" })).toBeTruthy();
+      expect(getByRole("checkbox", { name: "Case-sensitive search for app.log" })).toBeTruthy();
+      expect(getByRole("checkbox", { name: "Regular expression search for app.log" })).toBeTruthy();
+
+      await act(async () => {
+        fireEvent.click(getByRole("button", { name: "Time offset for app.log: 0 ms" }));
+        await Promise.resolve();
+      });
+      expect(getByRole("dialog", { name: "Time offset for app.log" })).toBeTruthy();
+      expect(getByRole("textbox", { name: "Days offset for app.log" })).toBeTruthy();
+      expect(getByRole("textbox", { name: "Milliseconds offset for app.log" })).toBeTruthy();
+      expect(getByRole("button", { name: "Apply time offset for app.log" })).toBeTruthy();
+    });
+  }
+
+  it("publishes presentation variants while product theme choices stay in Settings", async () => {
+    setViewport(1280, 720);
+
+    const { getByLabelText, getByRole, getByTestId, queryByRole } = render(
+      <AppShell
+        platform={createMockPlatform()}
+        shellPresentation={{ themeVariant: "dark", platformShellVariant: "windows" }}
+      />,
+    );
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(getByTestId(redesignedShellTestIds.crosslogShell).getAttribute("data-theme")).toBe("dark");
+    expect(getByTestId(redesignedShellTestIds.crosslogShell).getAttribute("data-platform")).toBe("windows");
+    expect(getByTestId(redesignedShellTestIds.themeVariant).textContent).toBe("dark");
+    expect(getByTestId(redesignedShellTestIds.platformChrome)).toBeTruthy();
+    expect(getByLabelText("Windows caption controls")).toBeTruthy();
+    expect(queryByRole("button", { name: /platform/i })).toBeNull();
+    expect(getByRole("searchbox", { name: "Command or workspace search" })).toBeTruthy();
+    expect(getByRole("button", { name: "Open Source" })).toBeTruthy();
+    fireEvent.click(getByRole("button", { name: "Settings" }));
+    expect((getByRole("radio", { name: "System" }) as HTMLInputElement).checked).toBe(true);
+    expect(getByRole("radio", { name: "Light" })).toBeTruthy();
+    expect(getByRole("radio", { name: "Dark" })).toBeTruthy();
+  });
+
+  it("keeps no-overlap responsive layout constraints in the shared shell stylesheet", () => {
+    const themeCss = readFileSync(
+      "packages/ui/src/app-shell/activity-rail-theme.css",
+      "utf8",
+    );
+
+    expect(themeCss).toMatch(
+      /\.crosslog-shell\s*\{[^}]*grid-template:[^}]*"topbar topbar"[^}]*"rail workspace"[^}]*"status status"/s,
+    );
+    expect(themeCss).toMatch(
+      /\.crosslog-pane-header\s*\{[^}]*block-size:\s*var\(--crosslog-pane-header-height\);[^}]*box-sizing:\s*border-box;[^}]*display:\s*grid;/s,
+    );
+    expect(themeCss).toMatch(
+      /\.crosslog-pane-header__actions\s*\{[^}]*position:\s*absolute;[^}]*inset-block-end:\s*7px;[^}]*justify-content:\s*center;[^}]*gap:\s*4px;/s,
+    );
+    expect(themeCss).toMatch(
+      /\.crosslog-pane-search-popover\s*\{[^}]*inset-block-start:\s*var\(--crosslog-pane-header-height\);/s,
+    );
+    expect(themeCss).toMatch(
+      /\.crosslog-time-offset-popover\s*\{[^}]*inset-block-start:\s*var\(--crosslog-pane-header-height\);/s,
+    );
+    expect(themeCss).toMatch(
+      /\.crosslog-time-offset-popover\s*\{[^}]*inline-size:\s*min\(302\.22px,\s*calc\(100% - 18px\)\);[^}]*block-size:\s*114\.08px;/s,
+    );
+    expect(themeCss).toMatch(
+      /\.crosslog-time-offset-popover__grid\s*\{[^}]*grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*50\.644px\)\);/s,
+    );
+    expect(themeCss).toMatch(
+      /\.crosslog-settings-surface\s*\{[^}]*inset-inline-start:\s*calc\(var\(--crosslog-rail-width\) \+ 8px\);[^}]*inline-size:\s*min\(280px,\s*calc\(100% - var\(--crosslog-rail-width\) - 16px\)\);/s,
+    );
+    expect(themeCss).toMatch(
+      /\.crosslog-pane-header__title,[^}]*\.crosslog-status-bar__active-source\s*\{[^}]*overflow:\s*hidden;[^}]*text-overflow:\s*ellipsis;[^}]*white-space:\s*nowrap;/s,
+    );
+    expect(themeCss).toMatch(
+      /\.crosslog-status-bar\s*\{[^}]*grid-template-columns:\s*auto auto minmax\(0,\s*1fr\) auto;/s,
+    );
+    expect(themeCss).toMatch(
+      /\.crosslog-window-chrome\s*\{[^}]*position:\s*absolute;[^}]*pointer-events:\s*none;/s,
+    );
+    expect(themeCss).toMatch(
+      /\.crosslog-shell\[data-platform="web"\]\s*\{[^}]*border-radius:\s*0;[^}]*box-shadow:\s*none;/s,
+    );
+    expect(themeCss).toContain("@media (max-width: 720px)");
+  });
+});
+
+function setViewport(width: number, height: number): void {
+  Object.defineProperty(window, "innerWidth", { configurable: true, value: width });
+  Object.defineProperty(window, "innerHeight", { configurable: true, value: height });
+  window.dispatchEvent(new Event("resize"));
+}
+
+function createMockPlatform(): CrosslogPlatform {
+  const selectedFiles = createSelectedFiles();
+
+  return {
+    kind: "web",
+    capabilities: {
+      canOpenFiles: true,
+      canOpenDirectories: true,
+      canWatchFiles: false,
+      canDiscoverNewDirectoryFiles: false,
+      canPersistSession: true,
+      limitations: [],
+    },
+    fileAccess: {
+      openFileReadOnly: vi.fn(async (sourceRef) => ({
+        ok: true,
+        source: createTestFileSource(sourceRef),
+      })),
+      decodeFile: vi.fn(async () => ""),
+      getFileIdentity: vi.fn(async () => ""),
+    },
+    directoryAccess: {
+      listTopLevelFiles: vi.fn(async () => []),
+      refreshDirectory: vi.fn(async () => []),
+    },
+    dragDropSource: {
+      mapDroppedSources: vi.fn(async () => []),
+    },
+    sourcePicker: {
+      pickFiles: vi.fn(async () => selectedFiles),
+      pickDirectory: vi.fn(async () => null),
+    },
+    sessionStore: {
+      loadLastValidSession: vi.fn(async () => null),
+      writeSessionSnapshot: vi.fn(async () => undefined),
+      recoverSession: vi.fn(async () => null),
+    },
+  };
+}
+
+function createSelectedFiles(): readonly FileSourceRef[] {
+  return [
+    { id: "selected-app", name: "app.log" },
+    { id: "selected-service", name: "service.log" },
+    { id: "selected-worker", name: "worker.log" },
+  ];
+}
+
+function createTestFileSource(sourceRef: FileSourceRef): FileSource {
+  const lines = [
+    `2026-06-16T09:00:00.000Z ${sourceRef.name} boot sequence started`,
+    `2026-06-16T09:00:01.250Z ${sourceRef.name} connected to upstream service`,
+  ];
+
+  return {
+    id: sourceRef.id,
+    fileIdentity: { value: sourceRef.id, platform: "web" },
+    displayName: sourceRef.name,
+    pathLabel: sourceRef.name,
+    sizeBytes: lines.join("\n").length,
+    encoding: "utf-8",
+    lineChunks: appendRawLinesToChunks([], lines),
+    watchState: "unsupported",
+    deleted: false,
+    replaced: false,
+    readError: null,
+  };
+}
+
+const supportedViewports = [
+  { name: "desktop", width: 1280, height: 720 },
+  { name: "narrow", width: 640, height: 720 },
+] as const;

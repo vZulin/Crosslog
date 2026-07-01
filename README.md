@@ -59,33 +59,35 @@ adapters report unsupported local monitoring behavior instead of simulating it.
 
 ## Getting Started
 
+Use Corepack-provided pnpm; a global `pnpm` installation is not required.
+
 Install dependencies:
 
 ```bash
-pnpm install
+corepack pnpm install
 ```
 
 Run the Web app:
 
 ```bash
-pnpm dev:web
+corepack pnpm dev:web
 ```
 
 Run the Desktop app:
 
 ```bash
-pnpm dev:desktop
+corepack pnpm dev:desktop
 ```
 
 ## Common Commands
 
 ```bash
-pnpm lint
-pnpm test:unit
-pnpm test:integration
-pnpm test:ui:web
-pnpm test:ui:desktop
-pnpm bench
+corepack pnpm lint
+corepack pnpm test:unit
+corepack pnpm test:integration
+corepack pnpm test:ui:web
+corepack pnpm test:ui:desktop
+corepack pnpm bench
 cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml
 ```
 

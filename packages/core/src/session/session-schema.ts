@@ -58,6 +58,12 @@ export function validateSessionSnapshot(input: unknown): SessionValidationResult
     return directorySelections;
   }
 
+  const synchronizationEnabled = parseSynchronizationEnabled(input.synchronizationEnabled);
+
+  if (!synchronizationEnabled.ok) {
+    return synchronizationEnabled;
+  }
+
   if (!isRecord(input.futureExtensions)) {
     return invalid("Session futureExtensions must be an object.");
   }
@@ -70,6 +76,7 @@ export function validateSessionSnapshot(input: unknown): SessionValidationResult
       paneSizes: paneSizes.paneSizes,
       sources: sources.sources,
       directorySelections: directorySelections.directorySelections,
+      synchronizationEnabled: synchronizationEnabled.enabled,
       futureExtensions: { ...input.futureExtensions },
     },
   };
@@ -396,6 +403,18 @@ function parseIdentity(input: unknown) {
       platform: input.platform,
     } satisfies SessionIdentity,
   };
+}
+
+function parseSynchronizationEnabled(input: unknown) {
+  if (input === undefined) {
+    return { ok: true as const, enabled: true };
+  }
+
+  if (typeof input !== "boolean") {
+    return invalid("Session synchronizationEnabled must be boolean.");
+  }
+
+  return { ok: true as const, enabled: input };
 }
 
 function parseTimeOffset(input: unknown) {

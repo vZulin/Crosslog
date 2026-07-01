@@ -1,12 +1,23 @@
-import { browser, expect } from "@wdio/globals";
+import { expect } from "@wdio/globals";
+import { redesignedShellTestIds } from "@crosslog/ui";
+import {
+  byTestId,
+  enqueueDesktopUiTestAction,
+  waitForDesktopShell,
+  waitForUiTestTitleFragment,
+} from "./helpers/redesigned-shell";
 
 describe("Desktop empty directory", () => {
   it("shows empty-directory status for directories without top-level files", async () => {
-    await browser.url("/");
-    await $("button=Open empty directory").click();
+    await waitForDesktopShell();
+    enqueueDesktopUiTestAction("openEmptyDirectory");
+    await waitForUiTestTitleFragment("state=logs");
+    await waitForUiTestTitleFragment("directory=logs/2026");
+    await waitForUiTestTitleFragment("directoryFiles=0");
+    await waitForUiTestTitleFragment("emptyDirectory=on");
 
-    await expect($("aria/Empty directory logs/2026")).toHaveText("No top-level log files in logs/2026");
-    await expect($$("aria/Previous file in logs/2026")).toBeElementsArrayOfSize(0);
-    await expect($$("aria/Next file in logs/2026")).toBeElementsArrayOfSize(0);
+    await expect($(byTestId(redesignedShellTestIds.paneHeaderEmptyDirectory))).toBeExisting();
+    await expect($$(byTestId(redesignedShellTestIds.paneHeaderDirectoryPrevious))).toBeElementsArrayOfSize(0);
+    await expect($$(byTestId(redesignedShellTestIds.paneHeaderDirectoryNext))).toBeElementsArrayOfSize(0);
   });
 });

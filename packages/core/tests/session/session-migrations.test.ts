@@ -26,6 +26,7 @@ describe("session migrations", () => {
       id: "legacy.log",
       displayName: "legacy.log",
     });
+    expect(result.ok ? result.session.synchronizationEnabled : null).toBe(true);
     expect(result.ok ? Object.keys(result.session.panes[0]) : []).not.toContain("horizontalScroll");
   });
 

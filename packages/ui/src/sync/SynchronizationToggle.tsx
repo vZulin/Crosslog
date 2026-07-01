@@ -1,20 +1,28 @@
 import React from "react";
+import { IconButton } from "../app-shell/IconButton";
 
 export interface SynchronizationToggleProps {
   readonly enabled: boolean;
+  readonly describedBy?: string;
   readonly onEnabledChange: (enabled: boolean) => void;
 }
 
-export function SynchronizationToggle({ enabled, onEnabledChange }: SynchronizationToggleProps) {
+export function SynchronizationToggle({
+  describedBy,
+  enabled,
+  onEnabledChange,
+}: SynchronizationToggleProps) {
   return (
-    <label>
-      <input
-        type="checkbox"
-        aria-label="Synchronize by time"
-        checked={enabled}
-        onChange={(event) => onEnabledChange(event.currentTarget.checked)}
-      />
-      Synchronize by time
-    </label>
+    <IconButton
+      aria-describedby={describedBy}
+      className="crosslog-sync-toggle"
+      data-sync-state={enabled ? "active" : "inactive"}
+      data-ui-test-action="toggleSynchronization"
+      icon="sync"
+      label="Toggle time synchronization"
+      onClick={() => onEnabledChange(!enabled)}
+      pressed={enabled}
+      tooltip={enabled ? "Time synchronization enabled" : "Time synchronization disabled"}
+    />
   );
 }

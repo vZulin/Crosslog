@@ -8,7 +8,7 @@
     "./*": "./src/*"
   },
   "dependencies": {
-    "@crosslog/core": "workspace:*"
+    "@crosslog/core": "workspace:*",
+    "@tauri-apps/plugin-dialog": "^2"
   }
 }
-

@@ -1,0 +1,9 @@
+{
+  "workflow": "speckit",
+  "specName": "004-stabilize-bug-batch",
+  "branch": "004-stabilize-bug-batch",
+  "selectedAt": "2026-06-30T21:31:39.856Z",
+  "currentStep": "specify",
+  "status": "draft",
+  "history": []
+}

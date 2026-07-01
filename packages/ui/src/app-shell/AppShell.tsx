@@ -1,6 +1,18 @@
 import React from "react";
-import type { CrosslogPlatform } from "@crosslog/platform";
-import type { DirectorySourceRef, DragDropSource, FileSourceRef } from "@crosslog/platform";
+import type {
+  CrosslogPlatform,
+  UiTestFutureControlState,
+  UiTestObsoleteControlVisibility,
+  UiTestCopyActionEvidence,
+  UiTestPaneNavigationEvidence,
+  UiTestSearchHighlightEvidence,
+  UiTestSourceKind,
+  UiTestSourceOpeningEntryPoint,
+  UiTestSourceOpeningEvidence,
+  UiTestTimeOffsetValidationEvidence,
+  UiTestWorkspaceLayoutMeasurements,
+} from "@crosslog/platform";
+import type { DirectorySourceRef, DragDropSource, FileSourceRef, UiTestAction } from "@crosslog/platform";
 import {
   createLogPane,
   createLogPaneState,
@@ -16,33 +28,87 @@ import {
   defaultTimestampFormats,
   directorySourceReducer,
   emptySearchState,
+  formatTimeOffset,
   getCurrentDirectoryFile,
   logPaneReducer,
   restoreLogPaneStateFromSession,
+  validateTimeOffsetDraft,
   type DirectoryFileEntry,
   type FileSource,
   type Session,
   type SessionDirectorySource,
   type SessionFileSource,
 } from "@crosslog/core";
+import { ActivityRail } from "./ActivityRail";
+import { ActivityRailShell } from "./ActivityRailShell";
 import { CapabilityLimitations } from "./CapabilityLimitations";
-import { FuturePaneToolbarSlot } from "../log-pane/FuturePaneToolbarSlot";
+import { EmptyWorkspace } from "./EmptyWorkspace";
+import { copySelectedLogText, type ClipboardWriter } from "../log-pane/LogTextSelection";
 import { PaneRail } from "../pane-rail/PaneRail";
 import { usePaneSearchStore } from "../search/usePaneSearchStore";
 import { SessionRecoveryBanner } from "../session/SessionRecoveryBanner";
 import { useSessionRestore, useSessionSnapshotWriter } from "../session/useSessionRestore";
-import { SynchronizationToggle } from "../sync/SynchronizationToggle";
+import { StatusBar } from "./StatusBar";
+import { SettingsSurface } from "./SettingsSurface";
 import { TimestampConfigError } from "../sync/TimestampConfigError";
+import { Topbar } from "./Topbar";
+import {
+  defaultThemePreference,
+  resolveShellPresentation,
+  resolveSystemThemeVariant,
+  resolveThemePreferenceVariant,
+  systemThemeMediaQuery,
+  type ShellPresentation,
+  type ThemePreference,
+  type ThemeVariant,
+} from "./shellPresentation";
+import { redesignedShellTestIds, type RedesignedShellTestId } from "./testIds";
 import { getPaneOffset, useSynchronizationStore } from "../sync/useSynchronizationStore";
-import { useFileLifecycleEvents, type FileSourceMap } from "../log-pane/useFileLifecycleEvents";
+import {
+  getPaneHeaderLifecycleState,
+  useFileLifecycleEvents,
+  type FileSourceMap,
+} from "../log-pane/useFileLifecycleEvents";
 
 export interface AppShellProps {
   readonly platform: CrosslogPlatform;
+  readonly renderMacosTrafficLights?: boolean;
+  readonly shellPresentation?: ShellPresentation;
+  readonly useShellPresentationTheme?: boolean;
 }
 
-export function AppShell({ platform }: AppShellProps) {
+const uiTestClipboardWriter: ClipboardWriter = {
+  writeText: async () => undefined,
+};
+
+export function AppShell({
+  platform,
+  renderMacosTrafficLights = true,
+  shellPresentation: shellPresentationOverride,
+  useShellPresentationTheme = true,
+}: AppShellProps) {
+  const shellPresentation =
+    shellPresentationOverride ?? resolveShellPresentation({ runtimeKind: platform.kind });
+  const systemThemeVariant = useSystemThemeVariant();
+  const [themePreference, setThemePreference] = React.useState<ThemePreference>(defaultThemePreference);
+  const resolvedProductThemeVariant = resolveThemePreferenceVariant(themePreference, systemThemeVariant);
+  const effectiveThemeVariant =
+    useShellPresentationTheme && shellPresentationOverride
+      ? shellPresentation.themeVariant
+      : resolvedProductThemeVariant;
   const [state, dispatch] = React.useReducer(logPaneReducer, createLogPaneState());
   const [fileSources, setFileSources] = React.useState<FileSourceMap>(() => createInitialFileSources(platform.kind));
+  const [uiTestEnabled, setUiTestEnabled] = React.useState(false);
+  const [uiTestCopiedPaneTitle, setUiTestCopiedPaneTitle] = React.useState<string | null>(null);
+  const [sourceOpeningEvidence, setSourceOpeningEvidence] = React.useState<UiTestSourceOpeningEvidence>(
+    initialSourceOpeningEvidence,
+  );
+  const [uiTestCopyActionPublishSequence, setUiTestCopyActionPublishSequence] = React.useState(0);
+  const [openSearchPaneId, setOpenSearchPaneId] = React.useState<string | null>(null);
+  const [openTimeOffsetPaneId, setOpenTimeOffsetPaneId] = React.useState<string | null>(null);
+  const [settingsOpen, setSettingsOpen] = React.useState(false);
+  const [searchFocusRequestSequence, setSearchFocusRequestSequence] = React.useState(0);
+  const settingsButtonRef = React.useRef<HTMLButtonElement>(null);
   const liveAppendCounter = React.useRef(1);
   const [directorySource, dispatchDirectorySource] = React.useReducer(
     directorySourceReducer,
@@ -62,13 +128,17 @@ export function AppShell({ platform }: AppShellProps) {
   const setSynchronizationAnchor = useSynchronizationStore((store) => store.setAnchor);
   const setPaneOffset = useSynchronizationStore((store) => store.setPaneOffset);
   const setPlanResult = useSynchronizationStore((store) => store.setPlanResult);
+  const restoreSynchronizationSessionState = useSynchronizationStore((store) => store.restoreSessionState);
   const searchStates = usePaneSearchStore((store) => store.states);
+  const searchHighlightVisibility = usePaneSearchStore((store) => store.highlightVisibility);
   const setPaneSearchLines = usePaneSearchStore((store) => store.setPaneLines);
   const setSearchQuery = usePaneSearchStore((store) => store.setQuery);
   const setSearchMode = usePaneSearchStore((store) => store.setMode);
   const setSearchCaseSensitive = usePaneSearchStore((store) => store.setCaseSensitive);
   const selectPreviousSearchMatch = usePaneSearchStore((store) => store.selectPreviousMatch);
   const selectNextSearchMatch = usePaneSearchStore((store) => store.selectNextMatch);
+  const showSearchHighlights = usePaneSearchStore((store) => store.showHighlights);
+  const hideSearchHighlights = usePaneSearchStore((store) => store.hideHighlights);
   const publishFileLifecycleEvent = useFileLifecycleEvents(setFileSources);
   const restoreState = useSessionRestore(platform.sessionStore, {
     onSessionRestored: (session) => {
@@ -77,6 +147,7 @@ export function AppShell({ platform }: AppShellProps) {
       );
 
       dispatch({ type: "replaceState", state: restoreLogPaneStateFromSession(session) });
+      restoreSynchronizationSessionState(session);
       setFileSources(restoreFileSourcesFromSession(session));
 
       if (restoredDirectorySource) {
@@ -92,23 +163,6 @@ export function AppShell({ platform }: AppShellProps) {
   const timestampService = React.useMemo(
     () => createTimestampRecognitionService(defaultTimestampFormats),
     [],
-  );
-  const sessionSnapshot = React.useMemo(
-    () =>
-      state.panes.length === 0
-        ? null
-        : createSessionSnapshot({
-            panes: state.panes,
-            fileSources: Object.values(fileSources),
-            directorySources: [directorySource],
-          }),
-    [directorySource, fileSources, state.panes],
-  );
-
-  useSessionSnapshotWriter(
-    platform.sessionStore,
-    sessionSnapshot,
-    restoreState.status === "ready" && state.panes.length > 0,
   );
 
   const paneData = React.useMemo(
@@ -126,7 +180,9 @@ export function AppShell({ platform }: AppShellProps) {
         const recognizedLines = lines.map((line, index) => timestampService.recognizeLine(index + 1, line, pane.id));
         const status = fileSource?.deleted
           ? ("deleted" as const)
-          : fileSource?.watchState === "unsupported"
+          : fileSource?.readError || fileSource?.watchState === "failed"
+            ? ("error" as const)
+            : fileSource?.watchState === "unsupported"
             ? pane.status
             : pane.sourceRef === directorySource.id && directorySource.files.length === 0
               ? ("empty" as const)
@@ -144,9 +200,28 @@ export function AppShell({ platform }: AppShellProps) {
           timestamps: recognizedLines.map((line) => line.timestamp),
           synchronizationTargetLineNumber: syncTargets[pane.id] ?? null,
           directorySource: pane.sourceRef === directorySource.id ? directorySource : undefined,
+          lifecycleState: getPaneHeaderLifecycleState(fileSource),
         };
       }),
     [directorySource, fileSources, state.panes, syncOffsets, syncTargets, synchronizationEnabled, timestampService],
+  );
+  const sessionSnapshot = React.useMemo(
+    () =>
+      paneData.length === 0
+        ? null
+        : createSessionSnapshot({
+            panes: paneData.map((entry) => entry.pane),
+            fileSources: Object.values(fileSources),
+            directorySources: [directorySource],
+            synchronizationEnabled,
+          }),
+    [directorySource, fileSources, paneData, synchronizationEnabled],
+  );
+
+  const sessionSnapshotStatus = useSessionSnapshotWriter(
+    platform.sessionStore,
+    sessionSnapshot,
+    restoreState.status === "ready" && paneData.length > 0,
   );
   const panes = paneData.map((entry) => ({
     ...entry,
@@ -154,7 +229,130 @@ export function AppShell({ platform }: AppShellProps) {
       ...entry.pane,
       searchState: searchStates[entry.pane.id] ?? emptySearchState,
     },
+    searchHighlightsVisible: searchHighlightVisibility[entry.pane.id] ?? false,
   }));
+  const unsupportedPaneCount = excludedPaneIds.length;
+  const activePane = state.panes.find((pane) => pane.id === state.activePaneId) ?? null;
+  const activePaneTitle = panes.find((entry) => entry.pane.id === state.activePaneId)?.pane.title ?? null;
+  const activeFileSource = activePane?.sourceRef ? fileSources[activePane.sourceRef] : null;
+  const openSearchPane = openSearchPaneId
+    ? panes.find((entry) => entry.pane.id === openSearchPaneId) ?? null
+    : null;
+  const openTimeOffsetPane = openTimeOffsetPaneId
+    ? panes.find((entry) => entry.pane.id === openTimeOffsetPaneId) ?? null
+    : null;
+  const openSearchState = openSearchPaneId ? searchStates[openSearchPaneId] ?? emptySearchState : null;
+  const paneSearchStatus = openSearchPaneId ? (openSearchState?.error ? "error" : "open") : "closed";
+  const timeOffsetPopoverStatus = openTimeOffsetPaneId ? "open" : "closed";
+  const activePaneEntry = panes.find((entry) => entry.pane.id === state.activePaneId) ?? null;
+  const activePaneOffsetLabel = activePaneEntry ? formatTimeOffset(activePaneEntry.pane.timeOffset) : null;
+  const publishedDirectorySource = panes.find((entry) => entry.directorySource)?.directorySource ?? null;
+  const publishedDirectorySelectedFile = publishedDirectorySource
+    ? getCurrentDirectoryFile(publishedDirectorySource)
+    : null;
+  const publishedFileLifecycleSummary = formatFileLifecycleSummary(Object.values(fileSources));
+
+  React.useEffect(() => {
+    if (openSearchPaneId && !state.panes.some((pane) => pane.id === openSearchPaneId)) {
+      setOpenSearchPaneId(null);
+    }
+  }, [openSearchPaneId, state.panes]);
+
+  React.useEffect(() => {
+    if (openTimeOffsetPaneId && !state.panes.some((pane) => pane.id === openTimeOffsetPaneId)) {
+      setOpenTimeOffsetPaneId(null);
+    }
+  }, [openTimeOffsetPaneId, state.panes]);
+
+  React.useEffect(() => {
+    let active = true;
+
+    void platform.uiTestBridge?.isEnabled().then((enabled) => {
+      if (active) {
+        setUiTestEnabled(enabled);
+      }
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [platform.uiTestBridge]);
+
+  React.useEffect(() => {
+    if (!uiTestEnabled) {
+      return;
+    }
+
+    void platform.uiTestBridge?.publishShellState({
+      status: panes.length === 0 ? "empty" : "logs",
+      themeVariant: effectiveThemeVariant,
+      themePreference,
+      platformShellVariant: shellPresentation.platformShellVariant,
+      paneCount: panes.length,
+      paneTitles: panes.map((entry) => entry.pane.title),
+      activePaneTitle,
+      synchronizationEnabled,
+      syncVisualState: synchronizationEnabled ? "active" : "inactive",
+      syncPressedState: synchronizationEnabled,
+      paneSearchStatus,
+      paneSearchPaneTitle: openSearchPane?.pane.title ?? null,
+      timeOffsetPopoverStatus,
+      timeOffsetPaneTitle: openTimeOffsetPane?.pane.title ?? null,
+      settingsSurfaceStatus: settingsOpen ? "open" : "closed",
+      activePaneOffsetLabel,
+      copiedPaneTitle: uiTestCopiedPaneTitle,
+      sessionSnapshotStatus,
+      redesignedRegions: getPublishedRedesignedRegions(
+        panes.length,
+        openSearchPaneId !== null,
+        openTimeOffsetPaneId !== null,
+        settingsOpen,
+        shellPresentation.platformShellVariant,
+        renderMacosTrafficLights,
+      ),
+      directoryName: publishedDirectorySource?.displayName ?? null,
+      directorySelectedFileTitle: publishedDirectorySelectedFile?.name ?? null,
+      directoryPreviousAvailable: Boolean(publishedDirectorySource?.navigationIndex.previousFileId),
+      directoryNextAvailable: Boolean(publishedDirectorySource?.navigationIndex.nextFileId),
+      directoryFileCount: publishedDirectorySource?.files.length ?? 0,
+      directoryEmptyVisible: publishedDirectorySource?.files.length === 0,
+      fileLifecycleSummary: publishedFileLifecycleSummary,
+      obsoleteControlVisibility: getPublishedObsoleteControlVisibility(),
+      workspaceLayout: getPublishedWorkspaceLayoutMeasurements(),
+      paneNavigation: getPublishedPaneNavigationEvidence(panes.map((entry) => entry.pane.title)),
+      sourceOpening: sourceOpeningEvidence,
+      searchHighlights: getPublishedSearchHighlightEvidence(),
+      copyAction: getPublishedCopyActionEvidence(),
+      timeOffsetValidation: getPublishedTimeOffsetValidationEvidence(),
+      futureControls: publishedFutureControlState,
+    });
+  }, [
+    activePaneTitle,
+    effectiveThemeVariant,
+    openSearchPane,
+    openSearchPaneId,
+    openTimeOffsetPane,
+    openTimeOffsetPaneId,
+    panes,
+    activePaneOffsetLabel,
+    paneSearchStatus,
+    platform.uiTestBridge,
+    renderMacosTrafficLights,
+    settingsOpen,
+    shellPresentation.platformShellVariant,
+    publishedDirectorySelectedFile,
+    publishedDirectorySource,
+    publishedFileLifecycleSummary,
+    sessionSnapshotStatus,
+    sourceOpeningEvidence,
+    searchHighlightVisibility,
+    synchronizationEnabled,
+    themePreference,
+    timeOffsetPopoverStatus,
+    uiTestCopyActionPublishSequence,
+    uiTestCopiedPaneTitle,
+    uiTestEnabled,
+  ]);
 
   React.useEffect(() => {
     paneData.forEach((entry) => setPaneSearchLines(entry.pane.id, entry.lines));
@@ -187,68 +385,356 @@ export function AppShell({ platform }: AppShellProps) {
     setPlanResult(plan.targets, plan.excludedPaneIds);
   };
 
-  const handleSynchronizationEnabledChange = (enabled: boolean) => {
+  const handleSynchronizationEnabledChange = React.useCallback((enabled: boolean) => {
     setSynchronizationEnabled(enabled);
 
     if (!enabled) {
       setPlanResult([], []);
     }
-  };
+  }, [setPlanResult, setSynchronizationEnabled]);
 
-  const unsupportedPaneCount = excludedPaneIds.length;
-  const activePane = state.panes.find((pane) => pane.id === state.activePaneId) ?? null;
-  const activeFileSource = activePane?.sourceRef ? fileSources[activePane.sourceRef] : null;
-  const lifecycleActionsDisabled = !activeFileSource;
-
-  const handleAppendLiveLine = () => {
-    if (!activeFileSource) {
+  const handleSearchOpenChange = React.useCallback((paneId: string, open: boolean) => {
+    if (open) {
+      setOpenTimeOffsetPaneId(null);
+      showSearchHighlights(paneId);
+      setOpenSearchPaneId(paneId);
       return;
     }
 
+    hideSearchHighlights(paneId);
+    setOpenSearchPaneId((currentPaneId) => (currentPaneId === paneId ? null : currentPaneId));
+  }, [hideSearchHighlights, showSearchHighlights]);
+
+  const handleTimeOffsetOpenChange = React.useCallback((paneId: string, open: boolean) => {
+    if (open) {
+      if (openSearchPaneId) {
+        hideSearchHighlights(openSearchPaneId);
+      }
+      setOpenSearchPaneId(null);
+      setOpenTimeOffsetPaneId(paneId);
+      return;
+    }
+
+    setOpenTimeOffsetPaneId((currentPaneId) => (currentPaneId === paneId ? null : currentPaneId));
+  }, [hideSearchHighlights, openSearchPaneId]);
+
+  const handleSettingsOpen = React.useCallback(() => {
+    setSettingsOpen(true);
+  }, []);
+
+  const handleSettingsClose = React.useCallback(() => {
+    setSettingsOpen(false);
+    globalThis.setTimeout(() => settingsButtonRef.current?.focus(), 0);
+  }, []);
+
+  const handleThemePreferenceChange = React.useCallback((nextThemePreference: ThemePreference) => {
+    setThemePreference(nextThemePreference);
+  }, []);
+
+  const requestActivePaneSearch = React.useCallback(() => {
+    const paneId = state.activePaneId ?? state.panes[0]?.id ?? null;
+
+    if (!paneId) {
+      return;
+    }
+
+    setOpenSearchPaneId(paneId);
+    setOpenTimeOffsetPaneId(null);
+    showSearchHighlights(paneId);
+    setSearchFocusRequestSequence((current) => current + 1);
+  }, [showSearchHighlights, state.activePaneId, state.panes]);
+
+  const requestActivePaneTimeOffset = React.useCallback(() => {
+    const paneId = state.activePaneId ?? state.panes[0]?.id ?? null;
+
+    if (!paneId) {
+      return;
+    }
+
+    if (openSearchPaneId) {
+      hideSearchHighlights(openSearchPaneId);
+    }
+    setOpenSearchPaneId(null);
+    setOpenTimeOffsetPaneId(paneId);
+  }, [hideSearchHighlights, openSearchPaneId, state.activePaneId, state.panes]);
+
+  const getFileLifecycleTarget = React.useCallback(() => {
+    if (activeFileSource && activePane) {
+      return { paneId: activePane.id, source: activeFileSource };
+    }
+
+    const firstFilePane = state.panes.find((pane) => pane.sourceRef && fileSources[pane.sourceRef]);
+
+    if (!firstFilePane?.sourceRef) {
+      return null;
+    }
+
+    return {
+      paneId: firstFilePane.id,
+      source: fileSources[firstFilePane.sourceRef],
+    };
+  }, [activeFileSource, activePane, fileSources, state.panes]);
+
+  const publishAppendForSource = React.useCallback((source: FileSource) => {
     publishFileLifecycleEvent({
       type: "FileAppended",
-      sourceId: activeFileSource.id,
-      lines: [`2026-06-16T09:05:00.000Z ${activeFileSource.displayName} live appended line ${liveAppendCounter.current++}`],
+      sourceId: source.id,
+      lines: [`2026-06-16T09:05:00.000Z ${source.displayName} live appended line ${liveAppendCounter.current++}`],
     });
-  };
+  }, [publishFileLifecycleEvent]);
 
-  const handleDeleteActiveFile = () => {
-    if (!activeFileSource) {
-      return;
-    }
-
-    publishFileLifecycleEvent({ type: "FileDeleted", sourceId: activeFileSource.id });
-  };
-
-  const handleReplaceActiveFile = () => {
-    if (!activeFileSource) {
-      return;
-    }
-
+  const publishReplacementForSource = React.useCallback((source: FileSource) => {
     publishFileLifecycleEvent({
       type: "FileReplaced",
-      sourceId: activeFileSource.id,
-      identity: `${activeFileSource.fileIdentity.value}:replacement:${Date.now()}`,
+      sourceId: source.id,
+      identity: `${source.fileIdentity.value}:replacement:${Date.now()}`,
       sizeBytes: 96,
       lines: [
-        `2026-06-16T09:06:00.000Z ${activeFileSource.displayName} replacement file started`,
-        `2026-06-16T09:06:01.000Z ${activeFileSource.displayName} replacement file ready`,
+        `2026-06-16T09:06:00.000Z ${source.displayName} replacement file started`,
+        `2026-06-16T09:06:01.000Z ${source.displayName} replacement file ready`,
       ],
     });
-  };
+  }, [publishFileLifecycleEvent]);
+
+  const handleFileLifecycleTestAction = React.useCallback(
+    (action: "append" | "delete" | "replace") => {
+      const target = getFileLifecycleTarget();
+
+      if (!target) {
+        return;
+      }
+
+      dispatch({ type: "setActivePane", paneId: target.paneId });
+
+      if (action === "append") {
+        publishAppendForSource(target.source);
+        return;
+      }
+
+      if (action === "delete") {
+        publishFileLifecycleEvent({ type: "FileDeleted", sourceId: target.source.id });
+        return;
+      }
+
+      publishReplacementForSource(target.source);
+    },
+    [getFileLifecycleTarget, publishAppendForSource, publishFileLifecycleEvent, publishReplacementForSource],
+  );
+
+  const firstPaneEntry = panes[0] ?? null;
+  const executeUiTestAction = React.useCallback(
+    (action: UiTestAction) => {
+      switch (action) {
+        case "openSampleLogs":
+          if (state.panes.length === 0) {
+            samplePanes.forEach((pane) => dispatch({ type: "addPane", pane }));
+            setSourceOpeningEvidence((current) => ({
+              ...current,
+              status: "opened",
+              entryPoint: "ui-test-fixture",
+              selectedSourceKind: "mixed",
+              fixtureSamplePaneCount: current.fixtureSamplePaneCount + samplePanes.length,
+            }));
+          }
+          break;
+        case "copyFirstPane":
+          if (firstPaneEntry) {
+            void copySelectedLogText(firstPaneEntry.lines, undefined, uiTestClipboardWriter).then(() => {
+              setUiTestCopiedPaneTitle(firstPaneEntry.pane.title);
+            });
+          }
+          break;
+        case "toggleSynchronization":
+          handleSynchronizationEnabledChange(!synchronizationEnabled);
+          break;
+        case "openSettings":
+          handleSettingsOpen();
+          break;
+        case "closeSettings":
+          handleSettingsClose();
+          break;
+        case "setThemeSystem":
+          setThemePreference("system");
+          break;
+        case "setThemeLight":
+          setThemePreference("light");
+          break;
+        case "setThemeDark":
+          setThemePreference("dark");
+          break;
+        case "reorderFirstPaneAfterSecond":
+          if (state.panes.length >= 2) {
+            dispatch({ type: "reorderPane", paneId: state.panes[0].id, targetIndex: 1 });
+          }
+          break;
+        case "keyboardNavigateActivePaneDown":
+          dispatchNavigationEventToActiveViewport("keyboard");
+          break;
+        case "wheelNavigateActivePaneDown":
+          dispatchNavigationEventToActiveViewport("wheel");
+          break;
+        case "openActivePaneSearch":
+          requestActivePaneSearch();
+          break;
+        case "setActivePaneSearchQuery": {
+          const paneId = state.activePaneId ?? state.panes[0]?.id ?? null;
+
+          if (paneId) {
+            setOpenSearchPaneId(paneId);
+            setOpenTimeOffsetPaneId(null);
+            showSearchHighlights(paneId);
+            setSearchMode(paneId, "text");
+            setSearchQuery(paneId, "line 180 token=outside-viewport");
+          }
+          break;
+        }
+        case "setActivePaneInvalidSearch": {
+          const paneId = state.activePaneId ?? state.panes[0]?.id ?? null;
+
+          if (paneId) {
+            setOpenSearchPaneId(paneId);
+            setOpenTimeOffsetPaneId(null);
+            setSearchFocusRequestSequence((current) => current + 1);
+            setSearchMode(paneId, "regex");
+            setSearchQuery(paneId, "[broken");
+          }
+          break;
+        }
+        case "closeActivePaneSearch":
+          if (openSearchPaneId) {
+            hideSearchHighlights(openSearchPaneId);
+          }
+          setOpenSearchPaneId(null);
+          break;
+        case "showFirstPaneCopyMenu":
+          dispatchCopyMenuEventToFirstPane("contextmenu");
+          setUiTestCopyActionPublishSequence((current) => current + 1);
+          break;
+        case "dismissCopyMenu":
+          dispatchCopyMenuEventToFirstPane("dismiss");
+          setUiTestCopyActionPublishSequence((current) => current + 1);
+          break;
+        case "openEmptyDirectory":
+          dispatchDirectorySource({ type: "refreshFiles", files: [] });
+          dispatch({
+            type: "addPane",
+            pane: {
+              id: "pane-empty-directory",
+              title: "logs/empty",
+              sourceRef: "source-directory",
+              width: 520,
+              status: "empty",
+            },
+          });
+          break;
+        case "navigatePreviousDirectoryFile":
+          dispatchDirectorySource({ type: "navigate", direction: "previous" });
+          break;
+        case "navigateNextDirectoryFile":
+          dispatchDirectorySource({ type: "navigate", direction: "next" });
+          break;
+        case "discoverNewerDirectoryFile":
+          dispatchDirectorySource({
+            type: "addFiles",
+            files: [newerDirectoryFile],
+          });
+          break;
+        case "openActivePaneTimeOffset":
+          requestActivePaneTimeOffset();
+          break;
+        case "setActivePaneTimeOffset": {
+          const paneId = state.activePaneId ?? state.panes[0]?.id ?? null;
+
+          if (paneId) {
+            setPaneOffset(paneId, {
+              days: 0,
+              hours: 0,
+              minutes: 1,
+              seconds: 0,
+              milliseconds: 0,
+            });
+            setOpenTimeOffsetPaneId(null);
+          }
+          break;
+        }
+        case "appendActiveFile":
+          handleFileLifecycleTestAction("append");
+          break;
+        case "deleteActiveFile":
+          handleFileLifecycleTestAction("delete");
+          break;
+        case "replaceActiveFile":
+          handleFileLifecycleTestAction("replace");
+          break;
+      }
+    },
+    [
+      firstPaneEntry,
+      handleFileLifecycleTestAction,
+      handleSettingsClose,
+      handleSettingsOpen,
+      handleSynchronizationEnabledChange,
+      hideSearchHighlights,
+      openSearchPaneId,
+      requestActivePaneSearch,
+      requestActivePaneTimeOffset,
+      setPaneOffset,
+      setSearchMode,
+      setSearchQuery,
+      showSearchHighlights,
+      state.activePaneId,
+      state.panes,
+      synchronizationEnabled,
+    ],
+  );
+  const executeUiTestActionRef = React.useRef(executeUiTestAction);
+
+  React.useEffect(() => {
+    executeUiTestActionRef.current = executeUiTestAction;
+  }, [executeUiTestAction]);
+
+  React.useEffect(() => {
+    if (!uiTestEnabled || !platform.uiTestBridge) {
+      return;
+    }
+
+    let disposed = false;
+    let consuming = false;
+    const consume = () => {
+      if (consuming) {
+        return;
+      }
+
+      consuming = true;
+      void platform.uiTestBridge?.consumePendingAction().then((action) => {
+        if (!disposed && action) {
+          executeUiTestActionRef.current(action);
+        }
+      }).finally(() => {
+        consuming = false;
+      });
+    };
+
+    consume();
+    const intervalId = globalThis.setInterval(consume, uiTestActionPollIntervalMs);
+
+    return () => {
+      disposed = true;
+      globalThis.clearInterval(intervalId);
+    };
+  }, [platform.uiTestBridge, uiTestEnabled]);
 
   const openFileSource = async (sourceRef: FileSourceRef) => {
     const result = await platform.fileAccess.openFileReadOnly(sourceRef, defaultFileOpenPolicy);
 
     if (!result.ok) {
-      dispatch({
-        type: "addPane",
-        pane: {
-          id: `pane-error-${sourceRef.id}`,
-          title: sourceRef.name,
-          sourceRef: null,
-          width: 520,
-          status: result.error.code === "FileTooLarge" ? "memory-limited" : "error",
+    dispatch({
+      type: "addPane",
+      pane: {
+        title: sourceRef.name,
+        sourceRef: null,
+        width: 520,
+        status: result.error.code === "FileTooLarge" ? "memory-limited" : "error",
         },
       });
       return;
@@ -261,7 +747,6 @@ export function AppShell({ platform }: AppShellProps) {
     dispatch({
       type: "addPane",
       pane: {
-        id: `pane-${result.source.id}`,
         title: result.source.displayName,
         sourceRef: result.source.id,
         width: 520,
@@ -273,11 +758,19 @@ export function AppShell({ platform }: AppShellProps) {
   const openDirectorySource = async (sourceRef: DirectorySourceRef) => {
     const files = await platform.directoryAccess.listTopLevelFiles(sourceRef);
 
-    dispatchDirectorySource({ type: "refreshFiles", files });
+    dispatchDirectorySource({
+      type: "replaceSource",
+      source: createDirectorySource({
+        id: directorySource.id,
+        directoryIdentity: { value: sourceRef.id, platform: platform.kind },
+        displayName: sourceRef.name,
+        files,
+        watchState: platform.capabilities.canDiscoverNewDirectoryFiles ? "watching" : "unsupported",
+      }),
+    });
     dispatch({
       type: "addPane",
       pane: {
-        id: `pane-directory-${sourceRef.id}`,
         title: sourceRef.name,
         sourceRef: directorySource.id,
         width: 520,
@@ -294,148 +787,674 @@ export function AppShell({ platform }: AppShellProps) {
         await openDirectorySource(source.source);
       }
     }
-  };
 
-  const handleBrowserFileInput = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.currentTarget.files ?? []);
-
-    void Promise.all(
-      files.map((file) =>
-        openFileSource({
-          id: `browser-file-${sanitizeSourceId(file.name)}-${file.size}-${file.lastModified}`,
-          name: file.name,
-          file,
-        }),
-      ),
-    );
-    event.currentTarget.value = "";
-  };
-
-  const handleOpenBrowserDirectory = () => {
-    void openDirectorySource({
-      id: "browser-directory-fixture",
-      name: "browser-fixtures",
-      entries: browserDirectoryEntries,
-    });
+    if (sources.length > 0) {
+      publishOpenedSources("drag-drop", getSourceKind(sources), sources.length);
+    }
   };
 
   const handleDrop = (event: React.DragEvent<HTMLElement>) => {
     event.preventDefault();
+    event.stopPropagation();
     void platform.dragDropSource.mapDroppedSources(event.nativeEvent).then(openDroppedSources);
   };
 
+  const publishSourceSelectionStarted = (entryPoint: UiTestSourceOpeningEntryPoint) => {
+    setSourceOpeningEvidence((current) => ({
+      ...current,
+      status: "pending",
+      entryPoint,
+      selectedSourceKind: "none",
+      pickerRequestCount: current.pickerRequestCount + 1,
+    }));
+  };
+
+  const publishSourceSelectionCancelled = (entryPoint: UiTestSourceOpeningEntryPoint) => {
+    setSourceOpeningEvidence((current) => ({
+      ...current,
+      status: "cancelled",
+      entryPoint,
+      selectedSourceKind: "none",
+      cancelledPickerCount: current.cancelledPickerCount + 1,
+    }));
+  };
+
+  const publishOpenedSources = (
+    entryPoint: UiTestSourceOpeningEntryPoint,
+    selectedSourceKind: UiTestSourceKind,
+    sourceCount: number,
+  ) => {
+    setSourceOpeningEvidence((current) => ({
+      ...current,
+      status: "opened",
+      entryPoint,
+      selectedSourceKind,
+      openedSourceCount: current.openedSourceCount + sourceCount,
+    }));
+  };
+
+  const requestSourceSelection = async (entryPoint: UiTestSourceOpeningEntryPoint) => {
+    publishSourceSelectionStarted(entryPoint);
+
+    try {
+      const selectedFiles = await platform.sourcePicker.pickFiles();
+
+      if (selectedFiles.length > 0) {
+        for (const selectedFile of selectedFiles) {
+          await openFileSource(selectedFile);
+        }
+        publishOpenedSources(entryPoint, "file", selectedFiles.length);
+        return;
+      }
+
+      const selectedDirectory = await platform.sourcePicker.pickDirectory();
+
+      if (selectedDirectory) {
+        await openDirectorySource(selectedDirectory);
+        publishOpenedSources(entryPoint, "directory", 1);
+        return;
+      }
+
+      publishSourceSelectionCancelled(entryPoint);
+    } catch {
+      setSourceOpeningEvidence((current) => ({
+        ...current,
+        status: "error",
+        entryPoint,
+        selectedSourceKind: "none",
+      }));
+    }
+  };
+
+  const handleOpenSource = () => {
+    void requestSourceSelection("empty-workspace");
+  };
+
+  const handleAddPane = () => {
+    void requestSourceSelection("topbar-add-pane");
+  };
+
+  const statusMessage =
+    unsupportedPaneCount > 0
+      ? `${unsupportedPaneCount} untimed ${unsupportedPaneCount === 1 ? "pane" : "panes"} excluded`
+      : null;
+  const paneWorkspace =
+    state.panes.length === 0 ? (
+      <EmptyWorkspace
+        onDragOver={(event) => event.preventDefault()}
+        onDrop={handleDrop}
+        onOpenSource={handleOpenSource}
+      />
+    ) : (
+      <PaneRail
+        panes={panes}
+        onClosePane={(paneId) => dispatch({ type: "closePane", paneId })}
+        onActivatePane={(paneId) => dispatch({ type: "setActivePane", paneId })}
+        onResizePane={(leftPaneId, delta) => dispatch({ type: "resizePane", leftPaneId, delta })}
+        onReorderPane={(paneId, targetIndex) => dispatch({ type: "reorderPane", paneId, targetIndex })}
+        onHorizontalScroll={(paneId, scrollLeft) =>
+          dispatch({ type: "setHorizontalScroll", paneId, scrollLeft })
+        }
+        onNavigateDirectory={(_paneId, direction) => dispatchDirectorySource({ type: "navigate", direction })}
+        onTimeAnchorChange={handleAnchorChange}
+        onTimeOffsetChange={setPaneOffset}
+        onSearchQueryChange={setSearchQuery}
+        onSearchRegexModeChange={(paneId, enabled) => setSearchMode(paneId, enabled ? "regex" : "text")}
+        onSearchCaseSensitiveChange={setSearchCaseSensitive}
+        onPreviousSearchMatch={selectPreviousSearchMatch}
+        onNextSearchMatch={selectNextSearchMatch}
+        openSearchPaneId={openSearchPaneId}
+        openTimeOffsetPaneId={openTimeOffsetPaneId}
+        searchFocusRequestSequence={searchFocusRequestSequence}
+        onSearchOpenChange={handleSearchOpenChange}
+        onTimeOffsetOpenChange={handleTimeOffsetOpenChange}
+        onCopied={setUiTestCopiedPaneTitle}
+        clipboard={uiTestEnabled ? uiTestClipboardWriter : undefined}
+      />
+    );
+
   return (
-    <main aria-label="Crosslog workspace">
-      <SessionRecoveryBanner message={restoreState.message} />
-      <CapabilityLimitations limitations={platform.capabilities.limitations} />
-      {state.panes.length === 0 ? (
-        <section aria-label="Empty workspace" onDragOver={(event) => event.preventDefault()} onDrop={handleDrop}>
-          <h1>Crosslog</h1>
-          <button
-            type="button"
-            onClick={() => {
-              samplePanes.forEach((pane) => dispatch({ type: "addPane", pane }));
-            }}
-          >
-            Open logs
-          </button>
-          {platform.kind === "web" ? (
-            <>
-              <label>
-                Open browser files
-                <input
-                  aria-label="Open browser files"
-                  multiple
-                  type="file"
-                  onChange={handleBrowserFileInput}
-                />
-              </label>
-              <button type="button" onClick={handleOpenBrowserDirectory}>
-                Open browser directory
-              </button>
-            </>
-          ) : null}
-          <button
-            type="button"
-            onClick={() => {
-              dispatchDirectorySource({ type: "refreshFiles", files: [] });
-              dispatch({
-                type: "addPane",
-                pane: {
-                  id: "pane-empty-directory",
-                  title: "logs/empty",
-                  sourceRef: "source-directory",
-                  width: 520,
-                  status: "empty",
-                },
-              });
-            }}
-          >
-            Open empty directory
-          </button>
-          <p>{platform.kind === "web" ? "Web workspace" : "Desktop workspace"}</p>
-        </section>
-      ) : (
-        <>
-          <div
-            role="toolbar"
-            aria-label="Global tools"
-            onDragOver={(event) => event.preventDefault()}
-            onDrop={handleDrop}
-          >
-            <SynchronizationToggle
-              enabled={synchronizationEnabled}
-              onEnabledChange={handleSynchronizationEnabledChange}
-            />
-            <button
-              type="button"
-              onClick={() =>
-                dispatchDirectorySource({
-                  type: "refreshFiles",
-                  files: [newerDirectoryFile, ...directorySource.files],
-                })
-              }
-            >
-              Discover newer directory file
-            </button>
-            {unsupportedPaneCount > 0 ? (
-              <span aria-live="polite">{unsupportedPaneCount} untimed pane excluded</span>
-            ) : null}
-            <button type="button" disabled={lifecycleActionsDisabled} onClick={handleAppendLiveLine}>
-              Append live line
-            </button>
-            <button type="button" disabled={lifecycleActionsDisabled} onClick={handleDeleteActiveFile}>
-              Delete active file
-            </button>
-            <button type="button" disabled={lifecycleActionsDisabled} onClick={handleReplaceActiveFile}>
-              Replace active file
-            </button>
-          </div>
-          <TimestampConfigError message={null} />
-          <PaneRail
-            panes={panes}
-            onAddPane={() => dispatch({ type: "addPane", pane: createAddedPane(state.nextPaneNumber) })}
-            onSplitPane={() => dispatch({ type: "splitPane" })}
-            onClosePane={(paneId) => dispatch({ type: "closePane", paneId })}
-            onActivatePane={(paneId) => dispatch({ type: "setActivePane", paneId })}
-            onResizePane={(leftPaneId, delta) => dispatch({ type: "resizePane", leftPaneId, delta })}
-            onHorizontalScroll={(paneId, scrollLeft) =>
-              dispatch({ type: "setHorizontalScroll", paneId, scrollLeft })
-            }
-            onNavigateDirectory={(_paneId, direction) => dispatchDirectorySource({ type: "navigate", direction })}
-            onTimeAnchorChange={handleAnchorChange}
-            onTimeOffsetChange={setPaneOffset}
-            onSearchQueryChange={setSearchQuery}
-            onSearchRegexModeChange={(paneId, enabled) => setSearchMode(paneId, enabled ? "regex" : "text")}
-            onSearchCaseSensitiveChange={setSearchCaseSensitive}
-            onPreviousSearchMatch={selectPreviousSearchMatch}
-            onNextSearchMatch={selectNextSearchMatch}
+    <ActivityRailShell
+      activityRail={
+        <ActivityRail
+          activeItemId={settingsOpen ? "settings" : null}
+          onSettings={handleSettingsOpen}
+          settingsButtonRef={settingsButtonRef}
+        />
+      }
+      onDragOver={(event) => event.preventDefault()}
+      onDrop={handleDrop}
+      paneWorkspace={paneWorkspace}
+      platformShellVariant={shellPresentation.platformShellVariant}
+      popovers={
+        settingsOpen ? (
+          <SettingsSurface
+            onClose={handleSettingsClose}
+            onThemePreferenceChange={handleThemePreferenceChange}
+            resolvedThemeVariant={effectiveThemeVariant}
+            returnFocusRef={settingsButtonRef}
+            themePreference={themePreference}
           />
+        ) : null
+      }
+      renderMacosTrafficLights={renderMacosTrafficLights}
+      statusBar={
+        <StatusBar
+          activeSourceLabel={activePaneTitle}
+          message={statusMessage}
+          paneCount={state.panes.length}
+          syncEnabled={synchronizationEnabled}
+        />
+      }
+      systemBanners={
+        <>
+          <SessionRecoveryBanner message={restoreState.message} />
+          <CapabilityLimitations limitations={platform.capabilities.limitations} />
+          <TimestampConfigError message={null} />
         </>
-      )}
-      <FuturePaneToolbarSlot />
-    </main>
+      }
+      themeVariant={effectiveThemeVariant}
+      topbar={
+        <Topbar
+          syncEnabled={synchronizationEnabled}
+          onAddPane={handleAddPane}
+          onSyncEnabledChange={handleSynchronizationEnabledChange}
+        />
+      }
+    />
   );
+}
+
+function useSystemThemeVariant(): ThemeVariant {
+  const [systemThemeVariant, setSystemThemeVariant] = React.useState<ThemeVariant>(() => readSystemThemeVariant());
+
+  React.useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return;
+    }
+
+    const mediaQueryList = window.matchMedia(systemThemeMediaQuery);
+    const updateThemeVariant = () => setSystemThemeVariant(resolveSystemThemeVariant(mediaQueryList.matches));
+
+    if (typeof mediaQueryList.addEventListener === "function") {
+      mediaQueryList.addEventListener("change", updateThemeVariant);
+      return () => mediaQueryList.removeEventListener("change", updateThemeVariant);
+    }
+
+    if (typeof mediaQueryList.addListener === "function") {
+      mediaQueryList.addListener(updateThemeVariant);
+      return () => mediaQueryList.removeListener(updateThemeVariant);
+    }
+  }, []);
+
+  return systemThemeVariant;
+}
+
+function readSystemThemeVariant(): ThemeVariant {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return resolveSystemThemeVariant(null);
+  }
+
+  return resolveSystemThemeVariant(window.matchMedia(systemThemeMediaQuery).matches);
+}
+
+function getPublishedRedesignedRegions(
+  paneCount: number,
+  searchOpen: boolean,
+  timeOffsetOpen: boolean,
+  settingsOpen: boolean,
+  platformShellVariant: ShellPresentation["platformShellVariant"],
+  renderMacosTrafficLights: boolean,
+): readonly string[] {
+  const platformChromeRegion = getPlatformChromeRegion(platformShellVariant, renderMacosTrafficLights);
+  const persistentRegions = [
+    redesignedShellTestIds.crosslogShell,
+    redesignedShellTestIds.topbar,
+    redesignedShellTestIds.commandField,
+    redesignedShellTestIds.themeVariant,
+    redesignedShellTestIds.platformChrome,
+    redesignedShellTestIds.platformChromeTitle,
+    platformChromeRegion,
+    redesignedShellTestIds.activityRail,
+    redesignedShellTestIds.paneWorkspace,
+    redesignedShellTestIds.statusBar,
+  ].filter(Boolean) as RedesignedShellTestId[];
+
+  if (paneCount === 0) {
+    return [
+      ...persistentRegions,
+      redesignedShellTestIds.emptyWorkspace,
+      redesignedShellTestIds.emptyDropZone,
+      redesignedShellTestIds.emptyOpenSource,
+      ...(settingsOpen ? [redesignedShellTestIds.settingsSurface] : []),
+    ];
+  }
+
+  const nonEmptyRegions = [
+    ...persistentRegions,
+    redesignedShellTestIds.workspaceScrollbar,
+    redesignedShellTestIds.logPane,
+    redesignedShellTestIds.paneHeader,
+    redesignedShellTestIds.logViewport,
+  ];
+
+  return [
+    ...nonEmptyRegions,
+    ...(paneCount > 1 ? [redesignedShellTestIds.paneResizeBoundary] : []),
+    ...(searchOpen ? [redesignedShellTestIds.paneSearchPopover] : []),
+    ...(timeOffsetOpen ? [redesignedShellTestIds.timeOffsetPopover] : []),
+    ...(settingsOpen ? [redesignedShellTestIds.settingsSurface] : []),
+  ];
+}
+
+function getPublishedTimeOffsetValidationEvidence(): UiTestTimeOffsetValidationEvidence {
+  const validBoundary = validateTimeOffsetDraft({
+    days: "123456",
+    hours: "23",
+    minutes: "59",
+    seconds: "59",
+    milliseconds: "999",
+  });
+  const invalidBoundary = validateTimeOffsetDraft({
+    days: "0",
+    hours: "24",
+    minutes: "60",
+    seconds: "60",
+    milliseconds: "1000",
+  });
+  const blankDraft = validateTimeOffsetDraft({
+    days: "",
+    hours: "",
+    minutes: "",
+    seconds: "",
+    milliseconds: "",
+  });
+
+  return {
+    validBoundaryAccepted: validBoundary.valid,
+    invalidBoundaryRejected: !invalidBoundary.valid,
+    blankFieldAppliesAsZero:
+      blankDraft.valid &&
+      blankDraft.offset.days === 0 &&
+      blankDraft.offset.hours === 0 &&
+      blankDraft.offset.minutes === 0 &&
+      blankDraft.offset.seconds === 0 &&
+      blankDraft.offset.milliseconds === 0,
+    invalidFields: invalidBoundary.valid ? [] : invalidBoundary.errors.map((error) => error.field),
+  };
+}
+
+function getPlatformChromeRegion(
+  platformShellVariant: ShellPresentation["platformShellVariant"],
+  renderMacosTrafficLights: boolean,
+): RedesignedShellTestId | null {
+  switch (platformShellVariant) {
+    case "macos":
+      return renderMacosTrafficLights ? redesignedShellTestIds.platformChromeMacosTrafficLights : null;
+    case "windows":
+      return redesignedShellTestIds.platformChromeWindowsCaptionControls;
+    case "linux":
+      return redesignedShellTestIds.platformChromeLinuxCaptionControls;
+    case "web":
+      return redesignedShellTestIds.platformChromeWebTitle;
+  }
+}
+
+function getPublishedObsoleteControlVisibility(): UiTestObsoleteControlVisibility {
+  return {
+    workspaceToolbar:
+      hasVisibleSelector(".crosslog-workspace-actions") ||
+      hasVisibleTestId(redesignedShellTestIds.obsoleteWorkspaceToolbar),
+    paneCopyToolbar:
+      hasVisibleSelector(".crosslog-pane-tools") ||
+      hasVisibleSelector(".crosslog-log-text-selection__copy") ||
+      hasVisibleTestId(redesignedShellTestIds.obsoletePaneCopyToolbar),
+    discoverNewerDirectoryFile: hasVisibleButtonText("Discover newer directory file"),
+    appendLiveLine: hasVisibleButtonText("Append live line"),
+    deleteActiveFile: hasVisibleButtonText("Delete active file"),
+    replaceActiveFile: hasVisibleButtonText("Replace active file"),
+    splitButton:
+      hasVisibleTestId(redesignedShellTestIds.obsoleteSplitButton) ||
+      hasVisibleButtonText("Split") ||
+      hasVisibleAriaLabel("Split active pane"),
+    synchronizeByTimeText: hasVisibleText("Synchronize by time"),
+    syncStateText: hasVisibleSelector(".crosslog-topbar__sync-state"),
+    resizeDecreaseButton:
+      hasVisibleTestId(redesignedShellTestIds.obsoleteResizeDecrease) ||
+      hasVisibleAriaLabelContaining("Move boundary after", "left"),
+    resizeIncreaseButton:
+      hasVisibleTestId(redesignedShellTestIds.obsoleteResizeIncrease) ||
+      hasVisibleAriaLabelContaining("Move boundary after", "right"),
+    paneReadyFooter:
+      hasVisibleSelector(".crosslog-pane-status") ||
+      hasVisibleTestId(redesignedShellTestIds.obsoletePaneReadyFooter),
+  };
+}
+
+function getPublishedWorkspaceLayoutMeasurements(): UiTestWorkspaceLayoutMeasurements {
+  if (typeof document === "undefined") {
+    return emptyWorkspaceLayoutMeasurements;
+  }
+
+  const workspace = queryTestElement(redesignedShellTestIds.paneWorkspace);
+
+  if (!workspace) {
+    return emptyWorkspaceLayoutMeasurements;
+  }
+
+  const panes = queryAllTestElements(redesignedShellTestIds.logPane);
+  const rightmostPane = panes.at(-1) ?? null;
+  const workspaceRect = workspace.getBoundingClientRect();
+  const rightmostPaneRect = rightmostPane?.getBoundingClientRect() ?? null;
+  const workspaceWidthPx = normalizeMeasurement(workspaceRect.width);
+  const workspaceContentWidthPx = normalizeMeasurement(workspace.scrollWidth);
+  const workspaceRightPx = normalizeMeasurement(workspaceRect.right);
+  const rightmostPaneRightPx = rightmostPaneRect ? normalizeMeasurement(rightmostPaneRect.right) : null;
+  const rightEdgeGapPx =
+    workspaceRightPx === null || rightmostPaneRightPx === null
+      ? null
+      : Math.max(0, Math.round(workspaceRightPx - rightmostPaneRightPx));
+
+  return {
+    workspaceWidthPx,
+    workspaceContentWidthPx,
+    workspaceRightPx,
+    rightmostPaneRightPx,
+    rightEdgeGapPx,
+    rightmostPaneAlignedToWorkspace: rightEdgeGapPx === null ? null : rightEdgeGapPx <= 1,
+    horizontalOverflow: workspace.scrollWidth > workspace.clientWidth + 1,
+  };
+}
+
+function getPublishedPaneNavigationEvidence(paneOrder: readonly string[]): UiTestPaneNavigationEvidence {
+  if (typeof document === "undefined") {
+    return emptyPaneNavigationEvidence;
+  }
+
+  const viewports = queryAllTestElements(redesignedShellTestIds.logViewport);
+  const activeViewport = getActiveViewportElement() ?? viewports[0] ?? null;
+  const syncTarget = document.querySelector<HTMLElement>('[data-sync-target="true"]');
+  const gutterDigitCounts = viewports
+    .map((viewport) => parseNullableInteger(viewport.dataset.gutterDigits))
+    .filter((value): value is number => value !== null);
+
+  return {
+    paneOrder,
+    selectedLineNumber: parseNullableInteger(activeViewport?.dataset.selectedLineNumber),
+    maxGutterDigitCount: gutterDigitCounts.length > 0 ? Math.max(...gutterDigitCounts) : null,
+    lastNavigation: parseLastNavigation(activeViewport?.dataset.lastNavigation),
+    syncTargetLineNumber: parseNullableInteger(syncTarget?.dataset.lineNumber),
+  };
+}
+
+function getPublishedSearchHighlightEvidence(): UiTestSearchHighlightEvidence {
+  if (typeof document === "undefined") {
+    return emptySearchHighlightEvidence;
+  }
+
+  const highlights = getVisibleElements('[data-search-highlight="true"]');
+
+  return {
+    visible: highlights.length > 0,
+    count: highlights.length,
+  };
+}
+
+function getPublishedCopyActionEvidence(): UiTestCopyActionEvidence {
+  if (typeof document === "undefined") {
+    return emptyCopyActionEvidence;
+  }
+
+  const action = getVisibleElements(".crosslog-log-text-selection__menuitem")[0] ?? null;
+
+  return {
+    visible: action !== null,
+    pointerAnchored: action ? parseBooleanDataAttribute(action.dataset.pointerAnchored) : null,
+    viewportBounded: action ? parseBooleanDataAttribute(action.dataset.viewportBounded) : null,
+    copiedProductTextVisible: hasVisibleExactText("Copied"),
+  };
+}
+
+const emptyWorkspaceLayoutMeasurements: UiTestWorkspaceLayoutMeasurements = {
+  workspaceWidthPx: null,
+  workspaceContentWidthPx: null,
+  workspaceRightPx: null,
+  rightmostPaneRightPx: null,
+  rightEdgeGapPx: null,
+  rightmostPaneAlignedToWorkspace: null,
+  horizontalOverflow: false,
+};
+
+const emptyPaneNavigationEvidence: UiTestPaneNavigationEvidence = {
+  paneOrder: [],
+  selectedLineNumber: null,
+  maxGutterDigitCount: null,
+  lastNavigation: "none",
+  syncTargetLineNumber: null,
+};
+
+const emptySearchHighlightEvidence: UiTestSearchHighlightEvidence = {
+  visible: false,
+  count: 0,
+};
+
+const emptyCopyActionEvidence: UiTestCopyActionEvidence = {
+  visible: false,
+  pointerAnchored: null,
+  viewportBounded: null,
+  copiedProductTextVisible: false,
+};
+
+function dispatchNavigationEventToActiveViewport(mode: "keyboard" | "wheel"): void {
+  const viewport = getActiveViewportElement();
+
+  if (!viewport) {
+    return;
+  }
+
+  viewport.focus();
+
+  if (mode === "keyboard") {
+    viewport.dispatchEvent(new KeyboardEvent("keydown", {
+      bubbles: true,
+      cancelable: true,
+      key: "ArrowDown",
+    }));
+    return;
+  }
+
+  viewport.dispatchEvent(new WheelEvent("wheel", {
+    bubbles: true,
+    cancelable: true,
+    deltaY: 120,
+  }));
+}
+
+function dispatchCopyMenuEventToFirstPane(mode: "contextmenu" | "dismiss"): void {
+  if (typeof document === "undefined") {
+    return;
+  }
+
+  const firstPane = queryAllTestElements(redesignedShellTestIds.logPane)[0] ?? null;
+  const textActions = firstPane?.querySelector<HTMLElement>(".crosslog-log-text-selection") ?? null;
+
+  if (!textActions) {
+    return;
+  }
+
+  const rect = textActions.getBoundingClientRect();
+
+  if (mode === "dismiss") {
+    textActions.dispatchEvent(new PointerEvent("pointerdown", {
+      bubbles: true,
+      button: 0,
+      clientX: rect.left + 8,
+      clientY: rect.top + 8,
+    }));
+    return;
+  }
+
+  textActions.dispatchEvent(new MouseEvent("contextmenu", {
+    bubbles: true,
+    button: 2,
+    cancelable: true,
+    clientX: Math.min(rect.right - 1, rect.left + 160),
+    clientY: Math.min(rect.bottom - 1, rect.top + 54),
+  }));
+}
+
+function getActiveViewportElement(): HTMLElement | null {
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  const activePane = document.querySelector<HTMLElement>(
+    `[data-testid="${redesignedShellTestIds.logPane}"][data-active="true"]`,
+  );
+
+  return activePane?.querySelector<HTMLElement>(`[data-testid="${redesignedShellTestIds.logViewport}"]`) ?? null;
+}
+
+function queryTestElement(testId: RedesignedShellTestId): HTMLElement | null {
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  return document.querySelector<HTMLElement>(`[data-testid="${testId}"]`);
+}
+
+function queryAllTestElements(testId: RedesignedShellTestId): readonly HTMLElement[] {
+  if (typeof document === "undefined") {
+    return [];
+  }
+
+  return Array.from(document.querySelectorAll<HTMLElement>(`[data-testid="${testId}"]`));
+}
+
+function hasVisibleTestId(testId: RedesignedShellTestId): boolean {
+  return Boolean(queryAllTestElements(testId).find(isVisibleElement));
+}
+
+function hasVisibleSelector(selector: string): boolean {
+  if (typeof document === "undefined") {
+    return false;
+  }
+
+  return Boolean(Array.from(document.querySelectorAll<HTMLElement>(selector)).find(isVisibleElement));
+}
+
+function hasVisibleButtonText(text: string): boolean {
+  return getVisibleElements("button,[role='button']").some((element) => normalizeText(element.textContent) === text);
+}
+
+function hasVisibleText(text: string): boolean {
+  return getVisibleElements("body *").some((element) => normalizeText(element.textContent).includes(text));
+}
+
+function hasVisibleExactText(text: string): boolean {
+  return getVisibleElements("body *").some((element) => normalizeText(element.textContent) === text);
+}
+
+function hasVisibleAriaLabel(label: string): boolean {
+  return getVisibleElements("[aria-label]").some((element) => element.getAttribute("aria-label") === label);
+}
+
+function hasVisibleAriaLabelContaining(prefix: string, suffix: string): boolean {
+  return getVisibleElements("[aria-label]").some((element) => {
+    const label = element.getAttribute("aria-label") ?? "";
+
+    return label.includes(prefix) && label.includes(suffix);
+  });
+}
+
+function getVisibleElements(selector: string): readonly HTMLElement[] {
+  if (typeof document === "undefined") {
+    return [];
+  }
+
+  return Array.from(document.querySelectorAll<HTMLElement>(selector)).filter(isVisibleElement);
+}
+
+function isVisibleElement(element: HTMLElement): boolean {
+  if (element.hidden || element.getAttribute("aria-hidden") === "true") {
+    return false;
+  }
+
+  const style = globalThis.getComputedStyle?.(element);
+
+  return style?.display !== "none" && style?.visibility !== "hidden";
+}
+
+function normalizeText(text: string | null): string {
+  return (text ?? "").replace(/\s+/g, " ").trim();
+}
+
+function normalizeMeasurement(value: number): number | null {
+  return Number.isFinite(value) ? Math.round(value) : null;
+}
+
+function parseNullableInteger(value: string | undefined): number | null {
+  if (value === undefined) {
+    return null;
+  }
+
+  const parsedValue = Number.parseInt(value, 10);
+
+  return Number.isFinite(parsedValue) ? parsedValue : null;
+}
+
+function parseBooleanDataAttribute(value: string | undefined): boolean | null {
+  if (value === "true") {
+    return true;
+  }
+
+  if (value === "false") {
+    return false;
+  }
+
+  return null;
+}
+
+function parseLastNavigation(value: string | undefined): UiTestPaneNavigationEvidence["lastNavigation"] {
+  switch (value) {
+    case "click":
+    case "keyboard":
+    case "wheel":
+      return value;
+    default:
+      return "none";
+  }
+}
+
+function formatFileLifecycleSummary(fileSources: readonly FileSource[]): string {
+  if (fileSources.length === 0) {
+    return "none";
+  }
+
+  return fileSources
+    .map((source) => `${source.displayName}:${getFileLifecycleKind(source)}`)
+    .sort()
+    .join(",");
+}
+
+function getFileLifecycleKind(source: FileSource): "live" | "deleted" | "replaced" | "unsupported" | "error" {
+  if (source.readError || source.watchState === "failed") {
+    return "error";
+  }
+
+  if (source.deleted) {
+    return "deleted";
+  }
+
+  if (source.replaced) {
+    return "replaced";
+  }
+
+  if (source.watchState === "unsupported") {
+    return "unsupported";
+  }
+
+  return "live";
 }
 
 const samplePanes = [
@@ -491,35 +1510,38 @@ const newerDirectoryFile = createDirectoryFileEntry({
   sizeBytes: 4096,
 });
 
-const browserDirectoryEntries = [
-  {
-    kind: "file" as const,
-    id: "browser-directory-new",
-    name: "browser-new.log",
-    createdAt: new Date("2026-06-16T12:00:00.000Z"),
-    sizeBytes: 128,
-  },
-  {
-    kind: "file" as const,
-    id: "browser-directory-old",
-    name: "browser-old.log",
-    createdAt: new Date("2026-06-15T12:00:00.000Z"),
-    sizeBytes: 128,
-  },
-  {
-    kind: "directory" as const,
-    id: "browser-directory-nested",
-    name: "nested",
-  },
-];
+const uiTestActionPollIntervalMs = 100;
 
-function createAddedPane(nextPaneNumber: number) {
-  return {
-    title: `adhoc-${nextPaneNumber}.log`,
-    sourceRef: `source-adhoc-${nextPaneNumber}`,
-    width: 480,
-    status: "ready" as const,
-  };
+const initialSourceOpeningEvidence: UiTestSourceOpeningEvidence = {
+  status: "idle",
+  entryPoint: "none",
+  selectedSourceKind: "none",
+  openedSourceCount: 0,
+  pickerRequestCount: 0,
+  cancelledPickerCount: 0,
+  fixtureSamplePaneCount: 0,
+};
+
+const publishedFutureControlState: UiTestFutureControlState = {
+  activityRailOpenSources: "disabled",
+  activityRailSearch: "disabled",
+  topbarCommandField: "disabled",
+  activityRailSettings: "enabled",
+};
+
+function getSourceKind(sources: readonly DragDropSource[]): UiTestSourceKind {
+  const hasFile = sources.some((source) => source.type === "file");
+  const hasDirectory = sources.some((source) => source.type === "directory");
+
+  if (hasFile && hasDirectory) {
+    return "mixed";
+  }
+
+  if (hasFile) {
+    return "file";
+  }
+
+  return hasDirectory ? "directory" : "none";
 }
 
 function getSampleLines(title: string): readonly string[] {
@@ -593,8 +1615,4 @@ function createSampleFileSource(
     replaced: false,
     readError: null,
   };
-}
-
-function sanitizeSourceId(name: string): string {
-  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }

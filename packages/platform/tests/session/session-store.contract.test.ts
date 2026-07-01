@@ -60,6 +60,7 @@ function createValidSession() {
       },
     ],
     directorySelections: {},
+    synchronizationEnabled: true,
     futureExtensions: {},
   };
 }

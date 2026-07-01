@@ -102,3 +102,27 @@ export function resizeAdjacentPanes<TPane extends PaneLayoutItem>(
     return pane;
   });
 }
+
+export function reorderPaneLayout<TPane extends PaneLayoutItem>(
+  panes: readonly TPane[],
+  paneId: LogPaneId,
+  targetIndex: number,
+): readonly TPane[] {
+  const currentIndex = panes.findIndex((pane) => pane.id === paneId);
+
+  if (currentIndex < 0 || !Number.isFinite(targetIndex)) {
+    return panes;
+  }
+
+  const nextPanes = [...panes];
+  const [movedPane] = nextPanes.splice(currentIndex, 1);
+  const safeTargetIndex = Math.max(0, Math.min(nextPanes.length, Math.round(targetIndex)));
+
+  if (safeTargetIndex === currentIndex) {
+    return panes;
+  }
+
+  nextPanes.splice(safeTargetIndex, 0, movedPane);
+
+  return nextPanes;
+}

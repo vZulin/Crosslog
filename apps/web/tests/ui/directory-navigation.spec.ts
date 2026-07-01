@@ -1,22 +1,44 @@
 import { expect, test } from "@playwright/test";
+import { redesignedShellTestIds } from "@crosslog/ui";
+import {
+  enqueueWebUiTestAction,
+  gotoWithWebUiTestBridge,
+  openSampleLogsWithWebUiBridge,
+  waitForWebUiTestTitleFragment,
+} from "./helpers/redesigned-shell";
 
 test("navigates directory files without auto-switching on refresh", async ({ page }) => {
-  await page.goto("/");
-  await page.getByRole("button", { name: "Open logs" }).click();
+  await gotoWithWebUiTestBridge(page);
+  await openSampleLogsWithWebUiBridge(page);
 
+  await expect(page.getByTestId(redesignedShellTestIds.paneWorkspace)).toBeVisible();
+  const directoryHeader = page.getByTestId(redesignedShellTestIds.paneHeader).filter({ hasText: "logs/2026" });
+  const selectedFile = directoryHeader.getByTestId(redesignedShellTestIds.paneHeaderSelectedFile);
+  const previousFile = directoryHeader.getByTestId(redesignedShellTestIds.paneHeaderDirectoryPrevious);
+  const nextFile = directoryHeader.getByTestId(redesignedShellTestIds.paneHeaderDirectoryNext);
+
+  await expect(directoryHeader.getByTestId(redesignedShellTestIds.paneHeaderDirectoryTitle)).toHaveText("logs/2026");
+  await expect(selectedFile).toHaveText("app-2026-06-16.log");
   await expect(page.getByRole("heading", { name: "app-2026-06-16.log" })).toBeVisible();
-  await expect(page.getByText("logs/2026 / app-2026-06-16.log")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Previous file in logs/2026" })).toBeDisabled();
+  await expect(previousFile).toBeDisabled();
+  await expect(directoryHeader.getByRole("button", { name: "Next file in logs/2026" })).toBeEnabled();
+  await expect(directoryHeader.getByTestId(redesignedShellTestIds.paneHeaderOffset)).toBeVisible();
+  await expect(directoryHeader.getByTestId(redesignedShellTestIds.paneHeaderSearch)).toBeVisible();
+  await expect(directoryHeader.getByTestId(redesignedShellTestIds.paneHeaderClose)).toBeVisible();
+  await expect(page.getByTestId(redesignedShellTestIds.paneHeader).filter({ hasText: "app.log" }).getByTestId(
+    redesignedShellTestIds.paneHeaderDirectoryPrevious,
+  )).toHaveCount(0);
 
-  await page.getByRole("button", { name: "Next file in logs/2026" }).click();
-  await expect(page.getByRole("heading", { name: "app-2026-06-15.log" })).toBeVisible();
+  await nextFile.click();
+  await expect(selectedFile).toHaveText("app-2026-06-15.log");
 
-  await page.getByRole("button", { name: "Previous file in logs/2026" }).click();
-  await page.getByRole("button", { name: "Discover newer directory file" }).click();
+  await previousFile.click();
+  await enqueueWebUiTestAction(page, "discoverNewerDirectoryFile");
+  await waitForWebUiTestTitleFragment(page, "directoryPrevious=on");
 
-  await expect(page.getByRole("heading", { name: "app-2026-06-16.log" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Previous file in logs/2026" })).toBeEnabled();
+  await expect(selectedFile).toHaveText("app-2026-06-16.log");
+  await expect(previousFile).toBeEnabled();
 
-  await page.getByRole("button", { name: "Previous file in logs/2026" }).click();
-  await expect(page.getByRole("heading", { name: "app-2026-06-17.log" })).toBeVisible();
+  await previousFile.click();
+  await expect(selectedFile).toHaveText("app-2026-06-17.log");
 });

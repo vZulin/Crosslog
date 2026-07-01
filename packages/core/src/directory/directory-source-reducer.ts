@@ -13,8 +13,10 @@ export interface DirectorySourceInput {
 }
 
 export type DirectorySourceAction =
+  | { readonly type: "replaceSource"; readonly source: DirectorySource }
   | { readonly type: "selectFile"; readonly fileId: string }
   | { readonly type: "navigate"; readonly direction: "previous" | "next" }
+  | { readonly type: "addFiles"; readonly files: readonly DirectoryFileEntry[] }
   | { readonly type: "refreshFiles"; readonly files: readonly DirectoryFileEntry[] }
   | { readonly type: "setWatchState"; readonly watchState: DirectorySource["watchState"] };
 
@@ -38,6 +40,9 @@ export function directorySourceReducer(
   action: DirectorySourceAction,
 ): DirectorySource {
   switch (action.type) {
+    case "replaceSource":
+      return action.source;
+
     case "selectFile": {
       const navigationIndex = selectNavigationFile(source.navigationIndex, action.fileId);
 
@@ -56,6 +61,18 @@ export function directorySourceReducer(
         currentFileId: navigationIndex.currentFileId,
         navigationIndex,
       };
+    }
+
+    case "addFiles": {
+      const addedFileIds = new Set(action.files.map(getDirectoryFileEntryId));
+
+      return directorySourceReducer(source, {
+        type: "refreshFiles",
+        files: [
+          ...action.files,
+          ...source.files.filter((entry) => !addedFileIds.has(getDirectoryFileEntryId(entry))),
+        ],
+      });
     }
 
     case "refreshFiles": {

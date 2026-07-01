@@ -18,7 +18,7 @@ corepack pnpm test:unit
 corepack pnpm test:integration
 
 if command -v cargo >/dev/null; then
-  cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml
+  cargo test --locked --manifest-path apps/desktop/src-tauri/Cargo.toml
 else
   echo "cargo is required for Rust adapter tests." >&2
   exit 127

@@ -1,0 +1,399 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		300000000000000000000001 /* CrosslogUITestHostApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000001 /* CrosslogUITestHostApp.swift */; };
+		300000000000000000000002 /* CrosslogUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000002 /* CrosslogUITests.swift */; };
+		300000000000000000000003 /* EmptyStateUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000003 /* EmptyStateUITests.swift */; };
+		300000000000000000000004 /* LogTextCopyUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000004 /* LogTextCopyUITests.swift */; };
+		300000000000000000000005 /* MultiPaneLayoutUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000005 /* MultiPaneLayoutUITests.swift */; };
+		300000000000000000000006 /* RedesignedShellAssertions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000006 /* RedesignedShellAssertions.swift */; };
+		300000000000000000000007 /* SynchronizedScrollingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000007 /* SynchronizedScrollingUITests.swift */; };
+		30000000000000000000000A /* PaneSearchUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000A /* PaneSearchUITests.swift */; };
+		30000000000000000000000B /* LiveFileStateUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000B /* LiveFileStateUITests.swift */; };
+		30000000000000000000000C /* SessionRestoreUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000C /* SessionRestoreUITests.swift */; };
+		30000000000000000000000D /* DirectoryNavigationUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000D /* DirectoryNavigationUITests.swift */; };
+		30000000000000000000000E /* TimeOffsetUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000E /* TimeOffsetUITests.swift */; };
+		30000000000000000000000F /* RedesignedShellViewportUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000F /* RedesignedShellViewportUITests.swift */; };
+		300000000000000000000010 /* PlatformShellVariantUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000010 /* PlatformShellVariantUITests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		400000000000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 100000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 111111111111111111111111;
+			remoteInfo = CrosslogUITestHost;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		200000000000000000000001 /* CrosslogUITestHostApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrosslogUITestHostApp.swift; sourceTree = "<group>"; };
+		200000000000000000000002 /* CrosslogUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrosslogUITests.swift; sourceTree = "<group>"; };
+		200000000000000000000003 /* EmptyStateUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateUITests.swift; sourceTree = "<group>"; };
+		200000000000000000000004 /* LogTextCopyUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogTextCopyUITests.swift; sourceTree = "<group>"; };
+		200000000000000000000005 /* MultiPaneLayoutUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiPaneLayoutUITests.swift; sourceTree = "<group>"; };
+		200000000000000000000006 /* RedesignedShellAssertions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RedesignedShellAssertions.swift; sourceTree = "<group>"; };
+		200000000000000000000007 /* SynchronizedScrollingUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynchronizedScrollingUITests.swift; sourceTree = "<group>"; };
+		20000000000000000000000A /* PaneSearchUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaneSearchUITests.swift; sourceTree = "<group>"; };
+		20000000000000000000000B /* LiveFileStateUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveFileStateUITests.swift; sourceTree = "<group>"; };
+		20000000000000000000000C /* SessionRestoreUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionRestoreUITests.swift; sourceTree = "<group>"; };
+		20000000000000000000000D /* DirectoryNavigationUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectoryNavigationUITests.swift; sourceTree = "<group>"; };
+		20000000000000000000000E /* TimeOffsetUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeOffsetUITests.swift; sourceTree = "<group>"; };
+		20000000000000000000000F /* RedesignedShellViewportUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RedesignedShellViewportUITests.swift; sourceTree = "<group>"; };
+		200000000000000000000010 /* PlatformShellVariantUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformShellVariantUITests.swift; sourceTree = "<group>"; };
+		200000000000000000000008 /* CrosslogUITestHost.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CrosslogUITestHost.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		200000000000000000000009 /* CrosslogDesktopUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CrosslogDesktopUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		500000000000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		500000000000000000000002 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		600000000000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				600000000000000000000002 /* Host */,
+				600000000000000000000003 /* CrosslogDesktopUITests */,
+				600000000000000000000004 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		600000000000000000000002 /* Host */ = {
+			isa = PBXGroup;
+			children = (
+				200000000000000000000001 /* CrosslogUITestHostApp.swift */,
+			);
+			path = Host;
+			sourceTree = "<group>";
+		};
+		600000000000000000000003 /* CrosslogDesktopUITests */ = {
+			isa = PBXGroup;
+			children = (
+				200000000000000000000002 /* CrosslogUITests.swift */,
+				20000000000000000000000D /* DirectoryNavigationUITests.swift */,
+				200000000000000000000003 /* EmptyStateUITests.swift */,
+				200000000000000000000004 /* LogTextCopyUITests.swift */,
+				20000000000000000000000B /* LiveFileStateUITests.swift */,
+				200000000000000000000005 /* MultiPaneLayoutUITests.swift */,
+				20000000000000000000000A /* PaneSearchUITests.swift */,
+				200000000000000000000010 /* PlatformShellVariantUITests.swift */,
+				200000000000000000000006 /* RedesignedShellAssertions.swift */,
+				20000000000000000000000F /* RedesignedShellViewportUITests.swift */,
+				20000000000000000000000C /* SessionRestoreUITests.swift */,
+				200000000000000000000007 /* SynchronizedScrollingUITests.swift */,
+				20000000000000000000000E /* TimeOffsetUITests.swift */,
+			);
+			sourceTree = "<group>";
+		};
+		600000000000000000000004 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				200000000000000000000008 /* CrosslogUITestHost.app */,
+				200000000000000000000009 /* CrosslogDesktopUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		111111111111111111111111 /* CrosslogUITestHost */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 800000000000000000000001 /* Build configuration list for PBXNativeTarget "CrosslogUITestHost" */;
+			buildPhases = (
+				700000000000000000000001 /* Sources */,
+				500000000000000000000001 /* Frameworks */,
+				700000000000000000000002 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CrosslogUITestHost;
+			productName = CrosslogUITestHost;
+			productReference = 200000000000000000000008 /* CrosslogUITestHost.app */;
+			productType = "com.apple.product-type.application";
+		};
+		222222222222222222222222 /* CrosslogDesktopUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 800000000000000000000002 /* Build configuration list for PBXNativeTarget "CrosslogDesktopUITests" */;
+			buildPhases = (
+				700000000000000000000003 /* Sources */,
+				500000000000000000000002 /* Frameworks */,
+				700000000000000000000004 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				900000000000000000000001 /* PBXTargetDependency */,
+			);
+			name = CrosslogDesktopUITests;
+			productName = CrosslogDesktopUITests;
+			productReference = 200000000000000000000009 /* CrosslogDesktopUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		100000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2620;
+				LastUpgradeCheck = 2620;
+				TargetAttributes = {
+					111111111111111111111111 = {
+						CreatedOnToolsVersion = 26.2;
+					};
+					222222222222222222222222 = {
+						CreatedOnToolsVersion = 26.2;
+						TestTargetID = 111111111111111111111111;
+					};
+				};
+			};
+			buildConfigurationList = 800000000000000000000003 /* Build configuration list for PBXProject "CrosslogDesktopUITests" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 600000000000000000000001;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 600000000000000000000004 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				111111111111111111111111 /* CrosslogUITestHost */,
+				222222222222222222222222 /* CrosslogDesktopUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		700000000000000000000002 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		700000000000000000000004 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		700000000000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				300000000000000000000001 /* CrosslogUITestHostApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		700000000000000000000003 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				300000000000000000000002 /* CrosslogUITests.swift in Sources */,
+				30000000000000000000000D /* DirectoryNavigationUITests.swift in Sources */,
+				300000000000000000000003 /* EmptyStateUITests.swift in Sources */,
+				300000000000000000000004 /* LogTextCopyUITests.swift in Sources */,
+				30000000000000000000000B /* LiveFileStateUITests.swift in Sources */,
+				300000000000000000000005 /* MultiPaneLayoutUITests.swift in Sources */,
+				30000000000000000000000A /* PaneSearchUITests.swift in Sources */,
+				300000000000000000000010 /* PlatformShellVariantUITests.swift in Sources */,
+				300000000000000000000006 /* RedesignedShellAssertions.swift in Sources */,
+				30000000000000000000000F /* RedesignedShellViewportUITests.swift in Sources */,
+				30000000000000000000000C /* SessionRestoreUITests.swift in Sources */,
+				300000000000000000000007 /* SynchronizedScrollingUITests.swift in Sources */,
+				30000000000000000000000E /* TimeOffsetUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		900000000000000000000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 111111111111111111111111 /* CrosslogUITestHost */;
+			targetProxy = 400000000000000000000001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		A00000000000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A00000000000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		A00000000000000000000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				CODE_SIGNING_ALLOWED = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Crosslog UI Test Host";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.crosslog.desktop.uitesthost;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A00000000000000000000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				CODE_SIGNING_ALLOWED = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Crosslog UI Test Host";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.crosslog.desktop.uitesthost;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		A00000000000000000000005 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				CODE_SIGNING_ALLOWED = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.crosslog.desktop.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = CrosslogUITestHost;
+			};
+			name = Debug;
+		};
+		A00000000000000000000006 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				CODE_SIGNING_ALLOWED = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.crosslog.desktop.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = CrosslogUITestHost;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		800000000000000000000001 /* Build configuration list for PBXNativeTarget "CrosslogUITestHost" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A00000000000000000000003 /* Debug */,
+				A00000000000000000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		800000000000000000000002 /* Build configuration list for PBXNativeTarget "CrosslogDesktopUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A00000000000000000000005 /* Debug */,
+				A00000000000000000000006 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		800000000000000000000003 /* Build configuration list for PBXProject "CrosslogDesktopUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A00000000000000000000001 /* Debug */,
+				A00000000000000000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 100000000000000000000001 /* Project object */;
+}

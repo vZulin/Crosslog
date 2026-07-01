@@ -1,8 +1,67 @@
-import type { DragDropSourcePort } from "../ports/drag-drop-source-port";
+import type { DirectoryEntryDescriptor } from "../ports/directory-access-port";
+import type { DragDropSource, DragDropSourcePort } from "../ports/drag-drop-source-port";
 
 export class TauriDragDropSource implements DragDropSourcePort {
-  async mapDroppedSources() {
-    return [];
+  async mapDroppedSources(event: DragEvent): Promise<readonly DragDropSource[]> {
+    const files = Array.from(event.dataTransfer?.files ?? []);
+    const directoryGroups = new Map<string, DirectoryEntryDescriptor[]>();
+    const sources: DragDropSource[] = [];
+
+    for (const file of files) {
+      const relativePath = file.webkitRelativePath ?? "";
+
+      if (relativePath.includes("/")) {
+        const [directoryName, fileName] = relativePath.split("/");
+
+        if (!directoryName || !fileName || relativePath.split("/").length > 2) {
+          continue;
+        }
+
+        const entries = directoryGroups.get(directoryName) ?? [];
+        entries.push(createFileEntry(file, fileName));
+        directoryGroups.set(directoryName, entries);
+        continue;
+      }
+
+      sources.push({
+        type: "file",
+        source: {
+          id: createDesktopSourceId(file.name, file.lastModified),
+          name: file.name,
+        },
+      });
+    }
+
+    for (const [directoryName, entries] of directoryGroups) {
+      sources.push({
+        type: "directory",
+        source: {
+          id: createDesktopSourceId(directoryName, entries.length),
+          name: directoryName,
+          entries,
+        },
+      });
+    }
+
+    return sources;
   }
 }
 
+function createFileEntry(file: File, name: string): DirectoryEntryDescriptor {
+  return {
+    kind: "file",
+    id: createDesktopSourceId(name, file.lastModified),
+    name,
+    createdAt: file.lastModified > 0 ? new Date(file.lastModified) : null,
+    sizeBytes: file.size,
+  };
+}
+
+function createDesktopSourceId(name: string, suffix: number): string {
+  const sanitized = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  return `desktop-drop-${sanitized.length > 0 ? sanitized : "source"}-${suffix}`;
+}

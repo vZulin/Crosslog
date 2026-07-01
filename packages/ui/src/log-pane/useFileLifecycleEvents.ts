@@ -5,6 +5,30 @@ import type { FileWatcherEvent } from "@crosslog/platform";
 
 export type FileSourceMap = Readonly<Record<string, FileSource>>;
 
+export interface PaneHeaderLifecycleState {
+  readonly live: boolean;
+  readonly deleted: boolean;
+  readonly replaced: boolean;
+  readonly monitoringUnsupported: boolean;
+  readonly errorMessage: string | null;
+}
+
+export function getPaneHeaderLifecycleState(
+  source: FileSource | null | undefined,
+): PaneHeaderLifecycleState | undefined {
+  if (!source) {
+    return undefined;
+  }
+
+  return {
+    live: source.watchState === "watching" && !source.deleted,
+    deleted: source.deleted,
+    replaced: source.replaced,
+    monitoringUnsupported: source.watchState === "unsupported",
+    errorMessage: source.readError ?? (source.watchState === "failed" ? "File monitoring failed." : null),
+  };
+}
+
 export function useFileLifecycleEvents(
   setFileSources: React.Dispatch<React.SetStateAction<FileSourceMap>>,
 ) {

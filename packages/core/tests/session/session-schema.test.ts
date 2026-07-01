@@ -7,6 +7,17 @@ describe("session schema validation", () => {
 
     expect(result.ok).toBe(true);
     expect(result.ok ? result.session.panes[0].sourceRef : null).toBe("source-app");
+    expect(result.ok ? result.session.synchronizationEnabled : null).toBe(false);
+  });
+
+  it("defaults legacy session snapshots to enabled synchronization", () => {
+    const snapshot = { ...createValidSession() } as Record<string, unknown>;
+    delete snapshot.synchronizationEnabled;
+
+    const result = validateSessionSnapshot(snapshot);
+
+    expect(result.ok).toBe(true);
+    expect(result.ok ? result.session.synchronizationEnabled : null).toBe(true);
   });
 
   it("rejects snapshots that persist scroll positions", () => {
@@ -66,6 +77,7 @@ function createValidSession() {
       },
     ],
     directorySelections: {},
+    synchronizationEnabled: false,
     futureExtensions: {},
   };
 }

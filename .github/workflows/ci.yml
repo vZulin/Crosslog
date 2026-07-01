@@ -19,7 +19,7 @@ env:
 
 jobs:
   automated-tests:
-    name: Automated tests (${{ matrix.os }})
+    name: Automated tests (${{ matrix.label }})
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
     strategy:
@@ -27,14 +27,220 @@ jobs:
       matrix:
         include:
           - os: linux
+            label: linux
             runner: ubuntu-22.04
             test-command: bash scripts/linux/test.sh
+            rust_required: true
           - os: macos
+            label: macos
             runner: macos-latest
             test-command: bash scripts/macos/test.sh
+            rust_required: true
           - os: windows
+            label: windows-js
             runner: windows-latest
-            test-command: pwsh scripts/windows/test.ps1
+            test-command: pwsh scripts/windows/test.ps1 js
+            rust_required: false
+          - os: windows
+            label: windows-rust
+            runner: windows-latest
+            test-command: pwsh scripts/windows/test.ps1 rust
+            rust_required: true
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Resolve pnpm store path
+        id: pnpm-store
+        shell: bash
+        run: echo "path=$(corepack pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
+
+      - name: Set up Rust
+        if: matrix.rust_required
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        if: matrix.rust_required
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop/src-tauri
+
+      - name: Install Linux Tauri prerequisites
+        if: matrix.os == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf
+
+      - name: Install JavaScript dependencies
+        run: corepack pnpm install --frozen-lockfile
+
+      - name: Run automated test script
+        run: ${{ matrix.test-command }}
+
+  ui-tests:
+    name: UI/E2E tests (${{ matrix.label }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 35
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.cache/ms-playwright
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: linux
+            label: linux-web
+            runner: ubuntu-22.04
+            ui-command: bash scripts/linux/test-ui.sh web
+            wdio_specs: ""
+            rust_required: false
+            tauri_driver_required: false
+            linux_ui_prerequisites: false
+            playwright_required: true
+            linux_playwright_deps: true
+          - os: linux
+            label: linux-desktop
+            runner: ubuntu-22.04
+            ui-command: bash scripts/linux/test-ui.sh desktop
+            wdio_specs: ""
+            rust_required: true
+            tauri_driver_required: true
+            linux_ui_prerequisites: true
+            playwright_required: false
+            linux_playwright_deps: false
+          - os: macos
+            label: macos-web
+            runner: macos-latest
+            ui-command: bash scripts/macos/test-ui.sh web
+            wdio_specs: ""
+            rust_required: false
+            tauri_driver_required: false
+            linux_ui_prerequisites: false
+            playwright_required: true
+            linux_playwright_deps: false
+          - os: macos
+            label: macos-desktop
+            runner: macos-latest
+            ui-command: bash scripts/macos/test-ui.sh desktop
+            wdio_specs: ""
+            rust_required: true
+            tauri_driver_required: false
+            linux_ui_prerequisites: false
+            playwright_required: false
+            linux_playwright_deps: false
+          - os: windows
+            label: windows-web
+            runner: windows-latest
+            ui-command: pwsh scripts/windows/test-ui.ps1 web
+            wdio_specs: ""
+            rust_required: false
+            tauri_driver_required: false
+            linux_ui_prerequisites: false
+            playwright_required: true
+            linux_playwright_deps: false
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Resolve pnpm store path
+        id: pnpm-store
+        shell: bash
+        run: echo "path=$(corepack pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
+
+      - name: Set up Rust
+        if: matrix.rust_required
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        if: matrix.rust_required
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop/src-tauri
+
+      - name: Install Linux UI prerequisites
+        if: matrix.linux_ui_prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            xvfb \
+            libgtk-3-dev \
+            libwebkit2gtk-4.1-dev \
+            webkit2gtk-driver \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf
+
+      - name: Install tauri-driver
+        if: matrix.tauri_driver_required
+        run: cargo install tauri-driver --locked
+
+      - name: Install JavaScript dependencies
+        run: corepack pnpm install --frozen-lockfile
+
+      - name: Install Linux Playwright dependencies
+        if: matrix.linux_playwright_deps
+        run: corepack pnpm exec playwright install-deps chromium
+
+      - name: Cache Playwright browsers
+        if: matrix.playwright_required
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: playwright-${{ runner.os }}-
+
+      - name: Install Playwright browser
+        if: matrix.playwright_required
+        run: corepack pnpm exec playwright install chromium
+
+      - name: Enable macOS UI automation
+        if: matrix.label == 'macos-desktop'
+        run: sudo /usr/sbin/DevToolsSecurity -enable
+
+      - name: Run UI tests
+        env:
+          CROSSLOG_WDIO_SPECS: ${{ matrix.wdio_specs }}
+        run: ${{ matrix.ui-command }}
+
+  windows-desktop-ui-app:
+    name: Windows Desktop UI app
+    runs-on: windows-latest
+    timeout-minutes: 25
 
     steps:
       - name: Check out repository
@@ -68,26 +274,65 @@ jobs:
         with:
           workspaces: apps/desktop/src-tauri
 
-      - name: Install Linux Tauri prerequisites
-        if: matrix.os == 'linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libwebkit2gtk-4.1-dev \
-            libayatana-appindicator3-dev \
-            librsvg2-dev \
-            patchelf
-
       - name: Install JavaScript dependencies
         run: corepack pnpm install --frozen-lockfile
 
-      - name: Run automated test script
-        run: ${{ matrix.test-command }}
+      - name: Build Windows Desktop UI app
+        env:
+          CROSSLOG_UI_TEST: "1"
+        run: corepack pnpm --filter @crosslog/desktop tauri build --debug --no-bundle -- --locked
 
-  web-ui-tests:
-    name: Web UI tests
-    runs-on: ubuntu-22.04
-    timeout-minutes: 20
+      - name: Install Windows tauri-driver
+        run: cargo install tauri-driver --locked
+
+      - name: Stage Windows tauri-driver
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force .build/tauri-driver | Out-Null
+          Copy-Item "$env:CARGO_HOME\bin\tauri-driver.exe" .build/tauri-driver/tauri-driver.exe
+
+      - name: Upload Windows Desktop UI app
+        uses: actions/upload-artifact@v4
+        with:
+          name: crosslog-windows-desktop-ui-app
+          path: apps/desktop/src-tauri/target/debug/crosslog-desktop.exe
+          if-no-files-found: error
+
+      - name: Upload Windows tauri-driver
+        uses: actions/upload-artifact@v4
+        with:
+          name: crosslog-windows-tauri-driver
+          path: .build/tauri-driver/tauri-driver.exe
+          if-no-files-found: error
+
+  windows-desktop-ui-tests:
+    name: UI/E2E tests (${{ matrix.label }})
+    runs-on: windows-latest
+    needs: windows-desktop-ui-app
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: windows-desktop-layout
+            wdio_specs: >-
+              apps/desktop/tests/ui/multi-pane-layout.spec.ts,
+              apps/desktop/tests/ui/platform-shell-variants.spec.ts,
+              apps/desktop/tests/ui/redesigned-shell-viewports.spec.ts
+          - label: windows-desktop-pane-tools
+            wdio_specs: >-
+              apps/desktop/tests/ui/log-search.spec.ts,
+              apps/desktop/tests/ui/log-text-copy.spec.ts,
+              apps/desktop/tests/ui/synchronized-scrolling.spec.ts,
+              apps/desktop/tests/ui/time-offset-popover.spec.ts
+          - label: windows-desktop-lifecycle
+            wdio_specs: >-
+              apps/desktop/tests/ui/directory-navigation.spec.ts,
+              apps/desktop/tests/ui/empty-directory.spec.ts,
+              apps/desktop/tests/ui/live-file-updates.spec.ts,
+              apps/desktop/tests/ui/manual-encoding.spec.ts,
+              apps/desktop/tests/ui/session-restore.spec.ts,
+              apps/desktop/tests/ui/source-loading.spec.ts
 
     steps:
       - name: Check out repository
@@ -116,18 +361,29 @@ jobs:
       - name: Install JavaScript dependencies
         run: corepack pnpm install --frozen-lockfile
 
-      - name: Install Playwright browser
-        run: corepack pnpm exec playwright install --with-deps chromium
+      - name: Download Windows Desktop UI app
+        uses: actions/download-artifact@v4
+        with:
+          name: crosslog-windows-desktop-ui-app
+          path: apps/desktop/src-tauri/target/debug
 
-      - name: Run Web UI tests
-        run: corepack pnpm test:ui:web
+      - name: Download Windows tauri-driver
+        uses: actions/download-artifact@v4
+        with:
+          name: crosslog-windows-tauri-driver
+          path: .build/tauri-driver
+
+      - name: Run UI tests
+        env:
+          CROSSLOG_DESKTOP_UI_SKIP_APP_BUILD: "true"
+          CROSSLOG_TAURI_APP_PATH: apps/desktop/src-tauri/target/debug/crosslog-desktop.exe
+          CROSSLOG_TAURI_DRIVER_PATH: .build/tauri-driver/tauri-driver.exe
+          CROSSLOG_WDIO_SPECS: ${{ matrix.wdio_specs }}
+        run: pwsh scripts/windows/test-ui.ps1 desktop
 
   build-web:
     name: Build Web
     runs-on: ubuntu-22.04
-    needs:
-      - automated-tests
-      - web-ui-tests
     timeout-minutes: 15
 
     steps:
@@ -170,9 +426,6 @@ jobs:
   build-desktop:
     name: Build Desktop (${{ matrix.os }})
     runs-on: ${{ matrix.runner }}
-    needs:
-      - automated-tests
-      - web-ui-tests
     timeout-minutes: 45
     strategy:
       fail-fast: false

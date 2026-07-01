@@ -13,6 +13,13 @@ export interface SessionRestoreState {
   readonly message: string | null;
 }
 
+export type SessionSnapshotWriteStatus = "idle" | "pending" | "written" | "error";
+
+interface SessionSnapshotWriteState {
+  readonly status: SessionSnapshotWriteStatus;
+  readonly session: Session | null;
+}
+
 export function useSessionRestore(
   sessionStore: SessionStorePort,
   handlers: SessionRestoreHandlers,
@@ -66,22 +73,42 @@ export function useSessionSnapshotWriter(
   sessionStore: SessionStorePort,
   session: Session | null,
   enabled: boolean,
-): void {
+): SessionSnapshotWriteStatus {
+  const [writeState, setWriteState] = React.useState<SessionSnapshotWriteState>({
+    status: "idle",
+    session: null,
+  });
+
   React.useEffect(() => {
     if (!enabled || !session) {
+      setWriteState({ status: "idle", session: null });
       return;
     }
 
     let cancelled = false;
+    setWriteState({ status: "pending", session });
 
-    sessionStore.writeSessionSnapshot(session).catch(() => {
-      if (!cancelled) {
-        return;
-      }
-    });
+    sessionStore
+      .writeSessionSnapshot(session)
+      .then(() => {
+        if (!cancelled) {
+          setWriteState({ status: "written", session });
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setWriteState({ status: "error", session });
+        }
+      });
 
     return () => {
       cancelled = true;
     };
   }, [enabled, session, sessionStore]);
+
+  if (!enabled || !session) {
+    return "idle";
+  }
+
+  return writeState.session === session ? writeState.status : "pending";
 }
