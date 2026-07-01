@@ -227,19 +227,19 @@
 
 **Purpose**: Run targeted and full validation, confirm unchanged behavior remains protected, and prepare post-push CI/CD monitoring.
 
-- [ ] T113 [P] Re-run unchanged core regression suites in `packages/core/tests/directory/`, `packages/core/tests/encoding/`, `packages/core/tests/file-source/`, `packages/core/tests/session/`, and `packages/core/tests/timestamps/`.
-- [ ] T114 [P] Re-run unchanged platform regression suites in `packages/platform/tests/browser/`, `packages/platform/tests/file-access/`, `packages/platform/tests/file-watcher/`, and `packages/platform/tests/session/`.
-- [ ] T115 [P] Re-run read-only and inert content integration tests in `tests/integration/read-only-file-safety.test.ts` and `tests/integration/log-content-inert-security.test.ts`.
-- [ ] T116 Run targeted UI component tests listed in `specs/004-stabilize-bug-batch/quickstart.md`.
-- [ ] T117 Run targeted Web UI tests listed in `specs/004-stabilize-bug-batch/quickstart.md`.
-- [ ] T118 Run performance benchmarks affected by layout, search, sync, session, and rendering in `tests/performance/`.
-- [ ] T119 Run the local macOS automated gate with `scripts/macos/test.sh`.
-- [ ] T120 Run the local macOS UI/E2E gate with `scripts/macos/test-ui.sh`.
-- [ ] T121 Run the local macOS build gate when release readiness is affected with `scripts/macos/build.sh`.
-- [ ] T122 Verify no unresolved bug scenario remains by reviewing `docs/Bugs_1.txt` and `specs/004-stabilize-bug-batch/plan.md`.
-- [ ] T123 After push, monitor Windows automated, UI/E2E, and build checks defined by `scripts/windows/test.ps1`, `scripts/windows/test-ui.ps1`, and `scripts/windows/build.ps1`.
-- [ ] T124 After push, monitor macOS automated, UI/E2E, and build checks defined by `scripts/macos/test.sh`, `scripts/macos/test-ui.sh`, and `scripts/macos/build.sh`.
-- [ ] T125 After push, monitor Linux automated, UI/E2E, and build checks defined by `scripts/linux/test.sh`, `scripts/linux/test-ui.sh`, and `scripts/linux/build.sh`.
+- [X] T113 [P] Re-run unchanged core regression suites in `packages/core/tests/directory/`, `packages/core/tests/encoding/`, `packages/core/tests/file-source/`, `packages/core/tests/session/`, and `packages/core/tests/timestamps/`.
+- [X] T114 [P] Re-run unchanged platform regression suites in `packages/platform/tests/browser/`, `packages/platform/tests/file-access/`, `packages/platform/tests/file-watcher/`, and `packages/platform/tests/session/`.
+- [X] T115 [P] Re-run read-only and inert content integration tests in `tests/integration/read-only-file-safety.test.ts` and `tests/integration/log-content-inert-security.test.ts`.
+- [X] T116 Run targeted UI component tests listed in `specs/004-stabilize-bug-batch/quickstart.md`.
+- [X] T117 Run targeted Web UI tests listed in `specs/004-stabilize-bug-batch/quickstart.md`.
+- [X] T118 Run performance benchmarks affected by layout, search, sync, session, and rendering in `tests/performance/`.
+- [X] T119 Run the local macOS automated gate with `scripts/macos/test.sh`.
+- [X] T120 Run the local macOS UI/E2E gate with `scripts/macos/test-ui.sh`.
+- [X] T121 Run the local macOS build gate when release readiness is affected with `scripts/macos/build.sh`.
+- [X] T122 Verify no unresolved bug scenario remains by reviewing `docs/Bugs_1.txt` and `specs/004-stabilize-bug-batch/plan.md`.
+- [X] T123 After push, monitor Windows automated, UI/E2E, and build checks defined by `scripts/windows/test.ps1`, `scripts/windows/test-ui.ps1`, and `scripts/windows/build.ps1`.
+- [X] T124 After push, monitor macOS automated, UI/E2E, and build checks defined by `scripts/macos/test.sh`, `scripts/macos/test-ui.sh`, and `scripts/macos/build.sh`.
+- [X] T125 After push, monitor Linux automated, UI/E2E, and build checks defined by `scripts/linux/test.sh`, `scripts/linux/test-ui.sh`, and `scripts/linux/build.sh`.
 
 ---
 
