@@ -45,7 +45,7 @@ test("opens and manages multiple log panes", async ({ page }) => {
   await page.setViewportSize({ width: 960, height: 720 });
   await expect(shell.workspaceScrollbar).toBeVisible();
   const addPaneChooser = page.waitForEvent("filechooser");
-  await page.getByTestId("topbar-add-pane").click();
+  await page.getByTestId("topbar-add-file").click();
   await (await addPaneChooser).setFiles({
     name: "selected-topbar.log",
     mimeType: "text/plain",
@@ -73,13 +73,13 @@ test("opens a selected source from the empty workspace and leaves future control
   await gotoWithWebUiTestBridge(page);
 
   const shell = getRedesignedShell(page);
-  await expect(shell.emptyOpenSource).toBeVisible();
+  await expect(shell.emptyOpenFile).toBeVisible();
   await expect(shell.commandField).toBeDisabled();
   await expect(page.getByTestId("activity-rail-files")).toBeDisabled();
   await expect(page.getByTestId("activity-rail-search")).toBeDisabled();
 
   const chooser = page.waitForEvent("filechooser");
-  await shell.emptyOpenSource.click();
+  await shell.emptyOpenFile.click();
   await (await chooser).setFiles({
     name: "selected-empty.log",
     mimeType: "text/plain",

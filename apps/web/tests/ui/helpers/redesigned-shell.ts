@@ -25,6 +25,8 @@ export interface RedesignedShellLocators {
   readonly commandField: Locator;
   readonly topbarSync: Locator;
   readonly topbarAddPane: Locator;
+  readonly topbarAddFile: Locator;
+  readonly topbarAddDirectory: Locator;
   readonly themeVariant: Locator;
   readonly platformChrome: Locator;
   readonly activityRail: Locator;
@@ -35,6 +37,8 @@ export interface RedesignedShellLocators {
   readonly emptyWorkspace: Locator;
   readonly emptyDropZone: Locator;
   readonly emptyOpenSource: Locator;
+  readonly emptyOpenFile: Locator;
+  readonly emptyOpenDirectory: Locator;
   readonly paneWorkspace: Locator;
   readonly paneResizeBoundaries: Locator;
   readonly workspaceScrollbar: Locator;
@@ -52,6 +56,8 @@ export function getRedesignedShell(page: Page): RedesignedShellLocators {
     commandField: byTestId(page, redesignedShellTestIds.commandField),
     topbarSync: byTestId(page, redesignedShellTestIds.topbarSync),
     topbarAddPane: byTestId(page, redesignedShellTestIds.topbarAddPane),
+    topbarAddFile: byTestId(page, redesignedShellTestIds.topbarAddFile),
+    topbarAddDirectory: byTestId(page, redesignedShellTestIds.topbarAddDirectory),
     themeVariant: byTestId(page, redesignedShellTestIds.themeVariant),
     platformChrome: byTestId(page, redesignedShellTestIds.platformChrome),
     activityRail: byTestId(page, redesignedShellTestIds.activityRail),
@@ -62,6 +68,8 @@ export function getRedesignedShell(page: Page): RedesignedShellLocators {
     emptyWorkspace: byTestId(page, redesignedShellTestIds.emptyWorkspace),
     emptyDropZone: byTestId(page, redesignedShellTestIds.emptyDropZone),
     emptyOpenSource: byTestId(page, redesignedShellTestIds.emptyOpenSource),
+    emptyOpenFile: byTestId(page, redesignedShellTestIds.emptyOpenFile),
+    emptyOpenDirectory: byTestId(page, redesignedShellTestIds.emptyOpenDirectory),
     paneWorkspace: byTestId(page, redesignedShellTestIds.paneWorkspace),
     paneResizeBoundaries: byTestId(page, redesignedShellTestIds.paneResizeBoundary),
     workspaceScrollbar: byTestId(page, redesignedShellTestIds.workspaceScrollbar),

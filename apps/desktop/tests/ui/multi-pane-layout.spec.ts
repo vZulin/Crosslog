@@ -57,8 +57,11 @@ describe("Desktop multi-pane layout", () => {
     await browser.setWindowSize(960, 720);
     await waitForDesktopWorkspaceOverflow();
     // Native drops are delivered through the platform drag-drop channel; add the
-    // fourth pane via the same native-drop wiring the app uses at runtime.
+    // fourth pane via the same native-drop wiring the app uses at runtime. The
+    // bridge action is consumed asynchronously, so wait for the drag-drop
+    // evidence before asserting the new pane count.
     enqueueDesktopUiTestAction("dropNativeSampleSource");
+    await waitForUiTestTitleFragment("sourceEntry=drag-drop");
     await expect($$('[data-testid="log-pane"]')).toBeElementsArrayOfSize(4);
 
     const appPaneWidthBefore = await getPaneWidth("app.log");

@@ -10,6 +10,7 @@ const SUPPORTED_UI_TEST_ACTIONS: &[&str] = &[
     "setThemeLight",
     "setThemeDark",
     "reorderFirstPaneAfterSecond",
+    "dropNativeSampleSource",
     "keyboardNavigateActivePaneDown",
     "wheelNavigateActivePaneDown",
     "openActivePaneSearch",

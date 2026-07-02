@@ -1,4 +1,6 @@
-import { fileURLToPath } from "node:url";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { expect, test } from "@playwright/test";
 import { redesignedShellTestIds } from "@crosslog/ui";
 import {
@@ -8,35 +10,52 @@ import {
   waitForWebUiTestTitleFragment,
 } from "./helpers/redesigned-shell";
 
-const directoryFixturePath = fileURLToPath(
-  new URL("./fixtures/web-directory/sample-logs", import.meta.url),
-);
-
 test("opens a directory through the Web directory picker (bug 4)", async ({ page }) => {
-  await page.goto("/");
+  // Build the directory fixture at runtime: committed *.log fixtures are
+  // .gitignored, and a real directory is needed to drive webkitdirectory upload.
+  const fixtureRoot = mkdtempSync(join(tmpdir(), "crosslog-web-dir-"));
+  const directoryFixturePath = join(fixtureRoot, "sample-logs");
+  mkdirDirectoryFixture(directoryFixturePath);
 
-  await expect(page.getByTestId(redesignedShellTestIds.emptyOpenDirectory)).toBeVisible();
+  try {
+    await page.goto("/");
+    await expect(page.getByTestId(redesignedShellTestIds.emptyOpenDirectory)).toBeVisible();
 
-  // The directory picker uses a hidden <input webkitdirectory>; Playwright drives
-  // it through the file chooser, uploading the fixture directory's files.
-  const [fileChooser] = await Promise.all([
-    page.waitForEvent("filechooser"),
-    page.getByTestId(redesignedShellTestIds.emptyOpenDirectory).click(),
-  ]);
-  await fileChooser.setFiles(directoryFixturePath);
+    // The directory picker uses a hidden <input webkitdirectory>; Playwright
+    // drives it through the file chooser, uploading the fixture directory.
+    const [fileChooser] = await Promise.all([
+      page.waitForEvent("filechooser"),
+      page.getByTestId(redesignedShellTestIds.emptyOpenDirectory).click(),
+    ]);
+    await fileChooser.setFiles(directoryFixturePath);
 
-  const directoryHeader = page
-    .getByTestId(redesignedShellTestIds.paneHeader)
-    .filter({ hasText: "sample-logs" });
+    const directoryHeader = page
+      .getByTestId(redesignedShellTestIds.paneHeader)
+      .filter({ hasText: "sample-logs" });
 
-  await expect(directoryHeader.getByTestId(redesignedShellTestIds.paneHeaderDirectoryTitle)).toHaveText(
-    "sample-logs",
-  );
-  await expect(directoryHeader.getByTestId(redesignedShellTestIds.paneHeaderSelectedFile)).toHaveText(
-    "app-2026-06-16.log",
-  );
-  await expect(page.getByRole("heading", { name: "app-2026-06-16.log" })).toBeVisible();
+    await expect(directoryHeader.getByTestId(redesignedShellTestIds.paneHeaderDirectoryTitle)).toHaveText(
+      "sample-logs",
+    );
+    await expect(directoryHeader.getByTestId(redesignedShellTestIds.paneHeaderSelectedFile)).toHaveText(
+      "app-2026-06-16.log",
+    );
+    await expect(page.getByRole("heading", { name: "app-2026-06-16.log" })).toBeVisible();
+  } finally {
+    rmSync(fixtureRoot, { recursive: true, force: true });
+  }
 });
+
+function mkdirDirectoryFixture(directoryPath: string): void {
+  mkdirSync(directoryPath, { recursive: true });
+  writeFileSync(
+    join(directoryPath, "app-2026-06-16.log"),
+    "2026-06-16T09:00:00.000Z newest directory line\n2026-06-16T09:01:00.000Z second directory line\n",
+  );
+  writeFileSync(
+    join(directoryPath, "app-2026-06-15.log"),
+    "2026-06-15T09:00:00.000Z older directory line\n",
+  );
+}
 
 test("navigates directory files without auto-switching on refresh", async ({ page }) => {
   await gotoWithWebUiTestBridge(page);

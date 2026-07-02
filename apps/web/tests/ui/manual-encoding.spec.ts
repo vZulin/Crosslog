@@ -10,13 +10,13 @@ test("manual encoding UI is reserved for source loading flows", async ({ page })
   await expect(shell.activityRail).toBeVisible();
   await expect(shell.paneWorkspace).toBeVisible();
   await expect(shell.statusBar).toContainText("0 panes");
-  await expect(shell.emptyOpenSource).toBeVisible();
+  await expect(shell.emptyOpenFile).toBeVisible();
   const manualEncodingChooser = page.getByRole("combobox", { name: "Encoding" });
   await expect(page.locator('input[aria-label="Select log source files"]')).toHaveCount(0);
   await expect(manualEncodingChooser).toHaveCount(0);
 
   const chooser = page.waitForEvent("filechooser");
-  await shell.emptyOpenSource.click();
+  await shell.emptyOpenFile.click();
   await (await chooser).setFiles({
     name: "manual-encoding-source.log",
     mimeType: "text/plain",

@@ -13,7 +13,7 @@ test("loads dropped browser files into panes and keeps search available", async 
   await expect(shell.shell).toBeVisible();
   await expect(shell.activityRail).toBeVisible();
   await expect(shell.paneWorkspace).toBeVisible();
-  await expect(shell.emptyOpenSource).toBeVisible();
+  await expect(shell.emptyOpenFile).toBeVisible();
   await expect(shell.emptyDropZone).toBeVisible();
 
   const dataTransfer = await page.evaluateHandle(() => {

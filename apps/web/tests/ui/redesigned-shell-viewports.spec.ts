@@ -43,7 +43,8 @@ test.describe("redesigned shell viewport coverage", () => {
       await expectPairwiseNoOverlap([
         { name: "command field", locator: shell.commandField },
         { name: "sync control", locator: page.getByTestId(redesignedShellTestIds.topbarSync) },
-        { name: "add pane", locator: page.getByTestId(redesignedShellTestIds.topbarAddPane) },
+        { name: "add file", locator: page.getByTestId(redesignedShellTestIds.topbarAddFile) },
+        { name: "add directory", locator: page.getByTestId(redesignedShellTestIds.topbarAddDirectory) },
       ]);
 
       await expectPairwiseNoOverlap([
