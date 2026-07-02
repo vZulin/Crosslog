@@ -50,7 +50,8 @@ describe("Desktop redesigned shell viewport coverage", () => {
       await expectSelectorsDoNotOverlap([
         { name: `${windowScenario.name} command field`, selector: byTestId(redesignedShellTestIds.commandField) },
         { name: `${windowScenario.name} sync control`, selector: byTestId(redesignedShellTestIds.topbarSync) },
-        { name: `${windowScenario.name} add pane`, selector: byTestId(redesignedShellTestIds.topbarAddPane) },
+        { name: `${windowScenario.name} add file`, selector: byTestId(redesignedShellTestIds.topbarAddFile) },
+        { name: `${windowScenario.name} add directory`, selector: byTestId(redesignedShellTestIds.topbarAddDirectory) },
       ]);
 
       await expectSelectorsDoNotOverlap([

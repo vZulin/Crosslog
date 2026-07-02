@@ -11,6 +11,7 @@ pub fn run() {
             commands::drag_drop::classify_dropped_paths,
             commands::file_identity::get_file_identity,
             commands::file_access::read_file_metadata,
+            commands::file_access::read_log_file,
             commands::session_store::load_last_valid_session,
             commands::session_store::write_session_snapshot,
             commands::session_store::recover_session,

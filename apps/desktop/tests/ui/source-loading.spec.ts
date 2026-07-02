@@ -19,7 +19,8 @@ describe("Desktop source loading", () => {
     const shell = getRedesignedShell();
 
     await expect(shell.emptyWorkspace).toBeExisting();
-    await expect(shell.emptyOpenSource).toBeExisting();
+    await expect(shell.emptyOpenFile).toBeExisting();
+    await expect(shell.emptyOpenDirectory).toBeExisting();
     await expect(shell.emptyDropZone).toBeExisting();
     await expect(shell.commandField).toBeDisabled();
     await expect(shell.activityRail.$(`[data-testid="${redesignedShellTestIds.activityRailFiles}"]`)).toBeDisabled();

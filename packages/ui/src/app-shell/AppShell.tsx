@@ -945,7 +945,11 @@ export function AppShell({
     void requestSourceSelection("topbar-add-pane", "directory");
   };
 
-  const offerSourceKindOptions = platform.kind === "web";
+  // Every platform offers explicit File/Directory open actions (see
+  // docs/mockups/crosslog-macos-redesign-mockups.html). Native file dialogs on
+  // Windows/Linux cannot choose files and folders in one dialog, so the choice
+  // is made before the picker opens on desktop too — matching the web app.
+  const offerSourceKindOptions = true;
 
   const statusMessage =
     unsupportedPaneCount > 0
@@ -1104,7 +1108,8 @@ function getPublishedRedesignedRegions(
       ...persistentRegions,
       redesignedShellTestIds.emptyWorkspace,
       redesignedShellTestIds.emptyDropZone,
-      redesignedShellTestIds.emptyOpenSource,
+      redesignedShellTestIds.emptyOpenFile,
+      redesignedShellTestIds.emptyOpenDirectory,
       ...(settingsOpen ? [redesignedShellTestIds.settingsSurface] : []),
     ];
   }

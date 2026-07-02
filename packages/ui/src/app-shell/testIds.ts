@@ -97,7 +97,8 @@ export const redesignedShellOptionalStructuralTestIds = {
   emptyWorkspace: [
     redesignedShellTestIds.emptyWorkspace,
     redesignedShellTestIds.emptyDropZone,
-    redesignedShellTestIds.emptyOpenSource,
+    redesignedShellTestIds.emptyOpenFile,
+    redesignedShellTestIds.emptyOpenDirectory,
   ],
   platformChrome: [
     redesignedShellTestIds.themeVariant,

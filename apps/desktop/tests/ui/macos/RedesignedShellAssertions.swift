@@ -6,6 +6,8 @@ enum RedesignedShellAssertions {
     static let commandField = "command-field"
     static let topbarSync = "topbar-sync"
     static let topbarAddPane = "topbar-add-pane"
+    static let topbarAddFile = "topbar-add-file"
+    static let topbarAddDirectory = "topbar-add-directory"
     static let themeVariant = "theme-variant"
     static let platformChrome = "platform-chrome"
     static let platformChromeTitle = "platform-chrome-title"
@@ -18,6 +20,8 @@ enum RedesignedShellAssertions {
     static let emptyWorkspace = "empty-workspace"
     static let emptyDropZone = "empty-drop-zone"
     static let emptyOpenSource = "empty-open-source"
+    static let emptyOpenFile = "empty-open-file"
+    static let emptyOpenDirectory = "empty-open-directory"
     static let paneWorkspace = "pane-workspace"
     static let paneResizeBoundary = "pane-resize-boundary"
     static let workspaceScrollbar = "workspace-scrollbar"
@@ -83,7 +87,7 @@ enum RedesignedShellAssertions {
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
-        [emptyWorkspace, emptyDropZone, emptyOpenSource].forEach { identifier in
+        [emptyWorkspace, emptyDropZone, emptyOpenFile, emptyOpenDirectory].forEach { identifier in
             XCTAssertTrue(
                 waitForUiTestTitleFragment("regions=", containing: identifier, in: app, timeout: 5),
                 "Expected empty workspace region '\(identifier)' to be published",

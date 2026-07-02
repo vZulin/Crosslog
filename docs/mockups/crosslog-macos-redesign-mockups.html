@@ -1659,13 +1659,15 @@
         line-height: 13.819px;
         white-space: nowrap;
       }
-      /* Web source opening (Bug 4): add file/dir icon buttons + open file/dir buttons.
-         Shown only when the platform toggle is Web; desktop keeps + and Open Source. */
+      /* Source opening (Bug 4): explicit Add File / Add Directory icon buttons and
+         Open File / Open Directory buttons. This split is the design on every
+         platform — desktop (macOS/Windows/Linux) mirrors the web app; the single
+         "+" and "Open Source" affordances are retired. */
       .empty-topbar .web-icon-btn,
       .topbar .web-icon-btn {
         position: absolute;
         top: 4px;
-        display: none;
+        display: grid;
         place-items: center;
         width: 27px;
         height: 27px;
@@ -1681,13 +1683,11 @@
       .topbar .web-icon-btn.add-dir { left: 951px; }
       .empty-topbar .web-icon-btn .icon,
       .topbar .web-icon-btn .icon { width: 16px; height: 16px; }
-      .variant[data-platform="web"] .empty-topbar .web-icon-btn,
-      .variant[data-platform="web"] .topbar .web-icon-btn { display: grid; }
-      .variant[data-platform="web"] .empty-topbar-button.add-pane,
-      .variant[data-platform="web"] .button.add-pane,
-      .variant[data-platform="web"] .empty-primary-button { display: none; }
-      .variant[data-platform="web"] .empty-topbar,
-      .variant[data-platform="web"] .topbar { overflow: visible; }
+      .empty-topbar-button.add-pane,
+      .button.add-pane,
+      .empty-primary-button { display: none; }
+      .empty-topbar,
+      .topbar { overflow: visible; }
       .web-icon-btn[data-tip]::after {
         content: attr(data-tip);
         position: absolute;
@@ -1713,11 +1713,10 @@
         left: 0;
         right: 0;
         top: 173px;
-        display: none;
+        display: flex;
         justify-content: center;
         gap: 12px;
       }
-      .variant[data-platform="web"] .empty-drop-zone .web-open-row { display: flex; }
       .web-open-btn {
         display: inline-flex;
         align-items: center;
