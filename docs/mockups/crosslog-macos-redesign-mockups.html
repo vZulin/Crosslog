@@ -1659,6 +1659,82 @@
         line-height: 13.819px;
         white-space: nowrap;
       }
+      /* Web source opening (Bug 4): add file/dir icon buttons + open file/dir buttons.
+         Shown only when the platform toggle is Web; desktop keeps + and Open Source. */
+      .empty-topbar .web-icon-btn,
+      .topbar .web-icon-btn {
+        position: absolute;
+        top: 4px;
+        display: none;
+        place-items: center;
+        width: 27px;
+        height: 27px;
+        overflow: visible;
+        border: 0.988px solid var(--border);
+        border-radius: 6.915px;
+        background: var(--topbar-bg);
+        color: var(--muted);
+      }
+      .empty-topbar .web-icon-btn.add-file { left: 758px; }
+      .empty-topbar .web-icon-btn.add-dir { left: 792px; }
+      .topbar .web-icon-btn.add-file { left: 917px; }
+      .topbar .web-icon-btn.add-dir { left: 951px; }
+      .empty-topbar .web-icon-btn .icon,
+      .topbar .web-icon-btn .icon { width: 16px; height: 16px; }
+      .variant[data-platform="web"] .empty-topbar .web-icon-btn,
+      .variant[data-platform="web"] .topbar .web-icon-btn { display: grid; }
+      .variant[data-platform="web"] .empty-topbar-button.add-pane,
+      .variant[data-platform="web"] .button.add-pane,
+      .variant[data-platform="web"] .empty-primary-button { display: none; }
+      .variant[data-platform="web"] .empty-topbar,
+      .variant[data-platform="web"] .topbar { overflow: visible; }
+      .web-icon-btn[data-tip]::after {
+        content: attr(data-tip);
+        position: absolute;
+        top: calc(100% + 6px);
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 3px 7px;
+        border-radius: 4px;
+        background: rgba(0, 0, 0, 0.82);
+        color: #ffffff;
+        font-family: var(--font-ui);
+        font-size: 11px;
+        line-height: 14px;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.12s ease;
+        z-index: 5;
+      }
+      .web-icon-btn[data-tip]:hover::after { opacity: 1; }
+      .empty-drop-zone .web-open-row {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 173px;
+        display: none;
+        justify-content: center;
+        gap: 12px;
+      }
+      .variant[data-platform="web"] .empty-drop-zone .web-open-row { display: flex; }
+      .web-open-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-width: 150px;
+        height: 34px;
+        padding: 0 16px;
+        border: none;
+        border-radius: 7px;
+        background: var(--accent);
+        color: #ffffff;
+        font-family: var(--font-ui);
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .web-open-btn .icon { width: 16px; height: 16px; }
     </style>
   </head>
   <body data-theme="light" data-platform="macos">
@@ -1720,6 +1796,8 @@
           </div>
           <div class="empty-topbar-button sync" data-node-id="8:16"><svg class="icon"><use href="#sync"></use></svg></div>
           <div class="empty-topbar-button add-pane" data-name="Empty/Add Pane"><svg class="icon"><use href="#plus"></use></svg></div>
+          <button class="web-icon-btn add-file" type="button" title="Add File" data-tip="Add File"><svg class="icon"><use href="#file"></use></svg></button>
+          <button class="web-icon-btn add-dir" type="button" title="Add Directory" data-tip="Add Directory"><svg class="icon"><use href="#folder"></use></svg></button>
         </div>
         <div class="empty-body" data-node-id="8:23" data-name="Empty Body">
           <section class="empty-drop-zone" data-node-id="8:30" data-name="Drop Zone">
@@ -1729,6 +1807,10 @@
             <div class="empty-primary-button" data-node-id="8:35">
               <svg class="icon"><use href="#folder"></use></svg>
               <span>Open Source</span>
+            </div>
+            <div class="web-open-row">
+              <button class="web-open-btn" type="button"><svg class="icon"><use href="#file"></use></svg>Open File</button>
+              <button class="web-open-btn" type="button"><svg class="icon"><use href="#folder"></use></svg>Open Directory</button>
             </div>
           </section>
           <aside class="activity-rail" data-node-id="58:355" data-name="Activity Rail">
@@ -1766,6 +1848,8 @@
           </div>
           <div class="button sync" data-node-id="11:15"><svg class="icon"><use href="#sync"></use></svg></div>
           <div class="button add-pane" data-node-id="11:19"><svg class="icon"><use href="#plus"></use></svg></div>
+          <button class="web-icon-btn add-file" type="button" title="Add File" data-tip="Add File"><svg class="icon"><use href="#file"></use></svg></button>
+          <button class="web-icon-btn add-dir" type="button" title="Add Directory" data-tip="Add Directory"><svg class="icon"><use href="#folder"></use></svg></button>
         </div>
 
         <div class="app-body" data-node-id="11:22" data-name="App Body">
@@ -1931,6 +2015,8 @@
           </div>
           <div class="button sync" data-node-id="11:256"><svg class="icon"><use href="#sync"></use></svg></div>
           <div class="button add-pane" data-node-id="11:260"><svg class="icon"><use href="#plus"></use></svg></div>
+          <button class="web-icon-btn add-file" type="button" title="Add File" data-tip="Add File"><svg class="icon"><use href="#file"></use></svg></button>
+          <button class="web-icon-btn add-dir" type="button" title="Add Directory" data-tip="Add Directory"><svg class="icon"><use href="#folder"></use></svg></button>
         </div>
 
         <div class="app-body" data-node-id="11:263" data-name="App Body">
@@ -2047,6 +2133,7 @@
       </section>
     </main>
     </section>
+
     </div>
     <script>
       (() => {
