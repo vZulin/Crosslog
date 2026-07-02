@@ -41,7 +41,7 @@ numbered bugs in `docs/Bugs_2.txt` and is independently implementable and testab
 
 **⚠️ CRITICAL**: Complete before starting the regression bugs (2, 3, 5) in US1/US2.
 
-- [ ] T004 Reproduce bugs 2, 3, and 5 on the current Desktop build and record root cause (Desktop picker capability/wiring, missing native drag-drop event path, viewport offset/transform) in `specs/005-stabilize-bug-batch-2/research.md`
+- [X] T004 Reproduce bugs 2, 3, and 5 on the current Desktop build and record root cause (Desktop picker capability/wiring, missing native drag-drop event path, viewport offset/transform) in `specs/005-stabilize-bug-batch-2/research.md`
 
 **Checkpoint**: Root causes confirmed — user story implementation can begin.
 

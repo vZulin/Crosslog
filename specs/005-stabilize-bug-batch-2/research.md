@@ -152,6 +152,14 @@ directory regression is a missing assertion. The per-bug test updates in US1–U
 add the authoritative expected-result assertions that will fail first, then pass
 after each fix.
 
+## Foundational triage (Phase 2, T004) — root causes of bugs 2, 3, 5
+
+Confirmed at code level against the current Desktop/Tauri build:
+
+- **Bug 2 (Desktop picker does not open)**: `TauriSourcePicker` (`packages/platform/src/tauri/tauri-source-picker.ts`) calls the dialog plugin's `open()`, and `tauri_plugin_dialog::init()` is registered in `apps/desktop/src-tauri/src/lib.rs`. **Root cause**: there is no `apps/desktop/src-tauri/capabilities/` directory at all, so the dialog plugin has no permission grant (`dialog:default` / `dialog:allow-open`). In Tauri v2 the `open()` IPC is denied without a capability, so the picker never opens. Fix (US1/T011): add a capability granting the dialog open permission to the main window; `tauri.conf.json` needs no `dragDropEnabled` change for this bug.
+- **Bug 3 (Desktop drag-and-drop does nothing)**: `AppShell.handleDrop` (`packages/ui/src/app-shell/AppShell.tsx:796`) passes a DOM `DragEvent` (`event.nativeEvent`) to `TauriDragDropSource.mapDroppedSources`, which reads `event.dataTransfer.files` (`packages/platform/src/tauri/tauri-drag-drop-source.ts:6`). **Root cause**: under Tauri v2 the webview intercepts native OS file drops (`dragDropEnabled` defaults to true), so the DOM `dataTransfer.files` is empty; even if it fired, a browser `File` exposes no filesystem path. Native drops must arrive via `getCurrentWebview().onDragDropEvent` / a Rust `WindowEvent::DragDrop` path, which the app does not subscribe to today. Fix (US1/T012, T013): add the native event path and rewrite the adapter to consume native path payloads behind `DragDropSourcePort`.
+- **Bug 5 (vertical scroll moves indicator, not text)**: `VirtualLogViewport` (`packages/ui/src/log-pane/VirtualLogViewport.tsx`) renders a window of up to `maxVisibleLines` (default 120) rows. `handleWheel` → `moveSelectedLine` moves the **selected line**, and `firstVisibleLineNumber` (the window start) only advances when the selection crosses the window edge via `keepLineVisible` (line 243). **Root cause**: a scroll gesture is modeled as moving the selection cursor inside an already-rendered window rather than mapping the scroll position directly to the window offset, so the text stays put until the selection leaves the window. Fix (US2/T018): drive the visible window (offset) directly from the scroll/wheel gesture and guarantee first/last-line reachability, preserving sync propagation.
+
 ## Decision: Validation gates
 
 **Rationale**: Before commit, run macOS `test.sh`, `test-ui.sh web`,
