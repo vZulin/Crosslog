@@ -47,3 +47,35 @@ test("synchronizes timestamped panes and supports disabling synchronization", as
   await appPane.locator('[data-line-number="4"]').click();
   await expect(servicePane.locator('[data-line-number="3"]')).toHaveAttribute("data-sync-target", "false");
 });
+
+test("moves the rendered log text on vertical scroll and reaches the first and last lines", async ({ page }) => {
+  await gotoWithWebUiTestBridge(page);
+  await openSampleLogsWithWebUiBridge(page);
+
+  const appPane = page.getByTestId("log-pane").filter({ has: page.getByRole("heading", { name: "app.log" }) });
+  const appViewport = appPane.getByTestId("log-viewport");
+  await appViewport.focus();
+
+  const scrollTop = () => appViewport.evaluate((element) => Math.round(element.scrollTop));
+  const maxScrollTop = await appViewport.evaluate((element) => element.scrollHeight - element.clientHeight);
+  // The viewport must overflow, otherwise there is no scrolling to verify.
+  expect(maxScrollTop).toBeGreaterThan(0);
+  expect(await scrollTop()).toBe(0);
+
+  // Wheeling down moves the text (scrollTop advances), not only the selection indicator.
+  await appViewport.dispatchEvent("wheel", { deltaY: 240 });
+  await expect(appViewport).toHaveAttribute("data-last-navigation", "wheel");
+  await expect.poll(scrollTop).toBeGreaterThan(0);
+
+  // The last loaded line is reachable and the text is scrolled to the bottom.
+  await appViewport.dispatchEvent("wheel", { deltaY: 40 * 300 });
+  await expect(appViewport).toHaveAttribute("data-selected-line-number", "250");
+  await expect(appPane.locator('[data-line-number="250"]')).toHaveCount(1);
+  await expect.poll(scrollTop).toBe(maxScrollTop);
+
+  // Scrolling back up returns the text to the first loaded line.
+  await appViewport.dispatchEvent("wheel", { deltaY: -40 * 300 });
+  await expect(appViewport).toHaveAttribute("data-selected-line-number", "1");
+  await expect(appPane.locator('[data-line-number="1"]')).toHaveCount(1);
+  await expect.poll(scrollTop).toBe(0);
+});

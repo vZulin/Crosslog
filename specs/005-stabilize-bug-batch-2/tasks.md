@@ -82,13 +82,13 @@ numbered bugs in `docs/Bugs_2.txt` and is independently implementable and testab
 
 ### Tests for User Story 2 (write/update first, ensure they fail)
 
-- [ ] T016 [P] [US2] Update `packages/ui/tests/log-pane/virtual-log-viewport.test.tsx` to assert the rendered text advances with scroll position and first/last line reachability (bug 5)
-- [ ] T017 [P] [US2] Extend `apps/web/tests/ui/synchronized-scrolling.spec.ts`, `apps/desktop/tests/ui/synchronized-scrolling.spec.ts`, and `apps/desktop/tests/ui/macos/SynchronizedScrollingUITests.swift` with "text moves on vertical scroll" assertions (bug 5)
+- [X] T016 [P] [US2] Update `packages/ui/tests/log-pane/virtual-log-viewport.test.tsx` to assert the rendered text advances with scroll position and first/last line reachability (bug 5)
+- [X] T017 [P] [US2] Extend `apps/web/tests/ui/synchronized-scrolling.spec.ts`, `apps/desktop/tests/ui/synchronized-scrolling.spec.ts`, and `apps/desktop/tests/ui/macos/SynchronizedScrollingUITests.swift` with "text moves on vertical scroll" assertions (bug 5)
 
 ### Implementation for User Story 2
 
-- [ ] T018 [US2] Fix the hand-rolled virtualization in `packages/ui/src/log-pane/VirtualLogViewport.tsx` so the rendered slice offset/transform is derived from the live `scrollTop` (bug 5)
-- [ ] T019 [US2] Verify the scroll container in `packages/ui/src/log-pane/LogPane.tsx` and sync propagation via `packages/ui/src/sync/useSynchronizationStore.ts` preserve existing synchronization semantics (FR-012)
+- [X] T018 [US2] Fix the hand-rolled virtualization in `packages/ui/src/log-pane/VirtualLogViewport.tsx` so the rendered slice offset/transform is derived from the live `scrollTop` (bug 5)
+- [X] T019 [US2] Verify the scroll container in `packages/ui/src/log-pane/LogPane.tsx` and sync propagation via `packages/ui/src/sync/useSynchronizationStore.ts` preserve existing synchronization semantics (FR-012)
 
 **Checkpoint**: Scrolling moves text through all loaded lines with sync intact.
 

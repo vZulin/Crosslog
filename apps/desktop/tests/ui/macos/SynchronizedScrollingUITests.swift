@@ -16,6 +16,12 @@ final class SynchronizedScrollingUITests: CrosslogUITests {
         waitForUiTestTitle("lastNavigation=wheel", in: app)
         waitForUiTestTitle("selectedLine=5", in: app)
 
+        // Bug 5: each vertical scroll must advance the rendered text, not only the
+        // selection indicator. A second wheel keeps moving the anchor line forward.
+        performUiTestAction(.wheelNavigateActivePaneDown)
+        waitForUiTestTitle("lastNavigation=wheel", in: app)
+        waitForUiTestTitle("selectedLine=8", in: app)
+
         performUiTestAction(.toggleSynchronization)
         waitForUiTestTitle("sync=off", in: app)
         RedesignedShellAssertions.assertStatusContains("Sync off", in: app)

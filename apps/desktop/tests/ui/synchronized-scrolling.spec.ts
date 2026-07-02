@@ -80,4 +80,72 @@ describe("Desktop synchronized scrolling", () => {
     await clickElementWithJavaScript(await panes[0].$('[data-line-number="4"]'));
     await expect(await panes[1].$('[data-line-number="3"]').getAttribute("data-sync-target")).toBe("false");
   });
+
+  it("moves the rendered log text on vertical scroll and reaches the first and last lines", async () => {
+    await waitForDesktopShell();
+    await openSampleLogsWithUiBridge();
+
+    const readViewport = async () =>
+      browser.execute(() => {
+        const viewport = document
+          .querySelector<HTMLElement>('[aria-label="Log pane app.log"]')
+          ?.querySelector<HTMLElement>('[data-testid="log-viewport"]');
+
+        if (!viewport) {
+          throw new Error("Missing app.log viewport.");
+        }
+
+        return {
+          scrollTop: Math.round(viewport.scrollTop),
+          maxScrollTop: viewport.scrollHeight - viewport.clientHeight,
+          selectedLine: viewport.getAttribute("data-selected-line-number"),
+          hasFirstLine: viewport.querySelector('[data-line-number="1"]') !== null,
+          hasLastLine: viewport.querySelector('[data-line-number="250"]') !== null,
+        };
+      });
+
+    const wheelViewport = async (deltaY: number) =>
+      browser.execute((delta: number) => {
+        const viewport = document
+          .querySelector<HTMLElement>('[aria-label="Log pane app.log"]')
+          ?.querySelector<HTMLElement>('[data-testid="log-viewport"]');
+
+        if (!viewport) {
+          throw new Error("Missing app.log viewport.");
+        }
+
+        viewport.focus();
+        viewport.dispatchEvent(new WheelEvent("wheel", { bubbles: true, cancelable: true, deltaY: delta }));
+      }, deltaY);
+
+    const initial = await readViewport();
+    // The viewport must overflow, otherwise there is no scrolling to verify.
+    await expect(initial.maxScrollTop).toBeGreaterThan(0);
+    await expect(initial.scrollTop).toBe(0);
+
+    await wheelViewport(240);
+    await browser.waitUntil(async () => (await readViewport()).scrollTop > 0, {
+      interval: 100,
+      timeout: 5_000,
+      timeoutMsg: "Wheel scrolling did not move the rendered log text.",
+    });
+
+    await wheelViewport(40 * 300);
+    await browser.waitUntil(
+      async () => {
+        const state = await readViewport();
+        return state.selectedLine === "250" && state.hasLastLine && state.scrollTop === state.maxScrollTop;
+      },
+      { interval: 100, timeout: 5_000, timeoutMsg: "Scrolling did not reach the last loaded line." },
+    );
+
+    await wheelViewport(-40 * 300);
+    await browser.waitUntil(
+      async () => {
+        const state = await readViewport();
+        return state.selectedLine === "1" && state.hasFirstLine && state.scrollTop === 0;
+      },
+      { interval: 100, timeout: 5_000, timeoutMsg: "Scrolling did not return to the first loaded line." },
+    );
+  });
 });

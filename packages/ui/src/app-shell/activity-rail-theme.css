@@ -421,7 +421,10 @@ body {
 }
 
 .crosslog-pane-workspace {
-  min-block-size: 100%;
+  /* A definite height (not just a minimum) bounds the pane column to the workspace
+     so panes scroll their own content instead of overflowing and being clipped
+     by the workspace's hidden overflow (bug 5). */
+  block-size: 100%;
   inline-size: 100%;
   display: flex;
   flex-direction: column;
@@ -456,7 +459,11 @@ body {
   flex: 0 0 auto;
   position: relative;
   min-inline-size: 320px;
-  min-block-size: 100%;
+  /* Bound the pane to the workspace height (via row-flex align-stretch) instead of
+     letting it grow to fit every line, so the inner log viewport becomes the
+     vertical scroll container and the text actually scrolls (bug 5). */
+  block-size: 100%;
+  min-block-size: 0;
   display: flex;
   flex-direction: column;
   border-inline-end: 1px solid var(--crosslog-border);
@@ -469,6 +476,9 @@ body {
 
 .crosslog-pane-header {
   position: relative;
+  /* Keep the fixed header height now that the pane is a height-bounded flex column
+     (bug 5); otherwise it shrinks to make room for the scrolling viewport. */
+  flex: 0 0 auto;
   block-size: var(--crosslog-pane-header-height);
   box-sizing: border-box;
   display: grid;
@@ -1232,6 +1242,18 @@ body {
   flex: 1 1 auto;
   min-block-size: 0;
   overflow-y: hidden;
+  /* A flex column carries a definite height down to the log viewport so it can
+     become the vertical scroll container (bug 5). */
+  display: flex;
+  flex-direction: column;
+}
+
+/* HorizontalLogScroller's inner content wrapper (sets horizontal min-width). */
+.crosslog-log-scroller > div {
+  flex: 1 1 auto;
+  min-block-size: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .crosslog-log-viewport {
@@ -1240,7 +1262,10 @@ body {
   padding: 8px 12px;
   font-family: var(--crosslog-font-log);
   font-size: 12px;
-  max-block-size: 100%;
+  /* Fill the (now definite) height of the scroller and scroll internally so the
+     rendered text moves with the scroll position (bug 5). */
+  flex: 1 1 auto;
+  min-block-size: 0;
   overflow-y: auto;
   box-sizing: border-box;
 }

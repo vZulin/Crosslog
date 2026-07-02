@@ -160,6 +160,22 @@ Confirmed at code level against the current Desktop/Tauri build:
 - **Bug 3 (Desktop drag-and-drop does nothing)**: `AppShell.handleDrop` (`packages/ui/src/app-shell/AppShell.tsx:796`) passes a DOM `DragEvent` (`event.nativeEvent`) to `TauriDragDropSource.mapDroppedSources`, which reads `event.dataTransfer.files` (`packages/platform/src/tauri/tauri-drag-drop-source.ts:6`). **Root cause**: under Tauri v2 the webview intercepts native OS file drops (`dragDropEnabled` defaults to true), so the DOM `dataTransfer.files` is empty; even if it fired, a browser `File` exposes no filesystem path. Native drops must arrive via `getCurrentWebview().onDragDropEvent` / a Rust `WindowEvent::DragDrop` path, which the app does not subscribe to today. Fix (US1/T012, T013): add the native event path and rewrite the adapter to consume native path payloads behind `DragDropSourcePort`.
 - **Bug 5 (vertical scroll moves indicator, not text)**: `VirtualLogViewport` (`packages/ui/src/log-pane/VirtualLogViewport.tsx`) renders a window of up to `maxVisibleLines` (default 120) rows. `handleWheel` → `moveSelectedLine` moves the **selected line**, and `firstVisibleLineNumber` (the window start) only advances when the selection crosses the window edge via `keepLineVisible` (line 243). **Root cause**: a scroll gesture is modeled as moving the selection cursor inside an already-rendered window rather than mapping the scroll position directly to the window offset, so the text stays put until the selection leaves the window. Fix (US2/T018): drive the visible window (offset) directly from the scroll/wheel gesture and guarantee first/last-line reachability, preserving sync propagation.
 
+**Refinement confirmed during implementation (Phase 4, T018)**: the JS offset was
+only half the defect. The dominant cause was a layout bug — `.crosslog-log-pane`
+(`min-block-size: 100%`) and `.crosslog-pane-workspace` (`min-block-size: 100%`)
+let the pane grow to fit every line, so it overflowed `.crosslog-shell__workspace`
+(`overflow-y: hidden`) and the bottom lines were clipped rather than scrollable;
+the `<ol>` viewport's `max-block-size: 100%` never resolved because its flex-chain
+ancestors had no definite height. Fix applied: give the pane column a definite
+bounded height (`.crosslog-pane-workspace`/`.crosslog-log-pane` → `block-size: 100%`
++ `min-block-size: 0`, `.crosslog-pane-header` → `flex: 0 0 auto`) and make the
+scroller/viewport a flex column so the `<ol>` becomes the real vertical scroll
+container. `VirtualLogViewport` then maps the selected line ↔ live `scrollTop`
+(fraction of the scroll range) so wheel/keyboard move the text and scrollbar drags
+move the selection/sync anchor; first/last lines are reachable at scrollTop 0/max.
+`createVisibleLogLineWindow` is unchanged, so the perf benchmark (CR-005) is
+unaffected.
+
 ## Decision: Validation gates
 
 **Rationale**: Before commit, run macOS `test.sh`, `test-ui.sh web`,

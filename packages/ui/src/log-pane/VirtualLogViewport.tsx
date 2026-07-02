@@ -67,6 +67,12 @@ export function VirtualLogViewport({
     getVisibleWindowStartIndex(lines.length, visibleLineCapacity, targetLineNumber, null) + 1,
   );
   const [lastNavigation, setLastNavigation] = React.useState<"none" | "click" | "keyboard" | "wheel">("none");
+  const viewportRef = React.useRef<HTMLOListElement | null>(null);
+  // Guards the scroll listener against the scroll events our own imperative
+  // scrolling triggers, so scrollbar dragging and wheel/keyboard nav do not fight.
+  const suppressScrollSyncRef = React.useRef(false);
+  // Set whenever a navigation should pull the rendered text to the selected line.
+  const pendingScrollToSelectionRef = React.useRef(false);
 
   React.useEffect(() => {
     if (!targetLineNumber) {
@@ -79,6 +85,8 @@ export function VirtualLogViewport({
     setFirstVisibleLineNumber(
       getVisibleWindowStartIndex(lines.length, visibleLineCapacity, safeTargetLineNumber, null) + 1,
     );
+    // A sync/search jump should also scroll the text to the new anchor so it is visible.
+    pendingScrollToSelectionRef.current = true;
   }, [lines.length, targetLineNumber, visibleLineCapacity]);
 
   React.useEffect(() => {
@@ -98,6 +106,63 @@ export function VirtualLogViewport({
     );
   }, [lines.length, selectedLineNumber, visibleLineCapacity]);
 
+  // Drive the rendered text position from the selected line: a navigation moves the
+  // scroll offset so the text itself moves, instead of leaving the content frozen
+  // while only the selection indicator advances (bug 5).
+  React.useLayoutEffect(() => {
+    if (!pendingScrollToSelectionRef.current) {
+      return;
+    }
+
+    pendingScrollToSelectionRef.current = false;
+
+    const viewport = viewportRef.current;
+
+    if (!viewport) {
+      return;
+    }
+
+    const nextScrollTop = scrollTopForLine(viewport, selectedLineNumber, lines.length);
+
+    if (nextScrollTop === null || Math.abs(viewport.scrollTop - nextScrollTop) <= 1) {
+      return;
+    }
+
+    suppressScrollSyncRef.current = true;
+    viewport.scrollTop = nextScrollTop;
+  }, [lines.length, selectedLineNumber]);
+
+  const handleScroll = (event: React.UIEvent<HTMLOListElement>) => {
+    if (suppressScrollSyncRef.current) {
+      suppressScrollSyncRef.current = false;
+      return;
+    }
+
+    if (lines.length <= 1) {
+      return;
+    }
+
+    const nextLineNumber = lineForScrollTop(event.currentTarget, lines.length);
+
+    if (nextLineNumber === null) {
+      return;
+    }
+
+    setSelectedLineNumber((currentLineNumber) => {
+      if (nextLineNumber === currentLineNumber) {
+        return currentLineNumber;
+      }
+
+      setFirstVisibleLineNumber((currentFirstLineNumber) =>
+        keepLineVisible(nextLineNumber, currentFirstLineNumber, visibleLineCapacity, lines.length),
+      );
+      setLastNavigation("wheel");
+      onTimeAnchorChange?.(nextLineNumber, timestamps?.[nextLineNumber - 1] ?? null);
+
+      return nextLineNumber;
+    });
+  };
+
   const visibleLines = createVisibleLogLineWindow(
     lines,
     visibleLineCapacity,
@@ -116,10 +181,11 @@ export function VirtualLogViewport({
           keepLineVisible(nextLineNumber, currentFirstLineNumber, visibleLineCapacity, lines.length),
         );
         setLastNavigation(navigation);
-        onTimeAnchorChange?.(nextLineNumber, timestamps[nextLineNumber - 1] ?? null);
+        onTimeAnchorChange?.(nextLineNumber, timestamps?.[nextLineNumber - 1] ?? null);
 
         return nextLineNumber;
       });
+      pendingScrollToSelectionRef.current = true;
     },
     [lines.length, onTimeAnchorChange, timestamps, visibleLineCapacity],
   );
@@ -168,7 +234,9 @@ export function VirtualLogViewport({
       data-testid={redesignedShellTestIds.logViewport}
       id={redesignedShellTestIds.logViewport}
       onKeyDown={handleKeyDown}
+      onScroll={handleScroll}
       onWheel={handleWheel}
+      ref={viewportRef}
       style={{ "--crosslog-line-number-digits": lineNumberDigitCount } as React.CSSProperties}
       tabIndex={0}
     >
@@ -210,6 +278,33 @@ export function VirtualLogViewport({
 
 const wheelPixelsPerLine = 40;
 const horizontalKeyboardStepPx = 40;
+
+// Map a line number to a scroll offset (and back) as a fraction of the viewport's
+// scrollable range, so movement is smooth and the first/last lines are always
+// reachable at scrollTop 0 and its maximum respectively.
+function scrollTopForLine(viewport: HTMLElement, lineNumber: number, lineCount: number): number | null {
+  const maxScrollTop = viewport.scrollHeight - viewport.clientHeight;
+
+  if (maxScrollTop <= 0 || lineCount <= 1) {
+    return null;
+  }
+
+  const fraction = (clampLineNumber(lineNumber, lineCount) - 1) / (lineCount - 1);
+
+  return Math.round(fraction * maxScrollTop);
+}
+
+function lineForScrollTop(viewport: HTMLElement, lineCount: number): number | null {
+  const maxScrollTop = viewport.scrollHeight - viewport.clientHeight;
+
+  if (maxScrollTop <= 0 || lineCount <= 1) {
+    return null;
+  }
+
+  const fraction = Math.min(1, Math.max(0, viewport.scrollTop / maxScrollTop));
+
+  return clampLineNumber(Math.round(fraction * (lineCount - 1)) + 1, lineCount);
+}
 
 function getVisibleWindowStartIndex(
   lineCount: number,
