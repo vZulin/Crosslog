@@ -118,10 +118,20 @@ describe("Desktop synchronized scrolling", () => {
         viewport.dispatchEvent(new WheelEvent("wheel", { bubbles: true, cancelable: true, deltaY: delta }));
       }, deltaY);
 
+    // The desktop app instance is shared across specs, so app.log may already be
+    // scrolled from an earlier test. Normalize to the top before asserting.
+    await wheelViewport(-40 * 300);
+    await browser.waitUntil(
+      async () => {
+        const state = await readViewport();
+        return state.selectedLine === "1" && state.scrollTop === 0;
+      },
+      { interval: 100, timeout: 5_000, timeoutMsg: "Viewport did not normalize to the first line." },
+    );
+
     const initial = await readViewport();
     // The viewport must overflow, otherwise there is no scrolling to verify.
     await expect(initial.maxScrollTop).toBeGreaterThan(0);
-    await expect(initial.scrollTop).toBe(0);
 
     await wheelViewport(240);
     await browser.waitUntil(async () => (await readViewport()).scrollTop > 0, {
