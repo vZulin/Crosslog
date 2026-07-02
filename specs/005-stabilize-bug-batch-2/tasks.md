@@ -29,9 +29,9 @@ numbered bugs in `docs/Bugs_2.txt` and is independently implementable and testab
 
 **Purpose**: Prepare a clean, reproducible baseline before any fix.
 
-- [ ] T001 Install dependencies from a clean state: `corepack enable && corepack pnpm install --frozen-lockfile`
-- [ ] T002 [P] Capture the current baseline by running `bash scripts/macos/test.sh` and `bash scripts/macos/test-ui.sh web` and `bash scripts/macos/test-ui.sh desktop`; record which tests pass now so regressions are detectable
-- [ ] T003 [P] Audit existing tests against `specs/005-stabilize-bug-batch-2/plan.md` Test Inventory; confirm the exact list of tests to keep, update, and add
+- [X] T001 Install dependencies from a clean state: `corepack enable && corepack pnpm install --frozen-lockfile`
+- [X] T002 [P] Capture the current baseline by running `bash scripts/macos/test.sh` and `bash scripts/macos/test-ui.sh web` and `bash scripts/macos/test-ui.sh desktop`; record which tests pass now so regressions are detectable (baseline recorded in research.md "Baseline captured (Phase 1)")
+- [X] T003 [P] Audit existing tests against `specs/005-stabilize-bug-batch-2/plan.md` Test Inventory; confirm the exact list of tests to keep, update, and add (all 42 referenced test/source paths verified to exist)
 
 ---
 

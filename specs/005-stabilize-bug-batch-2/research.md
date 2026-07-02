@@ -134,6 +134,24 @@ run only the automatic mode; the manual mode is opt-in and never blocks gates.
 rejected as flaky; drop Bug 3 UI coverage entirely — rejected because the scenario
 must be verifiable.
 
+## Baseline captured (Phase 1, 2026-07-02)
+
+Full local baseline recorded via `scripts/macos/test.sh`,
+`scripts/macos/test-ui.sh web`, and `scripts/macos/test-ui.sh desktop` (after the
+Xcode license was accepted):
+
+- **JS lint + unit + integration**: PASS (integration 5/5).
+- **Rust adapter tests (`cargo test`)**: PASS, 5/5.
+- **Web UI (Playwright)**: PASS, 24/24.
+- **Desktop UI (macOS XCTest)**: PASS, 11/11.
+
+All local gates are GREEN at baseline. Implication: the current suites pass
+because bugs 2, 3, and 5 manifest in behavior not yet asserted by the existing
+tests (the Desktop picker/drag-drop and viewport-scroll defects), and bug 4's web
+directory regression is a missing assertion. The per-bug test updates in US1–US4
+add the authoritative expected-result assertions that will fail first, then pass
+after each fix.
+
 ## Decision: Validation gates
 
 **Rationale**: Before commit, run macOS `test.sh`, `test-ui.sh web`,
