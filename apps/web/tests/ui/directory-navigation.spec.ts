@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "@playwright/test";
@@ -47,14 +47,27 @@ test("opens a directory through the Web directory picker (bug 4)", async ({ page
 
 function mkdirDirectoryFixture(directoryPath: string): void {
   mkdirSync(directoryPath, { recursive: true });
+
+  const newestPath = join(directoryPath, "app-2026-06-16.log");
+  const olderPath = join(directoryPath, "app-2026-06-15.log");
+
   writeFileSync(
-    join(directoryPath, "app-2026-06-16.log"),
+    newestPath,
     "2026-06-16T09:00:00.000Z newest directory line\n2026-06-16T09:01:00.000Z second directory line\n",
   );
   writeFileSync(
-    join(directoryPath, "app-2026-06-15.log"),
+    olderPath,
     "2026-06-15T09:00:00.000Z older directory line\n",
   );
+
+  // Directory selection sorts by modification time (newest first), falling back
+  // to the filename only when timestamps match. Files written back-to-back get
+  // near-identical mtimes on coarse-resolution filesystems (Linux) but distinct,
+  // write-order mtimes on macOS/Windows — which would make the *older*-named file
+  // appear newest. Pin the mtimes to match the dates in the filenames so the
+  // newest-dated file is deterministically selected on every platform.
+  utimesSync(olderPath, new Date("2026-06-15T09:00:00.000Z"), new Date("2026-06-15T09:00:00.000Z"));
+  utimesSync(newestPath, new Date("2026-06-16T09:00:00.000Z"), new Date("2026-06-16T09:00:00.000Z"));
 }
 
 test("navigates directory files without auto-switching on refresh", async ({ page }) => {
