@@ -22,5 +22,9 @@ final class MultiPaneLayoutUITests: CrosslogUITests {
 
         performUiTestAction(.reorderFirstPaneAfterSecond)
         waitForUiTestTitle("paneOrder=service.log,app.log,app-2026-06-16.log", in: app)
+
+        performUiTestAction(.openActivePaneSearch)
+        waitForUiTestTitle("search=open", in: app)
+        waitForUiTestTitle("paneOrder=service.log,app.log,app-2026-06-16.log", in: app)
     }
 }

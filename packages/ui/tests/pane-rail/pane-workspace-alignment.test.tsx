@@ -80,4 +80,19 @@ describe("pane workspace alignment", () => {
     expect(layout.renderedWidths.map((entry) => entry.renderedHorizontalContentWidth)).toEqual([1800, 600]);
     expect(layout.renderedHorizontalContentWidthsByPaneId.get("pane-a")).toBe(1800);
   });
+
+  it("preserves fill and content widths when reordered panes are passed back into the workspace layout", () => {
+    const reorderedPanes = [
+      { paneId: "pane-b", desiredWidth: 420, horizontalContentWidth: 700 },
+      { paneId: "pane-a", desiredWidth: 420, horizontalContentWidth: 1100 },
+      { paneId: "pane-c", desiredWidth: 420, horizontalContentWidth: 500 },
+    ];
+
+    const layout = computePaneWorkspaceLayout(reorderedPanes, 1500);
+
+    expect(layout.overflowing).toBe(false);
+    expect(layout.renderedWidths.map((entry) => entry.paneId)).toEqual(["pane-b", "pane-a", "pane-c"]);
+    expect(layout.renderedWidths.map((entry) => entry.renderedWidth)).toEqual([500, 500, 500]);
+    expect(layout.renderedHorizontalContentWidthsByPaneId.get("pane-a")).toBe(1100);
+  });
 });

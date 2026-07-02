@@ -1,4 +1,5 @@
 import { $, $$, browser, expect } from "@wdio/globals";
+import { redesignedShellTestIds } from "@crosslog/ui";
 import {
   dragPaneResizeBoundary,
   enqueueDesktopUiTestAction,
@@ -51,7 +52,10 @@ describe("Desktop multi-pane layout", () => {
     });
     await waitForUiTestTitleFragment("lastNavigation=keyboard");
 
-    await dragPaneReorder("app.log", "service.log");
+    await dragPaneReorderFromHeader("app.log", "service.log");
+    await waitForUiTestTitleFragment("paneOrder=service.log,app.log,app-2026-06-16.log");
+    await clickHeaderSearchWithoutReorder("service.log");
+    await waitForUiTestTitleFragment("search=open");
     await waitForUiTestTitleFragment("paneOrder=service.log,app.log,app-2026-06-16.log");
 
     await browser.setWindowSize(960, 720);
@@ -84,21 +88,24 @@ describe("Desktop multi-pane layout", () => {
   });
 });
 
-async function dragPaneReorder(draggedTitle: string, targetTitle: string): Promise<void> {
+async function dragPaneReorderFromHeader(draggedTitle: string, targetTitle: string): Promise<void> {
   await browser.execute((draggedPaneTitle: string) => {
-    const draggedHandle = document.querySelector<HTMLElement>(
-      `[aria-label="${`Reorder pane ${draggedPaneTitle}`}"]`,
+    const draggedPane = Array.from(document.querySelectorAll<HTMLElement>('[data-testid="log-pane"]')).find(
+      (pane) => pane.getAttribute("aria-label") === `Log pane ${draggedPaneTitle}`,
     );
+    const draggedHeader = draggedPane?.querySelector<HTMLElement>('[data-testid="pane-header"]');
+    const draggedTitleElement =
+      draggedHeader?.querySelector<HTMLElement>(".crosslog-pane-header__title") ?? draggedHeader;
 
-    if (!draggedHandle) {
-      throw new Error(`Missing reorder drag handle for ${draggedPaneTitle}.`);
+    if (!draggedTitleElement) {
+      throw new Error(`Missing pane header drag origin for ${draggedPaneTitle}.`);
     }
 
-    const startRect = draggedHandle.getBoundingClientRect();
+    const startRect = draggedTitleElement.getBoundingClientRect();
     const startX = startRect.left + startRect.width / 2;
     const startY = startRect.top + startRect.height / 2;
 
-    draggedHandle.dispatchEvent(new PointerEvent("pointerdown", {
+    draggedTitleElement.dispatchEvent(new PointerEvent("pointerdown", {
       bubbles: true,
       button: 0,
       clientX: startX,
@@ -109,18 +116,19 @@ async function dragPaneReorder(draggedTitle: string, targetTitle: string): Promi
 
   await browser.pause(0);
   await browser.execute((draggedPaneTitle: string, targetPaneTitle: string) => {
-    const draggedHandle = document.querySelector<HTMLElement>(
-      `[aria-label="${`Reorder pane ${draggedPaneTitle}`}"]`,
+    const draggedPane = Array.from(document.querySelectorAll<HTMLElement>('[data-testid="log-pane"]')).find(
+      (pane) => pane.getAttribute("aria-label") === `Log pane ${draggedPaneTitle}`,
     );
+    const draggedHeader = draggedPane?.querySelector<HTMLElement>('[data-testid="pane-header"]');
     const targetPane = Array.from(document.querySelectorAll<HTMLElement>('[data-testid="log-pane"]')).find(
       (pane) => pane.getAttribute("aria-label") === `Log pane ${targetPaneTitle}`,
     );
 
-    if (!draggedHandle || !targetPane) {
+    if (!draggedHeader || !targetPane) {
       throw new Error(`Missing reorder drag target for ${draggedPaneTitle} -> ${targetPaneTitle}.`);
     }
 
-    const startRect = draggedHandle.getBoundingClientRect();
+    const startRect = draggedHeader.getBoundingClientRect();
     const targetRect = targetPane.getBoundingClientRect();
     const startY = startRect.top + startRect.height / 2;
     const targetX = targetRect.left + targetRect.width * 0.75;
@@ -138,6 +146,21 @@ async function dragPaneReorder(draggedTitle: string, targetTitle: string): Promi
       pointerId: 9,
     }));
   }, draggedTitle, targetTitle);
+}
+
+async function clickHeaderSearchWithoutReorder(paneTitle: string): Promise<void> {
+  await browser.execute((targetPaneTitle: string, searchTestId: string) => {
+    const pane = Array.from(document.querySelectorAll<HTMLElement>('[data-testid="log-pane"]')).find(
+      (entry) => entry.getAttribute("aria-label") === `Log pane ${targetPaneTitle}`,
+    );
+    const searchButton = pane?.querySelector<HTMLButtonElement>(`[data-testid="${searchTestId}"]`);
+
+    if (!searchButton) {
+      throw new Error(`Missing search header control for ${targetPaneTitle}.`);
+    }
+
+    searchButton.click();
+  }, paneTitle, redesignedShellTestIds.paneHeaderSearch);
 }
 
 async function getPaneWidth(title: string): Promise<number> {

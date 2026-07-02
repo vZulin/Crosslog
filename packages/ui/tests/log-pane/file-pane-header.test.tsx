@@ -1,5 +1,5 @@
 import React from "react";
-import { render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { PaneHeader } from "../../src/log-pane/PaneHeader";
 import { redesignedShellTestIds } from "../../src/app-shell/testIds";
@@ -35,6 +35,49 @@ describe("file pane header", () => {
     expect(getByLabelText(`Close pane ${longFileName}`)).toBeTruthy();
     expect(queryByTestId(redesignedShellTestIds.paneHeaderDirectoryPrevious)).toBeNull();
     expect(queryByTestId(redesignedShellTestIds.paneHeaderDirectoryNext)).toBeNull();
+  });
+
+  it("starts pane reorder from the file header title area", () => {
+    const onReorderDragStart = vi.fn();
+    const { getByRole } = render(
+      <PaneHeader
+        active={true}
+        paneId="pane-file"
+        title="app.log"
+        timeOffset={zeroOffset}
+        onClose={vi.fn()}
+        onReorderDragStart={onReorderDragStart}
+      />,
+    );
+
+    fireEvent.pointerDown(getByRole("heading", { name: "app.log" }), { button: 0, clientX: 42 });
+
+    expect(onReorderDragStart).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not start pane reorder from file header controls", () => {
+    const onClose = vi.fn();
+    const onOpenSearch = vi.fn();
+    const onOpenTimeOffset = vi.fn();
+    const onReorderDragStart = vi.fn();
+    const { getByLabelText } = render(
+      <PaneHeader
+        active={true}
+        paneId="pane-file"
+        title="app.log"
+        timeOffset={zeroOffset}
+        onClose={onClose}
+        onOpenSearch={onOpenSearch}
+        onOpenTimeOffset={onOpenTimeOffset}
+        onReorderDragStart={onReorderDragStart}
+      />,
+    );
+
+    fireEvent.pointerDown(getByLabelText("Time offset for app.log: 0 ms"), { button: 0, clientX: 42 });
+    fireEvent.pointerDown(getByLabelText("Search in app.log"), { button: 0, clientX: 42 });
+    fireEvent.pointerDown(getByLabelText("Close pane app.log"), { button: 0, clientX: 42 });
+
+    expect(onReorderDragStart).not.toHaveBeenCalled();
   });
 });
 

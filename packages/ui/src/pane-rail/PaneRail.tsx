@@ -131,7 +131,7 @@ export function PaneRail({
 
   const handleReorderDragStart = React.useCallback(
     (paneId: string, event: React.PointerEvent<HTMLElement>) => {
-      if (!onReorderPane) {
+      if (!onReorderPane || event.button !== 0) {
         return;
       }
 

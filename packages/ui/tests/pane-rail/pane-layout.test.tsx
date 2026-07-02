@@ -1,5 +1,5 @@
 import React from "react";
-import { act, fireEvent, render } from "@testing-library/react";
+import { act, fireEvent, render, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { createLogPane } from "@crosslog/core";
 import { PaneRail } from "../../src/pane-rail/PaneRail";
@@ -98,9 +98,9 @@ describe("pane rail layout", () => {
     expect(onResizePane).toHaveBeenNthCalledWith(2, "pane-a", 80);
   });
 
-  it("reorders panes by dragging the pane header affordance across another midpoint", async () => {
+  it("reorders panes by dragging a non-control pane header region across another midpoint", async () => {
     const onReorderPane = vi.fn();
-    const { getAllByTestId, getByLabelText } = render(
+    const { getAllByTestId } = render(
       <PaneRail
         panes={[
           { pane: createLogPane({ id: "pane-a", title: "app.log", width: 420, status: "ready" }), lines: ["line a"] },
@@ -128,9 +128,10 @@ describe("pane rail layout", () => {
         width: 100,
       });
     });
+    const appHeader = within(panes[0]).getByTestId("pane-header");
 
     await act(async () => {
-      dispatchPointerLikeEvent(getByLabelText("Reorder pane app.log"), "pointerdown", 50);
+      dispatchPointerLikeEvent(appHeader, "pointerdown", 50);
     });
     await act(async () => {
       dispatchPointerLikeEvent(window, "pointermove", 175);
@@ -138,6 +139,51 @@ describe("pane rail layout", () => {
     });
 
     expect(onReorderPane).toHaveBeenCalledWith("pane-a", 1);
+  });
+
+  it("keeps header controls from starting pane reorder drags", async () => {
+    const onReorderPane = vi.fn();
+    const { getAllByTestId } = render(
+      <PaneRail
+        panes={[
+          { pane: createLogPane({ id: "pane-a", title: "app.log", width: 420, status: "ready" }), lines: ["line a"] },
+          {
+            pane: createLogPane({ id: "pane-b", title: "service.log", width: 420, status: "ready" }),
+            lines: ["line b"],
+          },
+        ]}
+        onClosePane={vi.fn()}
+        onActivatePane={vi.fn()}
+        onResizePane={vi.fn()}
+        onHorizontalScroll={vi.fn()}
+        onReorderPane={onReorderPane}
+      />,
+    );
+    const panes = getAllByTestId("log-pane");
+    panes.forEach((pane, index) => {
+      mockElementRect(pane, {
+        left: index * 100,
+        right: index * 100 + 100,
+        width: 100,
+      });
+    });
+    const appPane = within(panes[0]);
+
+    for (const control of [
+      appPane.getByLabelText("Time offset for app.log: 0 ms"),
+      appPane.getByLabelText("Search in app.log"),
+      appPane.getByLabelText("Close pane app.log"),
+    ]) {
+      await act(async () => {
+        dispatchPointerLikeEvent(control, "pointerdown", 50);
+      });
+      await act(async () => {
+        dispatchPointerLikeEvent(window, "pointermove", 175);
+        dispatchPointerLikeEvent(window, "pointerup", 175);
+      });
+    }
+
+    expect(onReorderPane).not.toHaveBeenCalled();
   });
 
   it("publishes a header reorder handle without overlapping pane actions", () => {

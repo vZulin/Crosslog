@@ -1,5 +1,5 @@
 import React from "react";
-import { render, within } from "@testing-library/react";
+import { fireEvent, render, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { emptySearchState, type LogPane as LogPaneModel } from "@crosslog/core";
 import { LogPane } from "../../src/log-pane/LogPane";
@@ -76,6 +76,34 @@ describe("pane lifecycle header", () => {
     expect(getByTestId(redesignedShellTestIds.paneHeaderReplaced).textContent).toBe("Replaced");
     expect(getByTestId(redesignedShellTestIds.paneHeaderLifecycle).textContent).toBe("Replaced, Live");
     expect(getByRole("status", { name: "File state for app.log: Replaced, Live" })).toBeTruthy();
+  });
+
+  it("lets lifecycle header badges remain non-control reorder origins", () => {
+    const onReorderDragStart = vi.fn();
+    const { getByTestId } = render(
+      <PaneHeader
+        active={false}
+        lifecycleState={{
+          live: false,
+          deleted: true,
+          replaced: false,
+          monitoringUnsupported: false,
+          errorMessage: null,
+        }}
+        paneId="pane-app"
+        title="app.log"
+        timeOffset={zeroOffset}
+        onClose={vi.fn()}
+        onReorderDragStart={onReorderDragStart}
+      />,
+    );
+
+    fireEvent.pointerDown(getByTestId(redesignedShellTestIds.paneHeaderDeleted), {
+      button: 0,
+      clientX: 42,
+    });
+
+    expect(onReorderDragStart).toHaveBeenCalledTimes(1);
   });
 
   it("hides unsupported monitoring while keeping pane-local errors as header states", () => {

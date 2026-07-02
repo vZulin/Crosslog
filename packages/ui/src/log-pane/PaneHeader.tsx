@@ -22,7 +22,7 @@ export interface PaneHeaderProps {
   readonly timeOffsetButtonRef?: React.Ref<HTMLButtonElement>;
   readonly reorderDragging?: boolean;
   readonly onClose: () => void;
-  readonly onReorderDragStart?: React.PointerEventHandler<HTMLButtonElement>;
+  readonly onReorderDragStart?: React.PointerEventHandler<HTMLElement>;
   readonly onOpenSearch?: () => void;
   readonly onOpenTimeOffset?: () => void;
   readonly onNavigateDirectory?: (paneId: string, direction: "previous" | "next") => void;
@@ -71,6 +71,16 @@ export function PaneHeader({
     lifecycleIndicators.length > 0
       ? `, file state ${lifecycleIndicators.map((indicator) => indicator.label).join(", ")}`
       : "";
+  const handleHeaderPointerDown = React.useCallback(
+    (event: React.PointerEvent<HTMLElement>) => {
+      if (!onReorderDragStart || isPaneHeaderInteractiveControl(event.target)) {
+        return;
+      }
+
+      onReorderDragStart(event);
+    },
+    [onReorderDragStart],
+  );
 
   return (
     <header
@@ -81,13 +91,13 @@ export function PaneHeader({
       data-reorder-dragging={reorderDragging ? "true" : "false"}
       data-testid={redesignedShellTestIds.paneHeader}
       id={redesignedShellTestIds.paneHeader}
+      onPointerDown={handleHeaderPointerDown}
     >
       <button
         aria-label={`Reorder pane ${displayTitle}`}
         aria-pressed={reorderDragging}
         className="crosslog-pane-header__drag-handle"
         data-dragging={reorderDragging ? "true" : "false"}
-        onPointerDown={onReorderDragStart}
         title="Reorder pane"
         type="button"
       >
@@ -187,6 +197,20 @@ export function PaneHeader({
       />
     </header>
   );
+}
+
+const interactiveHeaderControlSelector = [
+  "a[href]",
+  "input",
+  "select",
+  "textarea",
+  "[contenteditable='true']",
+  "[role='button']",
+  "button:not(.crosslog-pane-header__drag-handle)",
+].join(",");
+
+function isPaneHeaderInteractiveControl(target: EventTarget | null): boolean {
+  return target instanceof Element && Boolean(target.closest(interactiveHeaderControlSelector));
 }
 
 interface LifecycleIndicator {

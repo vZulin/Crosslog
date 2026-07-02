@@ -63,6 +63,49 @@ describe("directory pane header", () => {
     expect(onNavigateDirectory).toHaveBeenNthCalledWith(2, "pane-directory", "next");
   });
 
+  it("starts pane reorder from directory title fields but not from directory navigation controls", () => {
+    const onNavigateDirectory = vi.fn();
+    const onReorderDragStart = vi.fn();
+    const { getByTestId } = render(
+      <PaneHeader
+        active={false}
+        paneId="pane-directory"
+        title="latest.log"
+        timeOffset={zeroOffset}
+        directorySource={createDirectorySource({
+          id: "source-directory",
+          directoryIdentity: { value: "source-directory", platform: "web" },
+          displayName: "logs/2026",
+          files: createDirectoryFiles(),
+          currentFileId: "directory-file-2026-06-15",
+        })}
+        onClose={vi.fn()}
+        onNavigateDirectory={onNavigateDirectory}
+        onReorderDragStart={onReorderDragStart}
+      />,
+    );
+
+    fireEvent.pointerDown(getByTestId(redesignedShellTestIds.paneHeaderDirectoryTitle), {
+      button: 0,
+      clientX: 42,
+    });
+    fireEvent.pointerDown(getByTestId(redesignedShellTestIds.paneHeaderSelectedFile), {
+      button: 0,
+      clientX: 42,
+    });
+    fireEvent.pointerDown(getByTestId(redesignedShellTestIds.paneHeaderDirectoryPrevious), {
+      button: 0,
+      clientX: 42,
+    });
+    fireEvent.pointerDown(getByTestId(redesignedShellTestIds.paneHeaderDirectoryNext), {
+      button: 0,
+      clientX: 42,
+    });
+
+    expect(onReorderDragStart).toHaveBeenCalledTimes(2);
+    expect(onNavigateDirectory).not.toHaveBeenCalled();
+  });
+
   it("keeps long directory and file names truncatable inside the header", () => {
     const longDirectoryName = "logs/production/us-east/cluster-alpha/service-with-a-very-long-name";
     const longFileName = "service-with-a-very-long-name-2026-06-16T09-00-00.000Z-instance-123.log";

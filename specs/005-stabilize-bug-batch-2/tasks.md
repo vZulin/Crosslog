@@ -102,13 +102,13 @@ numbered bugs in `docs/Bugs_2.txt` and is independently implementable and testab
 
 ### Tests for User Story 3 (write/update first, ensure they fail)
 
-- [ ] T020 [P] [US3] Update `packages/ui/tests/pane-rail/pane-layout.test.tsx`, `packages/ui/tests/pane-rail/pane-workspace-alignment.test.tsx`, and the pane-header unit tests (`packages/ui/tests/log-pane/pane-lifecycle-header.test.tsx`, `file-pane-header.test.tsx`, `directory-pane-header.test.tsx`) for header-region drag start and control-click-does-not-drag (bug 6)
-- [ ] T021 [P] [US3] Extend `apps/web/tests/ui/multi-pane-layout.spec.ts`, `apps/desktop/tests/ui/multi-pane-layout.spec.ts`, and `apps/desktop/tests/ui/macos/MultiPaneLayoutUITests.swift` for header-anywhere drag reorder (bug 6)
+- [X] T020 [P] [US3] Update `packages/ui/tests/pane-rail/pane-layout.test.tsx`, `packages/ui/tests/pane-rail/pane-workspace-alignment.test.tsx`, and the pane-header unit tests (`packages/ui/tests/log-pane/pane-lifecycle-header.test.tsx`, `file-pane-header.test.tsx`, `directory-pane-header.test.tsx`) for header-region drag start and control-click-does-not-drag (bug 6)
+- [X] T021 [P] [US3] Extend `apps/web/tests/ui/multi-pane-layout.spec.ts`, `apps/desktop/tests/ui/multi-pane-layout.spec.ts`, and `apps/desktop/tests/ui/macos/MultiPaneLayoutUITests.swift` for header-anywhere drag reorder (bug 6)
 
 ### Implementation for User Story 3
 
-- [ ] T022 [US3] Make the whole header a drag origin in `packages/ui/src/log-pane/PaneHeader.tsx` (bind pointer-down on the header container, generalize `onReorderDragStart` off the button-only handler) and exclude interactive controls (search, close, offset, directory navigation) from starting a drag (bug 6, FR-015)
-- [ ] T023 [US3] Verify `packages/ui/src/pane-rail/PaneRail.tsx` midpoint-threshold reorder and intervening-pane order are preserved (FR-014)
+- [X] T022 [US3] Make the whole header a drag origin in `packages/ui/src/log-pane/PaneHeader.tsx` (bind pointer-down on the header container, generalize `onReorderDragStart` off the button-only handler) and exclude interactive controls (search, close, offset, directory navigation) from starting a drag (bug 6, FR-015)
+- [X] T023 [US3] Verify `packages/ui/src/pane-rail/PaneRail.tsx` midpoint-threshold reorder and intervening-pane order are preserved (FR-014)
 
 **Checkpoint**: Panes reorder from anywhere on the header; controls still act.
 
