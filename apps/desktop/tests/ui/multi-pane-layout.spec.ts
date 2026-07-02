@@ -1,7 +1,7 @@
 import { $, $$, browser, expect } from "@wdio/globals";
 import {
-  dropDesktopFileOnWorkspace,
   dragPaneResizeBoundary,
+  enqueueDesktopUiTestAction,
   expectObsoleteControlsAbsent,
   getRedesignedShell,
   openSampleLogsWithUiBridge,
@@ -56,10 +56,9 @@ describe("Desktop multi-pane layout", () => {
 
     await browser.setWindowSize(960, 720);
     await waitForDesktopWorkspaceOverflow();
-    await dropDesktopFileOnWorkspace({
-      name: "desktop-extra.log",
-      contents: "2026-06-16T09:12:00.000Z extra dropped source\n",
-    });
+    // Native drops are delivered through the platform drag-drop channel; add the
+    // fourth pane via the same native-drop wiring the app uses at runtime.
+    enqueueDesktopUiTestAction("dropNativeSampleSource");
     await expect($$('[data-testid="log-pane"]')).toBeElementsArrayOfSize(4);
 
     const appPaneWidthBefore = await getPaneWidth("app.log");

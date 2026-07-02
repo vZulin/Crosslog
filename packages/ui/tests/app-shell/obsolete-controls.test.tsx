@@ -21,7 +21,7 @@ describe("obsolete product controls", () => {
     await settleShellEffects();
     const topbar = getByTestId(redesignedShellTestIds.topbar);
 
-    expect(getByRole("button", { name: "Open Source" })).toBeTruthy();
+    expect(getByRole("button", { name: "Open File" })).toBeTruthy();
     expect(queryByText("Open logs")).toBeNull();
     expect(queryByText("Synchronize by time")).toBeNull();
     expect(within(topbar).queryByText("Sync on")).toBeNull();
@@ -37,7 +37,7 @@ describe("obsolete product controls", () => {
     expect(queryByLabelText("Replace active file")).toBeNull();
     expect(container.querySelector('[data-ui-test-action="openEmptyDirectory"]')).toBeNull();
 
-    fireEvent.click(getByRole("button", { name: "Open Source" }));
+    fireEvent.click(getByRole("button", { name: "Open File" }));
     await waitFor(() => expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(3));
 
     expect(container.querySelector(".crosslog-workspace-actions")).toBeNull();

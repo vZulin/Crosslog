@@ -134,6 +134,7 @@ export const uiTestActions = [
   "setThemeLight",
   "setThemeDark",
   "reorderFirstPaneAfterSecond",
+  "dropNativeSampleSource",
   "keyboardNavigateActivePaneDown",
   "wheelNavigateActivePaneDown",
   "openActivePaneSearch",

@@ -11,6 +11,7 @@ import type {
   DirectorySourceRef,
   DragDropSource,
   FileSourceRef,
+  NativeDropHandler,
 } from "@crosslog/platform";
 import { AppShell } from "../../src/app-shell/AppShell";
 import { redesignedShellTestIds } from "../../src/app-shell/testIds";
@@ -23,7 +24,7 @@ describe("empty workspace alignment", () => {
     useSynchronizationStore.getState().reset();
   });
 
-  it("renders the shared shell, centered drop zone, and Open Source action", async () => {
+  it("renders the shared shell, centered drop zone, and file/directory open actions on Web", async () => {
     const { container, getByRole, getByTestId } = render(<AppShell platform={createMockPlatform()} />);
     await settleShellEffects();
 
@@ -33,7 +34,8 @@ describe("empty workspace alignment", () => {
     expect(getByTestId(redesignedShellTestIds.emptyDropZone).getAttribute("aria-label")).toBe(
       "Drop log sources",
     );
-    expect(getByRole("button", { name: "Open Source" })).toBeTruthy();
+    expect(getByRole("button", { name: "Open File" })).toBeTruthy();
+    expect(getByRole("button", { name: "Open Directory" })).toBeTruthy();
     expect(container.querySelector('[data-ui-test-action="openSampleLogs"]')).toBeNull();
   });
 
@@ -55,17 +57,29 @@ describe("empty workspace alignment", () => {
     expect(dropZone.getAttribute("data-drag-over")).toBe("false");
   });
 
-  it("opens source selection from the product action and leaves the workspace empty on cancellation", async () => {
+  it("opens file selection from the Open File action and leaves the workspace empty on cancellation", async () => {
     const platform = createMockPlatform();
     const { getByRole, queryAllByTestId, queryByRole } = render(<AppShell platform={platform} />);
     await settleShellEffects();
 
-    fireEvent.click(getByRole("button", { name: "Open Source" }));
+    fireEvent.click(getByRole("button", { name: "Open File" }));
 
     await waitFor(() => expect(platform.sourcePicker.pickFiles).toHaveBeenCalledTimes(1));
-    await waitFor(() => expect(platform.sourcePicker.pickDirectory).toHaveBeenCalledTimes(1));
+    expect(platform.sourcePicker.pickDirectory).not.toHaveBeenCalled();
     expect(queryAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(0);
     expect(queryByRole("heading", { name: "app.log" })).toBeNull();
+  });
+
+  it("opens directory selection from the Open Directory action and leaves the workspace empty on cancellation", async () => {
+    const platform = createMockPlatform();
+    const { getByRole, queryAllByTestId } = render(<AppShell platform={platform} />);
+    await settleShellEffects();
+
+    fireEvent.click(getByRole("button", { name: "Open Directory" }));
+
+    await waitFor(() => expect(platform.sourcePicker.pickDirectory).toHaveBeenCalledTimes(1));
+    expect(platform.sourcePicker.pickFiles).not.toHaveBeenCalled();
+    expect(queryAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(0);
   });
 
   it("opens a selected file without using sample panes", async () => {
@@ -75,7 +89,7 @@ describe("empty workspace alignment", () => {
     const { getByRole, getByText, queryByRole } = render(<AppShell platform={platform} />);
     await settleShellEffects();
 
-    fireEvent.click(getByRole("button", { name: "Open Source" }));
+    fireEvent.click(getByRole("button", { name: "Open File" }));
 
     await waitFor(() => expect(getByRole("heading", { name: "selected-app.log" })).toBeTruthy());
     expect(getByText("selected-app.log opened from selected source")).toBeTruthy();
@@ -83,19 +97,20 @@ describe("empty workspace alignment", () => {
     expect(platform.sourcePicker.pickDirectory).not.toHaveBeenCalled();
   });
 
-  it("opens a selected directory through the source picker flow", async () => {
+  it("opens a selected directory through the Open Directory action", async () => {
     const platform = createMockPlatform({
       selectedDirectory: { id: "selected-logs", name: "selected-logs" },
     });
     const { getByTestId, getByText } = render(<AppShell platform={platform} />);
     await settleShellEffects();
 
-    fireEvent.click(getByTestId(redesignedShellTestIds.emptyOpenSource));
+    fireEvent.click(getByTestId(redesignedShellTestIds.emptyOpenDirectory));
 
     await waitFor(() =>
       expect(getByTestId(redesignedShellTestIds.paneHeaderDirectoryTitle).textContent).toBe("selected-logs"),
     );
     expect(getByText("selected-current.log")).toBeTruthy();
+    expect(platform.sourcePicker.pickFiles).not.toHaveBeenCalled();
   });
 
   it("opens dropped sources from the empty workspace drop zone", async () => {
@@ -112,6 +127,25 @@ describe("empty workspace alignment", () => {
     await waitFor(() => expect(getByRole("heading", { name: "dropped.log" })).toBeTruthy());
     expect(platform.dragDropSource.mapDroppedSources).toHaveBeenCalledTimes(1);
   });
+
+  it("opens sources delivered through the native drag-drop subscription (bug 3)", async () => {
+    const handlerRef: { current: NativeDropHandler | null } = { current: null };
+    const platform = createMockPlatform({ nativeDropHandlerRef: handlerRef });
+    const { getByRole } = render(<AppShell platform={platform} />);
+    await settleShellEffects();
+
+    expect(platform.dragDropSource.subscribeToNativeDrops).toHaveBeenCalledTimes(1);
+    expect(handlerRef.current).not.toBeNull();
+
+    await act(async () => {
+      handlerRef.current?.([
+        { type: "file", source: { id: "native-drop", name: "native-drop.log" } },
+      ]);
+      await Promise.resolve();
+    });
+
+    await waitFor(() => expect(getByRole("heading", { name: "native-drop.log" })).toBeTruthy());
+  });
 });
 
 async function settleShellEffects(): Promise<void> {
@@ -124,6 +158,7 @@ interface MockPlatformOptions {
   readonly selectedFiles?: readonly FileSourceRef[];
   readonly selectedDirectory?: DirectorySourceRef | null;
   readonly droppedSources?: readonly DragDropSource[];
+  readonly nativeDropHandlerRef?: { current: NativeDropHandler | null };
 }
 
 function createMockPlatform(options: MockPlatformOptions = {}): CrosslogPlatform {
@@ -160,6 +195,16 @@ function createMockPlatform(options: MockPlatformOptions = {}): CrosslogPlatform
     },
     dragDropSource: {
       mapDroppedSources: vi.fn(async () => options.droppedSources ?? []),
+      ...(options.nativeDropHandlerRef
+        ? {
+            subscribeToNativeDrops: vi.fn(async (handler: NativeDropHandler) => {
+              options.nativeDropHandlerRef!.current = handler;
+              return () => {
+                options.nativeDropHandlerRef!.current = null;
+              };
+            }),
+          }
+        : {}),
     },
     sourcePicker: {
       pickFiles: vi.fn(async () => options.selectedFiles ?? []),

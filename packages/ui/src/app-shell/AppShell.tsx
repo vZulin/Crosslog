@@ -110,6 +110,7 @@ export function AppShell({
   const [searchFocusRequestSequence, setSearchFocusRequestSequence] = React.useState(0);
   const settingsButtonRef = React.useRef<HTMLButtonElement>(null);
   const liveAppendCounter = React.useRef(1);
+  const openDroppedSourcesRef = React.useRef<(sources: readonly DragDropSource[]) => void>(() => {});
   const [directorySource, dispatchDirectorySource] = React.useReducer(
     directorySourceReducer,
     createDirectorySource({
@@ -567,6 +568,17 @@ export function AppShell({
             dispatch({ type: "reorderPane", paneId: state.panes[0].id, targetIndex: 1 });
           }
           break;
+        case "dropNativeSampleSource":
+          // Exercises the native drag-drop wiring (openDroppedSources → pane)
+          // that native OS drops trigger via subscribeToNativeDrops. The real
+          // OS drag gesture is verified by the manual/interactive runner.
+          openDroppedSourcesRef.current([
+            {
+              type: "file",
+              source: { id: "desktop-drop-sample", name: "dropped-native.log" },
+            },
+          ]);
+          break;
         case "keyboardNavigateActivePaneDown":
           dispatchNavigationEventToActiveViewport("keyboard");
           break;
@@ -799,6 +811,39 @@ export function AppShell({
     void platform.dragDropSource.mapDroppedSources(event.nativeEvent).then(openDroppedSources);
   };
 
+  openDroppedSourcesRef.current = openDroppedSources;
+
+  // Native OS drops (Tauri) bypass the DOM drop event, so subscribe to the
+  // platform's native drag-drop channel when the adapter provides one. The
+  // browser adapter has no such channel and keeps using handleDrop above.
+  React.useEffect(() => {
+    const dragDropSource = platform.dragDropSource;
+
+    if (!dragDropSource.subscribeToNativeDrops) {
+      return;
+    }
+
+    let disposed = false;
+    let unsubscribe: (() => void) | null = null;
+
+    void dragDropSource
+      .subscribeToNativeDrops((sources) => {
+        void openDroppedSourcesRef.current(sources);
+      })
+      .then((dispose) => {
+        if (disposed) {
+          dispose();
+          return;
+        }
+        unsubscribe = dispose;
+      });
+
+    return () => {
+      disposed = true;
+      unsubscribe?.();
+    };
+  }, [platform.dragDropSource]);
+
   const publishSourceSelectionStarted = (entryPoint: UiTestSourceOpeningEntryPoint) => {
     setSourceOpeningEvidence((current) => ({
       ...current,
@@ -833,18 +878,28 @@ export function AppShell({
     }));
   };
 
-  const requestSourceSelection = async (entryPoint: UiTestSourceOpeningEntryPoint) => {
+  const requestSourceSelection = async (
+    entryPoint: UiTestSourceOpeningEntryPoint,
+    sourceKind: "file" | "directory" | "auto" = "auto",
+  ) => {
     publishSourceSelectionStarted(entryPoint);
 
     try {
-      const selectedFiles = await platform.sourcePicker.pickFiles();
+      if (sourceKind !== "directory") {
+        const selectedFiles = await platform.sourcePicker.pickFiles();
 
-      if (selectedFiles.length > 0) {
-        for (const selectedFile of selectedFiles) {
-          await openFileSource(selectedFile);
+        if (selectedFiles.length > 0) {
+          for (const selectedFile of selectedFiles) {
+            await openFileSource(selectedFile);
+          }
+          publishOpenedSources(entryPoint, "file", selectedFiles.length);
+          return;
         }
-        publishOpenedSources(entryPoint, "file", selectedFiles.length);
-        return;
+
+        if (sourceKind === "file") {
+          publishSourceSelectionCancelled(entryPoint);
+          return;
+        }
       }
 
       const selectedDirectory = await platform.sourcePicker.pickDirectory();
@@ -874,6 +929,24 @@ export function AppShell({
     void requestSourceSelection("topbar-add-pane");
   };
 
+  const handleOpenFile = () => {
+    void requestSourceSelection("empty-workspace", "file");
+  };
+
+  const handleOpenDirectory = () => {
+    void requestSourceSelection("empty-workspace", "directory");
+  };
+
+  const handleAddFile = () => {
+    void requestSourceSelection("topbar-add-pane", "file");
+  };
+
+  const handleAddDirectory = () => {
+    void requestSourceSelection("topbar-add-pane", "directory");
+  };
+
+  const offerSourceKindOptions = platform.kind === "web";
+
   const statusMessage =
     unsupportedPaneCount > 0
       ? `${unsupportedPaneCount} untimed ${unsupportedPaneCount === 1 ? "pane" : "panes"} excluded`
@@ -884,6 +957,9 @@ export function AppShell({
         onDragOver={(event) => event.preventDefault()}
         onDrop={handleDrop}
         onOpenSource={handleOpenSource}
+        showSourceKindOptions={offerSourceKindOptions}
+        onOpenFile={handleOpenFile}
+        onOpenDirectory={handleOpenDirectory}
       />
     ) : (
       <PaneRail
@@ -959,6 +1035,9 @@ export function AppShell({
           syncEnabled={synchronizationEnabled}
           onAddPane={handleAddPane}
           onSyncEnabledChange={handleSynchronizationEnabledChange}
+          showSourceKindOptions={offerSourceKindOptions}
+          onAddFile={handleAddFile}
+          onAddDirectory={handleAddDirectory}
         />
       }
     />

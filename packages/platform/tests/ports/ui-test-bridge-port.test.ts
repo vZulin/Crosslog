@@ -109,6 +109,7 @@ describe("UI test bridge shell state contract", () => {
       "setThemeLight",
       "setThemeDark",
       "reorderFirstPaneAfterSecond",
+      "dropNativeSampleSource",
       "keyboardNavigateActivePaneDown",
       "wheelNavigateActivePaneDown",
       "openActivePaneSearch",

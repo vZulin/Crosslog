@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 import { expect, test } from "@playwright/test";
 import { redesignedShellTestIds } from "@crosslog/ui";
 import {
@@ -6,6 +7,36 @@ import {
   openSampleLogsWithWebUiBridge,
   waitForWebUiTestTitleFragment,
 } from "./helpers/redesigned-shell";
+
+const directoryFixturePath = fileURLToPath(
+  new URL("./fixtures/web-directory/sample-logs", import.meta.url),
+);
+
+test("opens a directory through the Web directory picker (bug 4)", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page.getByTestId(redesignedShellTestIds.emptyOpenDirectory)).toBeVisible();
+
+  // The directory picker uses a hidden <input webkitdirectory>; Playwright drives
+  // it through the file chooser, uploading the fixture directory's files.
+  const [fileChooser] = await Promise.all([
+    page.waitForEvent("filechooser"),
+    page.getByTestId(redesignedShellTestIds.emptyOpenDirectory).click(),
+  ]);
+  await fileChooser.setFiles(directoryFixturePath);
+
+  const directoryHeader = page
+    .getByTestId(redesignedShellTestIds.paneHeader)
+    .filter({ hasText: "sample-logs" });
+
+  await expect(directoryHeader.getByTestId(redesignedShellTestIds.paneHeaderDirectoryTitle)).toHaveText(
+    "sample-logs",
+  );
+  await expect(directoryHeader.getByTestId(redesignedShellTestIds.paneHeaderSelectedFile)).toHaveText(
+    "app-2026-06-16.log",
+  );
+  await expect(page.getByRole("heading", { name: "app-2026-06-16.log" })).toBeVisible();
+});
 
 test("navigates directory files without auto-switching on refresh", async ({ page }) => {
   await gotoWithWebUiTestBridge(page);

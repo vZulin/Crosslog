@@ -8,6 +8,7 @@ pub fn run() {
             commands::file_watcher::classify_file_snapshot,
             commands::directory_access::list_top_level_directory_files,
             commands::directory_access::refresh_directory_files,
+            commands::drag_drop::classify_dropped_paths,
             commands::file_identity::get_file_identity,
             commands::file_access::read_file_metadata,
             commands::session_store::load_last_valid_session,

@@ -55,20 +55,20 @@ numbered bugs in `docs/Bugs_2.txt` and is independently implementable and testab
 
 ### Tests for User Story 1 (write/update first, ensure they fail)
 
-- [ ] T005 [P] [US1] Update `packages/platform/tests/tauri/tauri-source-picker.test.ts` to assert the picker opens and returns the selected file/directory or cancels cleanly (bug 2)
-- [ ] T006 [P] [US1] Update `packages/platform/tests/tauri/tauri-drag-drop-source.test.ts` to expect native Tauri drop-payload mapping instead of DOM `DragEvent.dataTransfer` (bug 3)
-- [ ] T007 [P] [US1] Update `packages/platform/tests/browser/browser-source-picker.test.ts`, `packages/platform/tests/browser/browser-directory-access.test.ts`, and `tests/integration/directory-access.contract.test.ts` to assert Web directory selection/opening (bug 4)
-- [ ] T008 [P] [US1] Extend `apps/desktop/tests/ui/source-loading.spec.ts` for Desktop picker open/cancel/selected-file/selected-directory (bug 2)
-- [ ] T009 [P] [US1] Add Desktop drag-drop coverage in two modes (FR-028, bug 3): (a) automatable WDIO/unit coverage under `apps/desktop/tests/ui/` that runs by default, and (b) a manual/interactive runner script (e.g. `scripts/macos/test-ui-manual.sh`) that auto-launches the Desktop app, prints the ordered tester actions for the native file/directory drop, and waits for pass/fail confirmation; the manual runner is opt-in and never runs in CI or default gates
-- [ ] T010 [P] [US1] Extend `apps/web/tests/ui/directory-navigation.spec.ts` and `apps/web/tests/ui/browser-capabilities.spec.ts` for Web directory opening and capability reporting (bug 4)
+- [X] T005 [P] [US1] Update `packages/platform/tests/tauri/tauri-source-picker.test.ts` to assert the picker opens and returns the selected file/directory or cancels cleanly (bug 2)
+- [X] T006 [P] [US1] Update `packages/platform/tests/tauri/tauri-drag-drop-source.test.ts` to expect native Tauri drop-payload mapping instead of DOM `DragEvent.dataTransfer` (bug 3)
+- [X] T007 [P] [US1] Update `packages/platform/tests/browser/browser-source-picker.test.ts`, `packages/platform/tests/browser/browser-directory-access.test.ts`, and `tests/integration/directory-access.contract.test.ts` to assert Web directory selection/opening (bug 4)
+- [X] T008 [P] [US1] Extend `apps/desktop/tests/ui/source-loading.spec.ts` for Desktop picker open/cancel/selected-file/selected-directory (bug 2)
+- [X] T009 [P] [US1] Add Desktop drag-drop coverage in two modes (FR-028, bug 3): (a) automatable WDIO/unit coverage under `apps/desktop/tests/ui/` that runs by default, and (b) a manual/interactive runner script (e.g. `scripts/macos/test-ui-manual.sh`) that auto-launches the Desktop app, prints the ordered tester actions for the native file/directory drop, and waits for pass/fail confirmation; the manual runner is opt-in and never runs in CI or default gates
+- [X] T010 [P] [US1] Extend `apps/web/tests/ui/directory-navigation.spec.ts` and `apps/web/tests/ui/browser-capabilities.spec.ts` for Web directory opening and capability reporting (bug 4)
 
 ### Implementation for User Story 1
 
-- [ ] T011 [US1] Fix the Desktop picker: verify/enable the dialog capability in `apps/desktop/src-tauri/tauri.conf.json` and `apps/desktop/src-tauri/gen/schemas/capabilities.json`, and repair the wiring from `packages/platform/src/tauri/tauri-source-picker.ts` through `apps/desktop/src/platform/createDesktopPlatform.ts` to the `AppShell` add-pane handlers (bug 2)
-- [ ] T012 [US1] Add the native Tauri drag-drop event path: set `dragDropEnabled` in `apps/desktop/src-tauri/tauri.conf.json` and emit/subscribe drag-drop events in `apps/desktop/src-tauri/src/lib.rs` and `apps/desktop/src-tauri/src/events/` (bug 3)
-- [ ] T013 [US1] Rewrite `packages/platform/src/tauri/tauri-drag-drop-source.ts` to consume native drop payloads while keeping the `DragDropSourcePort` contract stable (bug 3)
-- [ ] T014 [P] [US1] Repair Web directory opening in `packages/platform/src/browser/browser-source-picker.ts` and `packages/platform/src/browser/browser-directory-access.ts`, reporting a `CapabilityReport` limitation where the browser lacks directory support (bug 4)
-- [ ] T015 [US1] Verify `packages/ui/src/app-shell/AppShell.tsx` add-pane/open-source paths create a pane only for the user-selected or dropped supported source on both platforms; unsupported drops/selection create no pane
+- [X] T011 [US1] Fix the Desktop picker: verify/enable the dialog capability in `apps/desktop/src-tauri/tauri.conf.json` and `apps/desktop/src-tauri/gen/schemas/capabilities.json`, and repair the wiring from `packages/platform/src/tauri/tauri-source-picker.ts` through `apps/desktop/src/platform/createDesktopPlatform.ts` to the `AppShell` add-pane handlers (bug 2)
+- [X] T012 [US1] Add the native Tauri drag-drop event path: set `dragDropEnabled` in `apps/desktop/src-tauri/tauri.conf.json` and emit/subscribe drag-drop events in `apps/desktop/src-tauri/src/lib.rs` and `apps/desktop/src-tauri/src/events/` (bug 3)
+- [X] T013 [US1] Rewrite `packages/platform/src/tauri/tauri-drag-drop-source.ts` to consume native drop payloads while keeping the `DragDropSourcePort` contract stable (bug 3)
+- [X] T014 [P] [US1] Repair Web directory opening in `packages/platform/src/browser/browser-source-picker.ts` and `packages/platform/src/browser/browser-directory-access.ts`, reporting a `CapabilityReport` limitation where the browser lacks directory support (bug 4)
+- [X] T015 [US1] Verify `packages/ui/src/app-shell/AppShell.tsx` add-pane/open-source paths create a pane only for the user-selected or dropped supported source on both platforms; unsupported drops/selection create no pane
 
 **Checkpoint**: Source opening works on Desktop (picker + drag-drop) and Web (file + directory).
 

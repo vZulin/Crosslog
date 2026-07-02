@@ -12,11 +12,13 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "Crosslog",
         "width": 1280,
         "height": 800,
         "minWidth": 960,
-        "minHeight": 540
+        "minHeight": 540,
+        "dragDropEnabled": true
       }
     ],
     "security": {

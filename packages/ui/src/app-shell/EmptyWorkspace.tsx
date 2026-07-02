@@ -6,12 +6,24 @@ export interface EmptyWorkspaceProps {
   readonly onOpenSource: () => void;
   readonly onDragOver?: React.DragEventHandler<HTMLElement>;
   readonly onDrop?: React.DragEventHandler<HTMLElement>;
+  /**
+   * When true (Web), the workspace offers explicit Open File and Open Directory
+   * actions instead of the single Open Source action. Each action opens the
+   * matching picker within its own user gesture so directory selection is
+   * reachable in the browser.
+   */
+  readonly showSourceKindOptions?: boolean;
+  readonly onOpenFile?: () => void;
+  readonly onOpenDirectory?: () => void;
 }
 
 export function EmptyWorkspace({
   onOpenSource,
   onDragOver,
   onDrop,
+  showSourceKindOptions = false,
+  onOpenFile,
+  onOpenDirectory,
 }: EmptyWorkspaceProps) {
   const [dragOver, setDragOver] = React.useState(false);
 
@@ -43,15 +55,40 @@ export function EmptyWorkspace({
         }}
       >
         <CrosslogIcon name="drop-source" />
-        <button
-          className="crosslog-empty-workspace__open-source"
-          data-testid={redesignedShellTestIds.emptyOpenSource}
-          id={redesignedShellTestIds.emptyOpenSource}
-          onClick={onOpenSource}
-          type="button"
-        >
-          Open Source
-        </button>
+        {showSourceKindOptions ? (
+          <div className="crosslog-empty-workspace__open-actions">
+            <button
+              className="crosslog-empty-workspace__open-source"
+              data-testid={redesignedShellTestIds.emptyOpenFile}
+              id={redesignedShellTestIds.emptyOpenFile}
+              onClick={onOpenFile}
+              type="button"
+            >
+              <CrosslogIcon name="file" />
+              <span>Open File</span>
+            </button>
+            <button
+              className="crosslog-empty-workspace__open-source"
+              data-testid={redesignedShellTestIds.emptyOpenDirectory}
+              id={redesignedShellTestIds.emptyOpenDirectory}
+              onClick={onOpenDirectory}
+              type="button"
+            >
+              <CrosslogIcon name="folder" />
+              <span>Open Directory</span>
+            </button>
+          </div>
+        ) : (
+          <button
+            className="crosslog-empty-workspace__open-source"
+            data-testid={redesignedShellTestIds.emptyOpenSource}
+            id={redesignedShellTestIds.emptyOpenSource}
+            onClick={onOpenSource}
+            type="button"
+          >
+            Open Source
+          </button>
+        )}
       </div>
     </section>
   );

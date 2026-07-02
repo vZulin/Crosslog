@@ -30,9 +30,9 @@ describe("redesigned workspace shell", () => {
     expect(getByTestId(redesignedShellTestIds.paneWorkspace)).toBeTruthy();
     expect(getByTestId(redesignedShellTestIds.statusBar).textContent).toContain("0 panes");
 
-    expect(getByRole("button", { name: "Open Source" })).toBeTruthy();
+    expect(getByRole("button", { name: "Open File" })).toBeTruthy();
 
-    fireEvent.click(getByRole("button", { name: "Open Source" }));
+    fireEvent.click(getByRole("button", { name: "Open File" }));
 
     await waitFor(() => expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(1));
     expect(getAllByTestId(redesignedShellTestIds.paneHeader)).toHaveLength(1);
@@ -54,7 +54,7 @@ describe("redesigned workspace shell", () => {
       <AppShell platform={platform} />,
     );
 
-    fireEvent.click(getByRole("button", { name: "Open Source" }));
+    fireEvent.click(getByRole("button", { name: "Open File" }));
     await waitFor(() => expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(1));
 
     const topbar = getByTestId(redesignedShellTestIds.topbar);
@@ -64,7 +64,7 @@ describe("redesigned workspace shell", () => {
     expect(queryByLabelText("Split active pane")).toBeNull();
     expect(getByRole("button", { name: "Toggle time synchronization" }).getAttribute("aria-pressed")).toBe("true");
 
-    fireEvent.click(getByTestId(redesignedShellTestIds.topbarAddPane));
+    fireEvent.click(getByTestId(redesignedShellTestIds.topbarAddFile));
     await waitFor(() => expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(2));
     await waitFor(() => expect(getByTestId(redesignedShellTestIds.statusBar).textContent).toContain("2 panes"));
     expect(platform.sourcePicker.pickFiles).toHaveBeenCalledTimes(2);

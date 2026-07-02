@@ -75,7 +75,7 @@ async function openSamplePanes(
   getAllByTestId: (testId: string) => HTMLElement[],
   getByRole: (role: string, options?: { readonly name?: string | RegExp }) => HTMLElement,
 ): Promise<readonly [HTMLElement, HTMLElement, HTMLElement]> {
-  fireEvent.click(getByRole("button", { name: "Open Source" }));
+  fireEvent.click(getByRole("button", { name: "Open File" }));
 
   await waitFor(() => expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(3));
 

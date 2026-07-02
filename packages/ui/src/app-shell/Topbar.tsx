@@ -2,18 +2,30 @@ import React from "react";
 import { AddPaneButton } from "../pane-rail/AddPaneButton";
 import { SynchronizationToggle } from "../sync/SynchronizationToggle";
 import { CrosslogIcon } from "./icons";
+import { IconButton } from "./IconButton";
 import { redesignedShellTestIds } from "./testIds";
 
 export interface TopbarProps {
   readonly syncEnabled: boolean;
   readonly onSyncEnabledChange: (enabled: boolean) => void;
   readonly onAddPane: () => void;
+  /**
+   * When true (Web), the topbar offers explicit Add File and Add Directory
+   * actions instead of the single Add Pane action, so a directory can be opened
+   * into a new pane in the browser.
+   */
+  readonly showSourceKindOptions?: boolean;
+  readonly onAddFile?: () => void;
+  readonly onAddDirectory?: () => void;
 }
 
 export function Topbar({
   syncEnabled,
   onAddPane,
   onSyncEnabledChange,
+  showSourceKindOptions = false,
+  onAddFile,
+  onAddDirectory,
 }: TopbarProps) {
   return (
     <div className="crosslog-topbar">
@@ -42,7 +54,24 @@ export function Topbar({
           onEnabledChange={onSyncEnabledChange}
         />
       </div>
-      <AddPaneButton addPaneTestId={redesignedShellTestIds.topbarAddPane} onAddPane={onAddPane} />
+      {showSourceKindOptions ? (
+        <div className="crosslog-pane-creation">
+          <IconButton
+            icon="file"
+            label="Add File"
+            onClick={onAddFile}
+            testId={redesignedShellTestIds.topbarAddFile}
+          />
+          <IconButton
+            icon="folder"
+            label="Add Directory"
+            onClick={onAddDirectory}
+            testId={redesignedShellTestIds.topbarAddDirectory}
+          />
+        </div>
+      ) : (
+        <AddPaneButton addPaneTestId={redesignedShellTestIds.topbarAddPane} onAddPane={onAddPane} />
+      )}
     </div>
   );
 }

@@ -1363,6 +1363,19 @@ body {
   color: var(--crosslog-accent);
 }
 
+.crosslog-empty-workspace__open-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.crosslog-empty-workspace__open-source {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
 .crosslog-status-bar {
   display: grid;
   grid-template-columns: auto auto minmax(0, 1fr) auto;

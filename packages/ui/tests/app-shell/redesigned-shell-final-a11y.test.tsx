@@ -28,7 +28,8 @@ describe("final redesigned shell accessibility and no-overlap contracts", () => 
       expect(getByRole("main", { name: "Crosslog workspace" })).toBeTruthy();
       expect(getByRole("searchbox", { name: "Command or workspace search" })).toBeTruthy();
       expect(getByRole("button", { name: "Toggle time synchronization" })).toBeTruthy();
-      expect(getByRole("button", { name: "Add pane" })).toBeTruthy();
+      expect(getByRole("button", { name: "Add File" })).toBeTruthy();
+      expect(getByRole("button", { name: "Add Directory" })).toBeTruthy();
       expect(getByRole("button", { name: "Search logs" })).toBeTruthy();
       expect(getByRole("button", { name: "Open sources" })).toBeTruthy();
       expect(getByRole("searchbox", { name: "Command or workspace search" }).hasAttribute("disabled")).toBe(true);
@@ -49,13 +50,13 @@ describe("final redesigned shell accessibility and no-overlap contracts", () => 
 
       await waitFor(() => expect(platform.sessionStore.recoverSession).toHaveBeenCalled());
       await act(async () => {
-        fireEvent.click(getByRole("button", { name: "Open Source" }));
+        fireEvent.click(getByRole("button", { name: "Open File" }));
         await Promise.resolve();
       });
 
       await waitFor(() => expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(3));
       await waitFor(() => expect(platform.sessionStore.writeSessionSnapshot).toHaveBeenCalled());
-      expect(getByRole("button", { name: "Add pane" })).toBeTruthy();
+      expect(getByRole("button", { name: "Add File" })).toBeTruthy();
       expect(getByRole("button", { name: "Search in app.log" })).toBeTruthy();
       expect(getByRole("button", { name: "Close pane app.log" })).toBeTruthy();
       expect(getByRole("button", { name: "Time offset for app.log: 0 ms" })).toBeTruthy();
@@ -102,7 +103,7 @@ describe("final redesigned shell accessibility and no-overlap contracts", () => 
     expect(getByLabelText("Windows caption controls")).toBeTruthy();
     expect(queryByRole("button", { name: /platform/i })).toBeNull();
     expect(getByRole("searchbox", { name: "Command or workspace search" })).toBeTruthy();
-    expect(getByRole("button", { name: "Open Source" })).toBeTruthy();
+    expect(getByRole("button", { name: "Open File" })).toBeTruthy();
     fireEvent.click(getByRole("button", { name: "Settings" }));
     expect((getByRole("radio", { name: "System" }) as HTMLInputElement).checked).toBe(true);
     expect(getByRole("radio", { name: "Light" })).toBeTruthy();

@@ -18,7 +18,7 @@ describe("redesigned synchronization controls", () => {
   it("keeps the topbar synchronization state and status summary in sync", async () => {
     const { getByRole, getByTestId } = render(<AppShell platform={createMockPlatform()} />);
 
-    fireEvent.click(getByRole("button", { name: "Open Source" }));
+    fireEvent.click(getByRole("button", { name: "Open File" }));
 
     await waitFor(() => expect(getByTestId(redesignedShellTestIds.statusBar).textContent).toContain("3 panes"));
     const topbarSync = getByTestId(redesignedShellTestIds.topbarSync);
@@ -58,7 +58,7 @@ describe("redesigned synchronization controls", () => {
       <AppShell platform={createMockPlatform()} />,
     );
 
-    fireEvent.click(getByRole("button", { name: "Open Source" }));
+    fireEvent.click(getByRole("button", { name: "Open File" }));
     await waitFor(() => expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(3));
 
     const headers = getAllByTestId(redesignedShellTestIds.paneHeader);

@@ -23,7 +23,7 @@ describe("redesigned search entry points", () => {
       />,
     );
 
-    fireEvent.click(getByRole("button", { name: "Open Source" }));
+    fireEvent.click(getByRole("button", { name: "Open File" }));
     await waitFor(() => expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(1));
 
     const panes = getAllByTestId(redesignedShellTestIds.logPane);

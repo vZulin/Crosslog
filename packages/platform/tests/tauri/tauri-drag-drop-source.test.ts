@@ -1,68 +1,109 @@
-import { describe, expect, it } from "vitest";
-import { TauriDragDropSource } from "../../src/tauri/tauri-drag-drop-source";
+import { describe, expect, it, vi } from "vitest";
+import {
+  type ClassifiedDroppedPath,
+  type NativeDragDropPayload,
+  TauriDragDropSource,
+} from "../../src/tauri/tauri-drag-drop-source";
 
 describe("TauriDragDropSource", () => {
-  it("maps dropped desktop files into file source refs", async () => {
-    const source = new TauriDragDropSource();
-    const file = new File(["first line"], "desktop.log", { lastModified: 1_234 });
+  it("does not map DOM drop events, since Tauri intercepts native drops", async () => {
+    const source = new TauriDragDropSource(async () => [], async () => () => {});
 
-    await expect(source.mapDroppedSources(createDragEvent([file]))).resolves.toEqual([
+    await expect(source.mapDroppedSources()).resolves.toEqual([]);
+  });
+
+  it("maps native dropped file paths into file source refs with paths", async () => {
+    const classify = vi.fn(
+      async (): Promise<readonly ClassifiedDroppedPath[]> => [
+        { path: "/var/log/app.log", kind: "file", name: "app.log" },
+      ],
+    );
+    const source = new TauriDragDropSource(classify, async () => () => {});
+
+    await expect(source.mapNativePaths(["/var/log/app.log"])).resolves.toEqual([
       {
         type: "file",
         source: {
-          id: "desktop-drop-desktop-log-1234",
-          name: "desktop.log",
+          id: "desktop-file-var-log-app-log",
+          name: "app.log",
+          path: "/var/log/app.log",
         },
       },
     ]);
+    expect(classify).toHaveBeenCalledWith(["/var/log/app.log"]);
   });
 
-  it("maps dropped top-level directory files into a directory source ref", async () => {
-    const source = new TauriDragDropSource();
-    const appLog = createDirectoryFile("app.log", "logs/app.log", 1_234, 10);
-    const nestedLog = createDirectoryFile("nested.log", "logs/archive/nested.log", 2_345, 20);
+  it("maps native dropped directory paths into directory source refs with paths", async () => {
+    const source = new TauriDragDropSource(
+      async () => [{ path: "/Users/crosslog/logs", kind: "directory", name: "logs" }],
+      async () => () => {},
+    );
 
-    await expect(source.mapDroppedSources(createDragEvent([appLog, nestedLog]))).resolves.toEqual([
+    await expect(source.mapNativePaths(["/Users/crosslog/logs"])).resolves.toEqual([
       {
         type: "directory",
         source: {
-          id: "desktop-drop-logs-1",
+          id: "desktop-directory-users-crosslog-logs",
           name: "logs",
-          entries: [
-            {
-              kind: "file",
-              id: "desktop-drop-app-log-1234",
-              name: "app.log",
-              createdAt: new Date(1_234),
-              sizeBytes: 10,
-            },
-          ],
+          path: "/Users/crosslog/logs",
         },
       },
     ]);
   });
-});
 
-function createDragEvent(files: readonly File[]): DragEvent {
-  return {
-    dataTransfer: {
-      files,
-    },
-  } as unknown as DragEvent;
-}
+  it("ignores missing paths that no longer resolve on the filesystem", async () => {
+    const source = new TauriDragDropSource(
+      async () => [
+        { path: "/tmp/gone.log", kind: "missing", name: "gone.log" },
+        { path: "/tmp/here.log", kind: "file", name: "here.log" },
+      ],
+      async () => () => {},
+    );
 
-function createDirectoryFile(
-  name: string,
-  relativePath: string,
-  lastModified: number,
-  size: number,
-): File {
-  const file = new File(["x".repeat(size)], name, { lastModified });
-
-  Object.defineProperty(file, "webkitRelativePath", {
-    configurable: true,
-    value: relativePath,
+    await expect(source.mapNativePaths(["/tmp/gone.log", "/tmp/here.log"])).resolves.toEqual([
+      {
+        type: "file",
+        source: {
+          id: "desktop-file-tmp-here-log",
+          name: "here.log",
+          path: "/tmp/here.log",
+        },
+      },
+    ]);
   });
 
-  return file;
-}
+  it("delivers dropped sources to the handler on the native drop phase only", async () => {
+    let emit: ((payload: NativeDragDropPayload) => void) | null = null;
+    const unlisten = vi.fn();
+    const source = new TauriDragDropSource(
+      async (paths) => paths.map((path) => ({ path, kind: "file", name: "dropped.log" })),
+      async (handler) => {
+        emit = handler;
+        return unlisten;
+      },
+    );
+
+    const received: unknown[] = [];
+    const dispose = await source.subscribeToNativeDrops((sources) => received.push(sources));
+
+    emit?.({ type: "enter", paths: ["/ignored.log"] });
+    emit?.({ type: "over", paths: ["/ignored.log"] });
+    expect(received).toHaveLength(0);
+
+    emit?.({ type: "drop", paths: ["/var/log/dropped.log"] });
+    await vi.waitFor(() => expect(received).toHaveLength(1));
+    expect(received[0]).toEqual([
+      {
+        type: "file",
+        source: {
+          id: "desktop-file-var-log-dropped-log",
+          name: "dropped.log",
+          path: "/var/log/dropped.log",
+        },
+      },
+    ]);
+
+    dispose();
+    expect(unlisten).toHaveBeenCalledTimes(1);
+  });
+});

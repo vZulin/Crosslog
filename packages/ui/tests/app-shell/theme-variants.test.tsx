@@ -55,7 +55,7 @@ describe("theme variants", () => {
     expect(getByTestId(redesignedShellTestIds.paneWorkspace).className).toContain("crosslog-shell__workspace");
     expect(getByTestId(redesignedShellTestIds.statusBar).className).toContain("crosslog-shell__status");
 
-    fireEvent.click(getByRole("button", { name: "Open Source" }));
+    fireEvent.click(getByRole("button", { name: "Open File" }));
     await waitFor(() => expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(3));
     expect(getAllByTestId(redesignedShellTestIds.logPane)[0]?.className).toContain("crosslog-log-pane");
   });
@@ -95,7 +95,7 @@ describe("theme variants", () => {
     restoreMatchMedia = installMatchMediaMock(false).restore;
     const { getAllByTestId, getByRole, getByTestId } = render(<AppShell platform={createMockPlatform()} />);
 
-    fireEvent.click(getByRole("button", { name: "Open Source" }));
+    fireEvent.click(getByRole("button", { name: "Open File" }));
     await waitFor(() => expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(3));
 
     fireEvent.click(getByRole("button", { name: "Search in app.log" }));
