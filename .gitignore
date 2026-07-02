@@ -5,7 +5,10 @@ Thumbs.db
 *.swp
 .vscode/
 .idea/
-.codex/skills/macos-design/
+.agents/skills/macos-design/
+
+# Claude Code local settings (machine-specific permissions)
+.claude/settings.local.json
 
 # Local environment
 .env
