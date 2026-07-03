@@ -122,15 +122,15 @@ numbered bugs in `docs/Bugs_2.txt` and is independently implementable and testab
 
 ### Tests for User Story 4 (write/update first, ensure they fail)
 
-- [ ] T024 [P] [US4] Update `packages/ui/tests/app-shell/theme-variants.test.tsx` and `packages/ui/tests/app-shell/shell-presentation.test.tsx` to assert the authoritative dark-theme token values sourced from `docs/mockups/crosslog-macos-redesign-mockups.html` (dark variant) (bug 1)
-- [ ] T025 [P] [US4] Update `packages/ui/tests/app-shell/icon-button-accessibility.test.tsx`, `packages/ui/tests/app-shell/redesigned-shell-final-a11y.test.tsx`, `packages/ui/tests/search/pane-search-popover.test.tsx`, and `packages/ui/tests/sync/redesigned-sync-controls.test.tsx` to assert icon centering within the hover zone (bug 7)
-- [ ] T026 [P] [US4] Extend `apps/desktop/tests/ui/settings-theme.spec.ts` and `apps/desktop/tests/ui/macos/SettingsThemeUITests.swift` with dark-theme color checks (bug 1)
-- [ ] T027 [P] [US4] Extend `apps/web/tests/ui/redesigned-shell-viewports.spec.ts`, `apps/desktop/tests/ui/redesigned-shell-viewports.spec.ts`, and `apps/desktop/tests/ui/macos/RedesignedShellViewportUITests.swift` with icon-centering checks for the covered icons (bug 7)
+- [X] T024 [P] [US4] Update `packages/ui/tests/app-shell/theme-variants.test.tsx` and `packages/ui/tests/app-shell/shell-presentation.test.tsx` to assert the authoritative dark-theme token values sourced from `docs/mockups/crosslog-macos-redesign-mockups.html` (dark variant) (bug 1)
+- [X] T025 [P] [US4] Update `packages/ui/tests/app-shell/icon-button-accessibility.test.tsx`, `packages/ui/tests/app-shell/redesigned-shell-final-a11y.test.tsx`, `packages/ui/tests/search/pane-search-popover.test.tsx`, and `packages/ui/tests/sync/redesigned-sync-controls.test.tsx` to assert icon centering within the hover zone (bug 7)
+- [X] T026 [P] [US4] Extend `apps/desktop/tests/ui/settings-theme.spec.ts` and `apps/desktop/tests/ui/macos/SettingsThemeUITests.swift` with dark-theme color checks (bug 1)
+- [X] T027 [P] [US4] Extend `apps/web/tests/ui/redesigned-shell-viewports.spec.ts`, `apps/desktop/tests/ui/redesigned-shell-viewports.spec.ts`, and `apps/desktop/tests/ui/macos/RedesignedShellViewportUITests.swift` with icon-centering checks for the covered icons (bug 7)
 
 ### Implementation for User Story 4
 
-- [ ] T028 [US4] Correct the `[data-theme="dark"]` token values in `packages/ui/src/app-shell/activity-rail-theme.css` to the authoritative values in `docs/mockups/crosslog-macos-redesign-mockups.html` ("Screen / Draft Layout - Activity Rail", dark variant `data-theme="dark"`); `specs/002-redesign-activity-rail/figma-audit.md` and `specs/003-macos-ui-design-alignment/contracts/figma-design-deltas.md` are secondary references only; leave `:root` light values and `packages/ui/src/app-shell/shellPresentation.ts` unchanged (bug 1, FR-016, FR-017)
-- [ ] T029 [US4] Center icons in `packages/ui/src/app-shell/activity-rail-theme.css` for `.crosslog-icon-button`, `.crosslog-activity-rail`, `.crosslog-sync-toggle`, `.crosslog-pane-header__drag-handle`, and the search-popover arrow controls, aligning icon `viewBox`/box sizing in `packages/ui/src/app-shell/icons.tsx` where the SVG is off-center (bug 7, FR-018)
+- [X] T028 [US4] Correct the `[data-theme="dark"]` token values in `packages/ui/src/app-shell/activity-rail-theme.css` to the authoritative values in `docs/mockups/crosslog-macos-redesign-mockups.html` ("Screen / Draft Layout - Activity Rail", dark variant `data-theme="dark"`); `specs/002-redesign-activity-rail/figma-audit.md` and `specs/003-macos-ui-design-alignment/contracts/figma-design-deltas.md` are secondary references only; leave `:root` light values and `packages/ui/src/app-shell/shellPresentation.ts` unchanged (bug 1, FR-016, FR-017)
+- [X] T029 [US4] Center icons in `packages/ui/src/app-shell/activity-rail-theme.css` for `.crosslog-icon-button`, `.crosslog-activity-rail`, `.crosslog-sync-toggle`, `.crosslog-pane-header__drag-handle`, and the search-popover arrow controls, aligning icon `viewBox`/box sizing in `packages/ui/src/app-shell/icons.tsx` where the SVG is off-center (bug 7, FR-018)
 
 **Checkpoint**: Dark theme matches mockups; all covered icons are centered.
 

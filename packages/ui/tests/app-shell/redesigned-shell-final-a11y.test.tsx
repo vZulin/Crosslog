@@ -126,6 +126,12 @@ describe("final redesigned shell accessibility and no-overlap contracts", () => 
       /\.crosslog-pane-header__actions\s*\{[^}]*position:\s*absolute;[^}]*inset-block-end:\s*7px;[^}]*justify-content:\s*center;[^}]*gap:\s*4px;/s,
     );
     expect(themeCss).toMatch(
+      /\.crosslog-pane-header__drag-handle\s*\{[^}]*inline-size:\s*25px;[^}]*block-size:\s*25px;[^}]*box-sizing:\s*border-box;[^}]*display:\s*inline-grid;[^}]*place-items:\s*center;[^}]*padding:\s*0;/s,
+    );
+    expect(themeCss).toMatch(
+      /\.crosslog-pane-header__close\s*\{[^}]*inline-size:\s*25px;[^}]*block-size:\s*25px;[^}]*box-sizing:\s*border-box;[^}]*display:\s*inline-grid;[^}]*place-items:\s*center;[^}]*padding:\s*0;/s,
+    );
+    expect(themeCss).toMatch(
       /\.crosslog-pane-search-popover\s*\{[^}]*inset-block-start:\s*var\(--crosslog-pane-header-height\);/s,
     );
     expect(themeCss).toMatch(

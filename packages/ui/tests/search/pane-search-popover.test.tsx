@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import React from "react";
 import { fireEvent, render, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
@@ -126,6 +127,14 @@ describe("redesigned pane search popover", () => {
     expect(searchButton.getAttribute("aria-expanded")).toBe("true");
     expect(searchButton.getAttribute("aria-haspopup")).toBe("dialog");
     expect(searchButton.textContent?.trim()).toBe("");
+  });
+
+  it("centers previous and next arrows within their hover zones", () => {
+    const themeCss = readFileSync("packages/ui/src/app-shell/activity-rail-theme.css", "utf8");
+
+    expect(themeCss).toMatch(
+      /\.crosslog-pane-search-popover__actions \.crosslog-icon-button\s*\{[^}]*inline-size:\s*25px;[^}]*block-size:\s*25px;[^}]*box-sizing:\s*border-box;[^}]*padding:\s*0;/s,
+    );
   });
 });
 

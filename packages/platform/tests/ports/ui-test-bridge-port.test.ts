@@ -39,6 +39,10 @@ describe("UI test bridge shell state contract", () => {
     expect(formatUiTestShellState(state)).toContain("workspaceWidth=1440");
     expect(formatUiTestShellState(state)).toContain("workspaceContentWidth=1680");
     expect(formatUiTestShellState(state)).toContain("rightEdgeGap=1");
+    expect(formatUiTestShellState(state)).toContain("darkThemeColors=on");
+    expect(formatUiTestShellState(state)).toContain("darkThemeColorMismatches=none");
+    expect(formatUiTestShellState(state)).toContain("iconCentering=off");
+    expect(formatUiTestShellState(state)).toContain("iconCenteringFailures=pane-close");
     expect(formatUiTestShellState(state)).toContain("paneOrder=app.log,service.log");
     expect(formatUiTestShellState(state)).toContain("selectedLine=2");
     expect(formatUiTestShellState(state)).toContain("maxGutterDigits=3");
@@ -96,6 +100,8 @@ describe("UI test bridge shell state contract", () => {
     expect(formatUiTestShellState(state)).toContain("workspaceOverflow=off");
     expect(formatUiTestShellState(state)).toContain("rightEdgeAligned=unknown");
     expect(formatUiTestShellState(state)).toContain("workspaceWidth=unknown");
+    expect(formatUiTestShellState(state)).toContain("darkThemeColors=on");
+    expect(formatUiTestShellState(state)).toContain("iconCentering=off");
   });
 
   it("keeps lifecycle and source simulation actions behind the supported UI test action contract", () => {
@@ -169,6 +175,14 @@ function createShellState(overrides: {
     fileLifecycleSummary: "none",
     obsoleteControlVisibility: overrides.obsoleteControlVisibility,
     workspaceLayout: overrides.workspaceLayout,
+    darkThemeColors: {
+      matchesAuthoritativeMockup: true,
+      mismatchedSurfaces: [],
+    },
+    iconCentering: {
+      allCentered: false,
+      offCenterControls: ["pane-close"],
+    },
     paneNavigation: {
       paneOrder: ["app.log", "service.log"],
       selectedLineNumber: 2,

@@ -67,6 +67,8 @@ describe("Desktop redesigned shell viewport coverage", () => {
         { name: `${windowScenario.name} activity rail`, selector: byTestId(redesignedShellTestIds.activityRail) },
         { name: `${windowScenario.name} status bar`, selector: byTestId(redesignedShellTestIds.statusBar) },
       ]);
+      enqueueDesktopUiTestAction("closeSettings");
+      await waitForUiTestTitleFragment("settingsSurface=closed");
 
       await expectSelectorsDoNotOverlap([
         {
@@ -85,6 +87,28 @@ describe("Desktop redesigned shell viewport coverage", () => {
           name: `${windowScenario.name} pane close`,
           selector: `${byTestId(redesignedShellTestIds.logPane)} ${byTestId(redesignedShellTestIds.paneHeaderClose)}`,
         },
+      ]);
+
+      enqueueDesktopUiTestAction("openActivePaneSearch");
+      await waitForUiTestTitleFragment("search=open");
+      await expectSelectorsHaveCenteredIcons([
+        { name: `${windowScenario.name} sync toggle`, selector: '[data-ui-test-action="toggleSynchronization"]' },
+        { name: `${windowScenario.name} add pane`, selector: byTestId(redesignedShellTestIds.topbarAddPane) },
+        {
+          name: `${windowScenario.name} activity rail search`,
+          selector: `${byTestId(redesignedShellTestIds.activityRail)} button[aria-label="Search logs"]`,
+        },
+        {
+          name: `${windowScenario.name} activity rail sources`,
+          selector: `${byTestId(redesignedShellTestIds.activityRail)} button[aria-label="Open sources"]`,
+        },
+        {
+          name: `${windowScenario.name} activity rail settings`,
+          selector: `${byTestId(redesignedShellTestIds.activityRail)} button[aria-label="Settings"]`,
+        },
+        { name: `${windowScenario.name} pane close`, selector: byTestId(redesignedShellTestIds.paneHeaderClose) },
+        { name: `${windowScenario.name} search previous`, selector: byTestId(redesignedShellTestIds.paneSearchPrevious) },
+        { name: `${windowScenario.name} search next`, selector: byTestId(redesignedShellTestIds.paneSearchNext) },
       ]);
     }
   });
@@ -176,6 +200,43 @@ async function getElementRect(selector: string, name: string): Promise<ElementRe
   expect(rect.width).toBeGreaterThan(0);
   expect(rect.height).toBeGreaterThan(0);
   return rect;
+}
+
+async function expectSelectorsHaveCenteredIcons(selectors: readonly NamedSelector[]): Promise<void> {
+  const violations = await browser.execute((namedSelectors) => {
+    const isVisible = (element: Element) => {
+      const htmlElement = element as HTMLElement;
+      const style = getComputedStyle(htmlElement);
+      const rect = htmlElement.getBoundingClientRect();
+
+      return style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0;
+    };
+    const center = (rect: DOMRect) => ({
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+    });
+
+    return namedSelectors.flatMap(({ name, selector }) =>
+      Array.from(document.querySelectorAll<HTMLElement>(selector))
+        .filter(isVisible)
+        .flatMap((control, index) => {
+          const icon = control.querySelector<SVGSVGElement>("svg");
+
+          if (!icon) {
+            return [`${name}[${index}] missing icon`];
+          }
+
+          const controlCenter = center(control.getBoundingClientRect());
+          const iconCenter = center(icon.getBoundingClientRect());
+          const deltaX = Math.abs(iconCenter.x - controlCenter.x);
+          const deltaY = Math.abs(iconCenter.y - controlCenter.y);
+
+          return deltaX <= 1 && deltaY <= 1 ? [] : [`${name}[${index}] off center (${deltaX}, ${deltaY})`];
+        }),
+    );
+  }, selectors);
+
+  expect(violations).toEqual([]);
 }
 
 function intersectionArea(left: ElementRect, right: ElementRect): number {

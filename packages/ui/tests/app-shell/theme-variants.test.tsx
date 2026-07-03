@@ -26,18 +26,18 @@ describe("theme variants", () => {
 
   it("defines independent light and dark design tokens", () => {
     const themeCss = readThemeCss();
+    const mockupCss = readMockupCss();
+    const expectedDarkTokens = mapMockupDarkTokens(
+      readCssCustomProperties(mockupCss, '.variant[data-theme="dark"]'),
+    );
+    const actualDarkTokens = readCssCustomProperties(themeCss, '[data-theme="dark"]');
 
     expect(themeCss).toContain("--crosslog-screen-bg: #ececf1;");
     expect(themeCss).toContain("--crosslog-window-bg: #f5f5f7;");
     expect(themeCss).toContain("--crosslog-pane-bg: #ffffff;");
     expect(themeCss).toContain('--crosslog-shell-bg: var(--crosslog-window-bg);');
     expect(themeCss).toContain('--crosslog-surface: var(--crosslog-pane-bg);');
-    expect(themeCss).toMatch(
-      /\[data-theme="dark"\]\s*\{[^}]*--crosslog-screen-bg:\s*#111214;[^}]*--crosslog-window-bg:\s*#1c1c1e;[^}]*--crosslog-pane-bg:\s*#202124;/s,
-    );
-    expect(themeCss).toMatch(
-      /\[data-theme="dark"\]\s*\{[^}]*--crosslog-warn-bg:\s*rgba\(255,\s*159,\s*10,\s*0\.18\);[^}]*--crosslog-error-text:\s*#ff453a;/s,
-    );
+    expect(pickTokens(actualDarkTokens, Object.keys(expectedDarkTokens))).toEqual(expectedDarkTokens);
   });
 
   it("applies the selected theme to actual shell surfaces", async () => {
@@ -152,6 +152,35 @@ describe("theme variants", () => {
 
 function readThemeCss(): string {
   return readFileSync("packages/ui/src/app-shell/activity-rail-theme.css", "utf8");
+}
+
+function readMockupCss(): string {
+  return readFileSync("docs/mockups/crosslog-macos-redesign-mockups.html", "utf8");
+}
+
+function readCssCustomProperties(css: string, selector: string): Record<string, string> {
+  const selectorPattern = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const blockMatch = new RegExp(`${selectorPattern}\\s*\\{(?<body>[^}]*)\\}`, "s").exec(css);
+  const body = blockMatch?.groups?.body;
+
+  expect(body, `Expected CSS selector '${selector}'`).toBeDefined();
+
+  return Object.fromEntries(
+    [...body!.matchAll(/(?<name>--[\w-]+)\s*:\s*(?<value>[^;]+);/g)].map((match) => [
+      match.groups!.name,
+      match.groups!.value.trim(),
+    ]),
+  );
+}
+
+function mapMockupDarkTokens(mockupTokens: Record<string, string>): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(mockupTokens).map(([name, value]) => [`--crosslog-${name.slice(2)}`, value]),
+  );
+}
+
+function pickTokens(tokens: Record<string, string>, names: readonly string[]): Record<string, string> {
+  return Object.fromEntries(names.map((name) => [name, tokens[name]]));
 }
 
 function createMockPlatform(): CrosslogPlatform {

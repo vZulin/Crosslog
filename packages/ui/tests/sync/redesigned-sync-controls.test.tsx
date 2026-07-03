@@ -43,6 +43,9 @@ describe("redesigned synchronization controls", () => {
     const themeCss = readFileSync("packages/ui/src/app-shell/activity-rail-theme.css", "utf8");
 
     expect(themeCss).toMatch(
+      /\.crosslog-icon-button\s*\{[^}]*box-sizing:\s*border-box;[^}]*place-items:\s*center;[^}]*padding:\s*0;/s,
+    );
+    expect(themeCss).toMatch(
       /\.crosslog-topbar__sync\[data-sync-state="inactive"\]\s+\.crosslog-sync-toggle\s*\{[^}]*background:\s*var\(--crosslog-toolbar-surface\);[^}]*color:\s*var\(--crosslog-muted-text\);/s,
     );
     expect(themeCss).toMatch(

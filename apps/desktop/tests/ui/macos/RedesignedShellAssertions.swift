@@ -190,6 +190,42 @@ enum RedesignedShellAssertions {
         )
     }
 
+    static func assertDarkThemeColorsMatchMockup(
+        in app: XCUIApplication,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        [
+            "darkThemeColors=on",
+            "darkThemeColorMismatches=none",
+        ].forEach { fragment in
+            XCTAssertTrue(
+                waitForUiTestTitleFragment(fragment, in: app, timeout: 5),
+                "Expected dark theme color evidence '\(fragment)'",
+                file: file,
+                line: line
+            )
+        }
+    }
+
+    static func assertIconCentering(
+        in app: XCUIApplication,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        [
+            "iconCentering=on",
+            "iconCenteringFailures=none",
+        ].forEach { fragment in
+            XCTAssertTrue(
+                waitForUiTestTitleFragment(fragment, in: app, timeout: 5),
+                "Expected icon-centering evidence '\(fragment)'",
+                file: file,
+                line: line
+            )
+        }
+    }
+
     static func assertSourceOpeningIdle(
         in app: XCUIApplication,
         file: StaticString = #filePath,

@@ -1,7 +1,9 @@
 import React from "react";
 import type {
   CrosslogPlatform,
+  UiTestDarkThemeColorEvidence,
   UiTestFutureControlState,
+  UiTestIconCenteringEvidence,
   UiTestObsoleteControlVisibility,
   UiTestCopyActionEvidence,
   UiTestPaneNavigationEvidence,
@@ -320,6 +322,8 @@ export function AppShell({
       fileLifecycleSummary: publishedFileLifecycleSummary,
       obsoleteControlVisibility: getPublishedObsoleteControlVisibility(),
       workspaceLayout: getPublishedWorkspaceLayoutMeasurements(),
+      darkThemeColors: getPublishedDarkThemeColorEvidence(effectiveThemeVariant),
+      iconCentering: getPublishedIconCenteringEvidence(),
       paneNavigation: getPublishedPaneNavigationEvidence(panes.map((entry) => entry.pane.title)),
       sourceOpening: sourceOpeningEvidence,
       searchHighlights: getPublishedSearchHighlightEvidence(),
@@ -1250,6 +1254,52 @@ function getPublishedWorkspaceLayoutMeasurements(): UiTestWorkspaceLayoutMeasure
   };
 }
 
+function getPublishedDarkThemeColorEvidence(themeVariant: ThemeVariant): UiTestDarkThemeColorEvidence {
+  if (typeof document === "undefined" || themeVariant !== "dark") {
+    return emptyDarkThemeColorEvidence;
+  }
+
+  const mismatchedSurfaces = darkThemeColorExpectations.flatMap((expectation) => {
+    const element = document.querySelector<HTMLElement>(expectation.selector);
+
+    if (!element) {
+      return [expectation.name];
+    }
+
+    const actualValue = globalThis.getComputedStyle(element)[expectation.property];
+
+    return actualValue === expectation.expectedValue ? [] : [expectation.name];
+  });
+
+  return {
+    matchesAuthoritativeMockup: mismatchedSurfaces.length === 0,
+    mismatchedSurfaces,
+  };
+}
+
+function getPublishedIconCenteringEvidence(): UiTestIconCenteringEvidence {
+  if (typeof document === "undefined") {
+    return emptyIconCenteringEvidence;
+  }
+
+  const offCenterControls = iconCenteringSelectors.flatMap((selector) =>
+    getVisibleElements(selector.selector).flatMap((element, index) => {
+      const icon = element.querySelector<SVGSVGElement>("svg");
+
+      if (!icon) {
+        return [];
+      }
+
+      return isIconCenteredWithinControl(element, icon) ? [] : [`${selector.name}:${index}`];
+    }),
+  );
+
+  return {
+    allCentered: offCenterControls.length === 0,
+    offCenterControls,
+  };
+}
+
 function getPublishedPaneNavigationEvidence(paneOrder: readonly string[]): UiTestPaneNavigationEvidence {
   if (typeof document === "undefined") {
     return emptyPaneNavigationEvidence;
@@ -1307,6 +1357,16 @@ const emptyWorkspaceLayoutMeasurements: UiTestWorkspaceLayoutMeasurements = {
   rightEdgeGapPx: null,
   rightmostPaneAlignedToWorkspace: null,
   horizontalOverflow: false,
+};
+
+const emptyDarkThemeColorEvidence: UiTestDarkThemeColorEvidence = {
+  matchesAuthoritativeMockup: null,
+  mismatchedSurfaces: [],
+};
+
+const emptyIconCenteringEvidence: UiTestIconCenteringEvidence = {
+  allCentered: null,
+  offCenterControls: [],
 };
 
 const emptyPaneNavigationEvidence: UiTestPaneNavigationEvidence = {
@@ -1469,6 +1529,20 @@ function isVisibleElement(element: HTMLElement): boolean {
   return style?.display !== "none" && style?.visibility !== "hidden";
 }
 
+function isIconCenteredWithinControl(control: HTMLElement, icon: SVGSVGElement): boolean {
+  const controlRect = control.getBoundingClientRect();
+  const iconRect = icon.getBoundingClientRect();
+
+  if (controlRect.width <= 0 || controlRect.height <= 0 || iconRect.width <= 0 || iconRect.height <= 0) {
+    return false;
+  }
+
+  const centerDeltaX = Math.abs((iconRect.left + iconRect.width / 2) - (controlRect.left + controlRect.width / 2));
+  const centerDeltaY = Math.abs((iconRect.top + iconRect.height / 2) - (controlRect.top + controlRect.height / 2));
+
+  return centerDeltaX <= iconCenteringTolerancePx && centerDeltaY <= iconCenteringTolerancePx;
+}
+
 function normalizeText(text: string | null): string {
   return (text ?? "").replace(/\s+/g, " ").trim();
 }
@@ -1612,6 +1686,63 @@ const publishedFutureControlState: UiTestFutureControlState = {
   topbarCommandField: "disabled",
   activityRailSettings: "enabled",
 };
+
+const iconCenteringTolerancePx = 1;
+
+const darkThemeColorExpectations = [
+  {
+    name: "shell",
+    selector: `[data-testid="${redesignedShellTestIds.crosslogShell}"]`,
+    property: "backgroundColor",
+    expectedValue: "rgb(28, 28, 30)",
+  },
+  {
+    name: "topbar",
+    selector: `[data-testid="${redesignedShellTestIds.topbar}"]`,
+    property: "backgroundColor",
+    expectedValue: "rgb(37, 38, 42)",
+  },
+  {
+    name: "rail",
+    selector: `[data-testid="${redesignedShellTestIds.activityRail}"]`,
+    property: "backgroundColor",
+    expectedValue: "rgb(31, 32, 36)",
+  },
+  {
+    name: "workspace",
+    selector: `[data-testid="${redesignedShellTestIds.paneWorkspace}"]`,
+    property: "backgroundColor",
+    expectedValue: "rgb(32, 33, 36)",
+  },
+  {
+    name: "status",
+    selector: `[data-testid="${redesignedShellTestIds.statusBar}"]`,
+    property: "backgroundColor",
+    expectedValue: "rgb(31, 32, 36)",
+  },
+  {
+    name: "command",
+    selector: ".crosslog-command-field",
+    property: "backgroundColor",
+    expectedValue: "rgb(32, 33, 36)",
+  },
+] as const satisfies readonly {
+  readonly name: string;
+  readonly selector: string;
+  readonly property: "backgroundColor";
+  readonly expectedValue: string;
+}[];
+
+const iconCenteringSelectors = [
+  { name: "sync", selector: '[data-ui-test-action="toggleSynchronization"]' },
+  { name: "topbar-add-pane", selector: `[data-testid="${redesignedShellTestIds.topbarAddPane}"]` },
+  { name: "topbar-add-file", selector: `[data-testid="${redesignedShellTestIds.topbarAddFile}"]` },
+  { name: "topbar-add-directory", selector: `[data-testid="${redesignedShellTestIds.topbarAddDirectory}"]` },
+  { name: "activity-rail", selector: `[data-testid="${redesignedShellTestIds.activityRail}"] button` },
+  { name: "pane-close", selector: `[data-testid="${redesignedShellTestIds.paneHeaderClose}"]` },
+  { name: "search-previous", selector: `[data-testid="${redesignedShellTestIds.paneSearchPrevious}"]` },
+  { name: "search-next", selector: `[data-testid="${redesignedShellTestIds.paneSearchNext}"]` },
+] as const;
 
 function getSourceKind(sources: readonly DragDropSource[]): UiTestSourceKind {
   const hasFile = sources.some((source) => source.type === "file");

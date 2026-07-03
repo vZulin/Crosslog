@@ -28,6 +28,7 @@ final class SettingsThemeUITests: CrosslogUITests {
         waitForUiTestTitle("sync=off", in: app)
         waitForUiTestTitle("syncVisual=inactive", in: app)
         waitForUiTestTitle("syncPressed=off", in: app)
+        RedesignedShellAssertions.assertDarkThemeColorsMatchMockup(in: app)
 
         performUiTestAction(.closeSettings)
         waitForUiTestTitle("settingsSurface=closed", in: app)

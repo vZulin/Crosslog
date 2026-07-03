@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   defaultThemePreference,
@@ -91,5 +92,16 @@ describe("shell presentation helpers", () => {
     expect(resolveSystemThemeVariant(true)).toBe("dark");
     expect(resolveSystemThemeVariant(false)).toBe("light");
     expect(resolveSystemThemeVariant(null)).toBe("light");
+  });
+
+  it("keeps dark-theme color values in the stylesheet instead of presentation resolution", () => {
+    const presentationSource = readFileSync("packages/ui/src/app-shell/shellPresentation.ts", "utf8");
+    const themeCss = readFileSync("packages/ui/src/app-shell/activity-rail-theme.css", "utf8");
+
+    expect(presentationSource).not.toContain("#111214");
+    expect(themeCss).toContain('[data-theme="dark"]');
+    expect(themeCss).toContain("--crosslog-screen-bg: #111214;");
+    expect(themeCss).toContain("--crosslog-window-bg: #1c1c1e;");
+    expect(themeCss).toContain("--crosslog-pane-bg: #202124;");
   });
 });

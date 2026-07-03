@@ -37,8 +37,42 @@ describe("Desktop settings and theme workflow", () => {
     await waitForUiTestTitleFragment("sync=off");
     await waitForUiTestTitleFragment("syncVisual=inactive");
     await waitForUiTestTitleFragment("syncPressed=off");
+    await waitForUiTestTitleFragment("darkThemeColors=on");
+    await expectDesktopDarkThemeColorsMatchMockup();
 
     enqueueDesktopUiTestAction("closeSettings");
     await waitForUiTestTitleFragment("settingsSurface=closed");
   });
 });
+
+async function expectDesktopDarkThemeColorsMatchMockup(): Promise<void> {
+  const colors = await browser.execute(() => {
+    const readBackground = (selector: string) => {
+      const element = document.querySelector(selector);
+
+      if (!element) {
+        throw new Error(`Missing selector: ${selector}`);
+      }
+
+      return getComputedStyle(element).backgroundColor;
+    };
+
+    return {
+      shell: readBackground('[data-testid="crosslog-shell"]'),
+      topbar: readBackground('[data-testid="topbar"]'),
+      rail: readBackground('[data-testid="activity-rail"]'),
+      workspace: readBackground('[data-testid="pane-workspace"]'),
+      status: readBackground('[data-testid="status-bar"]'),
+      commandField: readBackground(".crosslog-command-field"),
+    };
+  });
+
+  expect(colors).toEqual({
+    shell: "rgb(28, 28, 30)",
+    topbar: "rgb(37, 38, 42)",
+    rail: "rgb(31, 32, 36)",
+    workspace: "rgb(32, 33, 36)",
+    status: "rgb(31, 32, 36)",
+    commandField: "rgb(32, 33, 36)",
+  });
+}

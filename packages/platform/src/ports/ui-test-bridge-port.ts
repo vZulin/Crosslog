@@ -27,6 +27,16 @@ export interface UiTestWorkspaceLayoutMeasurements {
   readonly horizontalOverflow: boolean;
 }
 
+export interface UiTestDarkThemeColorEvidence {
+  readonly matchesAuthoritativeMockup: boolean | null;
+  readonly mismatchedSurfaces: readonly string[];
+}
+
+export interface UiTestIconCenteringEvidence {
+  readonly allCentered: boolean | null;
+  readonly offCenterControls: readonly string[];
+}
+
 export interface UiTestPaneNavigationEvidence {
   readonly paneOrder: readonly string[];
   readonly selectedLineNumber: number | null;
@@ -116,6 +126,8 @@ export interface UiTestShellState {
   readonly fileLifecycleSummary: string;
   readonly obsoleteControlVisibility: UiTestObsoleteControlVisibility;
   readonly workspaceLayout: UiTestWorkspaceLayoutMeasurements;
+  readonly darkThemeColors: UiTestDarkThemeColorEvidence;
+  readonly iconCentering: UiTestIconCenteringEvidence;
   readonly paneNavigation: UiTestPaneNavigationEvidence;
   readonly searchHighlights: UiTestSearchHighlightEvidence;
   readonly copyAction: UiTestCopyActionEvidence;
@@ -214,6 +226,14 @@ export function formatUiTestShellState(state: UiTestShellState): string {
     `workspaceRight=${formatNullableNumber(state.workspaceLayout.workspaceRightPx)}`,
     `rightmostPaneRight=${formatNullableNumber(state.workspaceLayout.rightmostPaneRightPx)}`,
     `rightEdgeGap=${formatNullableNumber(state.workspaceLayout.rightEdgeGapPx)}`,
+    `darkThemeColors=${formatNullableBoolean(state.darkThemeColors.matchesAuthoritativeMockup)}`,
+    `darkThemeColorMismatches=${
+      state.darkThemeColors.mismatchedSurfaces.length > 0 ? state.darkThemeColors.mismatchedSurfaces.join(",") : "none"
+    }`,
+    `iconCentering=${formatNullableBoolean(state.iconCentering.allCentered)}`,
+    `iconCenteringFailures=${
+      state.iconCentering.offCenterControls.length > 0 ? state.iconCentering.offCenterControls.join(",") : "none"
+    }`,
     `paneOrder=${state.paneNavigation.paneOrder.length > 0 ? state.paneNavigation.paneOrder.join(",") : "none"}`,
     `selectedLine=${formatNullableNumber(state.paneNavigation.selectedLineNumber)}`,
     `maxGutterDigits=${formatNullableNumber(state.paneNavigation.maxGutterDigitCount)}`,

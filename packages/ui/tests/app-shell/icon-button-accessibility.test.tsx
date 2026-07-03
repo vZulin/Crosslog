@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import React from "react";
 import { fireEvent, render } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
@@ -42,5 +43,16 @@ describe("IconButton", () => {
     expect(button.hasAttribute("disabled")).toBe(true);
     expect(button.getAttribute("aria-disabled")).toBe("true");
     expect(onClick).not.toHaveBeenCalled();
+  });
+
+  it("centers the icon inside the full hover zone", () => {
+    const themeCss = readFileSync("packages/ui/src/app-shell/activity-rail-theme.css", "utf8");
+
+    expect(themeCss).toMatch(
+      /\.crosslog-icon-button\s*\{[^}]*inline-size:\s*27px;[^}]*block-size:\s*27px;[^}]*box-sizing:\s*border-box;[^}]*display:\s*inline-grid;[^}]*place-items:\s*center;[^}]*padding:\s*0;/s,
+    );
+    expect(themeCss).toMatch(
+      /\.crosslog-icon-button svg\s*\{[^}]*display:\s*block;[^}]*inline-size:\s*18px;[^}]*block-size:\s*18px;/s,
+    );
   });
 });

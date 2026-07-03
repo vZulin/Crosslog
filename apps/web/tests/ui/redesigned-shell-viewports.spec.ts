@@ -60,6 +60,8 @@ test.describe("redesigned shell viewport coverage", () => {
         { name: "activity rail", locator: shell.activityRail },
         { name: "status bar", locator: shell.statusBar },
       ]);
+      await page.getByRole("button", { name: "Close Settings" }).click();
+      await expect(shell.settingsSurface).toBeHidden();
 
       const firstPane = shell.logPanes.first();
       await expectPairwiseNoOverlap([
@@ -69,6 +71,20 @@ test.describe("redesigned shell viewport coverage", () => {
         { name: "close", locator: firstPane.getByTestId(redesignedShellTestIds.paneHeaderClose) },
       ]);
       await expectPaneHeaderIdentityBandsStayAboveActions(shell.logPanes);
+
+      await firstPane.getByTestId(redesignedShellTestIds.paneHeaderSearch).click();
+      await expect(shell.paneSearchPopover).toBeVisible();
+      await expectIconsCenteredWithinHoverZones([
+        { name: "sync toggle", locator: shell.topbarSync.getByRole("button", { name: "Toggle time synchronization" }) },
+        { name: "add file", locator: shell.topbarAddFile },
+        { name: "add directory", locator: shell.topbarAddDirectory },
+        { name: "activity rail search", locator: shell.activityRail.getByRole("button", { name: "Search logs" }) },
+        { name: "activity rail sources", locator: shell.activityRail.getByRole("button", { name: "Open sources" }) },
+        { name: "activity rail settings", locator: shell.activityRail.getByRole("button", { name: "Settings" }) },
+        { name: "pane close", locator: firstPane.getByTestId(redesignedShellTestIds.paneHeaderClose) },
+        { name: "search previous", locator: shell.paneSearchPopover.getByTestId(redesignedShellTestIds.paneSearchPrevious) },
+        { name: "search next", locator: shell.paneSearchPopover.getByTestId(redesignedShellTestIds.paneSearchNext) },
+      ]);
     });
   }
 
@@ -203,6 +219,18 @@ async function visibleBox(locator: Locator, name: string): Promise<ElementBox> {
   return box;
 }
 
+async function expectIconsCenteredWithinHoverZones(locators: readonly NamedLocator[]): Promise<void> {
+  for (const { name, locator } of locators) {
+    const controlBox = await visibleBox(locator, `${name} hover zone`);
+    const iconBox = await visibleBox(locator.locator("svg").first(), `${name} icon`);
+    const centerDeltaX = Math.abs(centerX(iconBox) - centerX(controlBox));
+    const centerDeltaY = Math.abs(centerY(iconBox) - centerY(controlBox));
+
+    expect(centerDeltaX, `${name} icon horizontal centering`).toBeLessThanOrEqual(1);
+    expect(centerDeltaY, `${name} icon vertical centering`).toBeLessThanOrEqual(1);
+  }
+}
+
 async function expectPaneHeaderIdentityBandsStayAboveActions(logPanes: Locator): Promise<void> {
   const violations = await logPanes.evaluateAll((panes) => {
     const maxAllowedOverlapArea = 1;
@@ -253,4 +281,12 @@ function intersectionArea(left: ElementBox, right: ElementBox): number {
   const height = Math.max(0, Math.min(left.y + left.height, right.y + right.height) - Math.max(left.y, right.y));
 
   return width * height;
+}
+
+function centerX(box: ElementBox): number {
+  return box.x + box.width / 2;
+}
+
+function centerY(box: ElementBox): number {
+  return box.y + box.height / 2;
 }

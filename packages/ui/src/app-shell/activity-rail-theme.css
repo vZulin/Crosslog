@@ -64,7 +64,7 @@
   --crosslog-error-bg: rgba(255, 69, 58, 0.2);
   --crosslog-error-text: #ff453a;
   --crosslog-tag-bg: #2c2d31;
-  --crosslog-window-shadow: 0 15.805px 47.414px rgb(0 0 0 / 38%);
+  --crosslog-window-shadow: 0 15.805px 47.414px rgba(0, 0, 0, 0.38);
   --crosslog-window-border: 0.988px solid var(--crosslog-border);
   --crosslog-shell-bg: var(--crosslog-window-bg);
   --crosslog-surface: var(--crosslog-pane-bg);
@@ -284,12 +284,21 @@ body {
 .crosslog-icon-button {
   inline-size: 27px;
   block-size: 27px;
+  box-sizing: border-box;
   display: inline-grid;
   place-items: center;
+  padding: 0;
   border: 1px solid var(--crosslog-border);
   border-radius: var(--crosslog-control-radius);
   background: var(--crosslog-toolbar-surface);
   color: var(--crosslog-muted-text);
+  line-height: 0;
+}
+
+.crosslog-icon-button svg {
+  display: block;
+  inline-size: 18px;
+  block-size: 18px;
 }
 
 .crosslog-icon-button:not(:disabled) {
@@ -512,6 +521,7 @@ body {
   box-sizing: border-box;
   display: inline-grid;
   place-items: center;
+  padding: 0;
   border: 1px solid transparent;
   border-radius: var(--crosslog-control-radius);
   background: var(--crosslog-toolbar-surface);
@@ -537,6 +547,7 @@ body {
 }
 
 .crosslog-pane-header__drag-handle svg {
+  display: block;
   inline-size: 14px;
   block-size: 14px;
 }
@@ -779,6 +790,7 @@ body {
   box-sizing: border-box;
   display: inline-grid;
   place-items: center;
+  padding: 0;
   border: 1px solid transparent;
   border-radius: var(--crosslog-control-radius);
   background: var(--crosslog-toolbar-surface);
@@ -800,6 +812,7 @@ body {
 }
 
 .crosslog-pane-header__close svg {
+  display: block;
   inline-size: 14px;
   block-size: 14px;
 }
@@ -1204,6 +1217,8 @@ body {
 .crosslog-pane-search-popover__actions .crosslog-icon-button {
   inline-size: 25px;
   block-size: 25px;
+  box-sizing: border-box;
+  padding: 0;
 }
 
 .crosslog-pane-search-popover__toggle {

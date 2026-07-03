@@ -31,6 +31,7 @@ final class RedesignedShellViewportUITests: CrosslogUITests {
         performUiTestAction(.openActivePaneSearch)
         waitForUiTestTitle("search=open", in: app)
         waitForUiTestTitle(RedesignedShellAssertions.paneSearchPopover, in: app)
+        RedesignedShellAssertions.assertIconCentering(in: app)
 
         performUiTestAction(.openActivePaneTimeOffset)
         waitForUiTestTitle("timeOffset=open", in: app)
