@@ -9,4 +9,3 @@ pub enum CrosslogEvent {
     WatcherUnsupported,
     WatcherError,
 }
-

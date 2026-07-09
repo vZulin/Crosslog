@@ -3,6 +3,7 @@ import XCTest
 
 enum CrosslogUITestAction: String {
     case openSampleLogs
+    case openLargeLog
     case copyFirstPane
     case toggleSynchronization
     case openSettings
@@ -50,6 +51,9 @@ class CrosslogUITests: XCTestCase {
         app.launchEnvironment["CROSSLOG_UI_TEST"] = "1"
         app.launchEnvironment["CROSSLOG_UI_TEST_ACTIONS_PATH"] = actionsURL.path
         app.launchEnvironment["CROSSLOG_UI_TEST_PERSIST_SESSION"] = "1"
+        if let largeLogPath = largeLogFixturePath() {
+            app.launchEnvironment["CROSSLOG_UI_TEST_LARGE_LOG_PATH"] = largeLogPath
+        }
         app.launch()
 
         XCTAssertTrue(
@@ -99,6 +103,26 @@ class CrosslogUITests: XCTestCase {
         }
 
         waitForUiTestActionQueueToDrain(action, file: file, line: line)
+    }
+
+    func enqueueUiTestActions(
+        _ actions: [CrosslogUITestAction],
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        guard let actionsURL else {
+            XCTFail("UI test actions file is not initialized", file: file, line: line)
+            return
+        }
+
+        do {
+            let handle = try FileHandle(forWritingTo: actionsURL)
+            try handle.seekToEnd()
+            try handle.write(contentsOf: Data(actions.map(\.rawValue).joined(separator: "\n").appending("\n").utf8))
+            try handle.close()
+        } catch {
+            XCTFail("Failed to enqueue UI test actions: \(error)", file: file, line: line)
+        }
     }
 
     private func waitForUiTestActionQueueToDrain(
@@ -188,6 +212,29 @@ class CrosslogUITests: XCTestCase {
         FileManager.default.createFile(atPath: url.path, contents: Data(), attributes: nil)
         actionsURL = url
         return url
+    }
+
+    private func largeLogFixturePath() -> String? {
+        if let configuredPath = ProcessInfo.processInfo.environment["CROSSLOG_UI_TEST_LARGE_LOG_PATH"],
+           !configuredPath.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return configuredPath
+        }
+
+        let sourceURL = URL(fileURLWithPath: #filePath)
+        let repoRootURL = sourceURL
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let fixtureURL = repoRootURL
+            .appendingPathComponent("tests")
+            .appendingPathComponent("fixtures")
+            .appendingPathComponent("logs")
+            .appendingPathComponent("idea.3.log")
+
+        return FileManager.default.fileExists(atPath: fixtureURL.path) ? fixtureURL.path : nil
     }
 
     private func removeActionsFile() {

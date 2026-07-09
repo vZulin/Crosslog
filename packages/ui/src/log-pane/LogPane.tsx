@@ -3,7 +3,7 @@ import type { DirectorySource, LogPane as LogPaneModel } from "@crosslog/core";
 import { HorizontalLogScroller } from "./HorizontalLogScroller";
 import { LogTextSelection, type ClipboardWriter } from "./LogTextSelection";
 import { PaneHeader } from "./PaneHeader";
-import { VirtualLogViewport } from "./VirtualLogViewport";
+import { VirtualLogViewport, type LogViewportNavigationKind } from "./VirtualLogViewport";
 import { DeletedFileStatus } from "./DeletedFileStatus";
 import { TimeOffsetPopover } from "../sync/TimeOffsetPopover";
 import { PaneSearchPopover } from "../search/PaneSearchPopover";
@@ -19,13 +19,20 @@ export interface LogPaneProps {
   readonly renderedWidth?: number;
   readonly horizontalContentWidth?: number;
   readonly synchronizationTargetLineNumber?: number | null;
+  readonly synchronizationTargetVisualLineOffset?: number | null;
   readonly onClose: (paneId: string) => void;
   readonly onActivate: (paneId: string) => void;
   readonly onReorderDragStart?: (paneId: string, event: React.PointerEvent<HTMLElement>) => void;
   readonly reorderDragging?: boolean;
   readonly onHorizontalScroll: (paneId: string, scrollLeft: number) => void;
   readonly onNavigateDirectory?: (paneId: string, direction: "previous" | "next") => void;
-  readonly onTimeAnchorChange?: (paneId: string, lineNumber: number, timestamp: Date | null) => void;
+  readonly onTimeAnchorChange?: (
+    paneId: string,
+    lineNumber: number,
+    timestamp: Date | null,
+    visualLineOffset: number,
+    navigationKind: LogViewportNavigationKind,
+  ) => void;
   readonly onTimeOffsetChange?: (paneId: string, offset: LogPaneModel["timeOffset"]) => void;
   readonly onSearchQueryChange?: (paneId: string, query: string) => void;
   readonly onSearchRegexModeChange?: (paneId: string, enabled: boolean) => void;
@@ -51,6 +58,7 @@ export function LogPane({
   renderedWidth,
   horizontalContentWidth,
   synchronizationTargetLineNumber,
+  synchronizationTargetVisualLineOffset,
   onClose,
   onActivate,
   onReorderDragStart,
@@ -171,7 +179,10 @@ export function LogPane({
             activeSearchMatchLineNumber={searchHighlightsVisible ? activeSearchMatch?.lineNumber ?? null : null}
             maxVisibleLines={400}
             synchronizationTargetLineNumber={synchronizationTargetLineNumber}
-            onTimeAnchorChange={(lineNumber, timestamp) => onTimeAnchorChange?.(pane.id, lineNumber, timestamp)}
+            synchronizationTargetVisualLineOffset={synchronizationTargetVisualLineOffset}
+            onTimeAnchorChange={(lineNumber, timestamp, visualLineOffset, navigationKind) =>
+              onTimeAnchorChange?.(pane.id, lineNumber, timestamp, visualLineOffset, navigationKind)
+            }
           />
         </HorizontalLogScroller>
       </LogTextSelection>

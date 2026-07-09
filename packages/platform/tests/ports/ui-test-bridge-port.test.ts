@@ -107,6 +107,7 @@ describe("UI test bridge shell state contract", () => {
   it("keeps lifecycle and source simulation actions behind the supported UI test action contract", () => {
     expect(uiTestActions).toEqual([
       "openSampleLogs",
+      "openLargeLog",
       "copyFirstPane",
       "toggleSynchronization",
       "openSettings",
@@ -189,6 +190,8 @@ function createShellState(overrides: {
       maxGutterDigitCount: 3,
       lastNavigation: "keyboard",
       syncTargetLineNumber: 2,
+      renderedRowCount: 120,
+      visibleRowCount: 34,
     },
     searchHighlights: {
       visible: true,

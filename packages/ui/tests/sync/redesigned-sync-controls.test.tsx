@@ -77,7 +77,7 @@ describe("redesigned synchronization controls", () => {
   });
 
   it("keeps untimed-pane exclusion messaging in the redesigned status region", async () => {
-    useSynchronizationStore.getState().setPlanResult([], ["pane-untimed-a", "pane-untimed-b"]);
+    useSynchronizationStore.getState().setPlanResult([], ["pane-untimed-a", "pane-untimed-b"], null);
 
     const { getByTestId } = render(<AppShell platform={createMockPlatform()} />);
 

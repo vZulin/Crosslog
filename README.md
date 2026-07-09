@@ -79,6 +79,21 @@ Run the Desktop app:
 corepack pnpm dev:desktop
 ```
 
+## Continuous Delivery Builds
+
+Successful CI/CD runs publish downloadable build artifacts in the
+[CI/CD workflow](https://github.com/vZulin/Crosslog/actions/workflows/ci.yml).
+Open the latest successful run and use its Artifacts section or the run summary
+links.
+
+- `crosslog-web`: built Web app from `apps/web/dist`.
+- `crosslog-desktop-linux`: Linux Desktop release binary and any generated Tauri bundles.
+- `crosslog-desktop-macos`: macOS release binary, `Crosslog.app` bundle, and generated DMG.
+- `crosslog-desktop-windows`: Windows Desktop release binary and any generated Tauri bundles.
+
+macOS CD artifacts are unsigned unless signing and notarization credentials are
+added to the workflow.
+
 ## Common Commands
 
 ```bash

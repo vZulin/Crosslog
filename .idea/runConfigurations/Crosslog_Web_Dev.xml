@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Crosslog Web Dev" type="js.build_tools.npm" factoryName="npm">
+    <package-json value="$PROJECT_DIR$/package.json" />
+    <command value="run-script" />
+    <scripts>
+      <script value="dev:web" />
+    </scripts>
+    <node-interpreter value="project" />
+    <method v="2" />
+  </configuration>
+</component>

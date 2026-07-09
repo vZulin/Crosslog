@@ -57,7 +57,7 @@ describe("synchronization controls", () => {
 
     fireEvent.click(getByText("2026-06-16T09:00:01.000Z second").closest("li")!);
 
-    expect(onTimeAnchorChange).toHaveBeenCalledWith(2, new Date("2026-06-16T09:00:01.000Z"));
+    expect(onTimeAnchorChange).toHaveBeenCalledWith(2, new Date("2026-06-16T09:00:01.000Z"), 0, "click");
     expect(getByText("2026-06-16T09:00:01.000Z second").closest("li")?.getAttribute("data-sync-target")).toBe(
       "true",
     );

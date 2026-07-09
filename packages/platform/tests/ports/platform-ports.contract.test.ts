@@ -16,9 +16,10 @@ describe("platform port contracts", () => {
       "capability",
       "sourcePicker",
       "dragDropSource",
+      "diagnosticLogger",
     ] as const;
 
-    expect(ports).toHaveLength(7);
+    expect(ports).toHaveLength(8);
   });
 
   it("exposes source picking through the shared platform contract", async () => {

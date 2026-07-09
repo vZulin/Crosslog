@@ -1260,16 +1260,26 @@ body {
   flex: 1 1 auto;
   min-block-size: 0;
   overflow-y: hidden;
+  position: relative;
   /* A flex column carries a definite height down to the log viewport so it can
      become the vertical scroll container (bug 5). */
   display: flex;
   flex-direction: column;
 }
 
-/* HorizontalLogScroller's inner content wrapper (sets horizontal min-width). */
-.crosslog-log-scroller > div {
+.crosslog-log-scroller__content {
   flex: 1 1 auto;
   min-block-size: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.crosslog-log-scroller__viewport-frame {
+  position: sticky;
+  inset-inline-start: 0;
+  flex: 1 1 auto;
+  min-block-size: 0;
+  max-inline-size: 100%;
   display: flex;
   flex-direction: column;
 }
@@ -1277,15 +1287,24 @@ body {
 .crosslog-log-viewport {
   --crosslog-line-number-digits: 2;
   margin: 0;
-  padding: 8px 12px;
+  padding: 0;
   font-family: var(--crosslog-font-log);
   font-size: 12px;
   /* Fill the (now definite) height of the scroller and scroll internally so the
      rendered text moves with the scroll position (bug 5). */
   flex: 1 1 auto;
   min-block-size: 0;
+  overflow-x: hidden;
   overflow-y: auto;
+  overflow-anchor: none;
+  position: relative;
   box-sizing: border-box;
+  list-style: none;
+}
+
+.crosslog-log-viewport__spacer {
+  pointer-events: none;
+  visibility: hidden;
 }
 
 .crosslog-log-viewport:focus-visible {
@@ -1294,9 +1313,14 @@ body {
 }
 
 .crosslog-log-viewport__row {
+  position: absolute;
+  inset-inline-start: 12px;
+  inline-size: calc(100% - 24px);
   display: grid;
   grid-template-columns: calc(var(--crosslog-line-number-digits) * 1ch + 12px) minmax(0, 1fr);
   gap: 10px;
+  block-size: 18px;
+  line-height: 18px;
   min-width: max-content;
   color: var(--crosslog-text);
 }

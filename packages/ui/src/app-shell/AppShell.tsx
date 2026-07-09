@@ -1,6 +1,7 @@
 import React from "react";
 import type {
   CrosslogPlatform,
+  DiagnosticLogFieldValue,
   UiTestDarkThemeColorEvidence,
   UiTestFutureControlState,
   UiTestIconCenteringEvidence,
@@ -14,7 +15,13 @@ import type {
   UiTestTimeOffsetValidationEvidence,
   UiTestWorkspaceLayoutMeasurements,
 } from "@crosslog/platform";
-import type { DirectorySourceRef, DragDropSource, FileSourceRef, UiTestAction } from "@crosslog/platform";
+import type {
+  DirectorySourceRef,
+  DragDropSource,
+  FileSourceRef,
+  FileWatcherEvent,
+  UiTestAction,
+} from "@crosslog/platform";
 import {
   createLogPane,
   createLogPaneState,
@@ -34,9 +41,12 @@ import {
   getCurrentDirectoryFile,
   logPaneReducer,
   restoreLogPaneStateFromSession,
+  timeOffsetToMilliseconds,
   validateTimeOffsetDraft,
+  type DirectorySource,
   type DirectoryFileEntry,
   type FileSource,
+  type LogPane as LogPaneModel,
   type Session,
   type SessionDirectorySource,
   type SessionFileSource,
@@ -71,6 +81,13 @@ import {
   useFileLifecycleEvents,
   type FileSourceMap,
 } from "../log-pane/useFileLifecycleEvents";
+import type { LogViewportNavigationKind } from "../log-pane/VirtualLogViewport";
+import {
+  compactDiagnosticFields,
+  countSourceLines,
+  logDiagnosticEvent,
+  serializeErrorForDiagnosticLog,
+} from "../diagnostics/diagnosticLogging";
 
 export interface AppShellProps {
   readonly platform: CrosslogPlatform;
@@ -100,6 +117,11 @@ export function AppShell({
       : resolvedProductThemeVariant;
   const [state, dispatch] = React.useReducer(logPaneReducer, createLogPaneState());
   const [fileSources, setFileSources] = React.useState<FileSourceMap>(() => createInitialFileSources(platform.kind));
+  const paneCountRef = React.useRef(state.panes.length);
+  const activePaneIdRef = React.useRef(state.activePaneId);
+  const nextPaneNumberRef = React.useRef(state.nextPaneNumber);
+  const lastSynchronizationNavigationLogAtRef = React.useRef(Number.NEGATIVE_INFINITY);
+  const synchronizationNavigationLogTimeoutRef = React.useRef<number | null>(null);
   const [uiTestEnabled, setUiTestEnabled] = React.useState(false);
   const [uiTestCopiedPaneTitle, setUiTestCopiedPaneTitle] = React.useState<string | null>(null);
   const [sourceOpeningEvidence, setSourceOpeningEvidence] = React.useState<UiTestSourceOpeningEvidence>(
@@ -113,6 +135,8 @@ export function AppShell({
   const settingsButtonRef = React.useRef<HTMLButtonElement>(null);
   const liveAppendCounter = React.useRef(1);
   const openDroppedSourcesRef = React.useRef<(sources: readonly DragDropSource[]) => void>(() => {});
+  const restoredFileSourceRequestRef = React.useRef(0);
+  const [directoryFileSources, setDirectoryFileSources] = React.useState<FileSourceMap>({});
   const [directorySource, dispatchDirectorySource] = React.useReducer(
     directorySourceReducer,
     createDirectorySource({
@@ -142,7 +166,33 @@ export function AppShell({
   const selectNextSearchMatch = usePaneSearchStore((store) => store.selectNextMatch);
   const showSearchHighlights = usePaneSearchStore((store) => store.showHighlights);
   const hideSearchHighlights = usePaneSearchStore((store) => store.hideHighlights);
-  const publishFileLifecycleEvent = useFileLifecycleEvents(setFileSources);
+  const writeDiagnosticEvent = React.useCallback(
+    (
+      level: Parameters<typeof logDiagnosticEvent>[1],
+      name: string,
+      fields?: Parameters<typeof logDiagnosticEvent>[3],
+    ) => {
+      logDiagnosticEvent(platform.diagnosticLogger, level, name, fields);
+    },
+    [platform.diagnosticLogger],
+  );
+  const fileLifecycleDiagnosticHandlers = React.useMemo(
+    () => ({
+      onWatcherError: (
+        event: Extract<FileWatcherEvent, { readonly type: "WatcherError" }>,
+        source: FileSource,
+      ) => {
+        writeDiagnosticEvent("error", "desktop.file_watcher.error", {
+          sourceId: source.id,
+          path: getFileSourceDiagnosticPath(source),
+          title: source.displayName,
+          message: event.message,
+        });
+      },
+    }),
+    [writeDiagnosticEvent],
+  );
+  const publishFileLifecycleEvent = useFileLifecycleEvents(setFileSources, fileLifecycleDiagnosticHandlers);
   const restoreState = useSessionRestore(platform.sessionStore, {
     onSessionRestored: (session) => {
       const restoredDirectorySource = session.sources.find(
@@ -151,7 +201,17 @@ export function AppShell({
 
       dispatch({ type: "replaceState", state: restoreLogPaneStateFromSession(session) });
       restoreSynchronizationSessionState(session);
-      setFileSources(restoreFileSourcesFromSession(session));
+      const restoreRequest = restoredFileSourceRequestRef.current + 1;
+      restoredFileSourceRequestRef.current = restoreRequest;
+      setFileSources(createRestoredFileSourcePlaceholders(session));
+      setDirectoryFileSources({});
+      void readRestoredFileSourcesFromSession(session, platform).then((restoredFileSources) => {
+        if (restoredFileSourceRequestRef.current !== restoreRequest) {
+          return;
+        }
+
+        setFileSources((currentSources) => ({ ...currentSources, ...restoredFileSources }));
+      });
 
       if (restoredDirectorySource) {
         const restoredFiles = restoreDirectoryFilesFromSession(restoredDirectorySource);
@@ -162,11 +222,150 @@ export function AppShell({
         }
       }
     },
+    onSessionRestoreFailed: (error) => {
+      writeDiagnosticEvent(
+        "error",
+        "desktop.session.restore_failed",
+        serializeErrorForDiagnosticLog(error),
+      );
+    },
   });
   const timestampService = React.useMemo(
     () => createTimestampRecognitionService(defaultTimestampFormats),
     [],
   );
+  const currentDirectoryFile = getCurrentDirectoryFile(directorySource);
+  const currentDirectoryFileIdentity = currentDirectoryFile?.identity.value ?? null;
+  const currentDirectoryFilePlatform = currentDirectoryFile?.identity.platform ?? null;
+  const currentDirectoryFileName = currentDirectoryFile?.name ?? null;
+  const directorySourceId = directorySource.id;
+  const directorySourceIdentityValue = directorySource.directoryIdentity.value;
+
+  React.useEffect(() => {
+    paneCountRef.current = state.panes.length;
+    activePaneIdRef.current = state.activePaneId;
+    nextPaneNumberRef.current = state.nextPaneNumber;
+  }, [state.activePaneId, state.nextPaneNumber, state.panes.length]);
+
+  React.useEffect(
+    () => () => {
+      if (synchronizationNavigationLogTimeoutRef.current !== null) {
+        globalThis.clearTimeout(synchronizationNavigationLogTimeoutRef.current);
+      }
+    },
+    [],
+  );
+
+  React.useEffect(() => {
+    if (!platform.diagnosticLogger || typeof window === "undefined") {
+      return;
+    }
+
+    const handleError = (event: ErrorEvent) => {
+      writeDiagnosticEvent(
+        "error",
+        "desktop.ui.unhandled_error",
+        compactDiagnosticFields({
+          ...serializeErrorForDiagnosticLog(event.error ?? event.message),
+          browserMessage: event.message || undefined,
+          source: event.filename || null,
+          lineNumber: event.lineno || null,
+          columnNumber: event.colno || null,
+        }),
+      );
+    };
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      writeDiagnosticEvent(
+        "error",
+        "desktop.ui.unhandled_rejection",
+        serializeErrorForDiagnosticLog(event.reason),
+      );
+    };
+
+    writeDiagnosticEvent("info", "desktop.ui.mounted", { platform: platform.kind });
+    window.addEventListener("error", handleError);
+    window.addEventListener("unhandledrejection", handleUnhandledRejection);
+
+    return () => {
+      window.removeEventListener("error", handleError);
+      window.removeEventListener("unhandledrejection", handleUnhandledRejection);
+      writeDiagnosticEvent("info", "desktop.ui.unmounted", { platform: platform.kind });
+    };
+  }, [platform.diagnosticLogger, platform.kind, writeDiagnosticEvent]);
+
+  React.useEffect(() => {
+    if (!platform.diagnosticLogger || typeof document === "undefined") {
+      return;
+    }
+
+    const checkShellHealth = () => {
+      const diagnosticFields = getBlankShellDiagnosticFields(paneCountRef.current);
+
+      if (!diagnosticFields) {
+        return;
+      }
+
+      writeDiagnosticEvent("warn", "desktop.ui.blank_shell_detected", diagnosticFields);
+    };
+    const intervalId = globalThis.setInterval(checkShellHealth, blankShellHealthCheckIntervalMs);
+
+    return () => {
+      globalThis.clearInterval(intervalId);
+    };
+  }, [platform.diagnosticLogger, writeDiagnosticEvent]);
+
+  React.useEffect(() => {
+    if (
+      !currentDirectoryFileIdentity ||
+      !currentDirectoryFilePlatform ||
+      !currentDirectoryFileName ||
+      isSampleDirectorySourceIdentity(directorySourceId, directorySourceIdentityValue)
+    ) {
+      return;
+    }
+
+    const path = getRestorableDirectoryFilePath(currentDirectoryFileIdentity, currentDirectoryFilePlatform);
+
+    if (!path || platform.kind !== "desktop") {
+      return;
+    }
+
+    let active = true;
+    const sourceId = getDirectoryFileSourceId(directorySourceId, currentDirectoryFileIdentity);
+
+    void platform.fileAccess
+      .openFileReadOnly(
+        {
+          id: sourceId,
+          name: currentDirectoryFileName,
+          path,
+        },
+        defaultFileOpenPolicy,
+      )
+      .then((result) => {
+        if (!active || !result.ok) {
+          return;
+        }
+
+        setDirectoryFileSources((currentSources) => ({
+          ...currentSources,
+          [sourceId]: result.source,
+        }));
+      })
+      .catch(() => undefined);
+
+    return () => {
+      active = false;
+    };
+  }, [
+    currentDirectoryFileIdentity,
+    currentDirectoryFileName,
+    currentDirectoryFilePlatform,
+    directorySourceId,
+    directorySourceIdentityValue,
+    platform.fileAccess,
+    platform.kind,
+  ]);
 
   const paneData = React.useMemo(
     () =>
@@ -175,11 +374,17 @@ export function AppShell({
           pane.sourceRef === directorySource.id ? getCurrentDirectoryFile(directorySource) : null;
         const paneTitle = currentDirectoryFile?.name ?? pane.title;
         const fileSource = pane.sourceRef ? fileSources[pane.sourceRef] : null;
+        const directoryFileSource =
+          currentDirectoryFile && pane.sourceRef
+            ? directoryFileSources[
+                getDirectoryFileSourceId(pane.sourceRef, currentDirectoryFile.identity.value)
+              ] ?? null
+            : null;
         const lines = currentDirectoryFile
-          ? getSampleLines(currentDirectoryFile.name)
+          ? getDirectoryFileLines(currentDirectoryFile, directorySource, directoryFileSource)
           : fileSource
             ? flattenLineChunkText(fileSource.lineChunks)
-            : getSampleLines(pane.title);
+            : [];
         const recognizedLines = lines.map((line, index) => timestampService.recognizeLine(index + 1, line, pane.id));
         const status = fileSource?.deleted
           ? ("deleted" as const)
@@ -201,12 +406,22 @@ export function AppShell({
           },
           lines,
           timestamps: recognizedLines.map((line) => line.timestamp),
-          synchronizationTargetLineNumber: syncTargets[pane.id] ?? null,
+          synchronizationTargetLineNumber: syncTargets[pane.id]?.lineNumber ?? null,
+          synchronizationTargetVisualLineOffset: syncTargets[pane.id]?.visualLineOffset ?? null,
           directorySource: pane.sourceRef === directorySource.id ? directorySource : undefined,
           lifecycleState: getPaneHeaderLifecycleState(fileSource),
         };
       }),
-    [directorySource, fileSources, state.panes, syncOffsets, syncTargets, synchronizationEnabled, timestampService],
+    [
+      directoryFileSources,
+      directorySource,
+      fileSources,
+      state.panes,
+      syncOffsets,
+      syncTargets,
+      synchronizationEnabled,
+      timestampService,
+    ],
   );
   const sessionSnapshot = React.useMemo(
     () =>
@@ -220,11 +435,26 @@ export function AppShell({
           }),
     [directorySource, fileSources, paneData, synchronizationEnabled],
   );
+  const handleSessionSnapshotWriteFailed = React.useCallback(
+    (error: unknown, failedSession: Session) => {
+      writeDiagnosticEvent(
+        "error",
+        "desktop.session.snapshot_write_failed",
+        compactDiagnosticFields({
+          ...serializeErrorForDiagnosticLog(error),
+          paneCount: failedSession.panes.length,
+          sourceCount: failedSession.sources.length,
+        }),
+      );
+    },
+    [writeDiagnosticEvent],
+  );
 
   const sessionSnapshotStatus = useSessionSnapshotWriter(
     platform.sessionStore,
     sessionSnapshot,
     restoreState.status === "ready" && paneData.length > 0,
+    handleSessionSnapshotWriteFailed,
   );
   const panes = paneData.map((entry) => ({
     ...entry,
@@ -363,12 +593,72 @@ export function AppShell({
     paneData.forEach((entry) => setPaneSearchLines(entry.pane.id, entry.lines));
   }, [paneData, setPaneSearchLines]);
 
-  const handleAnchorChange = (paneId: string, _lineNumber: number, timestamp: Date | null) => {
+  const scheduleSynchronizationNavigationLog = React.useCallback(
+    (input: {
+      readonly paneId: string;
+      readonly lineNumber: number;
+      readonly timestamp: Date | null;
+      readonly visualLineOffset: number;
+      readonly navigationKind: LogViewportNavigationKind;
+      readonly targets: readonly { readonly paneId: string; readonly lineNumber: number }[];
+      readonly excludedPaneIds: readonly string[];
+      readonly syncApplied: boolean;
+    }) => {
+      if (!platform.diagnosticLogger) {
+        return;
+      }
+
+      const now = Date.now();
+
+      if (now - lastSynchronizationNavigationLogAtRef.current < synchronizationNavigationLogThrottleMs) {
+        return;
+      }
+
+      lastSynchronizationNavigationLogAtRef.current = now;
+
+      if (synchronizationNavigationLogTimeoutRef.current !== null) {
+        globalThis.clearTimeout(synchronizationNavigationLogTimeoutRef.current);
+      }
+
+      synchronizationNavigationLogTimeoutRef.current = globalThis.setTimeout(() => {
+        synchronizationNavigationLogTimeoutRef.current = null;
+        writeDiagnosticEvent(
+          "info",
+          "desktop.sync.navigation_sampled",
+          buildSynchronizationNavigationLogFields({
+            ...input,
+            directorySource,
+            fileSources,
+            paneData,
+          }),
+        );
+      }, 0);
+    },
+    [directorySource, fileSources, paneData, platform.diagnosticLogger, writeDiagnosticEvent],
+  );
+
+  const handleAnchorChange = (
+    paneId: string,
+    lineNumber: number,
+    timestamp: Date | null,
+    visualLineOffset: number,
+    navigationKind: LogViewportNavigationKind,
+  ) => {
     const anchor = createTimeAnchorPane(paneId, timestamp, "scroll");
     setSynchronizationAnchor(anchor);
 
     if (!anchor || !synchronizationEnabled) {
-      setPlanResult([], []);
+      setPlanResult([], [], null);
+      scheduleSynchronizationNavigationLog({
+        paneId,
+        lineNumber,
+        timestamp,
+        visualLineOffset,
+        navigationKind,
+        targets: [],
+        excludedPaneIds: [],
+        syncApplied: false,
+      });
       return;
     }
 
@@ -387,16 +677,33 @@ export function AppShell({
       })),
     });
 
-    setPlanResult(plan.targets, plan.excludedPaneIds);
+    setPlanResult(plan.targets, plan.excludedPaneIds, visualLineOffset);
+    scheduleSynchronizationNavigationLog({
+      paneId,
+      lineNumber,
+      timestamp,
+      visualLineOffset,
+      navigationKind,
+      targets: plan.targets,
+      excludedPaneIds: plan.excludedPaneIds,
+      syncApplied: plan.targets.length > 0,
+    });
   };
 
   const handleSynchronizationEnabledChange = React.useCallback((enabled: boolean) => {
+    if (enabled !== synchronizationEnabled) {
+      writeDiagnosticEvent("info", "desktop.sync.enabled_changed", {
+        enabled,
+        activePaneCount: paneCountRef.current,
+      });
+    }
+
     setSynchronizationEnabled(enabled);
 
     if (!enabled) {
-      setPlanResult([], []);
+      setPlanResult([], [], null);
     }
-  }, [setPlanResult, setSynchronizationEnabled]);
+  }, [setPlanResult, setSynchronizationEnabled, synchronizationEnabled, writeDiagnosticEvent]);
 
   const handleSearchOpenChange = React.useCallback((paneId: string, open: boolean) => {
     if (open) {
@@ -541,6 +848,22 @@ export function AppShell({
               fixtureSamplePaneCount: current.fixtureSamplePaneCount + samplePanes.length,
             }));
           }
+          break;
+        case "openLargeLog":
+          void openUiTestLargeLogSource(
+            openDroppedSourcesRef.current,
+            (title) => {
+              dispatch({
+                type: "addPane",
+                pane: {
+                  title,
+                  sourceRef: null,
+                  width: 520,
+                  status: "error",
+                },
+              });
+            },
+          );
           break;
         case "copyFirstPane":
           if (firstPaneEntry) {
@@ -740,35 +1063,182 @@ export function AppShell({
     };
   }, [platform.uiTestBridge, uiTestEnabled]);
 
-  const openFileSource = async (sourceRef: FileSourceRef) => {
-    const result = await platform.fileAccess.openFileReadOnly(sourceRef, defaultFileOpenPolicy);
+  const allocatePaneId = () => {
+    const paneId = `pane-${nextPaneNumberRef.current}`;
+    nextPaneNumberRef.current += 1;
 
-    if (!result.ok) {
-    dispatch({
-      type: "addPane",
-      pane: {
-        title: sourceRef.name,
-        sourceRef: null,
-        width: 520,
-        status: result.error.code === "FileTooLarge" ? "memory-limited" : "error",
-        },
-      });
+    return paneId;
+  };
+
+  const addOpenedPane = (
+    pane: Partial<LogPaneModel> & {
+      readonly title: string;
+      readonly width: number;
+      readonly status: LogPaneModel["status"];
+    },
+    fields: Record<string, DiagnosticLogFieldValue | undefined>,
+  ) => {
+    const paneId = pane.id ?? allocatePaneId();
+    const activePaneCountAfter = paneCountRef.current + 1;
+
+    paneCountRef.current = activePaneCountAfter;
+    activePaneIdRef.current = paneId;
+
+    dispatch({ type: "addPane", pane: { ...pane, id: paneId } });
+    writeDiagnosticEvent(
+      "info",
+      "desktop.pane.opened",
+      compactDiagnosticFields({
+        paneId,
+        title: pane.title,
+        status: pane.status,
+        sourceRef: pane.sourceRef ?? null,
+        activePaneCountAfter,
+        ...fields,
+      }),
+    );
+  };
+
+  const handleClosePane = (paneId: string) => {
+    const pane = state.panes.find((candidate) => candidate.id === paneId);
+
+    if (!pane) {
       return;
     }
 
+    const activePaneCountAfter = Math.max(0, paneCountRef.current - 1);
+    paneCountRef.current = activePaneCountAfter;
+
+    if (activePaneIdRef.current === paneId) {
+      activePaneIdRef.current = chooseNextActivePaneIdAfterClose(state.panes, paneId, state.activePaneId);
+    }
+
+    dispatch({ type: "closePane", paneId });
+    writeDiagnosticEvent(
+      "info",
+      "desktop.pane.closed",
+      compactDiagnosticFields({
+        paneId,
+        title: pane.title,
+        sourceRef: pane.sourceRef ?? null,
+        path: getPaneDiagnosticPath(pane, fileSources, directorySource),
+        activePaneCountAfter,
+      }),
+    );
+  };
+
+  const handleActivatePane = (paneId: string) => {
+    const pane = state.panes.find((candidate) => candidate.id === paneId);
+
+    if (!pane || activePaneIdRef.current === paneId) {
+      return;
+    }
+
+    const previousPaneId = activePaneIdRef.current;
+    const previousPane = previousPaneId
+      ? state.panes.find((candidate) => candidate.id === previousPaneId) ?? null
+      : null;
+
+    activePaneIdRef.current = paneId;
+    dispatch({ type: "setActivePane", paneId });
+    writeDiagnosticEvent(
+      "info",
+      "desktop.pane.focus_changed",
+      compactDiagnosticFields({
+        paneId,
+        title: pane.title,
+        sourceRef: pane.sourceRef ?? null,
+        path: getPaneDiagnosticPath(pane, fileSources, directorySource),
+        previousPaneId,
+        previousTitle: previousPane?.title ?? null,
+        previousPath: previousPane ? getPaneDiagnosticPath(previousPane, fileSources, directorySource) : null,
+        activePaneCount: paneCountRef.current,
+      }),
+    );
+  };
+
+  const openFileSource = async (sourceRef: FileSourceRef) => {
+    const openedAtMs = getMonotonicNowMs();
+    const result = await platform.fileAccess.openFileReadOnly(sourceRef, defaultFileOpenPolicy);
+    const openDurationMs = getElapsedMs(openedAtMs);
+
+    if (!result.ok) {
+      writeDiagnosticEvent("warn", "desktop.source.open_policy_decision", {
+        decision: "rejected",
+        sourceKind: "file",
+        path: sourceRef.path ?? null,
+        title: sourceRef.name,
+        errorCode: result.error.code,
+        message: result.error.message,
+        maxFileSizeBytes: defaultFileOpenPolicy.maxFileSizeBytes,
+        availableMemoryBytes: defaultFileOpenPolicy.availableMemoryBytes,
+        openDurationMs,
+      });
+      writeDiagnosticEvent("warn", "desktop.source.open_failed", {
+        sourceKind: "file",
+        path: sourceRef.path ?? null,
+        title: sourceRef.name,
+        errorCode: result.error.code,
+        message: result.error.message,
+        openDurationMs,
+      });
+      addOpenedPane(
+        {
+          title: sourceRef.name,
+          sourceRef: null,
+          width: 520,
+          status: result.error.code === "FileTooLarge" ? "memory-limited" : "error",
+        },
+        {
+          sourceKind: "file",
+          path: sourceRef.path ?? null,
+          errorCode: result.error.code,
+          openDurationMs,
+        },
+      );
+      return;
+    }
+
+    writeDiagnosticEvent("info", "desktop.source.open_policy_decision", {
+      decision: "accepted",
+      sourceKind: "file",
+      path: getFileSourceDiagnosticPath(result.source) ?? sourceRef.path ?? null,
+      title: result.source.displayName,
+      sizeBytes: result.source.sizeBytes,
+      maxFileSizeBytes: defaultFileOpenPolicy.maxFileSizeBytes,
+      availableMemoryBytes: defaultFileOpenPolicy.availableMemoryBytes,
+      openDurationMs,
+    });
+    if (result.source.sizeBytes >= largeFileOpenLogThresholdBytes) {
+      writeDiagnosticEvent("info", "desktop.source.large_open_completed", {
+        sourceKind: "file",
+        path: getFileSourceDiagnosticPath(result.source) ?? sourceRef.path ?? null,
+        title: result.source.displayName,
+        sizeBytes: result.source.sizeBytes,
+        lineCount: countSourceLines(result.source),
+        openDurationMs,
+      });
+    }
     setFileSources((current) => ({
       ...current,
       [result.source.id]: result.source,
     }));
-    dispatch({
-      type: "addPane",
-      pane: {
+    addOpenedPane(
+      {
         title: result.source.displayName,
         sourceRef: result.source.id,
         width: 520,
         status: "ready",
       },
-    });
+      {
+        sourceKind: "file",
+        path: getFileSourceDiagnosticPath(result.source) ?? sourceRef.path ?? null,
+        sizeBytes: result.source.sizeBytes,
+        lineCount: countSourceLines(result.source),
+        readError: result.source.readError,
+        openDurationMs,
+      },
+    );
   };
 
   const openDirectorySource = async (sourceRef: DirectorySourceRef) => {
@@ -784,15 +1254,19 @@ export function AppShell({
         watchState: platform.capabilities.canDiscoverNewDirectoryFiles ? "watching" : "unsupported",
       }),
     });
-    dispatch({
-      type: "addPane",
-      pane: {
+    addOpenedPane(
+      {
         title: sourceRef.name,
         sourceRef: directorySource.id,
         width: 520,
         status: files.length === 0 ? "empty" : "ready",
       },
-    });
+      {
+        sourceKind: "directory",
+        path: sourceRef.path ?? null,
+        fileCount: files.length,
+      },
+    );
   };
 
   const openDroppedSources = async (sources: readonly DragDropSource[]) => {
@@ -915,7 +1389,12 @@ export function AppShell({
       }
 
       publishSourceSelectionCancelled(entryPoint);
-    } catch {
+    } catch (error) {
+      writeDiagnosticEvent(
+        "error",
+        "desktop.source_selection.failed",
+        serializeErrorForDiagnosticLog(error),
+      );
       setSourceOpeningEvidence((current) => ({
         ...current,
         status: "error",
@@ -972,8 +1451,8 @@ export function AppShell({
     ) : (
       <PaneRail
         panes={panes}
-        onClosePane={(paneId) => dispatch({ type: "closePane", paneId })}
-        onActivatePane={(paneId) => dispatch({ type: "setActivePane", paneId })}
+        onClosePane={handleClosePane}
+        onActivatePane={handleActivatePane}
         onResizePane={(leftPaneId, delta) => dispatch({ type: "resizePane", leftPaneId, delta })}
         onReorderPane={(paneId, targetIndex) => dispatch({ type: "reorderPane", paneId, targetIndex })}
         onHorizontalScroll={(paneId, scrollLeft) =>
@@ -1083,6 +1562,217 @@ function readSystemThemeVariant(): ThemeVariant {
   }
 
   return resolveSystemThemeVariant(window.matchMedia(systemThemeMediaQuery).matches);
+}
+
+const synchronizationNavigationLogThrottleMs = 5_000;
+const blankShellHealthCheckIntervalMs = 5_000;
+const largeFileOpenLogThresholdBytes = 5 * 1024 * 1024;
+
+interface SynchronizationNavigationLogInput {
+  readonly paneId: string;
+  readonly lineNumber: number;
+  readonly timestamp: Date | null;
+  readonly visualLineOffset: number;
+  readonly navigationKind: LogViewportNavigationKind;
+  readonly targets: readonly { readonly paneId: string; readonly lineNumber: number }[];
+  readonly excludedPaneIds: readonly string[];
+  readonly syncApplied: boolean;
+  readonly directorySource: DirectorySource;
+  readonly fileSources: FileSourceMap;
+  readonly paneData: readonly {
+    readonly pane: LogPaneModel;
+    readonly timestamps: readonly (Date | null)[];
+  }[];
+}
+
+function buildSynchronizationNavigationLogFields(
+  input: SynchronizationNavigationLogInput,
+): ReturnType<typeof compactDiagnosticFields> {
+  const targetLineNumbers = new Map(input.targets.map((target) => [target.paneId, target.lineNumber]));
+  const excludedPaneIds = new Set(input.excludedPaneIds);
+  const anchorPane = input.paneData.find((entry) => entry.pane.id === input.paneId)?.pane ?? null;
+  const panes = input.paneData.map((entry) => {
+    const isAnchorPane = entry.pane.id === input.paneId;
+    const targetLineNumber = targetLineNumbers.get(entry.pane.id) ?? null;
+    const lineNumber = isAnchorPane ? input.lineNumber : targetLineNumber;
+    const timestamp = isAnchorPane
+      ? input.timestamp
+      : lineNumber
+        ? entry.timestamps[lineNumber - 1] ?? null
+        : null;
+    const timeOffsetMilliseconds = timeOffsetToMilliseconds(entry.pane.timeOffset);
+
+    return compactDiagnosticFields({
+      paneId: entry.pane.id,
+      title: entry.pane.title,
+      path: getPaneDiagnosticPath(entry.pane, input.fileSources, input.directorySource),
+      role: getSynchronizationDiagnosticPaneRole(isAnchorPane, targetLineNumber, excludedPaneIds.has(entry.pane.id)),
+      lineNumber,
+      timestamp: formatDiagnosticTimestamp(timestamp),
+      timeOffsetMilliseconds,
+      timeOffsetLabel: formatTimeOffset(entry.pane.timeOffset),
+      screenRow: lineNumber ? getPaneLineScreenRow(entry.pane.id, lineNumber) : null,
+    });
+  });
+
+  return compactDiagnosticFields({
+    navigationKind: input.navigationKind,
+    syncApplied: input.syncApplied,
+    anchorPaneId: input.paneId,
+    anchorTitle: anchorPane?.title ?? null,
+    anchorPath: anchorPane ? getPaneDiagnosticPath(anchorPane, input.fileSources, input.directorySource) : null,
+    anchorLineNumber: input.lineNumber,
+    anchorTimestamp: formatDiagnosticTimestamp(input.timestamp),
+    anchorVisualLineOffset: input.visualLineOffset,
+    targetCount: input.targets.length,
+    excludedPaneIds: input.excludedPaneIds,
+    panes,
+  });
+}
+
+function getSynchronizationDiagnosticPaneRole(
+  isAnchorPane: boolean,
+  targetLineNumber: number | null,
+  excluded: boolean,
+): string {
+  if (isAnchorPane) {
+    return "anchor";
+  }
+
+  if (excluded) {
+    return "excluded";
+  }
+
+  return targetLineNumber === null ? "unmatched" : "target";
+}
+
+function formatDiagnosticTimestamp(timestamp: Date | null): string | null {
+  return timestamp ? timestamp.toISOString() : null;
+}
+
+function getPaneLineScreenRow(paneId: string, lineNumber: number): number | null {
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  const pane = queryLogPaneElementById(paneId);
+  const viewport = pane?.querySelector<HTMLElement>(`[data-testid="${redesignedShellTestIds.logViewport}"]`) ?? null;
+  const row = pane?.querySelector<HTMLElement>(`[data-line-number="${lineNumber}"]`) ?? null;
+
+  if (!viewport || !row) {
+    return null;
+  }
+
+  const rows = Array.from(viewport.querySelectorAll<HTMLElement>(".crosslog-log-viewport__row"));
+  const visibleRows = getVisibleViewportRows(viewport, rows);
+  const rowIndex = visibleRows.indexOf(row);
+
+  if (rowIndex >= 0) {
+    return rowIndex + 1;
+  }
+
+  const renderedIndex = rows.indexOf(row);
+
+  return renderedIndex >= 0 ? renderedIndex + 1 : null;
+}
+
+function getVisibleViewportRows(
+  viewport: HTMLElement,
+  rows: readonly HTMLElement[],
+): readonly HTMLElement[] {
+  const viewportRect = viewport.getBoundingClientRect();
+  const visibleRows = rows.filter((row) => {
+    const rowRect = row.getBoundingClientRect();
+
+    return rowRect.bottom > viewportRect.top && rowRect.top < viewportRect.bottom;
+  });
+
+  return visibleRows.length > 0 ? visibleRows : rows;
+}
+
+function queryLogPaneElementById(paneId: string): HTMLElement | null {
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  return (
+    Array.from(document.querySelectorAll<HTMLElement>(`[data-testid="${redesignedShellTestIds.logPane}"]`)).find(
+      (pane) => pane.dataset.paneId === paneId,
+    ) ?? null
+  );
+}
+
+function getBlankShellDiagnosticFields(expectedPaneCount: number): ReturnType<typeof compactDiagnosticFields> | null {
+  if (expectedPaneCount <= 0 || typeof document === "undefined") {
+    return null;
+  }
+
+  const shell = queryTestElement(redesignedShellTestIds.crosslogShell);
+  const workspace = queryTestElement(redesignedShellTestIds.paneWorkspace);
+  const actualPaneCount = queryAllTestElements(redesignedShellTestIds.logPane).length;
+
+  if (shell && workspace && actualPaneCount > 0) {
+    return null;
+  }
+
+  return compactDiagnosticFields({
+    expectedPaneCount,
+    actualPaneCount,
+    shellPresent: shell !== null,
+    workspacePresent: workspace !== null,
+    bodyChildCount: document.body?.children.length ?? null,
+  });
+}
+
+function getMonotonicNowMs(): number {
+  return typeof performance !== "undefined" && typeof performance.now === "function"
+    ? performance.now()
+    : Date.now();
+}
+
+function getElapsedMs(startedAtMs: number): number {
+  return Math.max(0, Math.round(getMonotonicNowMs() - startedAtMs));
+}
+
+function getPaneDiagnosticPath(
+  pane: LogPaneModel,
+  fileSources: FileSourceMap,
+  directorySource: DirectorySource,
+): string | null {
+  if (!pane.sourceRef) {
+    return null;
+  }
+
+  if (pane.sourceRef === directorySource.id) {
+    return directorySource.directoryIdentity.platform === "desktop"
+      ? directorySource.directoryIdentity.value
+      : directorySource.displayName;
+  }
+
+  return getFileSourceDiagnosticPath(fileSources[pane.sourceRef]);
+}
+
+function getFileSourceDiagnosticPath(source: FileSource | null | undefined): string | null {
+  if (!source) {
+    return null;
+  }
+
+  return source.fileIdentity.platform === "desktop" ? source.fileIdentity.value : source.pathLabel;
+}
+
+function chooseNextActivePaneIdAfterClose(
+  panes: readonly LogPaneModel[],
+  closedPaneId: string,
+  activePaneId: string | null,
+): string | null {
+  if (activePaneId && activePaneId !== closedPaneId && panes.some((pane) => pane.id === activePaneId)) {
+    return activePaneId;
+  }
+
+  const closedIndex = panes.findIndex((pane) => pane.id === closedPaneId);
+  const nextPanes = panes.filter((pane) => pane.id !== closedPaneId);
+
+  return nextPanes[Math.min(Math.max(0, closedIndex), nextPanes.length - 1)]?.id ?? null;
 }
 
 function getPublishedRedesignedRegions(
@@ -1307,6 +1997,17 @@ function getPublishedPaneNavigationEvidence(paneOrder: readonly string[]): UiTes
 
   const viewports = queryAllTestElements(redesignedShellTestIds.logViewport);
   const activeViewport = getActiveViewportElement() ?? viewports[0] ?? null;
+  const activeRows = activeViewport
+    ? Array.from(activeViewport.querySelectorAll<HTMLElement>(".crosslog-log-viewport__row"))
+    : [];
+  const viewportRect = activeViewport?.getBoundingClientRect() ?? null;
+  const visibleRowCount = viewportRect
+    ? activeRows.filter((row) => {
+        const rowRect = row.getBoundingClientRect();
+
+        return rowRect.bottom > viewportRect.top && rowRect.top < viewportRect.bottom;
+      }).length
+    : null;
   const syncTarget = document.querySelector<HTMLElement>('[data-sync-target="true"]');
   const gutterDigitCounts = viewports
     .map((viewport) => parseNullableInteger(viewport.dataset.gutterDigits))
@@ -1318,6 +2019,8 @@ function getPublishedPaneNavigationEvidence(paneOrder: readonly string[]): UiTes
     maxGutterDigitCount: gutterDigitCounts.length > 0 ? Math.max(...gutterDigitCounts) : null,
     lastNavigation: parseLastNavigation(activeViewport?.dataset.lastNavigation),
     syncTargetLineNumber: parseNullableInteger(syncTarget?.dataset.lineNumber),
+    renderedRowCount: activeViewport ? activeRows.length : null,
+    visibleRowCount,
   };
 }
 
@@ -1375,6 +2078,8 @@ const emptyPaneNavigationEvidence: UiTestPaneNavigationEvidence = {
   maxGutterDigitCount: null,
   lastNavigation: "none",
   syncTargetLineNumber: null,
+  renderedRowCount: null,
+  visibleRowCount: null,
 };
 
 const emptySearchHighlightEvidence: UiTestSearchHighlightEvidence = {
@@ -1407,11 +2112,8 @@ function dispatchNavigationEventToActiveViewport(mode: "keyboard" | "wheel"): vo
     return;
   }
 
-  viewport.dispatchEvent(new WheelEvent("wheel", {
-    bubbles: true,
-    cancelable: true,
-    deltaY: 120,
-  }));
+  viewport.scrollTop = Math.min(viewport.scrollHeight - viewport.clientHeight, viewport.scrollTop + 120);
+  viewport.dispatchEvent(new Event("scroll", { bubbles: true }));
 }
 
 function dispatchCopyMenuEventToFirstPane(mode: "contextmenu" | "dismiss"): void {
@@ -1759,6 +2461,42 @@ function getSourceKind(sources: readonly DragDropSource[]): UiTestSourceKind {
   return hasDirectory ? "directory" : "none";
 }
 
+async function openUiTestLargeLogSource(
+  openDroppedSources: (sources: readonly DragDropSource[]) => Promise<void>,
+  onOpenError: (title: string) => void,
+): Promise<void> {
+  try {
+    const { invoke } = await import("@tauri-apps/api/core");
+    const path = await invoke<string | null>("ui_test_large_log_path");
+
+    if (!path) {
+      onOpenError("large-log-path-missing");
+      return;
+    }
+
+    await openDroppedSources([
+      {
+        type: "file",
+        source: {
+          id: "ui-test-large-log",
+          name: getPathBasename(path),
+          path,
+        },
+      },
+    ]);
+  } catch {
+    onOpenError("large-log-open-error");
+  }
+}
+
+function getPathBasename(path: string): string {
+  const normalizedPath = path.replace(/[\\/]+$/g, "");
+  const pathSegments = normalizedPath.split(/[\\/]+/);
+  const basename = pathSegments.at(-1);
+
+  return basename && basename.length > 0 ? basename : "large.log";
+}
+
 function getSampleLines(title: string): readonly string[] {
   return Array.from({ length: 250 }, (_, index) => {
     const lineNumber = index + 1;
@@ -1787,15 +2525,81 @@ function createInitialFileSources(platform: FileSource["fileIdentity"]["platform
   );
 }
 
-function restoreFileSourcesFromSession(session: Session): FileSourceMap {
+function createRestoredFileSourcePlaceholders(session: Session): FileSourceMap {
   return Object.fromEntries(
     session.sources
       .filter((source): source is SessionFileSource => source.kind === "file")
-      .map((source) => [
-        source.id,
-        createSampleFileSource(source.id, source.displayName, source.fileIdentity.platform),
-      ]),
+      .map((source) => [source.id, createRestoredFileSourcePlaceholder(source)]),
   );
+}
+
+async function readRestoredFileSourcesFromSession(
+  session: Session,
+  platform: CrosslogPlatform,
+): Promise<FileSourceMap> {
+  const restoredSources = await Promise.all(
+    session.sources
+      .filter((source): source is SessionFileSource => source.kind === "file")
+      .map(async (source) => [source.id, await readRestoredFileSource(source, platform)] as const),
+  );
+
+  return Object.fromEntries(restoredSources);
+}
+
+async function readRestoredFileSource(
+  source: SessionFileSource,
+  platform: CrosslogPlatform,
+): Promise<FileSource> {
+  const placeholder = createRestoredFileSourcePlaceholder(source);
+
+  if (platform.kind !== "desktop" || source.fileIdentity.platform !== "desktop") {
+    return placeholder;
+  }
+
+  let result: Awaited<ReturnType<CrosslogPlatform["fileAccess"]["openFileReadOnly"]>>;
+
+  try {
+    result = await platform.fileAccess.openFileReadOnly(
+      {
+        id: source.id,
+        name: source.displayName,
+        path: source.fileIdentity.value,
+      },
+      defaultFileOpenPolicy,
+    );
+  } catch (error) {
+    return {
+      ...placeholder,
+      watchState: "failed",
+      readError: error instanceof Error ? error.message : String(error),
+    };
+  }
+
+  if (result.ok) {
+    return result.source;
+  }
+
+  return {
+    ...placeholder,
+    watchState: "failed",
+    readError: result.error.message,
+  };
+}
+
+function createRestoredFileSourcePlaceholder(source: SessionFileSource): FileSource {
+  return {
+    id: source.id,
+    fileIdentity: source.fileIdentity,
+    displayName: source.displayName,
+    pathLabel: source.pathLabel,
+    sizeBytes: source.sizeBytes,
+    encoding: source.encoding,
+    lineChunks: [],
+    watchState: source.fileIdentity.platform === "desktop" ? "watching" : "unsupported",
+    deleted: false,
+    replaced: false,
+    readError: null,
+  };
 }
 
 function restoreDirectoryFilesFromSession(source: SessionDirectorySource): readonly DirectoryFileEntry[] {
@@ -1830,4 +2634,61 @@ function createSampleFileSource(
     replaced: false,
     readError: null,
   };
+}
+
+function getDirectoryFileLines(
+  currentFile: DirectoryFileEntry,
+  source: DirectorySource,
+  fileSource: FileSource | null,
+): readonly string[] {
+  if (isSampleDirectorySource(source)) {
+    return getSampleLines(currentFile.name);
+  }
+
+  return fileSource ? flattenLineChunkText(fileSource.lineChunks) : [];
+}
+
+function getDirectoryFileSourceId(directorySourceId: string, fileIdentity: string): string {
+  return `${directorySourceId}:${fileIdentity}`;
+}
+
+function getRestorableDirectoryFilePath(
+  identity: string,
+  identityPlatform: DirectoryFileEntry["identity"]["platform"],
+): string | null {
+  if (identityPlatform !== "desktop") {
+    return null;
+  }
+
+  return parseTauriDirectoryFileIdentityPath(identity);
+}
+
+function parseTauriDirectoryFileIdentityPath(identity: string): string | null {
+  const parts = identity.split(":");
+
+  if (parts.length < 3) {
+    return null;
+  }
+
+  const modifiedAt = parts.at(-1);
+  const sizeBytes = parts.at(-2);
+  const path = parts.slice(0, -2).join(":");
+
+  if (!path || !isUnsignedIntegerToken(sizeBytes) || !isUnsignedIntegerToken(modifiedAt)) {
+    return null;
+  }
+
+  return path;
+}
+
+function isUnsignedIntegerToken(value: string | undefined): boolean {
+  return value !== undefined && /^\d+$/u.test(value);
+}
+
+function isSampleDirectorySource(source: DirectorySource): boolean {
+  return isSampleDirectorySourceIdentity(source.id, source.directoryIdentity.value);
+}
+
+function isSampleDirectorySourceIdentity(sourceId: string, directoryIdentity: string): boolean {
+  return sourceId === "source-directory" && directoryIdentity === "source-directory";
 }

@@ -4,7 +4,9 @@ Thumbs.db
 *.tmp
 *.swp
 .vscode/
-.idea/
+.idea/*
+!.idea/runConfigurations/
+!.idea/runConfigurations/*.xml
 .agents/skills/macos-design/
 
 # Claude Code local settings (machine-specific permissions)
@@ -23,6 +25,7 @@ build/
 coverage/
 *.tsbuildinfo
 *.log
+!tests/fixtures/logs/idea.3.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -52,4 +55,3 @@ xcuserdata/
 *.xcuserstate
 *.xccheckout
 *.moved-aside
-

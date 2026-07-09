@@ -12,6 +12,7 @@ const defaultMacosScheme = "CrosslogDesktopUITests";
 const defaultMacosAppBundlePath =
   "apps/desktop/src-tauri/target/debug/bundle/macos/Crosslog.app";
 const defaultMacosAppBundleId = "dev.crosslog.desktop";
+const defaultLargeLogFixturePath = "tests/fixtures/logs/idea.3.log";
 
 if (platform === "darwin") {
   timeSync("macOS desktop UI harness", runMacosXCTestHarness);
@@ -216,6 +217,7 @@ async function runWdioHarness() {
     CROSSLOG_TAURI_DRIVER_PORT: String(driverPort),
     CROSSLOG_UI_TEST: "1",
     CROSSLOG_UI_TEST_ACTIONS_PATH: actionsPath,
+    CROSSLOG_UI_TEST_LARGE_LOG_PATH: resolvePath(defaultLargeLogFixturePath),
   };
   logWdioSpecSelection(wdioEnvironment.CROSSLOG_WDIO_SPECS);
   const driver = timeSync(`tauri-driver start on port ${driverPort}`, () => startTauriDriver(driverPort, wdioEnvironment));
@@ -570,6 +572,7 @@ function macosTestEnvironment(appBundlePath, appBundleId) {
     CROSSLOG_DESKTOP_APP_BUNDLE_ID: appBundleId,
     CROSSLOG_DESKTOP_APP_BUNDLE_PATH: appBundlePath,
     CROSSLOG_UI_TEST_PERSIST_SESSION: "1",
+    CROSSLOG_UI_TEST_LARGE_LOG_PATH: resolvePath(defaultLargeLogFixturePath),
   };
 }
 

@@ -2,6 +2,7 @@ use std::{env, fs, io};
 
 const SUPPORTED_UI_TEST_ACTIONS: &[&str] = &[
     "openSampleLogs",
+    "openLargeLog",
     "copyFirstPane",
     "toggleSynchronization",
     "openSettings",
@@ -49,6 +50,18 @@ pub fn ui_test_session_key() -> String {
 pub fn ui_test_persistent_session_enabled() -> bool {
     env::var("CROSSLOG_UI_TEST_PERSIST_SESSION")
         .is_ok_and(|value| value == "1" || value.eq_ignore_ascii_case("true"))
+}
+
+#[tauri::command]
+pub fn ui_test_large_log_path() -> Result<Option<String>, String> {
+    if !ui_test_mode_enabled() {
+        return Ok(None);
+    }
+
+    Ok(env::var("CROSSLOG_UI_TEST_LARGE_LOG_PATH")
+        .ok()
+        .map(|value| value.trim().to_owned())
+        .filter(|value| !value.is_empty()))
 }
 
 #[tauri::command]

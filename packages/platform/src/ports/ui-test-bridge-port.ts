@@ -43,6 +43,8 @@ export interface UiTestPaneNavigationEvidence {
   readonly maxGutterDigitCount: number | null;
   readonly lastNavigation: "none" | "click" | "keyboard" | "wheel";
   readonly syncTargetLineNumber: number | null;
+  readonly renderedRowCount: number | null;
+  readonly visibleRowCount: number | null;
 }
 
 export interface UiTestSearchHighlightEvidence {
@@ -138,6 +140,7 @@ export interface UiTestShellState {
 
 export const uiTestActions = [
   "openSampleLogs",
+  "openLargeLog",
   "copyFirstPane",
   "toggleSynchronization",
   "openSettings",
@@ -239,6 +242,8 @@ export function formatUiTestShellState(state: UiTestShellState): string {
     `maxGutterDigits=${formatNullableNumber(state.paneNavigation.maxGutterDigitCount)}`,
     `lastNavigation=${state.paneNavigation.lastNavigation}`,
     `syncTargetLine=${formatNullableNumber(state.paneNavigation.syncTargetLineNumber)}`,
+    `renderedRows=${formatNullableNumber(state.paneNavigation.renderedRowCount)}`,
+    `visibleRows=${formatNullableNumber(state.paneNavigation.visibleRowCount)}`,
     `searchHighlights=${state.searchHighlights.visible ? "visible" : "hidden"}`,
     `searchHighlightCount=${state.searchHighlights.count}`,
     `copyAction=${state.copyAction.visible ? "visible" : "hidden"}`,

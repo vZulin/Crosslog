@@ -34,11 +34,7 @@ fn platform_identity(_path: &PathBuf, metadata: &fs::Metadata) -> String {
 fn platform_identity(path: &PathBuf, metadata: &fs::Metadata) -> String {
     use std::os::windows::fs::MetadataExt;
 
-    format!(
-        "windows:{}:{}",
-        path.display(),
-        metadata.creation_time()
-    )
+    format!("windows:{}:{}", path.display(), metadata.creation_time())
 }
 
 #[cfg(not(any(unix, windows)))]
@@ -50,7 +46,12 @@ fn platform_identity(path: &PathBuf, metadata: &fs::Metadata) -> String {
         .map(|duration| duration.as_millis())
         .unwrap_or_default();
 
-    format!("fallback:{}:{}:{}", path.display(), metadata.len(), modified_ms)
+    format!(
+        "fallback:{}:{}:{}",
+        path.display(),
+        metadata.len(),
+        modified_ms
+    )
 }
 
 #[cfg(test)]

@@ -13,4 +13,24 @@ command -v cargo >/dev/null || {
   exit 127
 }
 
-corepack pnpm --filter @crosslog/desktop tauri build -- --locked
+corepack pnpm --filter @crosslog/desktop tauri build --bundles app,dmg --no-sign -- --locked
+
+app_bundle_path="apps/desktop/src-tauri/target/release/bundle/macos/Crosslog.app"
+dmg_bundle_dir="apps/desktop/src-tauri/target/release/bundle/dmg"
+
+if [ ! -d "$app_bundle_path" ]; then
+  echo "Expected macOS app bundle was not created: $app_bundle_path" >&2
+  exit 1
+fi
+
+shopt -s nullglob
+dmg_files=("$dmg_bundle_dir"/*.dmg)
+shopt -u nullglob
+
+if [ "${#dmg_files[@]}" -eq 0 ]; then
+  echo "Expected macOS DMG was not created under: $dmg_bundle_dir" >&2
+  exit 1
+fi
+
+printf 'Built macOS app bundle: %s\n' "$app_bundle_path"
+printf 'Built macOS DMG: %s\n' "${dmg_files[@]}"

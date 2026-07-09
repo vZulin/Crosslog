@@ -71,7 +71,10 @@ mod tests {
         let content = read_log_file(file_path).expect("read log file");
 
         assert_eq!(content.display_name, "app.log");
-        assert_eq!(content.lines, vec!["first line".to_owned(), "second line".to_owned()]);
+        assert_eq!(
+            content.lines,
+            vec!["first line".to_owned(), "second line".to_owned()]
+        );
         assert!(content.size_bytes > 0);
     }
 
@@ -83,4 +86,3 @@ mod tests {
         assert!(read_log_file(missing).is_err());
     }
 }
-

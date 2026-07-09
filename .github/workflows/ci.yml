@@ -214,7 +214,7 @@ jobs:
 
       - name: Install Linux Playwright dependencies
         if: matrix.linux_playwright_deps
-        run: corepack pnpm exec playwright install-deps chromium
+        run: corepack pnpm exec playwright install-deps chromium webkit
 
       - name: Cache Playwright browsers
         if: matrix.playwright_required
@@ -226,7 +226,7 @@ jobs:
 
       - name: Install Playwright browser
         if: matrix.playwright_required
-        run: corepack pnpm exec playwright install chromium
+        run: corepack pnpm exec playwright install chromium webkit
 
       - name: Enable macOS UI automation
         if: matrix.label == 'macos-desktop'
@@ -417,11 +417,20 @@ jobs:
         run: corepack pnpm build:web
 
       - name: Upload Web artifact
+        id: upload-web-artifact
         uses: actions/upload-artifact@v4
         with:
           name: crosslog-web
           path: apps/web/dist
           if-no-files-found: error
+
+      - name: Add Web artifact summary
+        run: |
+          {
+            echo "### Web build"
+            echo "- Artifact: [crosslog-web](${{ steps.upload-web-artifact.outputs.artifact-url }})"
+            echo "- Contents: apps/web/dist"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   build-desktop:
     name: Build Desktop (${{ matrix.os }})
@@ -490,6 +499,7 @@ jobs:
         run: ${{ matrix.build-command }}
 
       - name: Upload Desktop artifact
+        id: upload-desktop-artifact
         uses: actions/upload-artifact@v4
         with:
           name: crosslog-desktop-${{ matrix.os }}
@@ -498,3 +508,18 @@ jobs:
             apps/desktop/src-tauri/target/release/crosslog-desktop.exe
             apps/desktop/src-tauri/target/release/bundle/**
           if-no-files-found: error
+
+      - name: Add Desktop artifact summary
+        shell: bash
+        run: |
+          {
+            echo "### Desktop build (${{ matrix.os }})"
+            echo "- Artifact: [crosslog-desktop-${{ matrix.os }}](${{ steps.upload-desktop-artifact.outputs.artifact-url }})"
+            if [ "${{ matrix.os }}" = "macos" ]; then
+              echo "- macOS release binary: apps/desktop/src-tauri/target/release/crosslog-desktop"
+              echo "- macOS app bundle: apps/desktop/src-tauri/target/release/bundle/macos/Crosslog.app"
+              echo "- macOS DMG: apps/desktop/src-tauri/target/release/bundle/dmg/*.dmg"
+            else
+              echo "- Desktop outputs: release binary and any generated Tauri bundles under apps/desktop/src-tauri/target/release"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

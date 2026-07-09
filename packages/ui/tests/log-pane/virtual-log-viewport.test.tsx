@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render } from "@testing-library/react";
+import { fireEvent, render, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { createVisibleLogLineWindow, VirtualLogViewport } from "../../src/log-pane/VirtualLogViewport";
 
@@ -22,7 +22,38 @@ describe("virtual log viewport", () => {
     expect(viewport.style.getPropertyValue("--crosslog-line-number-digits")).toBe("4");
   });
 
-  it("moves the selected line with vertical wheel navigation and emits a sync anchor", () => {
+  it("renders only supplied log lines without title-based placeholder content", () => {
+    const { container } = render(
+      <VirtualLogViewport
+        title="idea.2.log"
+        lines={["2026-04-17 13:31:44,051 REAL restored file content"]}
+        maxVisibleLines={5}
+      />,
+    );
+
+    expect(container.textContent).toContain("REAL restored file content");
+    expect(container.textContent).not.toContain("2026-06-16T09:00:09.000Z idea.2.log line 10");
+  });
+
+  it("applies horizontal scrolling to rows while keeping the viewport fixed", () => {
+    const { container, getByTestId } = render(
+      <VirtualLogViewport
+        title="wide.log"
+        lines={["2026-06-16T09:00:00.000Z wide content"]}
+        horizontalScrollLeft={96}
+        horizontalContentWidth={1_200}
+        maxVisibleLines={5}
+      />,
+    );
+    const viewport = getByTestId("log-viewport");
+    const row = container.querySelector<HTMLElement>('[data-line-number="1"]');
+
+    expect(viewport.classList.contains("crosslog-log-viewport")).toBe(true);
+    expect(row?.style.transform).toBe("translateX(-96px)");
+    expect(row?.style.inlineSize).toBe("1176px");
+  });
+
+  it("moves the selected line with native vertical scrolling and emits a sync anchor", () => {
     const onTimeAnchorChange = vi.fn();
     const timestamps = createTimestamps(20);
     const { getByTestId } = render(
@@ -36,14 +67,69 @@ describe("virtual log viewport", () => {
     );
     const viewport = getByTestId("log-viewport");
 
-    fireEvent.wheel(viewport, { deltaY: 240 });
+    scrollViewportToLine(viewport, 7);
 
     expect(viewport.getAttribute("data-selected-line-number")).toBe("7");
     expect(viewport.getAttribute("data-last-navigation")).toBe("wheel");
-    expect(onTimeAnchorChange).toHaveBeenLastCalledWith(7, timestamps[6]);
+    expect(onTimeAnchorChange).toHaveBeenLastCalledWith(7, timestamps[6], 0, "wheel");
   });
 
-  it("advances the rendered text by scrolling the viewport as the wheel moves (bug 5)", () => {
+  it("keeps an explicitly selected line anchored while native scrolling moves its visual position", () => {
+    const onTimeAnchorChange = vi.fn();
+    const timestamps = createTimestamps(40);
+    const { getByTestId } = render(
+      <VirtualLogViewport
+        title="app.log"
+        lines={createNumberedLines(40)}
+        timestamps={timestamps}
+        maxVisibleLines={40}
+        onTimeAnchorChange={onTimeAnchorChange}
+      />,
+    );
+    const viewport = getByTestId("log-viewport");
+    mockScrollableViewport(viewport, { scrollHeight: 736, clientHeight: 200 });
+
+    fireEvent.click(viewport.querySelector('[data-line-number="10"]')!);
+    viewport.scrollTop = 4 * 18;
+    fireEvent.scroll(viewport);
+
+    expect(viewport.getAttribute("data-selected-line-number")).toBe("10");
+    expect(viewport.querySelector('[data-line-number="10"]')?.getAttribute("data-selected-line")).toBe(
+      "true",
+    );
+    expect(onTimeAnchorChange).toHaveBeenLastCalledWith(10, timestamps[9], 5, "wheel");
+  });
+
+  it("places a synchronized target at the requested visual row", async () => {
+    const { getByTestId, rerender } = render(
+      <VirtualLogViewport
+        title="service.log"
+        lines={createNumberedLines(50)}
+        timestamps={createTimestamps(50)}
+        maxVisibleLines={20}
+      />,
+    );
+    const viewport = getByTestId("log-viewport");
+    mockScrollableViewport(viewport, { scrollHeight: 916, clientHeight: 200 });
+
+    rerender(
+      <VirtualLogViewport
+        title="service.log"
+        lines={createNumberedLines(50)}
+        timestamps={createTimestamps(50)}
+        maxVisibleLines={20}
+        synchronizationTargetLineNumber={20}
+        synchronizationTargetVisualLineOffset={8}
+      />,
+    );
+
+    await waitFor(() => expect(viewport.scrollTop).toBe(198));
+    expect(viewport.querySelector('[data-line-number="20"]')?.getAttribute("data-sync-target")).toBe(
+      "true",
+    );
+  });
+
+  it("advances the rendered text by following native vertical scroll (bug 5)", () => {
     const { getByTestId } = render(
       <VirtualLogViewport
         title="app.log"
@@ -57,12 +143,9 @@ describe("virtual log viewport", () => {
 
     expect(viewport.scrollTop).toBe(0);
 
-    fireEvent.wheel(viewport, { deltaY: 120 });
+    scrollViewportToLine(viewport, 4);
 
-    // The selected line advances by three lines (120 / 40 px-per-line)…
     expect(viewport.getAttribute("data-selected-line-number")).toBe("4");
-    // …and, crucially, the text itself moves: the container is scrolled instead of
-    // leaving the rendered content frozen while only the indicator moves.
     expect(viewport.scrollTop).toBeGreaterThan(0);
   });
 
@@ -77,19 +160,46 @@ describe("virtual log viewport", () => {
     );
     const viewport = getByTestId("log-viewport");
     mockScrollableViewport(viewport, { scrollHeight: 1000, clientHeight: 200 });
-    const maxScrollTop = 1000 - 200;
+    const maxScrollTop = getExpectedVirtualMaxScrollTop(50, 200);
 
-    fireEvent.wheel(viewport, { deltaY: 40 * 200 });
+    scrollViewportToBottom(viewport);
 
     expect(viewport.getAttribute("data-selected-line-number")).toBe("50");
     expect(viewport.querySelector('[data-line-number="50"]')).not.toBeNull();
     expect(Math.round(viewport.scrollTop)).toBe(maxScrollTop);
 
-    fireEvent.wheel(viewport, { deltaY: -40 * 200 });
+    scrollViewportToTop(viewport);
 
     expect(viewport.getAttribute("data-selected-line-number")).toBe("1");
     expect(viewport.querySelector('[data-line-number="1"]')).not.toBeNull();
     expect(viewport.scrollTop).toBe(0);
+  });
+
+  it("keeps a large log populated while scrolling beyond the rendered window", () => {
+    const lineCount = 10_000;
+    const { getByTestId } = render(
+      <VirtualLogViewport
+        title="large.log"
+        lines={createNumberedLines(lineCount)}
+        timestamps={createTimestamps(lineCount)}
+        maxVisibleLines={400}
+      />,
+    );
+    const viewport = getByTestId("log-viewport");
+    mockScrollableViewport(viewport, { scrollHeight: 7_216, clientHeight: 200 });
+
+    scrollViewportToLine(viewport, 5_001);
+
+    const renderedRows = viewport.querySelectorAll(".crosslog-log-viewport__row");
+    const firstRenderedLineNumber = Number(renderedRows[0]?.getAttribute("data-line-number"));
+    const lastRenderedLineNumber = Number(renderedRows[renderedRows.length - 1]?.getAttribute("data-line-number"));
+
+    expect(viewport.getAttribute("data-selected-line-number")).toBe("5001");
+    expect(renderedRows.length).toBe(400);
+    expect(firstRenderedLineNumber).toBeLessThanOrEqual(5001);
+    expect(lastRenderedLineNumber).toBeGreaterThanOrEqual(5001);
+    expect(viewport.scrollTop).toBeGreaterThan(0);
+    expect(viewport.scrollTop).toBeLessThan(getExpectedVirtualMaxScrollTop(lineCount, 200));
   });
 
   it("keeps the selected line and sync anchor in step with scrollbar dragging (bug 5)", () => {
@@ -111,7 +221,7 @@ describe("virtual log viewport", () => {
     fireEvent.scroll(viewport);
 
     expect(viewport.getAttribute("data-selected-line-number")).toBe("50");
-    expect(onTimeAnchorChange).toHaveBeenLastCalledWith(50, timestamps[49]);
+    expect(onTimeAnchorChange).toHaveBeenLastCalledWith(50, timestamps[49], 5, "wheel");
   });
 
   it("moves the selected line with arrow keys and keeps horizontal arrows wired to the scroller", () => {
@@ -142,7 +252,7 @@ describe("virtual log viewport", () => {
     expect(viewport.getAttribute("data-last-navigation")).toBe("keyboard");
     expect(viewport.querySelector('[data-line-number="2"]')?.getAttribute("data-selected-line")).toBe("true");
     expect(scroller.scrollLeft).toBe(40);
-    expect(onTimeAnchorChange).toHaveBeenLastCalledWith(2, timestamps[1]);
+    expect(onTimeAnchorChange).toHaveBeenLastCalledWith(2, timestamps[1], 0, "keyboard");
   });
 
   it("renders search matches as inline text spans instead of row highlights", () => {
@@ -199,4 +309,25 @@ function mockScrollableViewport(
 ): void {
   Object.defineProperty(element, "scrollHeight", { configurable: true, value: scrollHeight });
   Object.defineProperty(element, "clientHeight", { configurable: true, value: clientHeight });
+}
+
+function scrollViewportToLine(element: HTMLElement, lineNumber: number): void {
+  element.scrollTop = lineNumber <= 1 ? 0 : 8 + (lineNumber - 1) * 18;
+  fireEvent.scroll(element);
+}
+
+function scrollViewportToBottom(element: HTMLElement): void {
+  const lineCount = Number(element.getAttribute("data-line-count") ?? 0);
+
+  element.scrollTop = getExpectedVirtualMaxScrollTop(lineCount, element.clientHeight);
+  fireEvent.scroll(element);
+}
+
+function scrollViewportToTop(element: HTMLElement): void {
+  element.scrollTop = 0;
+  fireEvent.scroll(element);
+}
+
+function getExpectedVirtualMaxScrollTop(lineCount: number, clientHeight: number): number {
+  return 8 * 2 + lineCount * 18 - clientHeight;
 }

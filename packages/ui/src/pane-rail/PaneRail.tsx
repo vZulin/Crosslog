@@ -1,6 +1,7 @@
 import React from "react";
 import type { DirectorySource, LogPane as LogPaneModel } from "@crosslog/core";
 import { LogPane } from "../log-pane/LogPane";
+import type { LogViewportNavigationKind } from "../log-pane/VirtualLogViewport";
 import type { ClipboardWriter } from "../log-pane/LogTextSelection";
 import type { PaneHeaderLifecycleState } from "../log-pane/useFileLifecycleEvents";
 import { PaneResizer } from "./PaneResizer";
@@ -14,6 +15,7 @@ export interface PaneRailPane {
   readonly directorySource?: DirectorySource;
   readonly lifecycleState?: PaneHeaderLifecycleState;
   readonly synchronizationTargetLineNumber?: number | null;
+  readonly synchronizationTargetVisualLineOffset?: number | null;
   readonly searchHighlightsVisible?: boolean;
 }
 
@@ -25,7 +27,13 @@ export interface PaneRailProps {
   readonly onHorizontalScroll: (paneId: string, scrollLeft: number) => void;
   readonly onReorderPane?: (paneId: string, targetIndex: number) => void;
   readonly onNavigateDirectory?: (paneId: string, direction: "previous" | "next") => void;
-  readonly onTimeAnchorChange?: (paneId: string, lineNumber: number, timestamp: Date | null) => void;
+  readonly onTimeAnchorChange?: (
+    paneId: string,
+    lineNumber: number,
+    timestamp: Date | null,
+    visualLineOffset: number,
+    navigationKind: LogViewportNavigationKind,
+  ) => void;
   readonly onTimeOffsetChange?: (paneId: string, offset: LogPaneModel["timeOffset"]) => void;
   readonly onSearchQueryChange?: (paneId: string, query: string) => void;
   readonly onSearchRegexModeChange?: (paneId: string, enabled: boolean) => void;
@@ -165,6 +173,7 @@ export function PaneRail({
             directorySource={entry.directorySource}
             lifecycleState={entry.lifecycleState}
             synchronizationTargetLineNumber={entry.synchronizationTargetLineNumber}
+            synchronizationTargetVisualLineOffset={entry.synchronizationTargetVisualLineOffset}
             searchHighlightsVisible={entry.searchHighlightsVisible}
             onClose={onClosePane}
             onActivate={onActivatePane}

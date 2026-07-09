@@ -1,0 +1,14 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Crosslog Desktop Dev" type="js.build_tools.npm" factoryName="npm">
+    <package-json value="$PROJECT_DIR$/package.json" />
+    <command value="run-script" />
+    <scripts>
+      <script value="dev:desktop" />
+    </scripts>
+    <node-interpreter value="project" />
+    <envs>
+      <env name="PATH" value="$USER_HOME$/.cargo/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin" />
+    </envs>
+    <method v="2" />
+  </configuration>
+</component>

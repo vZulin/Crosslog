@@ -1,3 +1,4 @@
+pub mod diagnostic_log;
 pub mod directory_access;
 pub mod drag_drop;
 pub mod file_access;

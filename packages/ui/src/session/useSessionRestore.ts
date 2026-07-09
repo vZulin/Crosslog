@@ -6,6 +6,7 @@ export type SessionRestoreStatus = "loading" | "ready" | "error";
 
 export interface SessionRestoreHandlers {
   readonly onSessionRestored: (session: Session) => void;
+  readonly onSessionRestoreFailed?: (error: unknown) => void;
 }
 
 export interface SessionRestoreState {
@@ -55,6 +56,7 @@ export function useSessionRestore(
           return;
         }
 
+        handlersRef.current.onSessionRestoreFailed?.(error);
         setState({
           status: "error",
           message: error instanceof Error ? error.message : "Session recovery failed.",
@@ -73,6 +75,7 @@ export function useSessionSnapshotWriter(
   sessionStore: SessionStorePort,
   session: Session | null,
   enabled: boolean,
+  onSnapshotWriteFailed?: (error: unknown, session: Session) => void,
 ): SessionSnapshotWriteStatus {
   const [writeState, setWriteState] = React.useState<SessionSnapshotWriteState>({
     status: "idle",
@@ -95,8 +98,9 @@ export function useSessionSnapshotWriter(
           setWriteState({ status: "written", session });
         }
       })
-      .catch(() => {
+      .catch((error: unknown) => {
         if (!cancelled) {
+          onSnapshotWriteFailed?.(error, session);
           setWriteState({ status: "error", session });
         }
       });
@@ -104,7 +108,7 @@ export function useSessionSnapshotWriter(
     return () => {
       cancelled = true;
     };
-  }, [enabled, session, sessionStore]);
+  }, [enabled, onSnapshotWriteFailed, session, sessionStore]);
 
   if (!enabled || !session) {
     return "idle";

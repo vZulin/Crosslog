@@ -5,6 +5,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
+            commands::diagnostic_log::write_diagnostic_log,
             commands::file_watcher::classify_file_snapshot,
             commands::directory_access::list_top_level_directory_files,
             commands::directory_access::refresh_directory_files,
@@ -21,6 +22,7 @@ pub fn run() {
             commands::ui_test::is_ui_test_mode,
             commands::ui_test::ui_test_session_key,
             commands::ui_test::ui_test_persistent_session_enabled,
+            commands::ui_test::ui_test_large_log_path,
             commands::ui_test::publish_ui_test_state,
             commands::ui_test::consume_ui_test_action
         ])

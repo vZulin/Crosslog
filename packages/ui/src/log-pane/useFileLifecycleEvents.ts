@@ -13,6 +13,13 @@ export interface PaneHeaderLifecycleState {
   readonly errorMessage: string | null;
 }
 
+export interface FileLifecycleEventHandlers {
+  readonly onWatcherError?: (
+    event: Extract<FileWatcherEvent, { readonly type: "WatcherError" }>,
+    source: FileSource,
+  ) => void;
+}
+
 export function getPaneHeaderLifecycleState(
   source: FileSource | null | undefined,
 ): PaneHeaderLifecycleState | undefined {
@@ -31,7 +38,14 @@ export function getPaneHeaderLifecycleState(
 
 export function useFileLifecycleEvents(
   setFileSources: React.Dispatch<React.SetStateAction<FileSourceMap>>,
+  handlers: FileLifecycleEventHandlers = {},
 ) {
+  const handlersRef = React.useRef(handlers);
+
+  React.useEffect(() => {
+    handlersRef.current = handlers;
+  }, [handlers]);
+
   return React.useCallback(
     (event: FileWatcherEvent) => {
       setFileSources((currentSources) => {
@@ -40,6 +54,10 @@ export function useFileLifecycleEvents(
 
         if (!sourceId || !source) {
           return currentSources;
+        }
+
+        if (event.type === "WatcherError") {
+          handlersRef.current.onWatcherError?.(event, source);
         }
 
         const nextSource = applyWatcherEvent(source, event);

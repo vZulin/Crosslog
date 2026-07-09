@@ -58,6 +58,24 @@ describe("Desktop session restore", () => {
     expect(await getElementWidth(await getLogPaneByTitle("app.log"))).toBe(resizedAppWidth);
     await expect(await getAppScrollerScrollLeft()).toBe(0);
   });
+
+  it("restores real desktop file content after restart", async () => {
+    const restoredFixtureText = "Suppressed a frequent exception logged for the 2nd time";
+
+    await waitForDesktopShell();
+    enqueueDesktopUiTestAction("openLargeLog");
+    await waitForUiTestTitleFragment("idea.3.log", 20_000);
+    await waitForLogPaneText("idea.3.log", restoredFixtureText);
+    await waitForSessionSnapshotWritten();
+
+    await browser.refresh();
+
+    await waitForUiTestTitleFragment("state=logs");
+    await waitForUiTestTitleFragment("idea.3.log", 20_000);
+    await expect(await getLogPaneByTitle("idea.3.log")).toBeExisting();
+    await waitForLogPaneText("idea.3.log", restoredFixtureText);
+    await expectLogPaneTextAbsent("idea.3.log", "2026-06-16T09:00:09.000Z idea.3.log line 10");
+  });
 });
 
 async function getElementWidth(element: WebdriverIO.Element): Promise<number> {
@@ -87,4 +105,19 @@ async function getAppScrollerScrollLeft(): Promise<number> {
 
     return scroller.scrollLeft;
   });
+}
+
+async function waitForLogPaneText(title: string, expectedText: string): Promise<void> {
+  await browser.waitUntil(
+    async () => (await (await getLogPaneByTitle(title)).getText()).includes(expectedText),
+    {
+      interval: 250,
+      timeout: 10_000,
+      timeoutMsg: `Log pane ${title} did not contain expected text: ${expectedText}`,
+    },
+  );
+}
+
+async function expectLogPaneTextAbsent(title: string, unexpectedText: string): Promise<void> {
+  expect(await (await getLogPaneByTitle(title)).getText()).not.toContain(unexpectedText);
 }

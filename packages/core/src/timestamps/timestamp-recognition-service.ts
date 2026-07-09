@@ -13,15 +13,21 @@ export function createTimestampRecognitionService(
   const compiledFormats = formats.map(compileTimestampFormat).filter((format) => format.enabled);
 
   function recognizeTimestampInLine(line: string): TimestampMatch | null {
+    let firstMatch: TimestampMatch | null = null;
+
     for (const format of compiledFormats) {
       const match = format.matchLine(line);
 
-      if (match) {
-        return match;
+      if (!match) {
+        continue;
+      }
+
+      if (!firstMatch || match.sourceRange.start < firstMatch.sourceRange.start) {
+        firstMatch = match;
       }
     }
 
-    return null;
+    return firstMatch;
   }
 
   function recognizeLine(lineNumber: number, rawText: string, chunkId = "timestamp-recognition"): LogLine {
@@ -64,6 +70,12 @@ export const defaultTimestampFormats: readonly TimestampFormatDefinition[] = [
     id: "space-comma",
     pattern: "\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2},\\d{3}",
     parser: "YYYY-MM-DD HH:mm:ss,SSS",
+    enabled: true,
+  },
+  {
+    id: "space-dot",
+    pattern: "\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\.\\d{3}",
+    parser: "YYYY-MM-DD HH:mm:ss.SSS",
     enabled: true,
   },
 ];
