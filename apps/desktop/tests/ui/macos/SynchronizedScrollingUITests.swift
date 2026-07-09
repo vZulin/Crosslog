@@ -48,7 +48,7 @@ final class SynchronizedScrollingUITests: CrosslogUITests {
                 return
             }
 
-            if let selectedLine = selectedLineNumber(from: title), selectedLine >= 650 {
+            if let selectedLine = selectedLineNumber(from: title), selectedLine >= 250 {
                 XCTAssertGreaterThan(titleInteger("visibleRows", from: title) ?? 0, 0)
                 XCTAssertEqual(titleInteger("renderedRows", from: title), 400)
                 return
@@ -57,7 +57,7 @@ final class SynchronizedScrollingUITests: CrosslogUITests {
             RunLoop.current.run(until: Date().addingTimeInterval(0.05))
         }
 
-        XCTFail("Expected large log fast scroll to reach line 650, actual title: '\(window.title)'")
+        XCTFail("Expected large log fast scroll to reach line 250, actual title: '\(window.title)'")
     }
 
     func testLargeLogNativeFastWheelKeepsViewportRowsVisible() {

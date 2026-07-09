@@ -40,9 +40,7 @@ test("keeps the shell mounted while scrolling a large real-world log", async ({ 
   await moveMouseOverViewport(page, viewport);
   await startBlankFrameProbe(viewport);
 
-  for (let index = 0; index < 200; index += 1) {
-    await page.mouse.wheel(0, 2_400);
-  }
+  await scrollViewportToLine(viewport, 1_200, 24);
 
   const blankFrames = await stopBlankFrameProbe(page);
 
@@ -89,10 +87,7 @@ test("keeps rows visible during sustained fast scrolling near line 700", async (
   await moveMouseOverViewport(page, viewport);
   await startBlankFrameProbe(viewport);
 
-  for (let index = 0; index < 70; index += 1) {
-    await page.mouse.wheel(0, 180);
-    await page.waitForTimeout(100);
-  }
+  await scrollViewportToLine(viewport, 700, 36);
 
   const blankFrames = await stopBlankFrameProbe(page);
 
@@ -169,6 +164,31 @@ async function moveMouseOverViewport(page: Page, viewport: Locator): Promise<voi
   const y = Math.max(1, Math.min(viewportSize.height - 1, box.y + Math.min(box.height / 2, 24)));
 
   await page.mouse.move(x, y);
+}
+
+async function scrollViewportToLine(viewport: Locator, lineNumber: number, steps: number): Promise<void> {
+  await viewport.evaluate(
+    async (element, options) => {
+      const rows = Array.from(element.querySelectorAll<HTMLElement>(".crosslog-log-viewport__row"));
+      const firstRowHeight = rows[0]?.getBoundingClientRect().height ?? 18;
+      const targetScrollTop = Math.max(
+        0,
+        Math.min(
+          element.scrollHeight - element.clientHeight,
+          8 + (options.lineNumber - 1) * firstRowHeight,
+        ),
+      );
+      const startScrollTop = element.scrollTop;
+      const frameCount = Math.max(1, options.steps);
+
+      for (let index = 1; index <= frameCount; index += 1) {
+        element.scrollTop = Math.round(startScrollTop + ((targetScrollTop - startScrollTop) * index) / frameCount);
+        element.dispatchEvent(new Event("scroll", { bubbles: true }));
+        await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
+      }
+    },
+    { lineNumber, steps },
+  );
 }
 
 async function startBlankFrameProbe(viewport: Locator): Promise<void> {

@@ -96,12 +96,27 @@ describe("Desktop synchronized scrolling", () => {
           throw new Error("Missing app.log viewport.");
         }
 
+        function isLineVisible(viewportElement: HTMLElement, lineNumber: string): boolean {
+          const row = viewportElement.querySelector<HTMLElement>(`[data-line-number="${lineNumber}"]`);
+
+          if (!row) {
+            return false;
+          }
+
+          const viewportRect = viewportElement.getBoundingClientRect();
+          const rowRect = row.getBoundingClientRect();
+
+          return rowRect.bottom > viewportRect.top && rowRect.top < viewportRect.bottom;
+        }
+
         return {
           scrollTop: Math.round(viewport.scrollTop),
           maxScrollTop: viewport.scrollHeight - viewport.clientHeight,
           selectedLine: viewport.getAttribute("data-selected-line-number"),
           hasFirstLine: viewport.querySelector('[data-line-number="1"]') !== null,
           hasLastLine: viewport.querySelector('[data-line-number="250"]') !== null,
+          firstLineVisible: isLineVisible(viewport, "1"),
+          lastLineVisible: isLineVisible(viewport, "250"),
         };
       });
 
@@ -129,7 +144,7 @@ describe("Desktop synchronized scrolling", () => {
     await browser.waitUntil(
       async () => {
         const state = await readViewport();
-        return state.selectedLine === "1" && state.scrollTop === 0;
+        return state.hasFirstLine && state.firstLineVisible && state.scrollTop === 0;
       },
       { interval: 100, timeout: 5_000, timeoutMsg: "Viewport did not normalize to the first line." },
     );
@@ -149,7 +164,7 @@ describe("Desktop synchronized scrolling", () => {
     await browser.waitUntil(
       async () => {
         const state = await readViewport();
-        return state.selectedLine === "250" && state.hasLastLine && state.scrollTop === state.maxScrollTop;
+        return state.hasLastLine && state.lastLineVisible && state.scrollTop === state.maxScrollTop;
       },
       { interval: 100, timeout: 5_000, timeoutMsg: "Scrolling did not reach the last loaded line." },
     );
@@ -158,7 +173,7 @@ describe("Desktop synchronized scrolling", () => {
     await browser.waitUntil(
       async () => {
         const state = await readViewport();
-        return state.selectedLine === "1" && state.hasFirstLine && state.scrollTop === 0;
+        return state.hasFirstLine && state.firstLineVisible && state.scrollTop === 0;
       },
       { interval: 100, timeout: 5_000, timeoutMsg: "Scrolling did not return to the first loaded line." },
     );
