@@ -122,6 +122,8 @@ describe("theme variants", () => {
 
   it("maps app surfaces, popovers, status, and log severity rows through theme tokens", () => {
     const themeCss = readThemeCss();
+    const lightTokens = readCssCustomProperties(themeCss, ":root");
+    const darkTokens = readCssCustomProperties(themeCss, '[data-theme="dark"]');
 
     expect(themeCss).toMatch(
       /\.crosslog-shell\s*\{[^}]*background:\s*var\(--crosslog-window-bg\);[^}]*color:\s*var\(--crosslog-text\);/s,
@@ -141,11 +143,32 @@ describe("theme variants", () => {
     expect(themeCss).toMatch(
       /\.crosslog-popover\s*\{[^}]*background:\s*var\(--crosslog-pane-bg\);[^}]*color:\s*var\(--crosslog-text\);/s,
     );
+    expect(lightTokens["--crosslog-log-token-foreground"]).toBe("#000000");
+    expect(lightTokens["--crosslog-log-token-severity"]).toBe("#0000ff");
+    expect(lightTokens["--crosslog-log-token-property"]).toBe("#0451a5");
+    expect(lightTokens["--crosslog-log-token-string"]).toBe("#a31515");
+    expect(lightTokens["--crosslog-log-token-number"]).toBe("#098658");
+    expect(lightTokens["--crosslog-log-token-constant"]).toBe("#0000ff");
+    expect(darkTokens["--crosslog-log-token-foreground"]).toBe("#cccccc");
+    expect(darkTokens["--crosslog-log-token-severity"]).toBe("#c586c0");
+    expect(darkTokens["--crosslog-log-token-property"]).toBe("#9cdcfe");
+    expect(darkTokens["--crosslog-log-token-string"]).toBe("#ce9178");
+    expect(darkTokens["--crosslog-log-token-number"]).toBe("#b5cea8");
+    expect(darkTokens["--crosslog-log-token-constant"]).toBe("#569cd6");
     expect(themeCss).toMatch(
-      /\.crosslog-log-viewport__row\[data-severity="warn"\][^}]*\{[^}]*background:\s*var\(--crosslog-warn-bg\);/s,
+      /\.crosslog-log-token\[data-log-token-kind="severity"\][^}]*\{[^}]*color:\s*var\(--crosslog-log-token-severity\);/s,
     );
     expect(themeCss).toMatch(
-      /\.crosslog-log-viewport__row\[data-severity="error"\][^}]*\{[^}]*background:\s*var\(--crosslog-error-bg\);/s,
+      /\.crosslog-log-token\[data-log-token-kind="property"\][^}]*\{[^}]*color:\s*var\(--crosslog-log-token-property\);/s,
+    );
+    expect(themeCss).toMatch(
+      /\.crosslog-log-token\[data-log-token-kind="string"\][^}]*\{[^}]*color:\s*var\(--crosslog-log-token-string\);/s,
+    );
+    expect(themeCss).toMatch(
+      /\.crosslog-log-token\[data-log-token-kind="timestamp"\][^}]*\{[^}]*color:\s*var\(--crosslog-log-token-number\);/s,
+    );
+    expect(themeCss).toMatch(
+      /\.crosslog-log-token\[data-log-token-kind="constant"\][^}]*\{[^}]*color:\s*var\(--crosslog-log-token-constant\);/s,
     );
   });
 });

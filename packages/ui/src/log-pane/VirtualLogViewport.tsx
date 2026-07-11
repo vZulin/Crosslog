@@ -2,6 +2,7 @@ import React from "react";
 import { flushSync } from "react-dom";
 import type { SearchMatch } from "@crosslog/core";
 import { redesignedShellTestIds } from "../app-shell/testIds";
+import { segmentLogLineText, tokenizeLogLineSyntax } from "./logSyntaxHighlighting";
 
 export interface VisibleLogLine {
   readonly lineNumber: number;
@@ -9,7 +10,6 @@ export interface VisibleLogLine {
   readonly timestamp: Date | null;
 }
 
-export type LogLineSeverity = "trace" | "debug" | "info" | "warn" | "error" | "fatal" | "unknown";
 export type LogViewportNavigationKind = "click" | "keyboard" | "wheel";
 
 export interface VirtualLogViewportProps {
@@ -417,7 +417,6 @@ export function VirtualLogViewport({
         style={{ blockSize: virtualScrollHeightPx }}
       />
       {visibleLines.map((line) => {
-        const severity = inferLogLineSeverity(line.text);
         const selected = line.lineNumber === selectedLineNumber;
         const lineSearchMatches = searchMatchesByLineNumber.get(line.lineNumber) ?? [];
         const lineTopPx = logViewportPaddingBlockPx + (line.lineNumber - 1) * logViewportRowHeightPx;
@@ -427,7 +426,6 @@ export function VirtualLogViewport({
             className="crosslog-log-viewport__row"
             key={line.lineNumber}
             data-line-number={line.lineNumber}
-            data-severity={severity}
             data-active-search-match={
               searchHighlightsVisible && line.lineNumber === activeSearchMatchLineNumber ? "true" : "false"
             }
@@ -789,72 +787,40 @@ function renderLineText(
   lineNumber: number,
   activeSearchMatch: SearchMatch | null,
 ): React.ReactNode {
-  if (matches.length === 0) {
+  const segments = segmentLogLineText(text, tokenizeLogLineSyntax(text), matches, lineNumber, activeSearchMatch);
+
+  if (segments.length === 1 && segments[0]?.tokenKind === null && segments[0]?.searchMatch === null) {
     return text;
   }
 
-  const fragments: React.ReactNode[] = [];
-  let cursor = 0;
-
-  matches.forEach((match, matchIndex) => {
-    const start = Math.max(cursor, Math.min(text.length, match.range.start));
-    const end = Math.max(start, Math.min(text.length, match.range.end));
-
-    if (start > cursor) {
-      fragments.push(text.slice(cursor, start));
-    }
-
-    if (end > start) {
-      fragments.push(
+  return segments.map((segment, index) => {
+    const content =
+      segment.searchMatch === null ? (
+        segment.text
+      ) : (
         <mark
           className="crosslog-log-viewport__search-highlight"
-          data-active-search-highlight={
-            activeSearchMatch &&
-            activeSearchMatch.lineNumber === lineNumber &&
-            activeSearchMatch.range.start === match.range.start &&
-            activeSearchMatch.range.end === match.range.end
-              ? "true"
-              : "false"
-          }
-          data-match-end={end}
-          data-match-start={start}
+          data-active-search-highlight={segment.activeSearchMatch ? "true" : "false"}
+          data-match-end={segment.searchMatch.range.end}
+          data-match-start={segment.searchMatch.range.start}
           data-search-highlight="true"
-          key={`${start}:${end}:${matchIndex}`}
         >
-          {text.slice(start, end)}
-        </mark>,
+          {segment.text}
+        </mark>
       );
+
+    if (segment.tokenKind === null) {
+      return <React.Fragment key={`${index}:${segment.text.length}`}>{content}</React.Fragment>;
     }
 
-    cursor = end;
+    return (
+      <span
+        className="crosslog-log-token"
+        data-log-token-kind={segment.tokenKind}
+        key={`${segment.tokenKind}:${index}:${segment.text.length}`}
+      >
+        {content}
+      </span>
+    );
   });
-
-  if (cursor < text.length) {
-    fragments.push(text.slice(cursor));
-  }
-
-  return fragments;
-}
-
-export function inferLogLineSeverity(text: string): LogLineSeverity {
-  const match = /\b(trace|debug|info|warn|warning|error|err|fatal)\b/i.exec(text);
-
-  switch (match?.[1]?.toLowerCase()) {
-    case "trace":
-      return "trace";
-    case "debug":
-      return "debug";
-    case "info":
-      return "info";
-    case "warn":
-    case "warning":
-      return "warn";
-    case "error":
-    case "err":
-      return "error";
-    case "fatal":
-      return "fatal";
-    default:
-      return "unknown";
-  }
 }

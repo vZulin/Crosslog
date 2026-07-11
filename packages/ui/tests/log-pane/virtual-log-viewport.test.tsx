@@ -274,6 +274,24 @@ describe("virtual log viewport", () => {
     expect(highlight?.getAttribute("data-active-search-highlight")).toBe("true");
   });
 
+  it("renders syntax tokens inline without coloring the entire row", () => {
+    const { container } = render(
+      <VirtualLogViewport
+        title="app.log"
+        lines={['2026-06-16T09:00:00.000Z WARN worker=release path=/var/log/app.log message="slow request"']}
+        maxVisibleLines={5}
+      />,
+    );
+    const row = container.querySelector('[data-line-number="1"]');
+
+    expect(row?.hasAttribute("data-severity")).toBe(false);
+    expect(row?.querySelector('[data-log-token-kind="timestamp"]')?.textContent).toBe("2026-06-16T09:00:00.000Z");
+    expect(row?.querySelector('[data-log-token-kind="severity"]')?.textContent).toBe("WARN");
+    expect(row?.querySelector('[data-log-token-kind="property"]')?.textContent).toBe("worker");
+    expect(row?.querySelector('[data-log-token-kind="path"]')?.textContent).toBe("/var/log/app.log");
+    expect(row?.querySelector('[data-log-token-kind="string"]')?.textContent).toBe('"slow request"');
+  });
+
   it("hides search highlight spans while keeping inert line text rendered", () => {
     const { container } = render(
       <VirtualLogViewport

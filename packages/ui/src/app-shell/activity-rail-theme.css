@@ -32,6 +32,12 @@
   --crosslog-warning-surface: var(--crosslog-warn-bg);
   --crosslog-warning-text: var(--crosslog-warn-text);
   --crosslog-error-surface: var(--crosslog-error-bg);
+  --crosslog-log-token-foreground: #000000;
+  --crosslog-log-token-severity: #0000ff;
+  --crosslog-log-token-property: #0451a5;
+  --crosslog-log-token-string: #a31515;
+  --crosslog-log-token-number: #098658;
+  --crosslog-log-token-constant: #0000ff;
   --crosslog-font-ui: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --crosslog-font-log: "Roboto Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   --crosslog-window-radius: 12px;
@@ -79,6 +85,12 @@
   --crosslog-warning-surface: var(--crosslog-warn-bg);
   --crosslog-warning-text: var(--crosslog-warn-text);
   --crosslog-error-surface: var(--crosslog-error-bg);
+  --crosslog-log-token-foreground: #cccccc;
+  --crosslog-log-token-severity: #c586c0;
+  --crosslog-log-token-property: #9cdcfe;
+  --crosslog-log-token-string: #ce9178;
+  --crosslog-log-token-number: #b5cea8;
+  --crosslog-log-token-constant: #569cd6;
 }
 
 html,
@@ -1314,24 +1326,6 @@ body {
   outline-offset: 1px;
 }
 
-.crosslog-log-viewport__row[data-severity="warn"] {
-  background: var(--crosslog-warn-bg);
-}
-
-.crosslog-log-viewport__row[data-severity="warn"] .crosslog-log-viewport__line-text {
-  color: var(--crosslog-warn-text);
-}
-
-.crosslog-log-viewport__row[data-severity="error"],
-.crosslog-log-viewport__row[data-severity="fatal"] {
-  background: var(--crosslog-error-bg);
-}
-
-.crosslog-log-viewport__row[data-severity="error"] .crosslog-log-viewport__line-text,
-.crosslog-log-viewport__row[data-severity="fatal"] .crosslog-log-viewport__line-text {
-  color: var(--crosslog-error-text);
-}
-
 .crosslog-log-viewport__line-number {
   color: var(--crosslog-line-number-text);
   text-align: end;
@@ -1340,8 +1334,38 @@ body {
 
 .crosslog-log-viewport__line-text {
   min-width: 0;
-  color: inherit;
+  color: var(--crosslog-log-token-foreground);
   white-space: pre;
+}
+
+.crosslog-log-token {
+  color: inherit;
+}
+
+.crosslog-log-token[data-log-token-kind="severity"] {
+  color: var(--crosslog-log-token-severity);
+}
+
+.crosslog-log-token[data-log-token-kind="property"] {
+  color: var(--crosslog-log-token-property);
+}
+
+.crosslog-log-token[data-log-token-kind="string"],
+.crosslog-log-token[data-log-token-kind="url"],
+.crosslog-log-token[data-log-token-kind="path"],
+.crosslog-log-token[data-log-token-kind="email"] {
+  color: var(--crosslog-log-token-string);
+}
+
+.crosslog-log-token[data-log-token-kind="timestamp"],
+.crosslog-log-token[data-log-token-kind="number"],
+.crosslog-log-token[data-log-token-kind="uuid"],
+.crosslog-log-token[data-log-token-kind="ip"] {
+  color: var(--crosslog-log-token-number);
+}
+
+.crosslog-log-token[data-log-token-kind="constant"] {
+  color: var(--crosslog-log-token-constant);
 }
 
 .crosslog-log-viewport__search-highlight {

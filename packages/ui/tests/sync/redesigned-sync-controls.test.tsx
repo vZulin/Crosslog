@@ -57,7 +57,7 @@ describe("redesigned synchronization controls", () => {
   });
 
   it("marks the active pane header and updates the active source summary", async () => {
-    const { getAllByTestId, getByRole, getByTestId, getByText } = render(
+    const { container, getAllByTestId, getByRole, getByTestId } = render(
       <AppShell platform={createMockPlatform()} />,
     );
 
@@ -69,7 +69,12 @@ describe("redesigned synchronization controls", () => {
     expect(headers[2]?.getAttribute("aria-current")).toBe("true");
     expect(getByTestId(redesignedShellTestIds.statusBar).textContent).toContain("Active: worker.log");
 
-    fireEvent.click(getByText("2026-06-16T09:00:02.500Z app.log processed request id=42 status=ok"));
+    const appLogRow = [...container.querySelectorAll<HTMLElement>(".crosslog-log-viewport__row")].find(
+      (row) => row.querySelector(".crosslog-log-viewport__line-text")?.textContent ===
+        "2026-06-16T09:00:02.500Z app.log processed request id=42 status=ok",
+    );
+
+    fireEvent.click(appLogRow!);
 
     await waitFor(() => expect(getByTestId(redesignedShellTestIds.statusBar).textContent).toContain("Active: app.log"));
     expect(headers[0]?.getAttribute("aria-current")).toBe("true");

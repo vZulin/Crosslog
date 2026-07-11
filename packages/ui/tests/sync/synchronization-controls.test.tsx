@@ -45,7 +45,7 @@ describe("synchronization controls", () => {
 
   it("reports time anchors and marks synchronized target lines", () => {
     const onTimeAnchorChange = vi.fn();
-    const { getByText } = render(
+    const { container } = render(
       <VirtualLogViewport
         title="app.log"
         lines={["2026-06-16T09:00:00.000Z first", "2026-06-16T09:00:01.000Z second"]}
@@ -54,12 +54,11 @@ describe("synchronization controls", () => {
         onTimeAnchorChange={onTimeAnchorChange}
       />,
     );
+    const targetRow = container.querySelector('[data-line-number="2"]');
 
-    fireEvent.click(getByText("2026-06-16T09:00:01.000Z second").closest("li")!);
+    fireEvent.click(targetRow!);
 
     expect(onTimeAnchorChange).toHaveBeenCalledWith(2, new Date("2026-06-16T09:00:01.000Z"), 0, "click");
-    expect(getByText("2026-06-16T09:00:01.000Z second").closest("li")?.getAttribute("data-sync-target")).toBe(
-      "true",
-    );
+    expect(targetRow?.getAttribute("data-sync-target")).toBe("true");
   });
 });

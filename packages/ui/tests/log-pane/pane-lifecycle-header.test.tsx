@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { emptySearchState, type LogPane as LogPaneModel } from "@crosslog/core";
 import { LogPane } from "../../src/log-pane/LogPane";
 import { PaneHeader } from "../../src/log-pane/PaneHeader";
-import { VirtualLogViewport, inferLogLineSeverity } from "../../src/log-pane/VirtualLogViewport";
+import { VirtualLogViewport } from "../../src/log-pane/VirtualLogViewport";
 import { redesignedShellTestIds } from "../../src/app-shell/testIds";
 
 describe("pane lifecycle header", () => {
@@ -179,14 +179,16 @@ describe("pane lifecycle header", () => {
     expect(getByText("retained line after delete")).toBeTruthy();
   });
 
-  it("styles log rows by severity while keeping raw log text inert", () => {
+  it("renders inline log tokens while keeping raw log text inert", () => {
     const unsafeLine = '<script>alert("x")</script> ERROR raw text';
-    const { container, getByText } = render(<VirtualLogViewport title="app.log" lines={[unsafeLine]} />);
-    const row = container.querySelector(".crosslog-log-viewport__row");
+    const { container } = render(<VirtualLogViewport title="app.log" lines={[unsafeLine]} />);
+    const severity = container.querySelector('[data-log-token-kind="severity"]');
+    const stringToken = container.querySelector('[data-log-token-kind="string"]');
+    const lineText = container.querySelector(".crosslog-log-viewport__line-text");
 
-    expect(inferLogLineSeverity("2026-06-16 WARN slow response")).toBe("warn");
-    expect(row?.getAttribute("data-severity")).toBe("error");
-    expect(getByText(unsafeLine)).toBeTruthy();
+    expect(severity?.textContent).toBe("ERROR");
+    expect(stringToken?.textContent).toBe('"x"');
+    expect(lineText?.textContent).toBe(unsafeLine);
     expect(container.querySelector("script")).toBeNull();
   });
 });
