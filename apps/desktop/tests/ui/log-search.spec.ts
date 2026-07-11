@@ -208,19 +208,26 @@ async function waitForPaneSearchHighlight(
   expectedText: string,
   active = false,
 ): Promise<void> {
+  const paneSelector = getPaneSelectorByTitle(title);
+
   await browser.waitUntil(
     async () =>
       browser.execute(
-        (paneElement: HTMLElement, targetLineNumber: number, text: string, activeOnly: boolean) => {
-          const highlight = paneElement.querySelector<HTMLElement>(
-            `[data-line-number="${targetLineNumber}"] [data-search-highlight="true"]${
-              activeOnly ? '[data-active-search-highlight="true"]' : ""
-            }`,
-          );
+        (selector: string, targetLineNumber: number, text: string, activeOnly: boolean) => {
+          const paneElement = document.querySelector<HTMLElement>(selector);
+
+          if (!paneElement) {
+            return false;
+          }
+
+          const highlightSelector = `[data-line-number="${targetLineNumber}"] [data-search-highlight="true"]${
+            activeOnly ? '[data-active-search-highlight="true"]' : ""
+          }`;
+          const highlight = paneElement.querySelector<HTMLElement>(highlightSelector);
 
           return (highlight?.textContent ?? "").replace(/\s+/g, " ").trim() === text;
         },
-        await getLogPaneByTitle(title),
+        paneSelector,
         lineNumber,
         expectedText,
         active,
