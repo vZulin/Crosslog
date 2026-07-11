@@ -36,7 +36,8 @@ describe("Desktop log search", () => {
     await closePaneSearchPopoverWithEscape(appPaneTitle);
     await expect(await getPaneElements(appPaneTitle, '[data-search-highlight="true"]')).toHaveLength(0);
 
-    await clickElementWithJavaScript(await getPaneElement(appPaneTitle, appSearchTriggerSelector));
+    await activatePane(appPaneTitle);
+    expect(await pressPlatformSearchShortcut()).toBe(true);
     await expect(await getPaneSearchPopover(appPaneTitle)).toBeExisting();
     await clickPaneSearchControl(appPaneTitle, redesignedShellTestIds.paneSearchRegex);
     await setPaneSearchQuery(appPaneTitle, "[broken");
@@ -53,9 +54,8 @@ describe("Desktop log search", () => {
     await expect(await $(byTestId(redesignedShellTestIds.commandField))).toBeDisabled();
     await expect(await getPaneElements(appPaneTitle, '[aria-label="Pane search for app.log"]')).toHaveLength(0);
 
-    await clickElementWithJavaScript(
-      await getPaneElement(directoryPaneTitle, byTestId(redesignedShellTestIds.paneHeaderSearch)),
-    );
+    await activatePane(directoryPaneTitle);
+    expect(await pressPlatformSearchShortcut()).toBe(true);
     await expect(await getPaneSearchPopover(directoryPaneTitle)).toBeExisting();
     await expectCompactPopoverInsidePane(directoryPaneTitle, 90);
     await expect(await getPaneElements(appPaneTitle, byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(0);
