@@ -18,21 +18,20 @@ describe("Desktop log search", () => {
     const appSearchTrigger = await getPaneElement(appPaneTitle, byTestId(redesignedShellTestIds.paneHeaderSearch));
 
     await clickElementWithJavaScript(appSearchTrigger);
-    const appSearch = await getPaneElement(appPaneTitle, byTestId(redesignedShellTestIds.paneSearchPopover));
-    await expect(appSearch).toBeExisting();
-    await expectCompactPopoverInsidePane(appPaneTitle, appSearch, 90);
+    await expect(await getPaneSearchPopover(appPaneTitle)).toBeExisting();
+    await expectCompactPopoverInsidePane(appPaneTitle, 90);
 
-    await setPaneSearchQuery(appSearch, "line");
-    await expect(await appSearch.$(byTestId(redesignedShellTestIds.paneSearchMatchCount))).toHaveText(
+    await setPaneSearchQuery(appPaneTitle, "line");
+    await expect(await getPaneSearchMatchCount(appPaneTitle)).toHaveText(
       expect.stringContaining("1 of"),
     );
-    await clickElementWithJavaScript(await appSearch.$(byTestId(redesignedShellTestIds.paneSearchNext)));
-    await expect(await appSearch.$(byTestId(redesignedShellTestIds.paneSearchMatchCount))).toHaveText(
+    await clickElementWithJavaScript(await getPaneSearchNextButton(appPaneTitle));
+    await expect(await getPaneSearchMatchCount(appPaneTitle)).toHaveText(
       expect.stringContaining("2 of"),
     );
 
-    await setPaneSearchQuery(appSearch, "line 180 token=outside-viewport");
-    await expect(await appSearch.$(byTestId(redesignedShellTestIds.paneSearchMatchCount))).toHaveText("1 of 1");
+    await setPaneSearchQuery(appPaneTitle, "line 180 token=outside-viewport");
+    await expect(await getPaneSearchMatchCount(appPaneTitle)).toHaveText("1 of 1");
     const outsideViewportLine = await getPaneElement(appPaneTitle, '[data-line-number="181"]');
     await expect(outsideViewportLine).toBeExisting();
     expect(await outsideViewportLine.getAttribute("data-search-match")).toBeNull();
@@ -41,18 +40,17 @@ describe("Desktop log search", () => {
       0,
     );
 
-    await pressEscapeInElement(await appSearch.$(byTestId(redesignedShellTestIds.paneSearchField)));
+    await pressEscapeInElement(await getPaneSearchField(appPaneTitle));
     await expect(await getPaneElements(appPaneTitle, byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(0);
     expect(await isFocused(appSearchTrigger)).toBe(true);
     await expect(await getPaneElements(appPaneTitle, '[data-search-highlight="true"]')).toHaveLength(0);
 
     await clickElementWithJavaScript(appSearchTrigger);
-    const regexSearch = await getPaneElement(appPaneTitle, byTestId(redesignedShellTestIds.paneSearchPopover));
-    await expect(regexSearch).toBeExisting();
-    await clickElementWithJavaScript(await regexSearch.$(byTestId(redesignedShellTestIds.paneSearchRegex)));
-    await setPaneSearchQuery(regexSearch, "[broken");
-    await expect(await regexSearch.$('[role="alert"]')).toHaveText(expect.stringContaining("Invalid regular expression"));
-    await pressEscapeInElement(await regexSearch.$(byTestId(redesignedShellTestIds.paneSearchField)));
+    await expect(await getPaneSearchPopover(appPaneTitle)).toBeExisting();
+    await clickElementWithJavaScript(await getPaneSearchRegexToggle(appPaneTitle));
+    await setPaneSearchQuery(appPaneTitle, "[broken");
+    await expect(await getPaneSearchAlert(appPaneTitle)).toHaveText(expect.stringContaining("Invalid regular expression"));
+    await pressEscapeInElement(await getPaneSearchField(appPaneTitle));
     await expect(await getPaneElements(appPaneTitle, byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(0);
     expect(await isFocused(appSearchTrigger)).toBe(true);
     await expect(await getPaneElements(appPaneTitle, '[data-search-highlight="true"]')).toHaveLength(0);
@@ -69,9 +67,8 @@ describe("Desktop log search", () => {
     await clickElementWithJavaScript(
       await getPaneElement(directoryPaneTitle, byTestId(redesignedShellTestIds.paneHeaderSearch)),
     );
-    const directorySearch = await getPaneElement(directoryPaneTitle, byTestId(redesignedShellTestIds.paneSearchPopover));
-    await expect(directorySearch).toBeExisting();
-    await expectCompactPopoverInsidePane(directoryPaneTitle, directorySearch, 90);
+    await expect(await getPaneSearchPopover(directoryPaneTitle)).toBeExisting();
+    await expectCompactPopoverInsidePane(directoryPaneTitle, 90);
     await expect(await getPaneElements(appPaneTitle, byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(0);
   });
 
@@ -99,20 +96,19 @@ describe("Desktop log search", () => {
 
     const appPaneTitle = "app.log";
     await clickElementWithJavaScript(await getPaneElement(appPaneTitle, byTestId(redesignedShellTestIds.paneHeaderSearch)));
-    const appSearch = await getPaneElement(appPaneTitle, byTestId(redesignedShellTestIds.paneSearchPopover));
-    await expect(appSearch).toBeExisting();
+    await expect(await getPaneSearchPopover(appPaneTitle)).toBeExisting();
 
-    await setPaneSearchQuery(appSearch, "app.log");
+    await setPaneSearchQuery(appPaneTitle, "app.log");
     await waitForPaneSearchHighlight(appPaneTitle, 1, "app.log", true);
     const visibleMatchStart = await readPaneSearchScrollMetrics(appPaneTitle);
-    await clickElementWithJavaScript(await appSearch.$(byTestId(redesignedShellTestIds.paneSearchNext)));
+    await clickElementWithJavaScript(await getPaneSearchNextButton(appPaneTitle));
     await waitForPaneSearchHighlight(appPaneTitle, 2, "app.log", true);
     const visibleMatchNext = await readPaneSearchScrollMetrics(appPaneTitle);
 
     expect(visibleMatchNext.viewportScrollTop).toBe(visibleMatchStart.viewportScrollTop);
     expect(visibleMatchNext.scrollerScrollLeft).toBe(visibleMatchStart.scrollerScrollLeft);
 
-    await setPaneSearchQuery(appSearch, "outside-viewport");
+    await setPaneSearchQuery(appPaneTitle, "outside-viewport");
     await waitForPaneSearchHighlight(appPaneTitle, 181, "outside-viewport", true);
     await browser.waitUntil(async () => (await readPaneSearchGeometry(appPaneTitle)).viewportScrollTop > 0, {
       timeout: 15_000,
@@ -130,10 +126,10 @@ describe("Desktop log search", () => {
       },
     );
 
-    await setPaneSearchQuery(appSearch, "");
+    await setPaneSearchQuery(appPaneTitle, "");
     await resetPaneHorizontalScroll(appPaneTitle);
     const horizontalOnlyStart = await readPaneSearchScrollMetrics(appPaneTitle);
-    await setPaneSearchQuery(appSearch, "outside-viewport");
+    await setPaneSearchQuery(appPaneTitle, "outside-viewport");
     await waitForPaneSearchHighlight(appPaneTitle, 181, "outside-viewport", true);
     const horizontalOnlyEnd = await readPaneSearchScrollMetrics(appPaneTitle);
 
@@ -162,6 +158,30 @@ async function getPaneElement(title: string, selector: string): Promise<Webdrive
 
 async function getPaneElements(title: string, selector: string): Promise<WebdriverIO.ElementArray> {
   return $$(`${getPaneSelectorByTitle(title)} ${selector}`);
+}
+
+async function getPaneSearchPopover(title: string): Promise<WebdriverIO.Element> {
+  return getPaneElement(title, byTestId(redesignedShellTestIds.paneSearchPopover));
+}
+
+async function getPaneSearchField(title: string): Promise<WebdriverIO.Element> {
+  return getPaneElement(title, byTestId(redesignedShellTestIds.paneSearchField));
+}
+
+async function getPaneSearchNextButton(title: string): Promise<WebdriverIO.Element> {
+  return getPaneElement(title, byTestId(redesignedShellTestIds.paneSearchNext));
+}
+
+async function getPaneSearchRegexToggle(title: string): Promise<WebdriverIO.Element> {
+  return getPaneElement(title, byTestId(redesignedShellTestIds.paneSearchRegex));
+}
+
+async function getPaneSearchMatchCount(title: string): Promise<WebdriverIO.Element> {
+  return getPaneElement(title, byTestId(redesignedShellTestIds.paneSearchMatchCount));
+}
+
+async function getPaneSearchAlert(title: string): Promise<WebdriverIO.Element> {
+  return getPaneElement(title, '[role="alert"]');
 }
 
 async function activatePane(title: string): Promise<void> {
@@ -232,11 +252,7 @@ async function waitForPaneSearchHighlight(
   );
 }
 
-async function expectCompactPopoverInsidePane(
-  title: string,
-  popover: WebdriverIO.Element,
-  maxHeight: number,
-): Promise<void> {
+async function expectCompactPopoverInsidePane(title: string, maxHeight: number): Promise<void> {
   const bounds = await browser.execute((paneElement: HTMLElement, popoverElement: HTMLElement) => {
     const paneRect = paneElement.getBoundingClientRect();
     const paneHeaderRect = paneElement.querySelector<HTMLElement>('[data-testid="pane-header"]')?.getBoundingClientRect();
@@ -255,7 +271,7 @@ async function expectCompactPopoverInsidePane(
       popoverTop: popoverRect.top,
       popoverHeight: popoverRect.height,
     };
-  }, await getLogPaneByTitle(title), popover);
+  }, await getLogPaneByTitle(title), await getPaneSearchPopover(title));
 
   expect(bounds.popoverLeft).toBeGreaterThanOrEqual(bounds.paneLeft - 1);
   expect(bounds.popoverRight).toBeLessThanOrEqual(bounds.paneRight + 1);
@@ -263,10 +279,9 @@ async function expectCompactPopoverInsidePane(
   expect(bounds.popoverHeight).toBeLessThan(maxHeight);
 }
 
-async function setPaneSearchQuery(searchPopover: WebdriverIO.Element, query: string): Promise<void> {
-  const searchField = await searchPopover.$(byTestId(redesignedShellTestIds.paneSearchField));
+async function setPaneSearchQuery(title: string, query: string): Promise<void> {
+  const searchField = await getPaneSearchField(title);
 
-  await searchField.waitForExist();
   await browser.execute(
     (target: HTMLInputElement, nextQuery: string) => {
       const valueSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
