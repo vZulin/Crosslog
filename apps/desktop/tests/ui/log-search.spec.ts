@@ -59,12 +59,12 @@ describe("Desktop log search", () => {
 
     await activatePane(servicePaneTitle);
     await expect(await $(byTestId(redesignedShellTestIds.activityRailSearch))).toBeDisabled();
-    await expect(await getLogPaneByTitle(servicePaneTitle).$('[aria-label="Pane search for service.log"]')).not.toBeExisting();
+    await expect(await getPaneElements(servicePaneTitle, '[aria-label="Pane search for service.log"]')).toHaveLength(0);
     await expect(await getPaneElements(appPaneTitle, byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(0);
 
     await activatePane(appPaneTitle);
     await expect(await $(byTestId(redesignedShellTestIds.commandField))).toBeDisabled();
-    await expect(await getLogPaneByTitle(appPaneTitle).$('[aria-label="Pane search for app.log"]')).not.toBeExisting();
+    await expect(await getPaneElements(appPaneTitle, '[aria-label="Pane search for app.log"]')).toHaveLength(0);
 
     await clickElementWithJavaScript(
       await getPaneElement(directoryPaneTitle, byTestId(redesignedShellTestIds.paneHeaderSearch)),
