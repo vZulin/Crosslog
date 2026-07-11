@@ -183,15 +183,7 @@ async function closePaneSearchPopoverWithEscape(title: string): Promise<void> {
           const target = popover.querySelector<HTMLElement>(`[data-testid="${fieldTestId}"]`) ?? popover;
 
           target.focus();
-          target.dispatchEvent(
-            new KeyboardEvent("keydown", {
-              bubbles: true,
-              cancelable: true,
-              code: "Escape",
-              key: "Escape",
-            }),
-          );
-          return true;
+          return document.activeElement === target;
         },
         paneSelector,
         redesignedShellTestIds.paneSearchPopover,
@@ -200,9 +192,20 @@ async function closePaneSearchPopoverWithEscape(title: string): Promise<void> {
     {
       interval: 100,
       timeout: 15_000,
-      timeoutMsg: `Pane search popover did not accept Escape for ${title}`,
+      timeoutMsg: `Pane search popover did not become focusable for ${title}`,
     },
   );
+
+  const popoverIsOpen = await browser.execute(
+    (selector: string, popoverTestId: string) =>
+      document.querySelector<HTMLElement>(`${selector} [data-testid="${popoverTestId}"]`) !== null,
+    paneSelector,
+    redesignedShellTestIds.paneSearchPopover,
+  );
+
+  if (popoverIsOpen) {
+    await browser.keys("Escape");
+  }
 
   await browser.waitUntil(
     async () =>
