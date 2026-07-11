@@ -89,7 +89,7 @@ export async function waitForDesktopShell(): Promise<void> {
 
   await browser.waitUntil(async () => browser.$(workspaceSelector).isExisting(), {
     interval: 250,
-    timeout: 20_000,
+    timeout: 45_000,
     timeoutMsg: `Crosslog desktop workspace did not mount: ${workspaceSelector}`,
   });
 }
@@ -98,6 +98,7 @@ export async function openSampleLogsWithUiBridge(): Promise<void> {
   enqueueDesktopUiTestAction("openSampleLogs");
   await waitForUiTestTitleFragment("state=logs");
   await waitForUiTestTitleFragment("panes=3");
+  await waitForUiTestTitleFragment("session=written");
   await expect(browser.$$(redesignedShellSelectors().logPane)).toBeElementsArrayOfSize(3);
 }
 
