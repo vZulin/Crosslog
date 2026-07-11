@@ -37,14 +37,14 @@ describe("Desktop log search", () => {
     await expect(outsideViewportLine).toBeExisting();
     expect(await outsideViewportLine.getAttribute("data-search-match")).toBeNull();
     await waitForPaneSearchHighlight(appPaneTitle, 181, "line 180 token=outside-viewport");
-    await expect(await getLogPaneByTitle(servicePaneTitle).$$(byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(
+    await expect(await getPaneElements(servicePaneTitle, byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(
       0,
     );
 
     await pressEscapeInElement(await appSearch.$(byTestId(redesignedShellTestIds.paneSearchField)));
-    await expect(await getLogPaneByTitle(appPaneTitle).$$(byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(0);
+    await expect(await getPaneElements(appPaneTitle, byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(0);
     expect(await isFocused(appSearchTrigger)).toBe(true);
-    await expect(await getLogPaneByTitle(appPaneTitle).$$('[data-search-highlight="true"]')).toHaveLength(0);
+    await expect(await getPaneElements(appPaneTitle, '[data-search-highlight="true"]')).toHaveLength(0);
 
     await clickElementWithJavaScript(appSearchTrigger);
     const regexSearch = await getPaneElement(appPaneTitle, byTestId(redesignedShellTestIds.paneSearchPopover));
@@ -53,14 +53,14 @@ describe("Desktop log search", () => {
     await setPaneSearchQuery(regexSearch, "[broken");
     await expect(await regexSearch.$('[role="alert"]')).toHaveText(expect.stringContaining("Invalid regular expression"));
     await pressEscapeInElement(await regexSearch.$(byTestId(redesignedShellTestIds.paneSearchField)));
-    await expect(await getLogPaneByTitle(appPaneTitle).$$(byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(0);
+    await expect(await getPaneElements(appPaneTitle, byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(0);
     expect(await isFocused(appSearchTrigger)).toBe(true);
-    await expect(await getLogPaneByTitle(appPaneTitle).$$('[data-search-highlight="true"]')).toHaveLength(0);
+    await expect(await getPaneElements(appPaneTitle, '[data-search-highlight="true"]')).toHaveLength(0);
 
     await activatePane(servicePaneTitle);
     await expect(await $(byTestId(redesignedShellTestIds.activityRailSearch))).toBeDisabled();
     await expect(await getLogPaneByTitle(servicePaneTitle).$('[aria-label="Pane search for service.log"]')).not.toBeExisting();
-    await expect(await getLogPaneByTitle(appPaneTitle).$$(byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(0);
+    await expect(await getPaneElements(appPaneTitle, byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(0);
 
     await activatePane(appPaneTitle);
     await expect(await $(byTestId(redesignedShellTestIds.commandField))).toBeDisabled();
@@ -72,7 +72,7 @@ describe("Desktop log search", () => {
     const directorySearch = await getPaneElement(directoryPaneTitle, byTestId(redesignedShellTestIds.paneSearchPopover));
     await expect(directorySearch).toBeExisting();
     await expectCompactPopoverInsidePane(directoryPaneTitle, directorySearch, 90);
-    await expect(await getLogPaneByTitle(appPaneTitle).$$(byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(0);
+    await expect(await getPaneElements(appPaneTitle, byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(0);
   });
 
   it("opens the active pane search popover content from the platform shortcut", async () => {
@@ -88,7 +88,7 @@ describe("Desktop log search", () => {
 
     expect(defaultPrevented).toBe(true);
     await expect(await getPaneElement(servicePaneTitle, ".crosslog-pane-search-popover__content")).toBeExisting();
-    await expect(await getLogPaneByTitle(appPaneTitle).$$(byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(
+    await expect(await getPaneElements(appPaneTitle, byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(
       0,
     );
   });
@@ -143,16 +143,25 @@ describe("Desktop log search", () => {
 });
 
 async function getLogPaneByTitle(title: string): Promise<WebdriverIO.Element> {
-  const pane = await $(
-    `${byTestId(redesignedShellTestIds.logPane)}[aria-label=${JSON.stringify(`Log pane ${title}`)}]`,
-  );
+  const pane = await $(getPaneSelectorByTitle(title));
 
   await pane.waitForExist();
   return pane;
 }
 
+function getPaneSelectorByTitle(title: string): string {
+  return `${byTestId(redesignedShellTestIds.logPane)}[aria-label=${JSON.stringify(`Log pane ${title}`)}]`;
+}
+
 async function getPaneElement(title: string, selector: string): Promise<WebdriverIO.Element> {
-  return (await getLogPaneByTitle(title)).$(selector);
+  const element = await $(`${getPaneSelectorByTitle(title)} ${selector}`);
+
+  await element.waitForExist();
+  return element;
+}
+
+async function getPaneElements(title: string, selector: string): Promise<WebdriverIO.ElementArray> {
+  return $$(`${getPaneSelectorByTitle(title)} ${selector}`);
 }
 
 async function activatePane(title: string): Promise<void> {
