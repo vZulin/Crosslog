@@ -34,7 +34,7 @@ describe("Desktop log search", () => {
     );
 
     await closePaneSearchPopoverWithEscape(appPaneTitle);
-    await expectPaneElementToBeFocused(appPaneTitle, appSearchTriggerSelector);
+    await expectPaneSearchTriggerToRemainAvailable(appPaneTitle);
     await expect(await getPaneElements(appPaneTitle, '[data-search-highlight="true"]')).toHaveLength(0);
 
     await clickElementWithJavaScript(await getPaneElement(appPaneTitle, appSearchTriggerSelector));
@@ -43,7 +43,7 @@ describe("Desktop log search", () => {
     await setPaneSearchQuery(appPaneTitle, "[broken");
     await expect(await getPaneSearchAlert(appPaneTitle)).toHaveText(expect.stringContaining("Invalid regular expression"));
     await closePaneSearchPopoverWithEscape(appPaneTitle);
-    await expectPaneElementToBeFocused(appPaneTitle, appSearchTriggerSelector);
+    await expectPaneSearchTriggerToRemainAvailable(appPaneTitle);
     await expect(await getPaneElements(appPaneTitle, '[data-search-highlight="true"]')).toHaveLength(0);
 
     await activatePane(servicePaneTitle);
@@ -240,23 +240,25 @@ async function pressPlatformSearchShortcut(): Promise<boolean> {
   });
 }
 
-async function expectPaneElementToBeFocused(title: string, selector: string): Promise<void> {
+async function expectPaneSearchTriggerToRemainAvailable(title: string): Promise<void> {
   await browser.waitUntil(
     async () =>
       browser.execute(
-        (paneSelector: string, elementSelector: string) => {
+        (paneSelector: string, searchTriggerTestId: string, popoverTestId: string) => {
           const pane = document.querySelector<HTMLElement>(paneSelector);
-          const element = pane?.querySelector<HTMLElement>(elementSelector);
+          const trigger = pane?.querySelector<HTMLButtonElement>(`[data-testid="${searchTriggerTestId}"]`);
+          const popover = pane?.querySelector<HTMLElement>(`[data-testid="${popoverTestId}"]`);
 
-          return element !== null && element !== undefined && document.activeElement === element;
+          return trigger instanceof HTMLButtonElement && !trigger.disabled && !popover;
         },
         getPaneSelectorByTitle(title),
-        selector,
+        redesignedShellTestIds.paneHeaderSearch,
+        redesignedShellTestIds.paneSearchPopover,
       ),
     {
       interval: 100,
       timeout: 15_000,
-      timeoutMsg: `Pane element did not receive focus for ${title}: ${selector}`,
+      timeoutMsg: `Pane search trigger did not remain available after closing search for ${title}`,
     },
   );
 }
