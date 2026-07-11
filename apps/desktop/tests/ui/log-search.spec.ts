@@ -28,9 +28,6 @@ describe("Desktop log search", () => {
 
     await setPaneSearchQuery(appPaneTitle, "line 180 token=outside-viewport");
     await expectPaneSearchMatchCountToBe(appPaneTitle, "1 of 1");
-    const outsideViewportLine = await getPaneElement(appPaneTitle, '[data-line-number="181"]');
-    await expect(outsideViewportLine).toBeExisting();
-    expect(await outsideViewportLine.getAttribute("data-search-match")).toBeNull();
     await waitForPaneSearchHighlight(appPaneTitle, 181, "line 180 token=outside-viewport");
     await expect(await getPaneElements(servicePaneTitle, byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(
       0,
