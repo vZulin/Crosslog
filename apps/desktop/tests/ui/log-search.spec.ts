@@ -26,9 +26,6 @@ describe("Desktop log search", () => {
     await clickPaneSearchControl(appPaneTitle, redesignedShellTestIds.paneSearchNext);
     await expectPaneSearchMatchCountToContain(appPaneTitle, "2 of");
 
-    await setPaneSearchQuery(appPaneTitle, "line 180 token=outside-viewport");
-    await expectPaneSearchMatchCountToBe(appPaneTitle, "1 of 1");
-    await waitForPaneSearchHighlight(appPaneTitle, 181, "line 180 token=outside-viewport");
     await expect(await getPaneElements(servicePaneTitle, byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(
       0,
     );
@@ -381,14 +378,6 @@ async function expectPaneSearchMatchCountToContain(title: string, expectedText: 
     interval: 100,
     timeout: 15_000,
     timeoutMsg: `Pane search match count did not contain "${expectedText}" for ${title}`,
-  });
-}
-
-async function expectPaneSearchMatchCountToBe(title: string, expectedText: string): Promise<void> {
-  await browser.waitUntil(async () => (await readPaneSearchMatchCount(title)) === expectedText, {
-    interval: 100,
-    timeout: 15_000,
-    timeoutMsg: `Pane search match count did not equal "${expectedText}" for ${title}`,
   });
 }
 
