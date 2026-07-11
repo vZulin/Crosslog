@@ -176,7 +176,7 @@ export function LogPane({
             timestamps={timestamps}
             searchMatches={pane.searchState.matches}
             searchHighlightsVisible={searchHighlightsVisible}
-            activeSearchMatchLineNumber={searchHighlightsVisible ? activeSearchMatch?.lineNumber ?? null : null}
+            activeSearchMatch={searchHighlightsVisible ? activeSearchMatch : null}
             maxVisibleLines={400}
             synchronizationTargetLineNumber={synchronizationTargetLineNumber}
             synchronizationTargetVisualLineOffset={synchronizationTargetVisualLineOffset}

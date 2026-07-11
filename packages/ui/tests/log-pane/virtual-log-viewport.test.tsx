@@ -263,7 +263,7 @@ describe("virtual log viewport", () => {
         maxVisibleLines={5}
         searchHighlightsVisible
         searchMatches={[{ lineNumber: 1, range: { start: 25, end: 30 } }]}
-        activeSearchMatchLineNumber={1}
+        activeSearchMatch={{ lineNumber: 1, range: { start: 25, end: 30 } }}
       />,
     );
     const row = container.querySelector('[data-line-number="1"]');
@@ -282,13 +282,165 @@ describe("virtual log viewport", () => {
         maxVisibleLines={5}
         searchHighlightsVisible={false}
         searchMatches={[{ lineNumber: 1, range: { start: 25, end: 30 } }]}
-        activeSearchMatchLineNumber={1}
+        activeSearchMatch={{ lineNumber: 1, range: { start: 25, end: 30 } }}
       />,
     );
     const row = container.querySelector('[data-line-number="1"]');
 
     expect(row?.querySelector('[data-search-highlight="true"]')).toBeNull();
     expect(row?.textContent).toContain("ERROR failed hard");
+  });
+
+  it("changes only the active highlight when the next search match is already visible", async () => {
+    const lines = [
+      "line 1 before visible-target after",
+      "line 2 before visible-target after",
+      "line 3 before visible-target after",
+    ];
+    const firstMatch = createSearchMatch(lines[0]!, 1, "visible-target");
+    const secondMatch = createSearchMatch(lines[1]!, 2, "visible-target");
+    const { getByTestId, rerender } = render(
+      <div aria-label="Horizontal log scroller for app.log" className="crosslog-log-scroller" role="region">
+        <VirtualLogViewport
+          title="app.log"
+          lines={lines}
+          maxVisibleLines={5}
+          searchHighlightsVisible
+          searchMatches={[firstMatch, secondMatch]}
+          activeSearchMatch={firstMatch}
+        />
+      </div>,
+    );
+    const viewport = getByTestId("log-viewport");
+    const scroller = viewport.closest(".crosslog-log-scroller") as HTMLElement;
+    const restoreGeometry = mockSearchNavigationGeometry(viewport, scroller);
+
+    try {
+      rerender(
+        <div aria-label="Horizontal log scroller for app.log" className="crosslog-log-scroller" role="region">
+          <VirtualLogViewport
+            title="app.log"
+            lines={lines}
+            maxVisibleLines={5}
+            searchHighlightsVisible
+            searchMatches={[firstMatch, secondMatch]}
+            activeSearchMatch={secondMatch}
+          />
+        </div>,
+      );
+
+      await waitFor(() =>
+        expect(viewport.querySelector('[data-active-search-highlight="true"]')?.textContent).toBe("visible-target"),
+      );
+      expect(viewport.scrollTop).toBe(0);
+      expect(scroller.scrollLeft).toBe(0);
+      expect(viewport.querySelector('[data-line-number="2"] [data-active-search-highlight="true"]')).not.toBeNull();
+    } finally {
+      restoreGeometry();
+    }
+  });
+
+  it("keeps vertical position and centers horizontally when the active search line is already visible", async () => {
+    const lines = [
+      "line 1",
+      `${"x".repeat(180)}wide-target after`,
+      "line 3",
+    ];
+    const activeMatch = createSearchMatch(lines[1]!, 2, "wide-target");
+    const { getByTestId, rerender } = render(
+      <div aria-label="Horizontal log scroller for app.log" className="crosslog-log-scroller" role="region">
+        <VirtualLogViewport
+          title="app.log"
+          lines={lines}
+          maxVisibleLines={5}
+          searchHighlightsVisible
+          searchMatches={[activeMatch]}
+          activeSearchMatch={null}
+        />
+      </div>,
+    );
+    const viewport = getByTestId("log-viewport");
+    const scroller = viewport.closest(".crosslog-log-scroller") as HTMLElement;
+    const restoreGeometry = mockSearchNavigationGeometry(viewport, scroller);
+
+    try {
+      viewport.scrollTop = 0;
+      rerender(
+        <div aria-label="Horizontal log scroller for app.log" className="crosslog-log-scroller" role="region">
+          <VirtualLogViewport
+            title="app.log"
+            lines={lines}
+            maxVisibleLines={5}
+            searchHighlightsVisible
+            searchMatches={[activeMatch]}
+            activeSearchMatch={activeMatch}
+          />
+        </div>,
+      );
+
+      await waitFor(() => expect(scroller.scrollLeft).toBeGreaterThan(0));
+      expect(viewport.scrollTop).toBe(0);
+    } finally {
+      restoreGeometry();
+    }
+  });
+
+  it("centers the active search match both vertically and horizontally when it starts outside the viewport", async () => {
+    const lines = Array.from({ length: 20 }, (_, index) =>
+      index === 14 ? `${"x".repeat(180)}wide-target after` : `line ${index + 1}`,
+    );
+    const activeMatch = createSearchMatch(lines[14]!, 15, "wide-target");
+    const { getByTestId, rerender } = render(
+      <div aria-label="Horizontal log scroller for app.log" className="crosslog-log-scroller" role="region">
+        <VirtualLogViewport
+          title="app.log"
+          lines={lines}
+          maxVisibleLines={20}
+          searchHighlightsVisible
+          searchMatches={[activeMatch]}
+          activeSearchMatch={null}
+        />
+      </div>,
+    );
+    const viewport = getByTestId("log-viewport");
+    const scroller = viewport.closest(".crosslog-log-scroller") as HTMLElement;
+    const restoreGeometry = mockSearchNavigationGeometry(viewport, scroller);
+
+    try {
+      rerender(
+        <div aria-label="Horizontal log scroller for app.log" className="crosslog-log-scroller" role="region">
+          <VirtualLogViewport
+            title="app.log"
+            lines={lines}
+            maxVisibleLines={20}
+            searchHighlightsVisible
+            searchMatches={[activeMatch]}
+            activeSearchMatch={activeMatch}
+          />
+        </div>,
+      );
+
+      await waitFor(() => expect(viewport.scrollTop).toBeGreaterThan(0));
+      expect(scroller.scrollLeft).toBeGreaterThan(0);
+
+      const row = viewport.querySelector<HTMLElement>('[data-line-number="15"]');
+      const highlight = viewport.querySelector<HTMLElement>('[data-active-search-highlight="true"]');
+
+      expect(row).not.toBeNull();
+      expect(highlight).not.toBeNull();
+
+      const viewportRect = viewport.getBoundingClientRect();
+      const rowRect = row!.getBoundingClientRect();
+      const highlightRect = highlight!.getBoundingClientRect();
+      const scrollerRect = scroller.getBoundingClientRect();
+
+      expect(Math.abs(rowRect.top + rowRect.height / 2 - (viewportRect.top + viewport.clientHeight / 2))).toBeLessThanOrEqual(12);
+      expect(
+        Math.abs(highlightRect.left + highlightRect.width / 2 - (scrollerRect.left + scroller.clientWidth / 2)),
+      ).toBeLessThanOrEqual(12);
+    } finally {
+      restoreGeometry();
+    }
   });
 });
 
@@ -330,4 +482,83 @@ function scrollViewportToTop(element: HTMLElement): void {
 
 function getExpectedVirtualMaxScrollTop(lineCount: number, clientHeight: number): number {
   return 8 * 2 + lineCount * 18 - clientHeight;
+}
+
+function createSearchMatch(text: string, lineNumber: number, needle: string) {
+  const start = text.indexOf(needle);
+
+  if (start < 0) {
+    throw new Error(`Missing ${needle} in line ${lineNumber}.`);
+  }
+
+  return {
+    lineNumber,
+    range: {
+      start,
+      end: start + needle.length,
+    },
+  };
+}
+
+function mockSearchNavigationGeometry(viewport: HTMLElement, scroller: HTMLElement): () => void {
+  Object.defineProperty(viewport, "clientHeight", { configurable: true, value: 200 });
+  Object.defineProperty(scroller, "clientWidth", { configurable: true, value: 320 });
+  Object.defineProperty(scroller, "scrollWidth", { configurable: true, value: 2_400 });
+  Object.defineProperty(viewport, "scrollHeight", {
+    configurable: true,
+    value: 16 + Number(viewport.getAttribute("data-line-count") ?? 0) * 18,
+  });
+
+  const rectSpy = vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function () {
+    if (this === viewport || this === scroller) {
+      return createRect({ left: 40, top: 60, width: 320, height: 200 });
+    }
+
+    if (this.classList.contains("crosslog-log-viewport__row")) {
+      const lineNumber = Number(this.getAttribute("data-line-number") ?? 1);
+      const top = 60 + 8 + (lineNumber - 1) * 18 - viewport.scrollTop;
+
+      return createRect({ left: 52, top, width: 2_000, height: 18 });
+    }
+
+    if (this.getAttribute("data-search-highlight") === "true") {
+      const row = this.closest<HTMLElement>(".crosslog-log-viewport__row");
+      const lineNumber = Number(row?.getAttribute("data-line-number") ?? 1);
+      const matchStart = Number(this.getAttribute("data-match-start") ?? 0);
+      const matchEnd = Number(this.getAttribute("data-match-end") ?? matchStart);
+      const top = 60 + 8 + (lineNumber - 1) * 18 - viewport.scrollTop;
+      const left = 52 + matchStart * 8 - scroller.scrollLeft;
+      const width = Math.max(8, (matchEnd - matchStart) * 8);
+
+      return createRect({ left, top, width, height: 18 });
+    }
+
+    return createRect({ left: 0, top: 0, width: 0, height: 0 });
+  });
+
+  return () => rectSpy.mockRestore();
+}
+
+function createRect({
+  left,
+  top,
+  width,
+  height,
+}: {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}): DOMRect {
+  return {
+    x: left,
+    y: top,
+    left,
+    top,
+    width,
+    height,
+    right: left + width,
+    bottom: top + height,
+    toJSON: () => ({}),
+  } as DOMRect;
 }

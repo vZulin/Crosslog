@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   appendRawLinesToChunks,
   createDirectoryFileEntry,
+  type Session,
   type FileSource,
 } from "@crosslog/core";
 import type {
@@ -97,6 +98,21 @@ describe("empty workspace alignment", () => {
     expect(platform.sourcePicker.pickDirectory).not.toHaveBeenCalled();
   });
 
+  it("drops recovered browser session panes and reopens the web app as an empty workspace", async () => {
+    const platform = createMockPlatform({
+      recoveredSession: createRecoveredBrowserSession(),
+    });
+    const { getByTestId, queryAllByTestId, queryByRole } = render(<AppShell platform={platform} />);
+    await settleShellEffects();
+
+    await waitFor(() => expect(platform.sessionStore.recoverSession).toHaveBeenCalledTimes(1));
+    expect(getByTestId(redesignedShellTestIds.emptyWorkspace)).toBeTruthy();
+    expect(queryAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(0);
+    expect(queryByRole("heading", { name: "app.log" })).toBeNull();
+    expect(queryByRole("heading", { name: "service.log" })).toBeNull();
+    expect(queryByRole("heading", { name: "app-2026-06-15.log" })).toBeNull();
+  });
+
   it("opens a selected directory through the Open Directory action", async () => {
     const platform = createMockPlatform({
       selectedDirectory: { id: "selected-logs", name: "selected-logs" },
@@ -159,6 +175,7 @@ interface MockPlatformOptions {
   readonly selectedDirectory?: DirectorySourceRef | null;
   readonly droppedSources?: readonly DragDropSource[];
   readonly nativeDropHandlerRef?: { current: NativeDropHandler | null };
+  readonly recoveredSession?: Session | null;
 }
 
 function createMockPlatform(options: MockPlatformOptions = {}): CrosslogPlatform {
@@ -213,8 +230,93 @@ function createMockPlatform(options: MockPlatformOptions = {}): CrosslogPlatform
     sessionStore: {
       loadLastValidSession: vi.fn(async () => null),
       writeSessionSnapshot: vi.fn(async () => undefined),
-      recoverSession: vi.fn(async () => null),
+      recoverSession: vi.fn(async () => options.recoveredSession ?? null),
     },
+  };
+}
+
+function createRecoveredBrowserSession(): Session {
+  return {
+    schemaVersion: 1,
+    panes: [
+      {
+        id: "pane-app",
+        sourceRef: "source-app",
+        title: "app.log",
+        active: true,
+        width: 560,
+        timeOffset: { days: 0, hours: 0, minutes: 0, seconds: 0, milliseconds: 0 },
+      },
+      {
+        id: "pane-service",
+        sourceRef: "source-service",
+        title: "service.log",
+        active: false,
+        width: 520,
+        timeOffset: { days: 0, hours: 0, minutes: 0, seconds: 0, milliseconds: 0 },
+      },
+      {
+        id: "pane-directory",
+        sourceRef: "source-directory",
+        title: "app-2026-06-15.log",
+        active: false,
+        width: 520,
+        timeOffset: { days: 0, hours: 0, minutes: 1, seconds: 0, milliseconds: 0 },
+      },
+    ],
+    paneSizes: {
+      "pane-app": 560,
+      "pane-service": 520,
+      "pane-directory": 520,
+    },
+    sources: [
+      {
+        kind: "file",
+        id: "source-app",
+        fileIdentity: { value: "browser-file-app", platform: "web" },
+        displayName: "app.log",
+        pathLabel: "app.log",
+        sizeBytes: 120,
+        encoding: "utf-8",
+      },
+      {
+        kind: "file",
+        id: "source-service",
+        fileIdentity: { value: "browser-file-service", platform: "web" },
+        displayName: "service.log",
+        pathLabel: "service.log",
+        sizeBytes: 140,
+        encoding: "utf-8",
+      },
+      {
+        kind: "directory",
+        id: "source-directory",
+        directoryIdentity: { value: "browser-directory-logs", platform: "web" },
+        displayName: "logs/2026",
+        files: [
+          {
+            identity: { value: "directory-file-2026-06-16", platform: "web" },
+            name: "app-2026-06-16.log",
+            createdAt: "2026-06-16T09:00:00.000Z",
+            fallbackOrderKey: "app-2026-06-16.log",
+            sizeBytes: 4096,
+          },
+          {
+            identity: { value: "directory-file-2026-06-15", platform: "web" },
+            name: "app-2026-06-15.log",
+            createdAt: "2026-06-15T09:00:00.000Z",
+            fallbackOrderKey: "app-2026-06-15.log",
+            sizeBytes: 4096,
+          },
+        ],
+        currentFileId: "directory-file-2026-06-15",
+      },
+    ],
+    directorySelections: {
+      "source-directory": "directory-file-2026-06-15",
+    },
+    synchronizationEnabled: false,
+    futureExtensions: {},
   };
 }
 

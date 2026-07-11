@@ -70,6 +70,44 @@ test("searches from the pane popover and isolates pane search state", async ({ p
   await expect(appPane.getByTestId(redesignedShellTestIds.paneSearchPopover)).toHaveCount(0);
 });
 
+test("search navigation keeps visible matches stationary and centers hidden matches", async ({ page }) => {
+  await gotoWithWebUiTestBridge(page);
+  await openSampleLogsWithWebUiBridge(page);
+
+  const appPane = page.getByTestId("log-pane").filter({ has: page.getByRole("heading", { name: "app.log" }) });
+  await appPane.getByRole("button", { name: "Search in app.log" }).click();
+  const appSearch = appPane.getByTestId(redesignedShellTestIds.paneSearchPopover);
+  await expect(appSearch).toBeVisible();
+
+  await appSearch.getByTestId(redesignedShellTestIds.paneSearchField).fill("app.log");
+  await waitForActiveSearchHighlight(appPane, 1, "app.log");
+  const visibleMatchStart = await readPaneSearchScrollMetrics(appPane);
+  await appSearch.getByTestId(redesignedShellTestIds.paneSearchNext).click();
+  await waitForActiveSearchHighlight(appPane, 2, "app.log");
+  const visibleMatchNext = await readPaneSearchScrollMetrics(appPane);
+
+  expect(visibleMatchNext.viewportScrollTop).toBe(visibleMatchStart.viewportScrollTop);
+  expect(visibleMatchNext.scrollerScrollLeft).toBe(visibleMatchStart.scrollerScrollLeft);
+
+  await appSearch.getByTestId(redesignedShellTestIds.paneSearchField).fill("outside-viewport");
+  await waitForActiveSearchHighlight(appPane, 181, "outside-viewport");
+  await expect.poll(async () => (await readPaneSearchGeometry(appPane)).viewportScrollTop).toBeGreaterThan(0);
+  await expect.poll(async () => (await readPaneSearchGeometry(appPane)).scrollerScrollLeft).toBeGreaterThan(0);
+  await expect
+    .poll(async () => Math.abs((await readPaneSearchGeometry(appPane)).highlightCenterDeltaY))
+    .toBeLessThanOrEqual(20);
+
+  await appSearch.getByTestId(redesignedShellTestIds.paneSearchField).fill("");
+  await resetPaneHorizontalScroll(appPane);
+  const horizontalOnlyStart = await readPaneSearchScrollMetrics(appPane);
+  await appSearch.getByTestId(redesignedShellTestIds.paneSearchField).fill("outside-viewport");
+  await waitForActiveSearchHighlight(appPane, 181, "outside-viewport");
+  const horizontalOnlyEnd = await readPaneSearchScrollMetrics(appPane);
+
+  expect(horizontalOnlyEnd.viewportScrollTop).toBe(horizontalOnlyStart.viewportScrollTop);
+  expect(horizontalOnlyEnd.scrollerScrollLeft).toBeGreaterThan(horizontalOnlyStart.scrollerScrollLeft);
+});
+
 test.describe("pane search shortcuts", () => {
   for (const scenario of [
     { name: "macOS", platform: "macos" as const, modifier: "meta" as const },
@@ -129,4 +167,87 @@ async function expectCompactPopoverInsidePane(
   expect(popoverBox.x + popoverBox.width).toBeLessThanOrEqual(paneBox.x + paneBox.width + 1);
   expect(popoverBox.y).toBeGreaterThanOrEqual(paneHeaderBox.y + paneHeaderBox.height - 1);
   expect(popoverBox.height).toBeLessThan(maxHeight);
+}
+
+async function waitForActiveSearchHighlight(
+  pane: Locator,
+  lineNumber: number,
+  text: string,
+): Promise<void> {
+  await expect
+    .poll(async () => {
+      return pane.evaluate((paneElement, expected) => {
+        const highlight = paneElement.querySelector<HTMLElement>(
+          `[data-line-number="${expected.lineNumber}"] [data-active-search-highlight="true"]`,
+        );
+
+        return (highlight?.textContent ?? "").replace(/\s+/g, " ").trim();
+      }, { lineNumber, text })
+    })
+    .toBe(text);
+}
+
+async function readPaneSearchScrollMetrics(pane: Locator): Promise<{
+  viewportScrollTop: number;
+  scrollerScrollLeft: number;
+}> {
+  return pane.evaluate((paneElement) => {
+    const viewport = paneElement.querySelector<HTMLElement>('[data-testid="log-viewport"]');
+    const scroller = paneElement.querySelector<HTMLElement>(".crosslog-log-scroller");
+
+    if (!viewport || !scroller) {
+      throw new Error("Missing viewport or scroller.");
+    }
+
+    return {
+      viewportScrollTop: Math.round(viewport.scrollTop),
+      scrollerScrollLeft: Math.round(scroller.scrollLeft),
+    };
+  });
+}
+
+async function resetPaneHorizontalScroll(pane: Locator): Promise<void> {
+  await pane.evaluate((paneElement) => {
+    const scroller = paneElement.querySelector<HTMLElement>(".crosslog-log-scroller");
+
+    if (!scroller) {
+      throw new Error("Missing scroller.");
+    }
+
+    scroller.scrollLeft = 0;
+    scroller.dispatchEvent(new Event("scroll", { bubbles: true }));
+  });
+}
+
+async function readPaneSearchGeometry(pane: Locator): Promise<{
+  viewportScrollTop: number;
+  scrollerScrollLeft: number;
+  highlightCenterDeltaX: number;
+  highlightCenterDeltaY: number;
+}> {
+  return pane.evaluate((paneElement) => {
+    const viewport = paneElement.querySelector<HTMLElement>('[data-testid="log-viewport"]');
+    const scroller = paneElement.querySelector<HTMLElement>(".crosslog-log-scroller");
+    const frame = paneElement.querySelector<HTMLElement>(".crosslog-log-scroller__viewport-frame");
+    const highlight = paneElement.querySelector<HTMLElement>('[data-active-search-highlight="true"]');
+
+    if (!viewport || !scroller || !frame || !highlight) {
+      throw new Error("Missing viewport, scroller, frame, or active highlight.");
+    }
+
+    const viewportRect = viewport.getBoundingClientRect();
+    const frameRect = frame.getBoundingClientRect();
+    const highlightRect = highlight.getBoundingClientRect();
+
+    return {
+      viewportScrollTop: Math.round(viewport.scrollTop),
+      scrollerScrollLeft: Math.round(scroller.scrollLeft),
+      highlightCenterDeltaX: Math.round(
+        highlightRect.left + highlightRect.width / 2 - (frameRect.left + frameRect.width / 2),
+      ),
+      highlightCenterDeltaY: Math.round(
+        highlightRect.top + highlightRect.height / 2 - (viewportRect.top + viewport.clientHeight / 2),
+      ),
+    };
+  });
 }

@@ -18,7 +18,7 @@ export interface VirtualLogViewportProps {
   readonly timestamps?: readonly (Date | null)[];
   readonly searchMatches?: readonly SearchMatch[];
   readonly searchHighlightsVisible?: boolean;
-  readonly activeSearchMatchLineNumber?: number | null;
+  readonly activeSearchMatch?: SearchMatch | null;
   readonly maxVisibleLines?: number;
   readonly synchronizationTargetLineNumber?: number | null;
   readonly synchronizationTargetVisualLineOffset?: number | null;
@@ -59,7 +59,7 @@ export function VirtualLogViewport({
   timestamps,
   searchMatches = [],
   searchHighlightsVisible = false,
-  activeSearchMatchLineNumber,
+  activeSearchMatch = null,
   maxVisibleLines,
   synchronizationTargetLineNumber,
   synchronizationTargetVisualLineOffset,
@@ -72,11 +72,9 @@ export function VirtualLogViewport({
     () => groupSearchMatchesByLineNumber(searchHighlightsVisible ? searchMatches : []),
     [searchHighlightsVisible, searchMatches],
   );
+  const activeSearchMatchLineNumber = activeSearchMatch?.lineNumber ?? null;
   const targetLineNumber = activeSearchMatchLineNumber ?? synchronizationTargetLineNumber ?? null;
-  const targetVisualLineOffset =
-    activeSearchMatchLineNumber === null || activeSearchMatchLineNumber === undefined
-      ? normalizeVisualLineOffset(synchronizationTargetVisualLineOffset)
-      : null;
+  const targetVisualLineOffset = normalizeVisualLineOffset(synchronizationTargetVisualLineOffset);
   const [selectedLineNumber, setSelectedLineNumber] = React.useState(() =>
     clampLineNumber(targetLineNumber ?? 1, lines.length),
   );
@@ -95,13 +93,48 @@ export function VirtualLogViewport({
     readonly lineNumber: number;
     readonly visualLineOffset: number | null;
   } | null>(null);
+  const pendingSearchMatchRef = React.useRef<{
+    readonly lineNumber: number;
+    readonly range: SearchMatch["range"];
+    readonly centerHorizontally: boolean | null;
+    readonly centerVertically: boolean | null;
+  } | null>(null);
 
   React.useLayoutEffect(() => {
-    if (!targetLineNumber) {
+    if (!activeSearchMatch) {
       return;
     }
 
-    const safeTargetLineNumber = clampLineNumber(targetLineNumber, lines.length);
+    const safeTargetLineNumber = clampLineNumber(activeSearchMatch.lineNumber, lines.length);
+
+    selectionLockedRef.current = true;
+    setSelectedLineNumber(safeTargetLineNumber);
+    setFirstVisibleLineNumber((currentFirstLineNumber) =>
+      ensureLineIsRendered(
+        currentFirstLineNumber,
+        visibleLineCapacity,
+        safeTargetLineNumber,
+        lines.length,
+      ),
+    );
+    pendingSearchMatchRef.current = {
+      lineNumber: safeTargetLineNumber,
+      range: activeSearchMatch.range,
+      centerHorizontally: null,
+      centerVertically: null,
+    };
+  }, [activeSearchMatch, lines.length, visibleLineCapacity]);
+
+  React.useLayoutEffect(() => {
+    if (activeSearchMatchLineNumber !== null) {
+      return;
+    }
+
+    if (!synchronizationTargetLineNumber) {
+      return;
+    }
+
+    const safeTargetLineNumber = clampLineNumber(synchronizationTargetLineNumber, lines.length);
 
     selectionLockedRef.current = true;
     setSelectedLineNumber(safeTargetLineNumber);
@@ -114,13 +147,17 @@ export function VirtualLogViewport({
         currentFirstLineNumber,
       ),
     );
-    // A sync/search jump should also scroll the text to the new anchor so it is visible
-    // at the same visual row as the source pane when synchronization provides one.
     pendingScrollToSelectionRef.current = {
       lineNumber: safeTargetLineNumber,
       visualLineOffset: targetVisualLineOffset,
     };
-  }, [lines.length, targetLineNumber, targetVisualLineOffset, visibleLineCapacity]);
+  }, [
+    activeSearchMatchLineNumber,
+    lines.length,
+    synchronizationTargetLineNumber,
+    targetVisualLineOffset,
+    visibleLineCapacity,
+  ]);
 
   React.useEffect(() => {
     const safeSelectedLineNumber = clampLineNumber(selectedLineNumber, lines.length);
@@ -176,6 +213,63 @@ export function VirtualLogViewport({
     suppressedScrollTopRef.current = nextScrollTop;
     viewport.scrollTop = nextScrollTop;
   }, [firstVisibleLineNumber, lines.length, selectedLineNumber, targetVisualLineOffset]);
+
+  React.useLayoutEffect(() => {
+    const viewport = viewportRef.current;
+    const pendingSearchMatch = pendingSearchMatchRef.current;
+
+    if (!viewport || !pendingSearchMatch) {
+      return;
+    }
+
+    const row = viewport.querySelector<HTMLElement>(`[data-line-number="${pendingSearchMatch.lineNumber}"]`);
+    const activeHighlight = row?.querySelector<HTMLElement>(
+      `[data-search-highlight="true"][data-match-start="${pendingSearchMatch.range.start}"][data-match-end="${pendingSearchMatch.range.end}"]`,
+    );
+    const scroller = viewport.closest<HTMLElement>(".crosslog-log-scroller");
+
+    if (!row || !activeHighlight || !scroller) {
+      return;
+    }
+
+    const lineVisibleVertically = isElementVisibleVerticallyWithinViewport(row, viewport);
+    const matchVisibleHorizontally = isElementVisibleHorizontallyWithinScroller(activeHighlight, scroller);
+    const centerVertically =
+      pendingSearchMatch.centerVertically ?? !lineVisibleVertically;
+    const centerHorizontally =
+      pendingSearchMatch.centerHorizontally ?? (centerVertically || !matchVisibleHorizontally);
+
+    if (!centerVertically && !centerHorizontally) {
+      pendingSearchMatchRef.current = null;
+      return;
+    }
+
+    if (centerVertically) {
+      const nextScrollTop = getCenteredScrollTopForElement(viewport, row, lines.length);
+
+      if (nextScrollTop !== null && Math.abs(viewport.scrollTop - nextScrollTop) > 1) {
+        suppressedScrollTopRef.current = nextScrollTop;
+        viewport.scrollTop = nextScrollTop;
+      }
+    }
+
+    if (centerHorizontally) {
+      const nextScrollLeft = getCenteredScrollLeftForElement(scroller, activeHighlight);
+
+      if (nextScrollLeft !== null && Math.abs(scroller.scrollLeft - nextScrollLeft) > 1) {
+        pendingSearchMatchRef.current = {
+          ...pendingSearchMatch,
+          centerHorizontally: true,
+          centerVertically: false,
+        };
+        scroller.scrollLeft = nextScrollLeft;
+        scroller.dispatchEvent(new Event("scroll", { bubbles: true }));
+        return;
+      }
+    }
+
+    pendingSearchMatchRef.current = null;
+  }, [activeSearchMatch, firstVisibleLineNumber, horizontalScrollLeft, lines.length]);
 
   const handleScroll = (event: React.UIEvent<HTMLOListElement>) => {
     const suppressedScrollTop = suppressedScrollTopRef.current;
@@ -357,7 +451,12 @@ export function VirtualLogViewport({
           >
             <span className="crosslog-log-viewport__line-number">{line.lineNumber}</span>
             <code className="crosslog-log-viewport__line-text">
-              {renderLineText(line.text, lineSearchMatches, line.lineNumber === activeSearchMatchLineNumber)}
+              {renderLineText(
+                line.text,
+                lineSearchMatches,
+                line.lineNumber,
+                activeSearchMatch,
+              )}
             </code>
           </li>
         );
@@ -528,6 +627,21 @@ function getFirstVisibleLineNumberForTarget(
   );
 }
 
+function ensureLineIsRendered(
+  firstVisibleLineNumber: number,
+  maxVisibleLines: number,
+  targetLineNumber: number,
+  lineCount: number,
+): number {
+  const visibleEndLineNumber = firstVisibleLineNumber + maxVisibleLines - 1;
+
+  if (targetLineNumber >= firstVisibleLineNumber && targetLineNumber <= visibleEndLineNumber) {
+    return firstVisibleLineNumber;
+  }
+
+  return getVisibleWindowStartIndex(lineCount, maxVisibleLines, targetLineNumber, null) + 1;
+}
+
 function normalizeVisualLineOffset(visualLineOffset: number | null | undefined): number | null {
   return typeof visualLineOffset === "number" && Number.isFinite(visualLineOffset)
     ? Math.round(visualLineOffset)
@@ -598,6 +712,58 @@ function moveHorizontalScroller(viewport: HTMLElement, delta: number): void {
   scroller.dispatchEvent(new Event("scroll", { bubbles: true }));
 }
 
+function isElementVisibleVerticallyWithinViewport(element: HTMLElement, viewport: HTMLElement): boolean {
+  const elementRect = element.getBoundingClientRect();
+  const viewportRect = viewport.getBoundingClientRect();
+  const visibleTop = viewportRect.top + logViewportPaddingBlockPx;
+  const visibleBottom = viewportRect.bottom - logViewportPaddingBlockPx;
+
+  return elementRect.top >= visibleTop - 1 && elementRect.bottom <= visibleBottom + 1;
+}
+
+function isElementVisibleHorizontallyWithinScroller(element: HTMLElement, scroller: HTMLElement): boolean {
+  const elementRect = element.getBoundingClientRect();
+  const visibleFrameRect = getHorizontalVisibleFrameRect(scroller);
+
+  return elementRect.left >= visibleFrameRect.left - 1 && elementRect.right <= visibleFrameRect.right + 1;
+}
+
+function getCenteredScrollTopForElement(
+  viewport: HTMLElement,
+  element: HTMLElement,
+  lineCount: number,
+): number | null {
+  const viewportRect = viewport.getBoundingClientRect();
+  const elementRect = element.getBoundingClientRect();
+  const delta = elementRect.top + elementRect.height / 2 - (viewportRect.top + viewport.clientHeight / 2);
+
+  return clampScrollTop(viewport.scrollTop + delta, viewport, lineCount);
+}
+
+function getCenteredScrollLeftForElement(scroller: HTMLElement, element: HTMLElement): number | null {
+  const maxScrollLeft = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
+
+  if (maxScrollLeft <= 0) {
+    return null;
+  }
+
+  const frame = scroller.querySelector<HTMLElement>(".crosslog-log-scroller__viewport-frame");
+  const visibleFrameRect = frame?.getBoundingClientRect() ?? scroller.getBoundingClientRect();
+  const elementRect = element.getBoundingClientRect();
+  const delta =
+    elementRect.left + elementRect.width / 2 - (visibleFrameRect.left + visibleFrameRect.width / 2);
+  const compensationFactor = frame ? 2 : 1;
+
+  return Math.max(0, Math.min(maxScrollLeft, Math.round(scroller.scrollLeft + delta * compensationFactor)));
+}
+
+function getHorizontalVisibleFrameRect(scroller: HTMLElement): DOMRect {
+  return (
+    scroller.querySelector<HTMLElement>(".crosslog-log-scroller__viewport-frame")?.getBoundingClientRect() ??
+    scroller.getBoundingClientRect()
+  );
+}
+
 function groupSearchMatchesByLineNumber(
   matches: readonly SearchMatch[],
 ): ReadonlyMap<number, readonly SearchMatch[]> {
@@ -620,7 +786,8 @@ function groupSearchMatchesByLineNumber(
 function renderLineText(
   text: string,
   matches: readonly SearchMatch[],
-  lineIsActiveSearchMatch: boolean,
+  lineNumber: number,
+  activeSearchMatch: SearchMatch | null,
 ): React.ReactNode {
   if (matches.length === 0) {
     return text;
@@ -642,8 +809,15 @@ function renderLineText(
         <mark
           className="crosslog-log-viewport__search-highlight"
           data-active-search-highlight={
-            lineIsActiveSearchMatch && matchIndex === 0 ? "true" : "false"
+            activeSearchMatch &&
+            activeSearchMatch.lineNumber === lineNumber &&
+            activeSearchMatch.range.start === match.range.start &&
+            activeSearchMatch.range.end === match.range.end
+              ? "true"
+              : "false"
           }
+          data-match-end={end}
+          data-match-start={start}
           data-search-highlight="true"
           key={`${start}:${end}:${matchIndex}`}
         >

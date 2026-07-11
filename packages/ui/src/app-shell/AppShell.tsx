@@ -139,13 +139,7 @@ export function AppShell({
   const [directoryFileSources, setDirectoryFileSources] = React.useState<FileSourceMap>({});
   const [directorySource, dispatchDirectorySource] = React.useReducer(
     directorySourceReducer,
-    createDirectorySource({
-      id: "source-directory",
-      directoryIdentity: { value: "source-directory", platform: platform.kind },
-      displayName: "logs/2026",
-      files: sampleDirectoryFiles,
-      watchState: platform.capabilities.canDiscoverNewDirectoryFiles ? "watching" : "unsupported",
-    }),
+    createInitialDirectorySource(platform),
   );
   const synchronizationEnabled = useSynchronizationStore((store) => store.enabled);
   const syncOffsets = useSynchronizationStore((store) => store.offsets);
@@ -156,6 +150,7 @@ export function AppShell({
   const setPaneOffset = useSynchronizationStore((store) => store.setPaneOffset);
   const setPlanResult = useSynchronizationStore((store) => store.setPlanResult);
   const restoreSynchronizationSessionState = useSynchronizationStore((store) => store.restoreSessionState);
+  const resetSynchronizationState = useSynchronizationStore((store) => store.reset);
   const searchStates = usePaneSearchStore((store) => store.states);
   const searchHighlightVisibility = usePaneSearchStore((store) => store.highlightVisibility);
   const setPaneSearchLines = usePaneSearchStore((store) => store.setPaneLines);
@@ -166,6 +161,7 @@ export function AppShell({
   const selectNextSearchMatch = usePaneSearchStore((store) => store.selectNextMatch);
   const showSearchHighlights = usePaneSearchStore((store) => store.showHighlights);
   const hideSearchHighlights = usePaneSearchStore((store) => store.hideHighlights);
+  const resetPaneSearchState = usePaneSearchStore((store) => store.reset);
   const writeDiagnosticEvent = React.useCallback(
     (
       level: Parameters<typeof logDiagnosticEvent>[1],
@@ -195,6 +191,18 @@ export function AppShell({
   const publishFileLifecycleEvent = useFileLifecycleEvents(setFileSources, fileLifecycleDiagnosticHandlers);
   const restoreState = useSessionRestore(platform.sessionStore, {
     onSessionRestored: (session) => {
+      if (!shouldRestoreSessionIntoWorkspace(session, platform)) {
+        dispatch({ type: "replaceState", state: createLogPaneState() });
+        resetSynchronizationState();
+        resetPaneSearchState();
+        setOpenSearchPaneId(null);
+        setOpenTimeOffsetPaneId(null);
+        setFileSources(createInitialFileSources(platform.kind));
+        setDirectoryFileSources({});
+        dispatchDirectorySource({ type: "replaceSource", source: createInitialDirectorySource(platform) });
+        return;
+      }
+
       const restoredDirectorySource = session.sources.find(
         (source): source is SessionDirectorySource => source.kind === "directory",
       );
@@ -2563,7 +2571,7 @@ function getSampleLines(title: string): readonly string[] {
     const second = secondsAfterStart % 60;
 
     if (lineNumber === 181) {
-      return `2026-06-16T09:03:00.000Z ${title} line 180 token=outside-viewport`;
+      return `2026-06-16T09:03:00.000Z ${title} ${"wide-column ".repeat(18)}line 180 token=outside-viewport`;
     }
 
     return [
@@ -2581,6 +2589,24 @@ function createInitialFileSources(platform: FileSource["fileIdentity"]["platform
       .filter((pane) => pane.sourceRef && pane.sourceRef !== "source-directory")
       .map((pane) => [pane.sourceRef, createSampleFileSource(pane.sourceRef!, pane.title, platform)]),
   );
+}
+
+function createInitialDirectorySource(platform: CrosslogPlatform): DirectorySource {
+  return createDirectorySource({
+    id: "source-directory",
+    directoryIdentity: { value: "source-directory", platform: platform.kind },
+    displayName: "logs/2026",
+    files: sampleDirectoryFiles,
+    watchState: platform.capabilities.canDiscoverNewDirectoryFiles ? "watching" : "unsupported",
+  });
+}
+
+function shouldRestoreSessionIntoWorkspace(session: Session, platform: CrosslogPlatform): boolean {
+  if (platform.kind !== "web") {
+    return true;
+  }
+
+  return session.panes.length === 0 && session.sources.length === 0;
 }
 
 function createRestoredFileSourcePlaceholders(session: Session): FileSourceMap {

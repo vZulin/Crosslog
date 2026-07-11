@@ -6,9 +6,10 @@ import {
   getRedesignedShell,
   gotoWithWebUiTestBridge,
   openSampleLogsWithWebUiBridge,
+  waitForWebUiTestTitleFragment,
 } from "./helpers/redesigned-shell";
 
-test("restores panes from last valid browser session after reload", async ({ page }) => {
+test("reopens browser sessions as an empty workspace after reload", async ({ page }) => {
   await gotoWithWebUiTestBridge(page);
   await openSampleLogsWithWebUiBridge(page);
 
@@ -51,31 +52,22 @@ test("restores panes from last valid browser session after reload", async ({ pag
   await expect(appScroller).toHaveJSProperty("scrollLeft", 160);
 
   await waitForRestorableSession(page);
-
-  await writeCorruptPendingSession(page);
   await page.reload();
 
-  await expect(page.getByRole("heading", { name: "app.log" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "service.log" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "app-2026-06-15.log" })).toBeVisible();
+  await waitForWebUiTestTitleFragment(page, "state=empty");
   await expect(shell.shell).toBeVisible();
   await expect(shell.topbar).toBeVisible();
   await expect(shell.activityRail).toBeVisible();
   await expect(shell.paneWorkspace).toBeVisible();
-  await expect.poll(async () => {
-    return shell.paneWorkspace.evaluate((element) => element.scrollWidth > element.clientWidth + 1);
-  }).toBe(true);
-  await expect(shell.statusBar).toContainText("3 panes");
-  await expect(shell.statusBar).toContainText("Sync off");
-  await expect(shell.statusBar).toContainText("Active: app-2026-06-15.log");
+  await expect(shell.emptyWorkspace).toBeVisible();
+  await expect(shell.emptyOpenFile).toBeVisible();
+  await expect(shell.emptyOpenDirectory).toBeVisible();
+  await expect(shell.logPanes).toHaveCount(0);
+  await expect(shell.statusBar).toContainText("0 panes");
   await expectObsoleteControlsAbsent(page);
-
-  await expect(directoryPane.getByTestId(redesignedShellTestIds.paneHeaderOffset)).toContainText("+1m");
-  await expect(directoryHeader.getByTestId(redesignedShellTestIds.paneHeaderSelectedFile)).toHaveText(
-    "app-2026-06-15.log",
-  );
-  expect(await appPane.evaluate((element) => element.getBoundingClientRect().width)).toBe(resizedAppWidth);
-  await expect(appScroller).toHaveJSProperty("scrollLeft", 0);
+  await expect(page.getByRole("heading", { name: "app.log" })).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "service.log" })).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "app-2026-06-15.log" })).toHaveCount(0);
 });
 
 async function waitForRestorableSession(page: Page) {
@@ -153,25 +145,6 @@ async function dragResizeBoundary(page: Page, title: string, deltaX: number) {
       pointerId: 1,
     }));
   }, { boundaryLabel: label, dragDeltaX: deltaX });
-}
-
-async function writeCorruptPendingSession(page: Page) {
-  await page.evaluate(async () => {
-    const database = await new Promise<IDBDatabase>((resolve, reject) => {
-      const request = indexedDB.open("crosslog-session", 1);
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
-    });
-
-    await new Promise<void>((resolve, reject) => {
-      const request = database.transaction("snapshots", "readwrite").objectStore("snapshots").put(
-        { schemaVersion: 1, panes: [{ horizontalScroll: 900 }] },
-        "pending",
-      );
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
-    });
-  });
 }
 
 interface StoredSessionSnapshot {

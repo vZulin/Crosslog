@@ -85,6 +85,51 @@ describe("Desktop log search", () => {
     await expect(await servicePane.$(".crosslog-pane-search-popover__content")).toBeExisting();
     await expect(await appPane.$$(byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(0);
   });
+
+  it("keeps visible search matches stationary and centers hidden matches", async () => {
+    await waitForDesktopShell();
+    await openSampleLogsWithUiBridge();
+
+    const appPane = await getLogPaneByTitle("app.log");
+    await clickElementWithJavaScript(await appPane.$(byTestId(redesignedShellTestIds.paneHeaderSearch)));
+    const appSearch = await appPane.$(byTestId(redesignedShellTestIds.paneSearchPopover));
+    await expect(appSearch).toBeExisting();
+
+    await setPaneSearchQuery(appSearch, "app.log");
+    await waitForPaneSearchHighlight(appPane, 1, "app.log", true);
+    const visibleMatchStart = await readPaneSearchScrollMetrics(appPane);
+    await clickElementWithJavaScript(await appSearch.$(byTestId(redesignedShellTestIds.paneSearchNext)));
+    await waitForPaneSearchHighlight(appPane, 2, "app.log", true);
+    const visibleMatchNext = await readPaneSearchScrollMetrics(appPane);
+
+    expect(visibleMatchNext.viewportScrollTop).toBe(visibleMatchStart.viewportScrollTop);
+    expect(visibleMatchNext.scrollerScrollLeft).toBe(visibleMatchStart.scrollerScrollLeft);
+
+    await setPaneSearchQuery(appSearch, "outside-viewport");
+    await waitForPaneSearchHighlight(appPane, 181, "outside-viewport", true);
+    await browser.waitUntil(async () => (await readPaneSearchGeometry(appPane)).viewportScrollTop > 0, {
+      timeout: 15_000,
+      timeoutMsg: "Search navigation did not move vertically.",
+    });
+    await browser.waitUntil(async () => (await readPaneSearchGeometry(appPane)).scrollerScrollLeft > 0, {
+      timeout: 15_000,
+      timeoutMsg: "Search navigation did not move horizontally.",
+    });
+    await browser.waitUntil(async () => Math.abs((await readPaneSearchGeometry(appPane)).highlightCenterDeltaY) <= 20, {
+      timeout: 15_000,
+      timeoutMsg: "Active search highlight did not center vertically.",
+    });
+
+    await setPaneSearchQuery(appSearch, "");
+    await resetPaneHorizontalScroll(appPane);
+    const horizontalOnlyStart = await readPaneSearchScrollMetrics(appPane);
+    await setPaneSearchQuery(appSearch, "outside-viewport");
+    await waitForPaneSearchHighlight(appPane, 181, "outside-viewport", true);
+    const horizontalOnlyEnd = await readPaneSearchScrollMetrics(appPane);
+
+    expect(horizontalOnlyEnd.viewportScrollTop).toBe(horizontalOnlyStart.viewportScrollTop);
+    expect(horizontalOnlyEnd.scrollerScrollLeft).toBeGreaterThan(horizontalOnlyStart.scrollerScrollLeft);
+  });
 });
 
 async function getLogPaneByTitle(title: string): Promise<WebdriverIO.Element> {
@@ -135,13 +180,16 @@ async function waitForPaneSearchHighlight(
   pane: WebdriverIO.Element,
   lineNumber: number,
   expectedText: string,
+  active = false,
 ): Promise<void> {
   await browser.waitUntil(
     async () =>
       browser.execute(
-        (paneElement: HTMLElement, targetLineNumber: number, text: string) => {
+        (paneElement: HTMLElement, targetLineNumber: number, text: string, activeOnly: boolean) => {
           const highlight = paneElement.querySelector<HTMLElement>(
-            `[data-line-number="${targetLineNumber}"] [data-search-highlight="true"]`,
+            `[data-line-number="${targetLineNumber}"] [data-search-highlight="true"]${
+              activeOnly ? '[data-active-search-highlight="true"]' : ""
+            }`,
           );
 
           return (highlight?.textContent ?? "").replace(/\s+/g, " ").trim() === text;
@@ -149,6 +197,7 @@ async function waitForPaneSearchHighlight(
         pane,
         lineNumber,
         expectedText,
+        active,
       ),
     {
       interval: 100,
@@ -205,4 +254,69 @@ async function setPaneSearchQuery(searchPopover: WebdriverIO.Element, query: str
     query,
   );
   await expect(searchField).toHaveValue(query);
+}
+
+async function readPaneSearchScrollMetrics(pane: WebdriverIO.Element): Promise<{
+  viewportScrollTop: number;
+  scrollerScrollLeft: number;
+}> {
+  return browser.execute((paneElement: HTMLElement) => {
+    const viewport = paneElement.querySelector<HTMLElement>('[data-testid="log-viewport"]');
+    const scroller = paneElement.querySelector<HTMLElement>(".crosslog-log-scroller");
+
+    if (!viewport || !scroller) {
+      throw new Error("Missing viewport or scroller.");
+    }
+
+    return {
+      viewportScrollTop: Math.round(viewport.scrollTop),
+      scrollerScrollLeft: Math.round(scroller.scrollLeft),
+    };
+  }, pane);
+}
+
+async function resetPaneHorizontalScroll(pane: WebdriverIO.Element): Promise<void> {
+  await browser.execute((paneElement: HTMLElement) => {
+    const scroller = paneElement.querySelector<HTMLElement>(".crosslog-log-scroller");
+
+    if (!scroller) {
+      throw new Error("Missing scroller.");
+    }
+
+    scroller.scrollLeft = 0;
+    scroller.dispatchEvent(new Event("scroll", { bubbles: true }));
+  }, pane);
+}
+
+async function readPaneSearchGeometry(pane: WebdriverIO.Element): Promise<{
+  viewportScrollTop: number;
+  scrollerScrollLeft: number;
+  highlightCenterDeltaX: number;
+  highlightCenterDeltaY: number;
+}> {
+  return browser.execute((paneElement: HTMLElement) => {
+    const viewport = paneElement.querySelector<HTMLElement>('[data-testid="log-viewport"]');
+    const scroller = paneElement.querySelector<HTMLElement>(".crosslog-log-scroller");
+    const frame = paneElement.querySelector<HTMLElement>(".crosslog-log-scroller__viewport-frame");
+    const highlight = paneElement.querySelector<HTMLElement>('[data-active-search-highlight="true"]');
+
+    if (!viewport || !scroller || !frame || !highlight) {
+      throw new Error("Missing viewport, scroller, frame, or active highlight.");
+    }
+
+    const viewportRect = viewport.getBoundingClientRect();
+    const frameRect = frame.getBoundingClientRect();
+    const highlightRect = highlight.getBoundingClientRect();
+
+    return {
+      viewportScrollTop: Math.round(viewport.scrollTop),
+      scrollerScrollLeft: Math.round(scroller.scrollLeft),
+      highlightCenterDeltaX: Math.round(
+        highlightRect.left + highlightRect.width / 2 - (frameRect.left + frameRect.width / 2),
+      ),
+      highlightCenterDeltaY: Math.round(
+        highlightRect.top + highlightRect.height / 2 - (viewportRect.top + viewport.clientHeight / 2),
+      ),
+    };
+  }, pane);
 }
