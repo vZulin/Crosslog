@@ -69,6 +69,22 @@ describe("Desktop log search", () => {
     await expectCompactPopoverInsidePane(directoryPane, directorySearch, 90);
     await expect(await appPane.$$(byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(0);
   });
+
+  it("opens the active pane search popover content from the platform shortcut", async () => {
+    await waitForDesktopShell();
+    await openSampleLogsWithUiBridge();
+
+    const appPane = await getLogPaneByTitle("app.log");
+    const servicePane = await getLogPaneByTitle("service.log");
+
+    await activatePane(servicePane);
+
+    const defaultPrevented = await pressPlatformSearchShortcut();
+
+    expect(defaultPrevented).toBe(true);
+    await expect(await servicePane.$(".crosslog-pane-search-popover__content")).toBeExisting();
+    await expect(await appPane.$$(byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(0);
+  });
 });
 
 async function getLogPaneByTitle(title: string): Promise<WebdriverIO.Element> {
@@ -91,6 +107,23 @@ async function pressEscapeInElement(element: WebdriverIO.Element): Promise<void>
     target.focus();
     target.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "Escape" }));
   }, element);
+}
+
+async function pressPlatformSearchShortcut(): Promise<boolean> {
+  return browser.execute(() => {
+    const platformVariant =
+      document.querySelector<HTMLElement>('[data-testid="crosslog-shell"]')?.dataset.platform ?? "macos";
+    const event = new KeyboardEvent("keydown", {
+      bubbles: true,
+      cancelable: true,
+      key: "f",
+      ctrlKey: platformVariant === "windows" || platformVariant === "linux",
+      metaKey: platformVariant === "macos",
+    });
+
+    window.dispatchEvent(event);
+    return event.defaultPrevented;
+  });
 }
 
 async function isFocused(element: WebdriverIO.Element): Promise<boolean> {

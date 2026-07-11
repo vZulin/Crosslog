@@ -25,7 +25,6 @@ test("opens and manages multiple log panes", async ({ page }) => {
   await expect(shell.statusBar).toContainText("3 panes");
   await expect(shell.statusBar).toContainText("Active: app-2026-06-16.log");
   await expectObsoleteControlsAbsent(page);
-  await expect(shell.workspaceScrollbar).toBeHidden();
   await expectRightmostPaneAligned(page);
   await waitForWebUiTestTitleFragment(page, "paneOrder=app.log,service.log,app-2026-06-16.log");
   await waitForWebUiTestTitleFragment(page, "maxGutterDigits=3");
@@ -47,7 +46,9 @@ test("opens and manages multiple log panes", async ({ page }) => {
   await waitForWebUiTestTitleFragment(page, "paneOrder=service.log,app.log,app-2026-06-16.log");
 
   await page.setViewportSize({ width: 960, height: 720 });
-  await expect(shell.workspaceScrollbar).toBeVisible();
+  await expect.poll(async () => {
+    return shell.paneWorkspace.evaluate((element) => element.scrollWidth > element.clientWidth + 1);
+  }).toBe(true);
   const addPaneChooser = page.waitForEvent("filechooser");
   await page.getByTestId("topbar-add-file").click();
   await (await addPaneChooser).setFiles({
@@ -70,7 +71,6 @@ test("opens and manages multiple log panes", async ({ page }) => {
     element.dispatchEvent(new Event("scroll", { bubbles: true }));
   });
   await expect(shell.paneWorkspace).toHaveJSProperty("scrollLeft", 120);
-  await expect(shell.workspaceScrollbar).toBeVisible();
 });
 
 test("opens a selected source from the empty workspace and leaves future controls disabled", async ({ page }) => {

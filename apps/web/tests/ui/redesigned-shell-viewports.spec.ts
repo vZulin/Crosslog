@@ -36,7 +36,9 @@ test.describe("redesigned shell viewport coverage", () => {
 
       await openSampleLogsWithWebUiBridge(page);
       await expect(shell.logPanes).toHaveCount(3);
-      await expect(shell.workspaceScrollbar).toBeVisible();
+      await expect.poll(async () => {
+        return shell.paneWorkspace.evaluate((element) => element.scrollWidth > element.clientWidth + 1);
+      }).toBe(true);
       await expect(shell.statusBar).toContainText("3 panes");
       await expect(shell.statusBar).toContainText("Sync on");
 

@@ -36,7 +36,6 @@ describe("redesigned workspace shell", () => {
 
     await waitFor(() => expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(1));
     expect(getAllByTestId(redesignedShellTestIds.paneHeader)).toHaveLength(1);
-    expect(getByTestId(redesignedShellTestIds.workspaceScrollbar)).toBeTruthy();
     expect(getByTestId(redesignedShellTestIds.statusBar).textContent).toContain("1 pane");
     expect(getByTestId(redesignedShellTestIds.statusBar).textContent).toContain("Sync on");
     expect(getByTestId(redesignedShellTestIds.statusBar).textContent).toContain("Active: selected-app.log");

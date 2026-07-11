@@ -187,7 +187,6 @@ export function LogPane({
         </HorizontalLogScroller>
       </LogTextSelection>
       {pane.status === "deleted" ? <DeletedFileStatus title={pane.title} /> : null}
-      {pane.syncEnabled ? null : <p>Synchronization disabled for this pane</p>}
     </article>
   );
 }

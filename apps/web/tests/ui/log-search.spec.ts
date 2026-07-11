@@ -3,6 +3,7 @@ import { redesignedShellTestIds } from "@crosslog/ui";
 import {
   gotoWithWebUiTestBridge,
   openSampleLogsWithWebUiBridge,
+  shellPresentationUrl,
 } from "./helpers/redesigned-shell";
 
 test("searches from the pane popover and isolates pane search state", async ({ page }) => {
@@ -67,6 +68,44 @@ test("searches from the pane popover and isolates pane search state", async ({ p
   await expect(directorySearch).toBeVisible();
   await expectCompactPopoverInsidePane(directoryPane, directorySearch, 90);
   await expect(appPane.getByTestId(redesignedShellTestIds.paneSearchPopover)).toHaveCount(0);
+});
+
+test.describe("pane search shortcuts", () => {
+  for (const scenario of [
+    { name: "macOS", platform: "macos" as const, modifier: "meta" as const },
+    { name: "Windows", platform: "windows" as const, modifier: "control" as const },
+    { name: "Linux", platform: "linux" as const, modifier: "control" as const },
+  ]) {
+    test(`opens the active pane search popover content with ${scenario.name} shortcut`, async ({ page }) => {
+      await page.goto(shellPresentationUrl("/", { platform: scenario.platform, uiTestBridge: true }));
+      await openSampleLogsWithWebUiBridge(page);
+
+      const appPane = page.getByTestId("log-pane").filter({ has: page.getByRole("heading", { name: "app.log" }) });
+      const servicePane = page
+        .getByTestId("log-pane")
+        .filter({ has: page.getByRole("heading", { name: "service.log" }) });
+
+      await servicePane.click();
+      await expect(servicePane).toHaveAttribute("data-active", "true");
+
+      const defaultPrevented = await page.evaluate((modifier) => {
+        const event = new KeyboardEvent("keydown", {
+          bubbles: true,
+          cancelable: true,
+          key: "f",
+          ctrlKey: modifier === "control",
+          metaKey: modifier === "meta",
+        });
+
+        window.dispatchEvent(event);
+        return event.defaultPrevented;
+      }, scenario.modifier);
+
+      expect(defaultPrevented).toBe(true);
+      await expect(servicePane.locator(".crosslog-pane-search-popover__content")).toBeVisible();
+      await expect(appPane.getByTestId(redesignedShellTestIds.paneSearchPopover)).toHaveCount(0);
+    });
+  }
 });
 
 async function expectCompactPopoverInsidePane(

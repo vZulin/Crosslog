@@ -51,7 +51,17 @@ describe("Desktop session restore", () => {
     await expect(await getLogPaneByTitle("app.log")).toBeExisting();
     await expect(await getLogPaneByTitle("service.log")).toBeExisting();
     await expect(await getLogPaneByTitle("app-2026-06-15.log")).toBeExisting();
-    await expect(shell.workspaceScrollbar).toBeExisting();
+    await browser.waitUntil(async () => {
+      return browser.execute(() => {
+        const workspace = document.querySelector<HTMLElement>('[data-testid="pane-workspace"]');
+
+        return workspace ? workspace.scrollWidth > workspace.clientWidth + 1 : false;
+      });
+    }, {
+      interval: 250,
+      timeout: 10_000,
+      timeoutMsg: "Expected restored desktop workspace overflow.",
+    });
     await expectObsoleteControlsAbsent();
     expect(await shell.statusBar.getText()).toContain("3 panes");
     expect(await shell.statusBar.getText()).toContain("Sync off");

@@ -84,7 +84,6 @@ export const redesignedShellStructuralTestIds = [
   redesignedShellTestIds.commandField,
   redesignedShellTestIds.activityRail,
   redesignedShellTestIds.paneWorkspace,
-  redesignedShellTestIds.workspaceScrollbar,
   redesignedShellTestIds.logPane,
   redesignedShellTestIds.paneHeader,
   redesignedShellTestIds.logViewport,

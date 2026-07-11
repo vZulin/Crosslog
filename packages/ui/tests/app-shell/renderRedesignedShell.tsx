@@ -177,9 +177,6 @@ function RedesignedShellFixture({
                 ) : null}
               </article>
             ))}
-            <div aria-hidden data-testid={redesignedShellTestIds.workspaceScrollbar}>
-              <div data-testid={redesignedShellTestIds.workspaceScrollbarThumb} />
-            </div>
           </>
         )}
       </section>

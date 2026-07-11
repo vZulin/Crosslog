@@ -24,7 +24,6 @@ enum RedesignedShellAssertions {
     static let emptyOpenDirectory = "empty-open-directory"
     static let paneWorkspace = "pane-workspace"
     static let paneResizeBoundary = "pane-resize-boundary"
-    static let workspaceScrollbar = "workspace-scrollbar"
     static let logPane = "log-pane"
     static let paneHeader = "pane-header"
     static let paneSearchPopover = "pane-search-popover"
@@ -52,7 +51,6 @@ enum RedesignedShellAssertions {
             platformChromeTitle,
             activityRail,
             paneWorkspace,
-            workspaceScrollbar,
             logPane,
             paneHeader,
             statusBar,

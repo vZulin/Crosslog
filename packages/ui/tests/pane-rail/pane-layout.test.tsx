@@ -6,7 +6,7 @@ import { PaneRail } from "../../src/pane-rail/PaneRail";
 
 describe("pane rail layout", () => {
   it("renders ordered panes inside the redesigned workspace", () => {
-    const { getAllByTestId, getByTestId } = render(
+    const { getAllByTestId, queryByTestId } = render(
       <PaneRail
         panes={[
           { pane: createLogPane({ id: "pane-a", title: "app.log", status: "ready" }), lines: ["line a"] },
@@ -23,7 +23,7 @@ describe("pane rail layout", () => {
     );
 
     expect(getAllByTestId("log-pane")).toHaveLength(2);
-    expect(getByTestId("workspace-scrollbar")).toBeTruthy();
+    expect(queryByTestId("workspace-scrollbar")).toBeNull();
   });
 
   it("routes close, resize, and horizontal scroll events", async () => {

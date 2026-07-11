@@ -62,7 +62,9 @@ test("restores panes from last valid browser session after reload", async ({ pag
   await expect(shell.topbar).toBeVisible();
   await expect(shell.activityRail).toBeVisible();
   await expect(shell.paneWorkspace).toBeVisible();
-  await expect(shell.workspaceScrollbar).toBeVisible();
+  await expect.poll(async () => {
+    return shell.paneWorkspace.evaluate((element) => element.scrollWidth > element.clientWidth + 1);
+  }).toBe(true);
   await expect(shell.statusBar).toContainText("3 panes");
   await expect(shell.statusBar).toContainText("Sync off");
   await expect(shell.statusBar).toContainText("Active: app-2026-06-15.log");

@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, render, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { appendRawLinesToChunks, type FileSource } from "@crosslog/core";
 import type { CrosslogPlatform, FileSourceRef } from "@crosslog/platform";
@@ -52,13 +52,72 @@ describe("redesigned search entry points", () => {
     fireEvent.keyDown(commandField, { key: "Enter" });
     expect(within(appPane).queryByTestId(redesignedShellTestIds.paneSearchPopover)).toBeNull();
   });
+
+  it.each([
+    { platformShellVariant: "macos" as const, shortcutLabel: "Cmd+F", eventInit: { metaKey: true } },
+    { platformShellVariant: "windows" as const, shortcutLabel: "Ctrl+F", eventInit: { ctrlKey: true } },
+    { platformShellVariant: "linux" as const, shortcutLabel: "Ctrl+F", eventInit: { ctrlKey: true } },
+  ])(
+    "opens pane-local search in the active pane from $shortcutLabel on $platformShellVariant",
+    async ({ platformShellVariant, eventInit }) => {
+      const { getAllByTestId, getByRole, getByTestId } = render(
+        <AppShell
+          platform={createMockPlatform({
+            selectedFileBatches: [
+              [{ id: "selected-app", name: "selected-app.log" }],
+              [{ id: "selected-service", name: "selected-service.log" }],
+            ],
+          })}
+          shellPresentation={{ themeVariant: "light", platformShellVariant }}
+        />,
+      );
+
+      fireEvent.click(getByRole("button", { name: "Open File" }));
+      await waitFor(() => expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(1));
+      fireEvent.click(getByTestId(redesignedShellTestIds.topbarAddFile));
+      await waitFor(() => expect(getAllByTestId(redesignedShellTestIds.logPane)).toHaveLength(2));
+
+      const panes = getAllByTestId(redesignedShellTestIds.logPane);
+      const appPane = panes[0]!;
+      const servicePane = panes[1]!;
+
+      fireEvent.click(servicePane);
+      await waitFor(() => expect(servicePane.getAttribute("data-active")).toBe("true"));
+
+      const shortcutEvent = new KeyboardEvent("keydown", {
+        bubbles: true,
+        cancelable: true,
+        key: "f",
+        ...eventInit,
+      });
+
+      await act(async () => {
+        window.dispatchEvent(shortcutEvent);
+      });
+
+      expect(shortcutEvent.defaultPrevented).toBe(true);
+      await waitFor(() =>
+        expect(within(servicePane).getByTestId(redesignedShellTestIds.paneSearchPopover)).toBeTruthy(),
+      );
+      expect(servicePane.querySelector(".crosslog-pane-search-popover__content")).toBeTruthy();
+      expect(within(appPane).queryByTestId(redesignedShellTestIds.paneSearchPopover)).toBeNull();
+    },
+  );
 });
 
 interface MockPlatformOptions {
   readonly selectedFiles?: readonly FileSourceRef[];
+  readonly selectedFileBatches?: readonly (readonly FileSourceRef[])[];
 }
 
 function createMockPlatform(options: MockPlatformOptions = {}): CrosslogPlatform {
+  const selectedFileBatches =
+    options.selectedFileBatches !== undefined
+      ? [...options.selectedFileBatches]
+      : options.selectedFiles
+        ? [options.selectedFiles]
+        : [];
+
   return {
     kind: "web",
     capabilities: {
@@ -85,7 +144,7 @@ function createMockPlatform(options: MockPlatformOptions = {}): CrosslogPlatform
       mapDroppedSources: vi.fn(async () => []),
     },
     sourcePicker: {
-      pickFiles: vi.fn(async () => options.selectedFiles ?? []),
+      pickFiles: vi.fn(async () => selectedFileBatches.shift() ?? []),
       pickDirectory: vi.fn(async () => null),
     },
     sessionStore: {

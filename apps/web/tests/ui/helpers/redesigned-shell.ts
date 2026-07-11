@@ -41,7 +41,6 @@ export interface RedesignedShellLocators {
   readonly emptyOpenDirectory: Locator;
   readonly paneWorkspace: Locator;
   readonly paneResizeBoundaries: Locator;
-  readonly workspaceScrollbar: Locator;
   readonly logPanes: Locator;
   readonly paneSearchPopover: Locator;
   readonly timeOffsetPopover: Locator;
@@ -72,7 +71,6 @@ export function getRedesignedShell(page: Page): RedesignedShellLocators {
     emptyOpenDirectory: byTestId(page, redesignedShellTestIds.emptyOpenDirectory),
     paneWorkspace: byTestId(page, redesignedShellTestIds.paneWorkspace),
     paneResizeBoundaries: byTestId(page, redesignedShellTestIds.paneResizeBoundary),
-    workspaceScrollbar: byTestId(page, redesignedShellTestIds.workspaceScrollbar),
     logPanes: byTestId(page, redesignedShellTestIds.logPane),
     paneSearchPopover: byTestId(page, redesignedShellTestIds.paneSearchPopover),
     timeOffsetPopover: byTestId(page, redesignedShellTestIds.timeOffsetPopover),

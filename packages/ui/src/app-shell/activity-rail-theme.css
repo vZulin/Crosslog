@@ -446,24 +446,6 @@ body {
   min-inline-size: 100%;
 }
 
-.crosslog-pane-workspace__scrollbar {
-  flex: 0 0 10px;
-  margin: 0 10px 6px;
-  border-radius: 999px;
-  background: var(--crosslog-scrollbar-track);
-}
-
-.crosslog-pane-workspace__scrollbar[data-overflowing="false"] {
-  display: none;
-}
-
-.crosslog-pane-workspace__scrollbar-thumb {
-  inline-size: clamp(48px, 30%, 160px);
-  block-size: 100%;
-  border-radius: inherit;
-  background: var(--crosslog-scrollbar-thumb);
-}
-
 .crosslog-log-pane {
   flex: 0 0 auto;
   position: relative;

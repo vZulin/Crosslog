@@ -770,6 +770,27 @@ export function AppShell({
     setOpenTimeOffsetPaneId(paneId);
   }, [hideSearchHighlights, openSearchPaneId, state.activePaneId, state.panes]);
 
+  React.useEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!isPaneSearchShortcutEvent(event, shellPresentation.platformShellVariant)) {
+        return;
+      }
+
+      event.preventDefault();
+      requestActivePaneSearch();
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [requestActivePaneSearch, shellPresentation.platformShellVariant]);
+
   const getFileLifecycleTarget = React.useCallback(() => {
     if (activeFileSource && activePane) {
       return { paneId: activePane.id, source: activeFileSource };
@@ -1810,7 +1831,6 @@ function getPublishedRedesignedRegions(
 
   const nonEmptyRegions = [
     ...persistentRegions,
-    redesignedShellTestIds.workspaceScrollbar,
     redesignedShellTestIds.logPane,
     redesignedShellTestIds.paneHeader,
     redesignedShellTestIds.logViewport,
@@ -1876,6 +1896,42 @@ function getPlatformChromeRegion(
     case "web":
       return redesignedShellTestIds.platformChromeWebTitle;
   }
+}
+
+function isPaneSearchShortcutEvent(
+  event: KeyboardEvent,
+  platformShellVariant: ShellPresentation["platformShellVariant"],
+): boolean {
+  if (event.defaultPrevented || event.altKey || event.shiftKey || event.key.toLowerCase() !== "f") {
+    return false;
+  }
+
+  const shortcutModifier = resolvePaneSearchShortcutModifier(platformShellVariant);
+
+  return shortcutModifier === "meta"
+    ? event.metaKey && !event.ctrlKey
+    : event.ctrlKey && !event.metaKey;
+}
+
+function resolvePaneSearchShortcutModifier(
+  platformShellVariant: ShellPresentation["platformShellVariant"],
+): "meta" | "control" {
+  if (macSearchShortcutPlatforms.includes(platformShellVariant as (typeof macSearchShortcutPlatforms)[number])) {
+    return "meta";
+  }
+
+  if (
+    controlSearchShortcutPlatforms.includes(
+      platformShellVariant as (typeof controlSearchShortcutPlatforms)[number],
+    )
+  ) {
+    return "control";
+  }
+
+  const platformText =
+    typeof navigator === "undefined" ? "" : `${navigator.platform ?? ""} ${navigator.userAgent ?? ""}`.toLowerCase();
+
+  return platformText.includes("mac") || platformText.includes("darwin") ? "meta" : "control";
 }
 
 function getPublishedObsoleteControlVisibility(): UiTestObsoleteControlVisibility {
@@ -2371,6 +2427,8 @@ const newerDirectoryFile = createDirectoryFileEntry({
 });
 
 const uiTestActionPollIntervalMs = 100;
+const macSearchShortcutPlatforms = ["macos"] as const;
+const controlSearchShortcutPlatforms = ["windows", "linux"] as const;
 
 const initialSourceOpeningEvidence: UiTestSourceOpeningEvidence = {
   status: "idle",

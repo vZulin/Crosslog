@@ -84,7 +84,17 @@ describe("Desktop multi-pane layout", () => {
         workspace.dispatchEvent(new Event("scroll", { bubbles: true }));
       }
     }, '[data-testid="pane-workspace"]');
-    await expect(shell.workspaceScrollbar).toBeExisting();
+    await browser.waitUntil(async () => {
+      return browser.execute(() => {
+        const workspace = document.querySelector<HTMLElement>('[data-testid="pane-workspace"]');
+
+        return workspace ? workspace.scrollWidth > workspace.clientWidth + 1 : false;
+      });
+    }, {
+      interval: 250,
+      timeout: 10_000,
+      timeoutMsg: "Expected desktop workspace overflow after narrowing the window.",
+    });
   });
 });
 
