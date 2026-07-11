@@ -15,9 +15,9 @@ describe("Desktop log search", () => {
     const appPaneTitle = "app.log";
     const servicePaneTitle = "service.log";
     const directoryPaneTitle = "app-2026-06-16.log";
-    const appSearchTrigger = await getPaneElement(appPaneTitle, byTestId(redesignedShellTestIds.paneHeaderSearch));
+    const appSearchTriggerSelector = byTestId(redesignedShellTestIds.paneHeaderSearch);
 
-    await clickElementWithJavaScript(appSearchTrigger);
+    await clickElementWithJavaScript(await getPaneElement(appPaneTitle, appSearchTriggerSelector));
     await expect(await getPaneSearchPopover(appPaneTitle)).toBeExisting();
     await expectCompactPopoverInsidePane(appPaneTitle, 90);
 
@@ -33,19 +33,19 @@ describe("Desktop log search", () => {
       0,
     );
 
-    await pressEscapeInElement(await getPaneSearchField(appPaneTitle));
+    await pressEscapeInPaneSearchField(appPaneTitle);
     await expect(await getPaneElements(appPaneTitle, byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(0);
-    expect(await isFocused(appSearchTrigger)).toBe(true);
+    expect(await isFocused(await getPaneElement(appPaneTitle, appSearchTriggerSelector))).toBe(true);
     await expect(await getPaneElements(appPaneTitle, '[data-search-highlight="true"]')).toHaveLength(0);
 
-    await clickElementWithJavaScript(appSearchTrigger);
+    await clickElementWithJavaScript(await getPaneElement(appPaneTitle, appSearchTriggerSelector));
     await expect(await getPaneSearchPopover(appPaneTitle)).toBeExisting();
     await clickPaneSearchControl(appPaneTitle, redesignedShellTestIds.paneSearchRegex);
     await setPaneSearchQuery(appPaneTitle, "[broken");
     await expect(await getPaneSearchAlert(appPaneTitle)).toHaveText(expect.stringContaining("Invalid regular expression"));
-    await pressEscapeInElement(await getPaneSearchField(appPaneTitle));
+    await pressEscapeInPaneSearchField(appPaneTitle);
     await expect(await getPaneElements(appPaneTitle, byTestId(redesignedShellTestIds.paneSearchPopover))).toHaveLength(0);
-    expect(await isFocused(appSearchTrigger)).toBe(true);
+    expect(await isFocused(await getPaneElement(appPaneTitle, appSearchTriggerSelector))).toBe(true);
     await expect(await getPaneElements(appPaneTitle, '[data-search-highlight="true"]')).toHaveLength(0);
 
     await activatePane(servicePaneTitle);
@@ -157,10 +157,6 @@ async function getPaneSearchPopover(title: string): Promise<WebdriverIO.Element>
   return getPaneElement(title, byTestId(redesignedShellTestIds.paneSearchPopover));
 }
 
-async function getPaneSearchField(title: string): Promise<WebdriverIO.Element> {
-  return getPaneElement(title, byTestId(redesignedShellTestIds.paneSearchField));
-}
-
 async function getPaneSearchAlert(title: string): Promise<WebdriverIO.Element> {
   return getPaneElement(title, '[role="alert"]');
 }
@@ -172,12 +168,33 @@ async function activatePane(title: string): Promise<void> {
   await expect(pane).toHaveAttribute("data-active", "true");
 }
 
-async function pressEscapeInElement(element: WebdriverIO.Element): Promise<void> {
-  await element.waitForExist();
-  await browser.execute((target: HTMLElement) => {
-    target.focus();
-    target.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "Escape" }));
-  }, element);
+async function pressEscapeInPaneSearchField(title: string): Promise<void> {
+  const paneSelector = getPaneSelectorByTitle(title);
+
+  await browser.waitUntil(
+    async () =>
+      browser.execute(
+        (selector: string, fieldTestId: string) => {
+          const pane = document.querySelector<HTMLElement>(selector);
+          const searchField = pane?.querySelector<HTMLInputElement>(`[data-testid="${fieldTestId}"]`);
+
+          if (!searchField) {
+            return false;
+          }
+
+          searchField.focus();
+          searchField.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "Escape" }));
+          return true;
+        },
+        paneSelector,
+        redesignedShellTestIds.paneSearchField,
+      ),
+    {
+      interval: 100,
+      timeout: 15_000,
+      timeoutMsg: `Pane search field did not accept Escape for ${title}`,
+    },
+  );
 }
 
 async function pressPlatformSearchShortcut(): Promise<boolean> {
