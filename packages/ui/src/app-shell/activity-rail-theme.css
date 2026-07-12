@@ -32,11 +32,14 @@
   --crosslog-warning-surface: var(--crosslog-warn-bg);
   --crosslog-warning-text: var(--crosslog-warn-text);
   --crosslog-error-surface: var(--crosslog-error-bg);
-  --crosslog-log-token-foreground: #000000;
-  --crosslog-log-token-severity: #0000ff;
-  --crosslog-log-token-property: #0451a5;
+  --crosslog-log-token-foreground: #1d1d1f;
+  --crosslog-log-token-severity: #1d1d1f;
+  --crosslog-log-token-timestamp: #098658;
+  --crosslog-log-token-qualified: #0451a5;
+  --crosslog-log-token-property: #1d1d1f;
   --crosslog-log-token-string: #a31515;
-  --crosslog-log-token-number: #098658;
+  --crosslog-log-token-stacktrace: #a31515;
+  --crosslog-log-token-number: #0451a5;
   --crosslog-log-token-constant: #0000ff;
   --crosslog-font-ui: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --crosslog-font-log: "Roboto Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
@@ -85,11 +88,14 @@
   --crosslog-warning-surface: var(--crosslog-warn-bg);
   --crosslog-warning-text: var(--crosslog-warn-text);
   --crosslog-error-surface: var(--crosslog-error-bg);
-  --crosslog-log-token-foreground: #cccccc;
-  --crosslog-log-token-severity: #c586c0;
-  --crosslog-log-token-property: #9cdcfe;
+  --crosslog-log-token-foreground: #d4d4d4;
+  --crosslog-log-token-severity: #d4d4d4;
+  --crosslog-log-token-timestamp: #6a9955;
+  --crosslog-log-token-qualified: #4fc1ff;
+  --crosslog-log-token-property: #d4d4d4;
   --crosslog-log-token-string: #ce9178;
-  --crosslog-log-token-number: #b5cea8;
+  --crosslog-log-token-stacktrace: #ce9178;
+  --crosslog-log-token-number: #79c0ff;
   --crosslog-log-token-constant: #569cd6;
 }
 
@@ -1350,6 +1356,14 @@ body {
   color: var(--crosslog-log-token-property);
 }
 
+.crosslog-log-token[data-log-token-kind="qualified"] {
+  color: var(--crosslog-log-token-qualified);
+}
+
+.crosslog-log-token[data-log-token-kind="stacktrace"] {
+  color: var(--crosslog-log-token-stacktrace);
+}
+
 .crosslog-log-token[data-log-token-kind="string"],
 .crosslog-log-token[data-log-token-kind="url"],
 .crosslog-log-token[data-log-token-kind="path"],
@@ -1357,7 +1371,10 @@ body {
   color: var(--crosslog-log-token-string);
 }
 
-.crosslog-log-token[data-log-token-kind="timestamp"],
+.crosslog-log-token[data-log-token-kind="timestamp"] {
+  color: var(--crosslog-log-token-timestamp);
+}
+
 .crosslog-log-token[data-log-token-kind="number"],
 .crosslog-log-token[data-log-token-kind="uuid"],
 .crosslog-log-token[data-log-token-kind="ip"] {

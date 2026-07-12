@@ -3,6 +3,8 @@ import type { SearchMatch } from "@crosslog/core";
 export type LogSyntaxTokenKind =
   | "timestamp"
   | "severity"
+  | "stacktrace"
+  | "qualified"
   | "property"
   | "string"
   | "number"
@@ -53,6 +55,14 @@ const tokenPatterns: readonly TokenPattern[] = [
     kind: "path",
     regex:
       /(?<![\w./<\-])(?:[A-Za-z]:\\|\\\\)[^\s"'`()\[\]{}<>|]+|(?<![\w./<\-])(?:\/[^/\s"'`()\[\]{}<>|]+)+/g,
+  },
+  {
+    kind: "stacktrace",
+    regex: /^\s*at\s+[A-Za-z_$<][\w$<>-]*(?:\.[A-Za-z_$<][\w$<>-]*)+(?:\([^)]*\))?/g,
+  },
+  {
+    kind: "qualified",
+    regex: /(?<![\w/:-])#?[A-Za-z_][\w$-]*(?:\.[A-Za-z_][\w$-]*)+(?![\w/.-])/g,
   },
   {
     kind: "timestamp",

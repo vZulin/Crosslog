@@ -5,6 +5,8 @@ describe("log syntax highlighting", () => {
   it.each([
     ["timestamp", "2026-06-16T09:00:00.000Z INFO started", "2026-06-16T09:00:00.000Z"],
     ["severity", "2026-06-16 WARN slow response", "WARN"],
+    ["stacktrace", "\tat com.intellij.ide.ReopenProjectAction.<init>(ReopenProjectAction.kt:64)", "\tat com.intellij.ide.ReopenProjectAction.<init>(ReopenProjectAction.kt:64)"],
+    ["qualified", "#c.i.p.i.b.AppStarter - started", "#c.i.p.i.b.AppStarter"],
     ["property", "worker=release-fixture message=stable-open-benchmark", "worker"],
     ["string", 'message="stable open benchmark"', '"stable open benchmark"'],
     ["number", "retryCount=42 latencyMs=3.14 budget=1e6", "42"],
@@ -38,6 +40,30 @@ describe("log syntax highlighting", () => {
     });
     expect(tokens.some((token) => token.kind === "url")).toBe(false);
     expect(tokens.some((token) => token.kind === "path")).toBe(false);
+  });
+
+  it("prefers qualified identifiers for jetbrains loggers and module ids", () => {
+    const line = "plugin com.intellij.modules.java-capable is not resolved";
+    const token = tokenizeLogLineSyntax(line).find((candidate) => candidate.kind === "qualified");
+
+    expect(token).toMatchObject({
+      kind: "qualified",
+      text: "com.intellij.modules.java-capable",
+    });
+  });
+
+  it("does not let simple key-value labels override stacktrace coloring", () => {
+    const line = "\tat com.intellij.openapi.diagnostic.Logger.error(Logger.java:378)";
+    const tokens = tokenizeLogLineSyntax(line);
+
+    expect(tokens).toEqual([
+      {
+        kind: "stacktrace",
+        start: 0,
+        end: line.length,
+        text: line,
+      },
+    ]);
   });
 
   it("splits syntax and search ranges without losing token metadata", () => {

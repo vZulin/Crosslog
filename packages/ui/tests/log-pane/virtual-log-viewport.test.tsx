@@ -278,7 +278,9 @@ describe("virtual log viewport", () => {
     const { container } = render(
       <VirtualLogViewport
         title="app.log"
-        lines={['2026-06-16T09:00:00.000Z WARN worker=release path=/var/log/app.log message="slow request"']}
+        lines={[
+          '2026-06-16T09:00:00.000Z WARN #c.i.p.i.b.AppStarter worker=release pid=93762 path=/var/log/app.log message="slow request"',
+        ]}
         maxVisibleLines={5}
       />,
     );
@@ -287,9 +289,25 @@ describe("virtual log viewport", () => {
     expect(row?.hasAttribute("data-severity")).toBe(false);
     expect(row?.querySelector('[data-log-token-kind="timestamp"]')?.textContent).toBe("2026-06-16T09:00:00.000Z");
     expect(row?.querySelector('[data-log-token-kind="severity"]')?.textContent).toBe("WARN");
+    expect(row?.querySelector('[data-log-token-kind="qualified"]')?.textContent).toBe("#c.i.p.i.b.AppStarter");
     expect(row?.querySelector('[data-log-token-kind="property"]')?.textContent).toBe("worker");
+    expect(row?.querySelector('[data-log-token-kind="number"]')?.textContent).toBe("93762");
     expect(row?.querySelector('[data-log-token-kind="path"]')?.textContent).toBe("/var/log/app.log");
     expect(row?.querySelector('[data-log-token-kind="string"]')?.textContent).toBe('"slow request"');
+  });
+
+  it("renders jetbrains stacktrace rows as a dedicated inline token", () => {
+    const line = "\tat com.intellij.ide.ReopenProjectAction.<init>(ReopenProjectAction.kt:64)";
+    const { container } = render(
+      <VirtualLogViewport
+        title="idea.log"
+        lines={[line]}
+        maxVisibleLines={5}
+      />,
+    );
+    const row = container.querySelector('[data-line-number="1"]');
+
+    expect(row?.querySelector('[data-log-token-kind="stacktrace"]')?.textContent).toBe(line);
   });
 
   it("preserves full row text content when property tokens end before a colon", () => {

@@ -87,13 +87,13 @@ describe("empty workspace alignment", () => {
     const platform = createMockPlatform({
       selectedFiles: [{ id: "selected-app", name: "selected-app.log" }],
     });
-    const { getByRole, getByText, queryByRole } = render(<AppShell platform={platform} />);
+    const { container, getByRole, queryByRole } = render(<AppShell platform={platform} />);
     await settleShellEffects();
 
     fireEvent.click(getByRole("button", { name: "Open File" }));
 
     await waitFor(() => expect(getByRole("heading", { name: "selected-app.log" })).toBeTruthy());
-    expect(getByText("selected-app.log opened from selected source")).toBeTruthy();
+    expect(container.textContent).toContain("selected-app.log opened from selected source");
     expect(queryByRole("heading", { name: "app.log" })).toBeNull();
     expect(platform.sourcePicker.pickDirectory).not.toHaveBeenCalled();
   });
