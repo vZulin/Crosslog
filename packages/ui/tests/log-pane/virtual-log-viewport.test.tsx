@@ -296,6 +296,47 @@ describe("virtual log viewport", () => {
     expect(row?.querySelector('[data-log-token-kind="string"]')?.textContent).toBe('"slow request"');
   });
 
+  it.each([
+    ["TRACE", "trace"],
+    ["DEBUG", "debug"],
+    ["INFO", "info"],
+    ["WARN", "warn"],
+    ["ERROR", "error"],
+  ] as const)("renders %s with severity level %s", (severity, expectedLevel) => {
+    const { container } = render(
+      <VirtualLogViewport
+        title="app.log"
+        lines={[`2026-07-09 17:04:32,282 [   2889]   ${severity} - requestId=93762`]}
+        maxVisibleLines={5}
+      />,
+    );
+    const token = container.querySelector('[data-log-token-kind="severity"]');
+
+    expect(token?.textContent).toBe(severity);
+    expect(token?.getAttribute("data-log-severity-level")).toBe(expectedLevel);
+  });
+
+  it("keeps severity highlighting when the same line also contains a URL", () => {
+    const line =
+      "2026-07-09 17:04:32,282 [   2889]   INFO - #c.i.o.u.i.UpdateChecker - Failed to load plugins from https://buildserver.labs.intellij.net/guestAuth/repository/download/ijplatform_master_IdeaInstallersBuild/998176240:id/JBC-plugins/plugins.xml: Request failed with status code 404";
+    const { container } = render(
+      <VirtualLogViewport
+        title="client.log"
+        lines={[line]}
+        maxVisibleLines={5}
+      />,
+    );
+    const row = container.querySelector('[data-line-number="1"]');
+    const severity = row?.querySelector('[data-log-token-kind="severity"]');
+    const url = row?.querySelector('[data-log-token-kind="url"]');
+    const statusCode = Array.from(row?.querySelectorAll('[data-log-token-kind="number"]') ?? []).at(-1);
+
+    expect(severity?.textContent).toBe("INFO");
+    expect(severity?.getAttribute("data-log-severity-level")).toBe("info");
+    expect(url?.textContent).toContain("https://buildserver.labs.intellij.net");
+    expect(statusCode?.textContent).toBe("404");
+  });
+
   it("renders jetbrains stacktrace rows as a dedicated inline token", () => {
     const line = "\tat com.intellij.ide.ReopenProjectAction.<init>(ReopenProjectAction.kt:64)";
     const { container } = render(

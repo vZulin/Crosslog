@@ -34,6 +34,11 @@
   --crosslog-error-surface: var(--crosslog-error-bg);
   --crosslog-log-token-foreground: #1d1d1f;
   --crosslog-log-token-severity: #1d1d1f;
+  --crosslog-log-token-severity-trace: #008000;
+  --crosslog-log-token-severity-debug: #795e26;
+  --crosslog-log-token-severity-info: #098658;
+  --crosslog-log-token-severity-warn: #bf8803;
+  --crosslog-log-token-severity-error: #a31515;
   --crosslog-log-token-timestamp: #098658;
   --crosslog-log-token-qualified: #0451a5;
   --crosslog-log-token-property: #1d1d1f;
@@ -90,6 +95,11 @@
   --crosslog-error-surface: var(--crosslog-error-bg);
   --crosslog-log-token-foreground: #d4d4d4;
   --crosslog-log-token-severity: #d4d4d4;
+  --crosslog-log-token-severity-trace: #6a9955;
+  --crosslog-log-token-severity-debug: #dcdcaa;
+  --crosslog-log-token-severity-info: #4ec9b0;
+  --crosslog-log-token-severity-warn: #cca700;
+  --crosslog-log-token-severity-error: #f14c4c;
   --crosslog-log-token-timestamp: #6a9955;
   --crosslog-log-token-qualified: #4fc1ff;
   --crosslog-log-token-property: #d4d4d4;
@@ -1350,6 +1360,26 @@ body {
 
 .crosslog-log-token[data-log-token-kind="severity"] {
   color: var(--crosslog-log-token-severity);
+}
+
+.crosslog-log-token[data-log-token-kind="severity"][data-log-severity-level="trace"] {
+  color: var(--crosslog-log-token-severity-trace);
+}
+
+.crosslog-log-token[data-log-token-kind="severity"][data-log-severity-level="debug"] {
+  color: var(--crosslog-log-token-severity-debug);
+}
+
+.crosslog-log-token[data-log-token-kind="severity"][data-log-severity-level="info"] {
+  color: var(--crosslog-log-token-severity-info);
+}
+
+.crosslog-log-token[data-log-token-kind="severity"][data-log-severity-level="warn"] {
+  color: var(--crosslog-log-token-severity-warn);
+}
+
+.crosslog-log-token[data-log-token-kind="severity"][data-log-severity-level="error"] {
+  color: var(--crosslog-log-token-severity-error);
 }
 
 .crosslog-log-token[data-log-token-kind="property"] {

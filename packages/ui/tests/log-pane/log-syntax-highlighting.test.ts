@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { segmentLogLineText, tokenizeLogLineSyntax } from "../../src/log-pane/logSyntaxHighlighting";
+import {
+  resolveLogSeverityLevel,
+  segmentLogLineText,
+  tokenizeLogLineSyntax,
+} from "../../src/log-pane/logSyntaxHighlighting";
 
 describe("log syntax highlighting", () => {
   it.each([
@@ -84,5 +88,34 @@ describe("log syntax highlighting", () => {
     expect(
       segments.find((segment) => segment.text === "worker" && segment.tokenKind === "property"),
     ).toBeDefined();
+  });
+
+  it.each([
+    ["TRACE", "trace"],
+    ["DEBUG", "debug"],
+    ["INFO", "info"],
+    ["WARN", "warn"],
+    ["WARNING", "warn"],
+    ["ERROR", "error"],
+    ["ERR", "error"],
+    ["FATAL", "error"],
+  ] as const)("maps %s to severity level %s", (text, expectedLevel) => {
+    expect(resolveLogSeverityLevel(text)).toBe(expectedLevel);
+  });
+
+  it("keeps info severity tokenized next to a URL and trailing status code", () => {
+    const line =
+      "2026-07-09 17:04:32,282 [   2889]   INFO - #c.i.o.u.i.UpdateChecker - Failed to load plugins from https://buildserver.labs.intellij.net/guestAuth/repository/download/ijplatform_master_IdeaInstallersBuild/998176240:id/JBC-plugins/plugins.xml: Request failed with status code 404";
+    const tokens = tokenizeLogLineSyntax(line);
+
+    expect(tokens.find((token) => token.kind === "severity" && token.text === "INFO")).toBeDefined();
+    expect(
+      tokens.find(
+        (token) =>
+          token.kind === "url" &&
+          token.text.startsWith("https://buildserver.labs.intellij.net/guestAuth/repository/download/"),
+      ),
+    ).toBeDefined();
+    expect(tokens.find((token) => token.kind === "number" && token.text === "404")).toBeDefined();
   });
 });

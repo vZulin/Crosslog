@@ -145,6 +145,11 @@ describe("theme variants", () => {
     );
     expect(lightTokens["--crosslog-log-token-foreground"]).toBe("#1d1d1f");
     expect(lightTokens["--crosslog-log-token-severity"]).toBe("#1d1d1f");
+    expect(lightTokens["--crosslog-log-token-severity-trace"]).toBe("#008000");
+    expect(lightTokens["--crosslog-log-token-severity-debug"]).toBe("#795e26");
+    expect(lightTokens["--crosslog-log-token-severity-info"]).toBe("#098658");
+    expect(lightTokens["--crosslog-log-token-severity-warn"]).toBe("#bf8803");
+    expect(lightTokens["--crosslog-log-token-severity-error"]).toBe("#a31515");
     expect(lightTokens["--crosslog-log-token-timestamp"]).toBe("#098658");
     expect(lightTokens["--crosslog-log-token-qualified"]).toBe("#0451a5");
     expect(lightTokens["--crosslog-log-token-property"]).toBe("#1d1d1f");
@@ -154,6 +159,11 @@ describe("theme variants", () => {
     expect(lightTokens["--crosslog-log-token-constant"]).toBe("#0000ff");
     expect(darkTokens["--crosslog-log-token-foreground"]).toBe("#d4d4d4");
     expect(darkTokens["--crosslog-log-token-severity"]).toBe("#d4d4d4");
+    expect(darkTokens["--crosslog-log-token-severity-trace"]).toBe("#6a9955");
+    expect(darkTokens["--crosslog-log-token-severity-debug"]).toBe("#dcdcaa");
+    expect(darkTokens["--crosslog-log-token-severity-info"]).toBe("#4ec9b0");
+    expect(darkTokens["--crosslog-log-token-severity-warn"]).toBe("#cca700");
+    expect(darkTokens["--crosslog-log-token-severity-error"]).toBe("#f14c4c");
     expect(darkTokens["--crosslog-log-token-timestamp"]).toBe("#6a9955");
     expect(darkTokens["--crosslog-log-token-qualified"]).toBe("#4fc1ff");
     expect(darkTokens["--crosslog-log-token-property"]).toBe("#d4d4d4");
@@ -163,6 +173,21 @@ describe("theme variants", () => {
     expect(darkTokens["--crosslog-log-token-constant"]).toBe("#569cd6");
     expect(themeCss).toMatch(
       /\.crosslog-log-token\[data-log-token-kind="severity"\][^}]*\{[^}]*color:\s*var\(--crosslog-log-token-severity\);/s,
+    );
+    expect(themeCss).toMatch(
+      /\.crosslog-log-token\[data-log-token-kind="severity"\]\[data-log-severity-level="trace"\][^}]*\{[^}]*color:\s*var\(--crosslog-log-token-severity-trace\);/s,
+    );
+    expect(themeCss).toMatch(
+      /\.crosslog-log-token\[data-log-token-kind="severity"\]\[data-log-severity-level="debug"\][^}]*\{[^}]*color:\s*var\(--crosslog-log-token-severity-debug\);/s,
+    );
+    expect(themeCss).toMatch(
+      /\.crosslog-log-token\[data-log-token-kind="severity"\]\[data-log-severity-level="info"\][^}]*\{[^}]*color:\s*var\(--crosslog-log-token-severity-info\);/s,
+    );
+    expect(themeCss).toMatch(
+      /\.crosslog-log-token\[data-log-token-kind="severity"\]\[data-log-severity-level="warn"\][^}]*\{[^}]*color:\s*var\(--crosslog-log-token-severity-warn\);/s,
+    );
+    expect(themeCss).toMatch(
+      /\.crosslog-log-token\[data-log-token-kind="severity"\]\[data-log-severity-level="error"\][^}]*\{[^}]*color:\s*var\(--crosslog-log-token-severity-error\);/s,
     );
     expect(themeCss).toMatch(
       /\.crosslog-log-token\[data-log-token-kind="property"\][^}]*\{[^}]*color:\s*var\(--crosslog-log-token-property\);/s,

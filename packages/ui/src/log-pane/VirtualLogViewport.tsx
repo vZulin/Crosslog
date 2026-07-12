@@ -3,7 +3,7 @@ import { flushSync } from "react-dom";
 import type { SearchMatch } from "@crosslog/core";
 import { redesignedShellTestIds } from "../app-shell/testIds";
 import type { LogSyntaxToken } from "./logSyntaxHighlighting";
-import { tokenizeLogLineSyntax } from "./logSyntaxHighlighting";
+import { resolveLogSeverityLevel, tokenizeLogLineSyntax } from "./logSyntaxHighlighting";
 
 export interface VisibleLogLine {
   readonly lineNumber: number;
@@ -868,10 +868,12 @@ function renderSyntaxRange(
     }
 
     if (tokenEnd > tokenStart) {
+      const severityLevel = token.kind === "severity" ? resolveLogSeverityLevel(text.slice(tokenStart, tokenEnd)) : null;
       fragments.push(
         <span
           className="crosslog-log-token"
           data-log-token-kind={token.kind}
+          data-log-severity-level={severityLevel ?? undefined}
           key={`${keyPrefix}:${token.kind}:${tokenIndex}:${tokenStart}:${tokenEnd}`}
         >
           {text.slice(tokenStart, tokenEnd)}

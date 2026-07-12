@@ -15,6 +15,8 @@ export type LogSyntaxTokenKind =
   | "path"
   | "email";
 
+export type LogSeverityLevel = "trace" | "debug" | "info" | "warn" | "error";
+
 export interface LogSyntaxToken {
   readonly kind: LogSyntaxTokenKind;
   readonly start: number;
@@ -135,6 +137,26 @@ export function tokenizeLogLineSyntax(text: string): readonly LogSyntaxToken[] {
   }
 
   return accepted;
+}
+
+export function resolveLogSeverityLevel(text: string): LogSeverityLevel | null {
+  switch (text.toLowerCase()) {
+    case "trace":
+      return "trace";
+    case "debug":
+      return "debug";
+    case "info":
+      return "info";
+    case "warn":
+    case "warning":
+      return "warn";
+    case "error":
+    case "err":
+    case "fatal":
+      return "error";
+    default:
+      return null;
+  }
 }
 
 export function segmentLogLineText(
