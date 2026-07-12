@@ -70,7 +70,8 @@ describe("Desktop session restore", () => {
   });
 
   it("restores real desktop file content after restart", async () => {
-    const restoredFixtureText = "Suppressed a frequent exception logged for the 2nd time";
+    const restoredFixtureText =
+      "Suppressed a frequent exception logged for the 2nd time: write beyond end of stream";
 
     await waitForDesktopShell();
     enqueueDesktopUiTestAction("openLargeLog");
@@ -119,7 +120,7 @@ async function getAppScrollerScrollLeft(): Promise<number> {
 
 async function waitForLogPaneText(title: string, expectedText: string): Promise<void> {
   await browser.waitUntil(
-    async () => (await (await getLogPaneByTitle(title)).getText()).includes(expectedText),
+    async () => (await getLogPaneTextContent(title)).includes(expectedText),
     {
       interval: 250,
       timeout: 10_000,
@@ -129,5 +130,11 @@ async function waitForLogPaneText(title: string, expectedText: string): Promise<
 }
 
 async function expectLogPaneTextAbsent(title: string, unexpectedText: string): Promise<void> {
-  expect(await (await getLogPaneByTitle(title)).getText()).not.toContain(unexpectedText);
+  expect(await getLogPaneTextContent(title)).not.toContain(unexpectedText);
+}
+
+async function getLogPaneTextContent(title: string): Promise<string> {
+  const pane = await getLogPaneByTitle(title);
+
+  return browser.execute((target: HTMLElement) => target.textContent ?? "", pane);
 }

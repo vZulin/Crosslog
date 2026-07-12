@@ -292,6 +292,22 @@ describe("virtual log viewport", () => {
     expect(row?.querySelector('[data-log-token-kind="string"]')?.textContent).toBe('"slow request"');
   });
 
+  it("preserves full row text content when property tokens end before a colon", () => {
+    const line =
+      "2026-04-17 13:31:44,051 WARN Suppressed a frequent exception logged for the 2nd time: write beyond end of stream";
+    const { container } = render(
+      <VirtualLogViewport
+        title="idea.3.log"
+        lines={[line]}
+        maxVisibleLines={5}
+      />,
+    );
+    const row = container.querySelector('[data-line-number="1"]');
+
+    expect(row?.querySelector('[data-log-token-kind="property"]')?.textContent).toBe("time");
+    expect(row?.textContent).toContain(line);
+  });
+
   it("hides search highlight spans while keeping inert line text rendered", () => {
     const { container } = render(
       <VirtualLogViewport
