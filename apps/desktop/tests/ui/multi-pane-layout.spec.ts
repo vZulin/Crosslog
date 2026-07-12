@@ -11,7 +11,7 @@ import {
 } from "./helpers/redesigned-shell";
 
 describe("Desktop multi-pane layout", () => {
-  it("opens and manages multiple log panes", async () => {
+  it("opens, reorders, and searches across multiple log panes", async () => {
     await waitForDesktopShell();
     await browser.setWindowSize(1920, 720);
     const shell = getRedesignedShell();
@@ -57,6 +57,16 @@ describe("Desktop multi-pane layout", () => {
     await clickHeaderSearchWithoutReorder("service.log");
     await waitForUiTestTitleFragment("search=open");
     await waitForUiTestTitleFragment("paneOrder=service.log,app.log,app-2026-06-16.log");
+  });
+
+  it("adds and resizes panes when the workspace overflows", async () => {
+    await waitForDesktopShell();
+    await browser.setWindowSize(1920, 720);
+    const shell = getRedesignedShell();
+
+    await openSampleLogsWithUiBridge();
+    await expect(shell.paneWorkspace).toBeExisting();
+    await expect($$('[data-testid="log-pane"]')).toBeElementsArrayOfSize(3);
 
     await browser.setWindowSize(960, 720);
     await waitForDesktopWorkspaceOverflow();
