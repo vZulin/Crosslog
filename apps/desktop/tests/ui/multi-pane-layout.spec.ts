@@ -1,10 +1,11 @@
-import { $, $$, browser, expect } from "@wdio/globals";
+import { $$, browser, expect } from "@wdio/globals";
 import {
   activateLogPaneByTitle,
   dragPaneResizeBoundary,
   enqueueDesktopUiTestAction,
   expectObsoleteControlsAbsent,
   getRedesignedShell,
+  getLogPaneByTitle,
   openSampleLogsWithUiBridge,
   waitForDesktopShell,
   waitForUiTestTitleFragment,
@@ -27,8 +28,8 @@ describe("Desktop multi-pane layout", () => {
 
     await expect(shell.paneWorkspace).toBeExisting();
     expect(await shell.statusBar.getText()).toContain("3 panes");
-    await expect($('aria/app.log')).toBeExisting();
-    await expect($('aria/service.log')).toBeExisting();
+    await expect(await getLogPaneByTitle("app.log")).toBeExisting();
+    await expect(await getLogPaneByTitle("service.log")).toBeExisting();
     await expectObsoleteControlsAbsent();
     await waitForDesktopRightEdgeAlignment();
     await waitForUiTestTitleFragment("paneOrder=app.log,service.log,app-2026-06-16.log");
