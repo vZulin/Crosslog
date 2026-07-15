@@ -198,11 +198,19 @@ function runBuiltMacosXCTestHarness(
 
 async function runWdioHarness() {
   const driverPort = Number.parseInt(process.env.CROSSLOG_TAURI_DRIVER_PORT ?? "4444", 10);
+  const nativeDriverPort = Number.parseInt(process.env.CROSSLOG_TAURI_DRIVER_NATIVE_PORT ?? "4445", 10);
   const driverStartupRetries = parseDriverStartupRetries();
   const baseEnvironment = { ...process.env, PATH: pathWithCargo() };
 
   if (!Number.isInteger(driverPort) || driverPort <= 0 || driverPort > 65_535) {
     console.error(`CROSSLOG_TAURI_DRIVER_PORT must be a valid TCP port: ${process.env.CROSSLOG_TAURI_DRIVER_PORT}`);
+    process.exit(1);
+  }
+
+  if (!Number.isInteger(nativeDriverPort) || nativeDriverPort <= 0 || nativeDriverPort > 65_535) {
+    console.error(
+      `CROSSLOG_TAURI_DRIVER_NATIVE_PORT must be a valid TCP port: ${process.env.CROSSLOG_TAURI_DRIVER_NATIVE_PORT}`,
+    );
     process.exit(1);
   }
 
@@ -228,10 +236,28 @@ async function runWdioHarness() {
     for (let attempt = 1; attempt <= driverStartupRetries + 1; attempt += 1) {
       driver = timeSync(
         `tauri-driver start on port ${driverPort} (attempt ${attempt})`,
-        () => startTauriDriver(driverPort, wdioEnvironment),
+        () => startTauriDriver(driverPort, nativeDriverPort, wdioEnvironment),
       );
 
-      await timeAsync(`tauri-driver TCP readiness on port ${driverPort}`, () => waitForTcpPort(driverPort));
+      try {
+        await timeAsync(`tauri-driver TCP readiness on port ${driverPort}`, () => waitForTcpPort(driverPort));
+        await timeAsync(
+          `native WebDriver TCP readiness on port ${nativeDriverPort}`,
+          () => waitForTcpPort(nativeDriverPort),
+        );
+      } catch (error) {
+        if (attempt > driverStartupRetries) {
+          throw error;
+        }
+
+        logRunnerEvent(
+          `Retrying Desktop UI specs after native WebDriver readiness failure (${attempt}/${driverStartupRetries})`,
+        );
+        await stopTauriDriver(driver, driverPort, nativeDriverPort);
+        driver = null;
+        await delay(1_000);
+        continue;
+      }
 
       const result = timeSync("WDIO desktop UI specs", () => runWdioSpecs(wdioEnvironment));
 
@@ -247,13 +273,13 @@ async function runWdioHarness() {
       logRunnerEvent(
         `Retrying Desktop UI specs after tauri-driver startup failure (${attempt}/${driverStartupRetries})`,
       );
-      await stopTauriDriver(driver, driverPort);
+      await stopTauriDriver(driver, driverPort, nativeDriverPort);
       driver = null;
       await delay(1_000);
     }
   } finally {
     logRunnerEvent("tauri-driver stop started");
-    await stopTauriDriver(driver, driverPort);
+    await stopTauriDriver(driver, driverPort, nativeDriverPort);
     rmSync(actionsPath, { force: true });
     logRunnerEvent("tauri-driver stop finished");
   }
@@ -391,13 +417,17 @@ function ensureTauriDriverAvailable(env) {
   process.exit(1);
 }
 
-function startTauriDriver(port, env) {
+function startTauriDriver(port, nativePort, env) {
   let stopping = false;
-  const driverProcess = spawn(process.env.CROSSLOG_TAURI_DRIVER_PATH ?? "tauri-driver", ["--port", String(port)], {
-    cwd: repoRoot,
-    env,
-    stdio: ["ignore", "pipe", "pipe"],
-  });
+  const driverProcess = spawn(
+    process.env.CROSSLOG_TAURI_DRIVER_PATH ?? "tauri-driver",
+    ["--port", String(port), "--native-port", String(nativePort)],
+    {
+      cwd: repoRoot,
+      env,
+      stdio: ["ignore", "pipe", "pipe"],
+    },
+  );
 
   driverProcess.stdout?.on("data", (chunk) => process.stdout.write(chunk));
   driverProcess.stderr?.on("data", (chunk) => process.stderr.write(chunk));
@@ -456,13 +486,14 @@ function startTauriDriver(port, env) {
   };
 }
 
-async function stopTauriDriver(driver, port) {
+async function stopTauriDriver(driver, port, nativePort) {
   if (!driver) {
     return;
   }
 
   await driver.stop();
   await waitForTcpPortToClose(port);
+  await waitForTcpPortToClose(nativePort);
 }
 
 async function waitForTcpPort(port) {
@@ -479,8 +510,9 @@ async function waitForTcpPort(port) {
     }
   }
 
-  console.error(`Timed out waiting for tauri-driver on 127.0.0.1:${port}: ${lastError?.message ?? "unknown error"}`);
-  process.exit(1);
+  throw new Error(
+    `Timed out waiting for tauri-driver on 127.0.0.1:${port}: ${lastError?.message ?? "unknown error"}`,
+  );
 }
 
 function probeTcpPort(port) {
