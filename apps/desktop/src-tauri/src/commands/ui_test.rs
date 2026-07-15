@@ -1,6 +1,12 @@
-use std::{env, fs, io};
+use std::{
+    collections::HashMap,
+    env, fs, io,
+    path::PathBuf,
+    sync::{Mutex, OnceLock},
+};
 
 const SUPPORTED_UI_TEST_ACTIONS: &[&str] = &[
+    "resetWorkspace",
     "openSampleLogs",
     "openLargeLog",
     "copyFirstPane",
@@ -84,47 +90,19 @@ pub fn consume_ui_test_action() -> Result<Option<String>, String> {
     let Some(actions_path) = env::var_os("CROSSLOG_UI_TEST_ACTIONS_PATH") else {
         return Ok(None);
     };
+    let actions_path = PathBuf::from(actions_path);
 
     let contents = match fs::read_to_string(&actions_path) {
         Ok(value) => value,
         Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(None),
         Err(error) => return Err(error.to_string()),
     };
-    let actions = contents
-        .lines()
-        .map(str::trim)
-        .filter(|line| !line.is_empty())
-        .collect::<Vec<_>>();
+    let mut offsets = ui_test_action_offsets()
+        .lock()
+        .map_err(|_| "UI test action cursor lock poisoned.".to_owned())?;
+    let offset = offsets.entry(actions_path).or_insert(0);
 
-    let Some((action_index, action)) = actions
-        .iter()
-        .enumerate()
-        .find(|(_, action)| supported_ui_test_action(action))
-    else {
-        fs::write(actions_path, String::new()).map_err(|error| error.to_string())?;
-        return Ok(None);
-    };
-
-    let remaining_actions = actions
-        .iter()
-        .enumerate()
-        .filter_map(|(index, remaining_action)| {
-            if index > action_index {
-                Some(*remaining_action)
-            } else {
-                None
-            }
-        })
-        .collect::<Vec<_>>();
-    let remaining_contents = if remaining_actions.is_empty() {
-        String::new()
-    } else {
-        format!("{}\n", remaining_actions.join("\n"))
-    };
-
-    fs::write(actions_path, remaining_contents).map_err(|error| error.to_string())?;
-
-    Ok(Some((*action).to_owned()))
+    Ok(consume_action_from_contents(&contents, offset))
 }
 
 pub(crate) fn ui_test_mode_enabled() -> bool {
@@ -135,4 +113,67 @@ pub(crate) fn ui_test_mode_enabled() -> bool {
 
 fn supported_ui_test_action(action: &str) -> bool {
     SUPPORTED_UI_TEST_ACTIONS.contains(&action)
+}
+
+fn ui_test_action_offsets() -> &'static Mutex<HashMap<PathBuf, usize>> {
+    static OFFSETS: OnceLock<Mutex<HashMap<PathBuf, usize>>> = OnceLock::new();
+
+    OFFSETS.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
+fn consume_action_from_contents(contents: &str, offset: &mut usize) -> Option<String> {
+    if *offset > contents.len() {
+        *offset = 0;
+    }
+
+    let unread_contents = contents.get(*offset..)?;
+
+    for record in unread_contents.split_inclusive('\n') {
+        let action = record.trim();
+
+        // The writer may have appended a partial final line. Leave it for the
+        // next poll instead of advancing the cursor past an incomplete action.
+        if !record.ends_with('\n') {
+            break;
+        }
+
+        *offset += record.len();
+
+        if supported_ui_test_action(action) {
+            return Some(action.to_owned());
+        }
+    }
+
+    None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::consume_action_from_contents;
+
+    #[test]
+    fn consumes_reset_workspace_from_the_action_queue() {
+        let mut offset = 0;
+
+        assert_eq!(
+            consume_action_from_contents("resetWorkspace\nopenSampleLogs\n", &mut offset),
+            Some("resetWorkspace".to_owned())
+        );
+        assert_eq!(offset, "resetWorkspace\n".len());
+    }
+
+    #[test]
+    fn leaves_partial_actions_for_the_next_poll() {
+        let mut offset = 0;
+
+        assert_eq!(
+            consume_action_from_contents("openSample", &mut offset),
+            None
+        );
+        assert_eq!(offset, 0);
+        assert_eq!(
+            consume_action_from_contents("openSampleLogs\n", &mut offset),
+            Some("openSampleLogs".to_owned())
+        );
+    }
 }
