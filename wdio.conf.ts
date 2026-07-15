@@ -16,7 +16,12 @@ export const config = {
   hostname: process.env.CROSSLOG_TAURI_DRIVER_HOST ?? "127.0.0.1",
   port: tauriDriverPort,
   path: "/",
-  specs: configuredSpecs.length > 0 ? configuredSpecs : ["apps/desktop/tests/ui/**/*.spec.ts"],
+  // Keep the selected files in one spec group. A single tauri-driver instance
+  // cannot serve concurrent WebDriver sessions reliably on Windows runners.
+  specs:
+    configuredSpecs.length > 0
+      ? [configuredSpecs]
+      : [["apps/desktop/tests/ui/**/*.spec.ts"]],
   maxInstances,
   maxInstancesPerCapability: maxInstances,
   framework: "mocha",

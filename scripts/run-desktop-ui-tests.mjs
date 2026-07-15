@@ -220,6 +220,7 @@ async function runWdioHarness() {
     CROSSLOG_UI_TEST_LARGE_LOG_PATH: resolvePath(defaultLargeLogFixturePath),
   };
   logWdioSpecSelection(wdioEnvironment.CROSSLOG_WDIO_SPECS);
+  logRunnerEvent(`WDIO max instances configured: ${wdioEnvironment.CROSSLOG_WDIO_MAX_INSTANCES ?? "1"}`);
   const driver = timeSync(`tauri-driver start on port ${driverPort}`, () => startTauriDriver(driverPort, wdioEnvironment));
 
   try {

@@ -379,6 +379,7 @@ jobs:
           CROSSLOG_TAURI_APP_PATH: apps/desktop/src-tauri/target/debug/crosslog-desktop.exe
           CROSSLOG_TAURI_DRIVER_PATH: .build/tauri-driver/tauri-driver.exe
           CROSSLOG_WDIO_SPECS: ${{ matrix.wdio_specs }}
+          CROSSLOG_WDIO_MAX_INSTANCES: "1"
         run: pwsh scripts/windows/test-ui.ps1 desktop
 
   build-web:

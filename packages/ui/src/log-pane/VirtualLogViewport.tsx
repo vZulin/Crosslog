@@ -1,4 +1,5 @@
 import React from "react";
+import { flushSync } from "react-dom";
 import type { SearchMatch } from "@crosslog/core";
 import { redesignedShellTestIds } from "../app-shell/testIds";
 import type { LogSyntaxToken } from "./logSyntaxHighlighting";
@@ -139,26 +140,34 @@ export function VirtualLogViewport({
     pendingVerticalScrollUpdateRef.current = null;
     const currentState = viewportStateRef.current;
 
-    setFirstVisibleLineNumber((currentFirstVisibleLineNumber) =>
-      pendingUpdate.nextFirstVisibleLineNumber ??
-      keepLineVisible(
-        pendingUpdate.anchorLineNumber,
-        currentFirstVisibleLineNumber,
-        currentState.visibleLineCapacity,
-        currentState.lineCount,
-      ),
-    );
-
-    if (!selectionLockedRef.current) {
-      selectedLineNumberRef.current = pendingUpdate.nextLineNumber;
-      setSelectedLineNumber((currentSelectedLineNumber) =>
-        currentSelectedLineNumber === pendingUpdate.nextLineNumber
-          ? currentSelectedLineNumber
-          : pendingUpdate.nextLineNumber,
+    // Commit the local window before the browser paints the next frame. React 19
+    // may otherwise defer a state update scheduled from requestAnimationFrame,
+    // leaving the native scroll position ahead of the rendered absolute rows.
+    // The parent synchronization callback intentionally stays outside flushSync
+    // so scrolling does not synchronously flush the application shell.
+    flushSync(() => {
+      setFirstVisibleLineNumber((currentFirstVisibleLineNumber) =>
+        pendingUpdate.nextFirstVisibleLineNumber ??
+        keepLineVisible(
+          pendingUpdate.anchorLineNumber,
+          currentFirstVisibleLineNumber,
+          currentState.visibleLineCapacity,
+          currentState.lineCount,
+        ),
       );
-    }
 
-    setLastNavigation("wheel");
+      if (!selectionLockedRef.current) {
+        selectedLineNumberRef.current = pendingUpdate.nextLineNumber;
+        setSelectedLineNumber((currentSelectedLineNumber) =>
+          currentSelectedLineNumber === pendingUpdate.nextLineNumber
+            ? currentSelectedLineNumber
+            : pendingUpdate.nextLineNumber,
+        );
+      }
+
+      setLastNavigation("wheel");
+    });
+
     currentState.onTimeAnchorChange?.(
       pendingUpdate.anchorLineNumber,
       currentState.timestamps?.[pendingUpdate.anchorLineNumber - 1] ?? null,
