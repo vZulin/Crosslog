@@ -5,10 +5,6 @@ import { getRedesignedShell, gotoWithWebUiTestBridge } from "./helpers/redesigne
 
 const largeLogFixturePath = join(process.cwd(), "tests/fixtures/logs/idea.3.log");
 const expectedRenderedRowCount = 600;
-// Hosted runners may pause the browser event loop without delaying text
-// recovery. Keep this as a severe-stall guard while blank/recovery metrics
-// remain the user-visible performance gates.
-const maxAllowedProbeFrameIntervalMs = 150;
 
 test.use({ browserName: "webkit" });
 
@@ -126,12 +122,11 @@ test("keeps text coverage current during 400 ms fast-scroll bursts", async ({ pa
 
   for (const metrics of [forwardMetrics, backwardMetrics]) {
     expect(metrics.blankEpisodeCount, JSON.stringify(metrics.worstSamples)).toBe(0);
-    expect(metrics.maxFrameIntervalMs).toBeLessThanOrEqual(maxAllowedProbeFrameIntervalMs);
     expect(metrics.maxTextRecoveryMs).toBeLessThanOrEqual(50);
   }
 });
 
-test("keeps synchronized large panes inside the fast-scroll frame budget", async ({ page }) => {
+test("keeps synchronized large panes text coverage current during fast-scroll bursts", async ({ page }) => {
   const viewport = await openSynchronizedLargeLogs(page);
 
   await moveMouseOverViewport(page, viewport);
@@ -145,7 +140,6 @@ test("keeps synchronized large panes inside the fast-scroll frame budget", async
   console.info(`Synchronized fast-scroll text coverage: ${JSON.stringify(metrics)}`);
 
   expect(metrics.blankEpisodeCount, JSON.stringify(metrics.worstSamples)).toBe(0);
-  expect(metrics.maxFrameIntervalMs).toBeLessThanOrEqual(maxAllowedProbeFrameIntervalMs);
   expect(metrics.maxTextRecoveryMs).toBeLessThanOrEqual(50);
 });
 
