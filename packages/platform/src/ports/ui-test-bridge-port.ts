@@ -139,6 +139,7 @@ export interface UiTestShellState {
 }
 
 export const uiTestActions = [
+  "resetWorkspace",
   "openSampleLogs",
   "openLargeLog",
   "copyFirstPane",

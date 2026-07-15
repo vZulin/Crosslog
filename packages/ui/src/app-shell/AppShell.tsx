@@ -966,12 +966,38 @@ export function AppShell({
   );
 
   const firstPaneEntry = panes[0] ?? null;
+  const resetUiTestWorkspace = React.useCallback(() => {
+    dispatch({ type: "replaceState", state: createLogPaneState() });
+    resetSynchronizationState();
+    resetPaneSearchState();
+    setThemePreference(defaultThemePreference);
+    setUiTestCopiedPaneTitle(null);
+    setSourceOpeningEvidence(initialSourceOpeningEvidence);
+    setUiTestCopyActionPublishSequence(0);
+    setOpenSearchPaneId(null);
+    setOpenTimeOffsetPaneId(null);
+    setSettingsOpen(false);
+    setSearchFocusRequestSequence(0);
+    setFileSources(createInitialFileSources(platform.kind));
+    setDirectoryFileSources({});
+    restoredFileSourceRequestRef.current += 1;
+    liveAppendCounter.current = 1;
+    dispatchDirectorySource({
+      type: "replaceSource",
+      source: createInitialDirectorySource(platform),
+    });
+  }, [platform, resetPaneSearchState, resetSynchronizationState]);
+
   const executeUiTestAction = React.useCallback(
     (action: UiTestAction) => {
       switch (action) {
+        case "resetWorkspace":
+          resetUiTestWorkspace();
+          break;
         case "openSampleLogs":
           // Reset the hidden fixture workspace so grouped WDIO specs remain
           // independent while sharing one stable tauri-driver session.
+          resetUiTestWorkspace();
           dispatch({
             type: "replaceState",
             state: createLogPaneState(
@@ -1167,6 +1193,7 @@ export function AppShell({
       openSearchPaneId,
       requestActivePaneSearch,
       requestActivePaneTimeOffset,
+      resetUiTestWorkspace,
       resetPaneSearchState,
       resetSynchronizationState,
       setPaneOffset,

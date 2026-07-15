@@ -151,6 +151,7 @@ describe("UI test bridge shell state contract", () => {
 
   it("keeps lifecycle and source simulation actions behind the supported UI test action contract", () => {
     expect(uiTestActions).toEqual([
+      "resetWorkspace",
       "openSampleLogs",
       "openLargeLog",
       "copyFirstPane",

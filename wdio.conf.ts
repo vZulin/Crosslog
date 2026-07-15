@@ -1,3 +1,6 @@
+import { appendFileSync } from "node:fs";
+import { browser } from "@wdio/globals";
+
 const tauriApplicationPath = process.env.CROSSLOG_TAURI_APP_PATH;
 const tauriDriverPort = Number.parseInt(process.env.CROSSLOG_TAURI_DRIVER_PORT ?? "4444", 10);
 const configuredSpecs = parseConfiguredSpecs(process.env.CROSSLOG_WDIO_SPECS);
@@ -24,6 +27,24 @@ export const config = {
       : [["apps/desktop/tests/ui/**/*.spec.ts"]],
   maxInstances,
   maxInstancesPerCapability: maxInstances,
+  beforeTest: async () => {
+    const actionsPath = process.env.CROSSLOG_UI_TEST_ACTIONS_PATH;
+
+    if (!actionsPath) {
+      return;
+    }
+
+    appendFileSync(actionsPath, "resetWorkspace\n", "utf8");
+    await browser.waitUntil(async () => {
+      const title = await browser.getTitle();
+
+      return title.includes("state=empty") && title.includes("panes=0") && title.includes("settingsSurface=closed");
+    }, {
+      interval: 100,
+      timeout: 15_000,
+      timeoutMsg: "Desktop UI test workspace did not reset before the test.",
+    });
+  },
   framework: "mocha",
   reporters: ["spec"],
   capabilities: [
