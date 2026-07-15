@@ -1,7 +1,11 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { createVisibleLogLineWindow, VirtualLogViewport } from "../../src/log-pane/VirtualLogViewport";
+import {
+  createVisibleLogLineWindow,
+  firstVisibleLineForScrollTop,
+  VirtualLogViewport,
+} from "../../src/log-pane/VirtualLogViewport";
 
 describe("virtual log viewport", () => {
   it("coalesces a scroll burst into one deferred React commit", async () => {
@@ -33,6 +37,15 @@ describe("virtual log viewport", () => {
     const visibleLines = createVisibleLogLineWindow(lines, 5, [], 10);
 
     expect(visibleLines.map((line) => line.lineNumber)).toEqual([8, 9, 10, 11, 12]);
+  });
+
+  it("keeps most of the rendered window ahead of a fast scroll direction", () => {
+    const forwardFirstLine = firstVisibleLineForScrollTop(8 + (700 - 1) * 18, 600, 10_000, "forward");
+    const backwardFirstLine = firstVisibleLineForScrollTop(8 + (700 - 1) * 18, 600, 10_000, "backward");
+
+    expect(forwardFirstLine).toBe(640);
+    expect(forwardFirstLine + 600 - 1).toBeGreaterThanOrEqual(1_233);
+    expect(700 - backwardFirstLine).toBeGreaterThan(500);
   });
 
   it("sizes the line-number gutter from the total line-count digit count", () => {

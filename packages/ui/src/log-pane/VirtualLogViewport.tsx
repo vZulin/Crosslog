@@ -755,7 +755,7 @@ function getNextKeyboardVisualLineOffset(
   return Math.max(0, Math.min(viewportLineCapacity - 1, currentVisualLineOffset + delta));
 }
 
-function firstVisibleLineForScrollTop(
+export function firstVisibleLineForScrollTop(
   scrollTop: number,
   maxVisibleLines: number,
   lineCount: number,
@@ -770,11 +770,12 @@ function firstVisibleLineForScrollTop(
   // Keep the same DOM budget while placing most of it ahead of the scroll.
   // Rendering work can take longer than one frame on a shared CI runner, so a
   // symmetric window may end behind a fast forward scroll before its next
-  // state commit. Reverse the bias when the user scrolls back.
+  // state commit. Reserve only 10% behind the movement and reverse the bias
+  // when the user scrolls back.
   const overscanBeforeLineCount =
     scrollDirection === "forward"
-      ? Math.floor(Math.max(1, maxVisibleLines) / 4)
-      : Math.ceil((Math.max(1, maxVisibleLines) * 3) / 4);
+      ? Math.floor(Math.max(1, maxVisibleLines) / 10)
+      : Math.ceil((Math.max(1, maxVisibleLines) * 9) / 10);
 
   return Math.max(1, Math.min(maxFirstVisibleLineNumber, topLineNumber - overscanBeforeLineCount));
 }
