@@ -13,7 +13,8 @@ import {
 export class TauriUiTestBridge implements UiTestBridge {
   private enabled: Promise<boolean> | null = null;
   private publishedState: string | null = null;
-  private nativeTitleUpdateQueue: Promise<void> = Promise.resolve();
+  private nativeTitleUpdateQueue: Promise<void> | null = null;
+  private pendingNativeTitleState: string | null = null;
 
   isEnabled(): Promise<boolean> {
     this.enabled ??= invoke<boolean>("is_ui_test_mode").catch(() => false);
@@ -57,14 +58,37 @@ export class TauriUiTestBridge implements UiTestBridge {
 
   private publishNativeTitle(state: string): Promise<void> {
     // React effects can publish several snapshots before Tauri finishes a
-    // native title update. Serialize them so an older snapshot cannot overwrite
-    // the title of a newer workspace state on Desktop UI test runners.
-    this.nativeTitleUpdateQueue = this.nativeTitleUpdateQueue
-      .catch(() => undefined)
-      .then(() => invoke("publish_ui_test_state", { state }))
-      .then(() => undefined);
+    // native title update. Serialize updates and coalesce intermediate states
+    // so an older snapshot cannot overwrite a newer state or create a backlog
+    // that delays reset detection on Desktop UI test runners.
+    this.pendingNativeTitleState = state;
+
+    if (this.nativeTitleUpdateQueue === null) {
+      this.nativeTitleUpdateQueue = this.drainNativeTitleUpdates();
+    }
 
     return this.nativeTitleUpdateQueue;
+  }
+
+  private async drainNativeTitleUpdates(): Promise<void> {
+    try {
+      while (this.pendingNativeTitleState !== null) {
+        const nextState = this.pendingNativeTitleState;
+        this.pendingNativeTitleState = null;
+
+        try {
+          await invoke("publish_ui_test_state", { state: nextState });
+        } catch {
+          // A failed diagnostic title update must not block later snapshots.
+        }
+      }
+    } finally {
+      this.nativeTitleUpdateQueue = null;
+
+      if (this.pendingNativeTitleState !== null) {
+        this.nativeTitleUpdateQueue = this.drainNativeTitleUpdates();
+      }
+    }
   }
 
   async consumePendingAction(): Promise<UiTestAction | null> {
