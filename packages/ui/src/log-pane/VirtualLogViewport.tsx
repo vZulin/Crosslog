@@ -115,6 +115,7 @@ export function VirtualLogViewport({
     readonly centerVertically: boolean | null;
   } | null>(null);
   const previousScrollTopRef = React.useRef(0);
+  const previousScrollDirectionRef = React.useRef<ScrollDirection | null>(null);
 
   selectedLineNumberRef.current = selectedLineNumber;
 
@@ -390,6 +391,10 @@ export function VirtualLogViewport({
     const scrollDirection: ScrollDirection =
       scrollTop >= previousScrollTopRef.current ? "forward" : "backward";
     previousScrollTopRef.current = scrollTop;
+    const directionChanged =
+      previousScrollDirectionRef.current !== null &&
+      previousScrollDirectionRef.current !== scrollDirection;
+    previousScrollDirectionRef.current = scrollDirection;
     const nextLineNumber = lineForScrollTop(event.currentTarget, lines.length);
     const nextFirstVisibleLineNumber = firstVisibleLineForScrollTop(
       scrollTop,
@@ -397,6 +402,13 @@ export function VirtualLogViewport({
       lines.length,
       scrollDirection,
     );
+
+    if (directionChanged && nextFirstVisibleLineNumber !== null) {
+      // A directional window intentionally favors the previous movement. When
+      // the user reverses direction, repair that bias immediately so the old
+      // window cannot expose a blank edge before the next animation frame.
+      flushSync(() => setFirstVisibleLineNumber(nextFirstVisibleLineNumber));
+    }
 
     if (nextLineNumber === null) {
       return;
