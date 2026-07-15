@@ -186,6 +186,7 @@ export function LogPane({
             maxVisibleLines={pane.active ? 600 : 120}
             synchronizationTargetLineNumber={synchronizationTarget?.lineNumber ?? null}
             synchronizationTargetVisualLineOffset={synchronizationTarget?.visualLineOffset ?? null}
+            timeAnchorChangeThrottleMs={pane.syncEnabled ? 50 : 0}
             onUiTestNavigationEvidenceChange={onUiTestNavigationEvidenceChange}
             onTimeAnchorChange={(lineNumber, timestamp, visualLineOffset, navigationKind) =>
               onTimeAnchorChange?.(pane.id, lineNumber, timestamp, visualLineOffset, navigationKind)

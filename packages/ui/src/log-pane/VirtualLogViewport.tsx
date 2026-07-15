@@ -29,6 +29,7 @@ export interface VirtualLogViewportProps {
     visualLineOffset: number,
     navigationKind: LogViewportNavigationKind,
   ) => void;
+  readonly timeAnchorChangeThrottleMs?: number;
   readonly horizontalScrollLeft?: number;
   readonly horizontalContentWidth?: number;
   readonly onUiTestNavigationEvidenceChange?: () => void;
@@ -39,6 +40,13 @@ interface PendingVerticalScrollUpdate {
   readonly nextFirstVisibleLineNumber: number | null;
   readonly anchorLineNumber: number;
   readonly anchorVisualLineOffset: number;
+}
+
+interface PendingTimeAnchorChange {
+  readonly lineNumber: number;
+  readonly timestamp: Date | null;
+  readonly visualLineOffset: number;
+  readonly navigationKind: LogViewportNavigationKind;
 }
 
 type ScrollDirection = "backward" | "forward";
@@ -75,6 +83,7 @@ export function VirtualLogViewport({
   synchronizationTargetLineNumber,
   synchronizationTargetVisualLineOffset,
   onTimeAnchorChange,
+  timeAnchorChangeThrottleMs = 0,
   horizontalScrollLeft = 0,
   horizontalContentWidth,
   onUiTestNavigationEvidenceChange,
@@ -101,6 +110,8 @@ export function VirtualLogViewport({
   const selectionLockedRef = React.useRef(false);
   const pendingVerticalScrollUpdateRef = React.useRef<PendingVerticalScrollUpdate | null>(null);
   const cancelVerticalScrollFrameRef = React.useRef<(() => void) | null>(null);
+  const pendingTimeAnchorChangeRef = React.useRef<PendingTimeAnchorChange | null>(null);
+  const timeAnchorChangeTimeoutRef = React.useRef<number | null>(null);
   // Guards only the exact scroll event caused by our own imperative scroll.
   // A stale boolean would incorrectly swallow the next user scroll if the
   // browser does not dispatch a programmatic scroll event.
@@ -125,6 +136,7 @@ export function VirtualLogViewport({
     lineCount: lines.length,
     timestamps,
     onTimeAnchorChange,
+    timeAnchorChangeThrottleMs,
     visibleLineCapacity,
   });
   viewportStateRef.current = {
@@ -133,6 +145,42 @@ export function VirtualLogViewport({
     onTimeAnchorChange,
     visibleLineCapacity,
   };
+
+  const queueTimeAnchorChange = React.useCallback((change: PendingTimeAnchorChange) => {
+    pendingTimeAnchorChangeRef.current = change;
+
+    if (viewportStateRef.current.timeAnchorChangeThrottleMs <= 0) {
+      pendingTimeAnchorChangeRef.current = null;
+      viewportStateRef.current.onTimeAnchorChange?.(
+        change.lineNumber,
+        change.timestamp,
+        change.visualLineOffset,
+        change.navigationKind,
+      );
+      return;
+    }
+
+    if (timeAnchorChangeTimeoutRef.current !== null) {
+      return;
+    }
+
+    timeAnchorChangeTimeoutRef.current = globalThis.setTimeout(() => {
+      timeAnchorChangeTimeoutRef.current = null;
+      const pendingChange = pendingTimeAnchorChangeRef.current;
+      pendingTimeAnchorChangeRef.current = null;
+
+      if (!pendingChange) {
+        return;
+      }
+
+      viewportStateRef.current.onTimeAnchorChange?.(
+        pendingChange.lineNumber,
+        pendingChange.timestamp,
+        pendingChange.visualLineOffset,
+        pendingChange.navigationKind,
+      );
+    }, viewportStateRef.current.timeAnchorChangeThrottleMs);
+  }, []);
 
   const applyPendingVerticalScrollUpdate = React.useCallback(() => {
     cancelVerticalScrollFrameRef.current = null;
@@ -174,13 +222,13 @@ export function VirtualLogViewport({
       setLastNavigation("wheel");
     });
 
-    currentState.onTimeAnchorChange?.(
-      pendingUpdate.anchorLineNumber,
-      currentState.timestamps?.[pendingUpdate.anchorLineNumber - 1] ?? null,
-      pendingUpdate.anchorVisualLineOffset,
-      "wheel",
-    );
-  }, []);
+    queueTimeAnchorChange({
+      lineNumber: pendingUpdate.anchorLineNumber,
+      timestamp: currentState.timestamps?.[pendingUpdate.anchorLineNumber - 1] ?? null,
+      visualLineOffset: pendingUpdate.anchorVisualLineOffset,
+      navigationKind: "wheel",
+    });
+  }, [queueTimeAnchorChange]);
 
   const scheduleVerticalScrollUpdate = React.useCallback(() => {
     if (cancelVerticalScrollFrameRef.current !== null) {
@@ -195,6 +243,11 @@ export function VirtualLogViewport({
       cancelVerticalScrollFrameRef.current?.();
       cancelVerticalScrollFrameRef.current = null;
       pendingVerticalScrollUpdateRef.current = null;
+      if (timeAnchorChangeTimeoutRef.current !== null) {
+        globalThis.clearTimeout(timeAnchorChangeTimeoutRef.current);
+        timeAnchorChangeTimeoutRef.current = null;
+      }
+      pendingTimeAnchorChangeRef.current = null;
     },
     [],
   );
