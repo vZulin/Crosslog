@@ -5,6 +5,7 @@ const tauriApplicationPath = process.env.CROSSLOG_TAURI_APP_PATH;
 const tauriDriverPort = Number.parseInt(process.env.CROSSLOG_TAURI_DRIVER_PORT ?? "4444", 10);
 const configuredSpecs = parseConfiguredSpecs(process.env.CROSSLOG_WDIO_SPECS);
 const maxInstances = parseConfiguredMaxInstances(process.env.CROSSLOG_WDIO_MAX_INSTANCES);
+const isWindows = process.platform === "win32";
 
 if (!tauriApplicationPath) {
   throw new Error("CROSSLOG_TAURI_APP_PATH must point to the built Crosslog Desktop application.");
@@ -61,7 +62,10 @@ export const config = {
   ],
   logLevel: "info",
   waitforTimeout: 10_000,
-  connectionRetryTimeout: 120_000,
+  // A listening tauri-driver does not prove that its WebView session can start.
+  // The outer harness restarts the entire driver tree after this bounded Windows attempt.
+  connectionRetryTimeout: isWindows ? 30_000 : 120_000,
+  connectionRetryCount: isWindows ? 0 : 3,
   mochaOpts: {
     ui: "bdd",
     timeout: 60_000

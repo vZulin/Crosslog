@@ -240,19 +240,20 @@ async function runWdioHarness() {
       }
 
       if (!isRetryableDriverStartupFailure(result.output) || attempt > driverStartupRetries) {
-        process.exit(result.status);
+        process.exitCode = result.status;
+        return;
       }
 
       logRunnerEvent(
         `Retrying Desktop UI specs after tauri-driver startup failure (${attempt}/${driverStartupRetries})`,
       );
-      await driver.stop();
+      await stopTauriDriver(driver, driverPort);
       driver = null;
       await delay(1_000);
     }
   } finally {
     logRunnerEvent("tauri-driver stop started");
-    await driver?.stop();
+    await stopTauriDriver(driver, driverPort);
     rmSync(actionsPath, { force: true });
     logRunnerEvent("tauri-driver stop finished");
   }
@@ -419,7 +420,7 @@ function startTauriDriver(port, env) {
 
   return {
     stop() {
-      if (driverProcess.exitCode !== null || driverProcess.killed) {
+      if (driverProcess.exitCode !== null) {
         return Promise.resolve();
       }
 
@@ -429,13 +430,39 @@ function startTauriDriver(port, env) {
           clearTimeout(timeoutId);
           resolvePromise();
         };
-        const timeoutId = setTimeout(resolveOnce, 3_000);
+        const timeoutId = setTimeout(resolveOnce, 10_000);
 
         driverProcess.once("exit", resolveOnce);
+
+        if (platform === "win32" && driverProcess.pid) {
+          const result = spawnSync("taskkill", ["/pid", String(driverProcess.pid), "/t", "/f"], {
+            cwd: repoRoot,
+            windowsHide: true,
+          });
+
+          if (result.error) {
+            console.warn(`Warning: failed to terminate the tauri-driver process tree: ${result.error.message}`);
+          }
+
+          if (driverProcess.exitCode !== null) {
+            resolveOnce();
+          }
+          return;
+        }
+
         driverProcess.kill();
       });
     },
   };
+}
+
+async function stopTauriDriver(driver, port) {
+  if (!driver) {
+    return;
+  }
+
+  await driver.stop();
+  await waitForTcpPortToClose(port);
 }
 
 async function waitForTcpPort(port) {
@@ -469,6 +496,21 @@ function probeTcpPort(port) {
       rejectPromise(new Error("connection timed out"));
     });
   });
+}
+
+async function waitForTcpPortToClose(port) {
+  const deadline = Date.now() + 10_000;
+
+  while (Date.now() < deadline) {
+    try {
+      await probeTcpPort(port);
+      await delay(100);
+    } catch {
+      return;
+    }
+  }
+
+  throw new Error(`Timed out waiting for tauri-driver to release 127.0.0.1:${port}`);
 }
 
 function prepareMacosAppBundle() {
