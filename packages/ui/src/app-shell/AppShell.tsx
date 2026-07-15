@@ -972,7 +972,15 @@ export function AppShell({
         case "openSampleLogs":
           // Reset the hidden fixture workspace so grouped WDIO specs remain
           // independent while sharing one stable tauri-driver session.
-          dispatch({ type: "replaceState", state: createLogPaneState(samplePanes) });
+          dispatch({
+            type: "replaceState",
+            state: createLogPaneState(
+              samplePanes.map((pane, index) => ({
+                ...pane,
+                active: index === samplePanes.length - 1,
+              })),
+            ),
+          });
           resetSynchronizationState();
           resetPaneSearchState();
           setOpenSearchPaneId(null);
