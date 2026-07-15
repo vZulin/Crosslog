@@ -997,7 +997,6 @@ export function AppShell({
         case "openSampleLogs":
           // Reset the hidden fixture workspace so grouped WDIO specs remain
           // independent while sharing one stable tauri-driver session.
-          resetUiTestWorkspace();
           dispatch({
             type: "replaceState",
             state: createLogPaneState(
