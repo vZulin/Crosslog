@@ -19,10 +19,45 @@ export function HorizontalLogScroller({
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
   const [scrollportWidth, setScrollportWidth] = React.useState(0);
   const [effectiveScrollLeft, setEffectiveScrollLeft] = React.useState(scrollLeft);
+  const pendingScrollLeftRef = React.useRef<number | null>(null);
+  const cancelScrollFrameRef = React.useRef<(() => void) | null>(null);
+  const onScrollLeftChangeRef = React.useRef(onScrollLeftChange);
   const effectiveContentWidth = Math.max(
     Math.round(contentWidth ?? 0),
     scrollportWidth,
   );
+
+  onScrollLeftChangeRef.current = onScrollLeftChange;
+
+  const queueScrollLeftUpdate = React.useCallback((nextScrollLeft: number) => {
+    const scroller = scrollRef.current;
+
+    if (!scroller) {
+      return;
+    }
+
+    applyHorizontalScrollVisualOffset(scroller, nextScrollLeft);
+    pendingScrollLeftRef.current = nextScrollLeft;
+
+    if (cancelScrollFrameRef.current !== null) {
+      return;
+    }
+
+    cancelScrollFrameRef.current = scheduleAnimationFrame(() => {
+      cancelScrollFrameRef.current = null;
+      const pendingScrollLeft = pendingScrollLeftRef.current;
+
+      if (pendingScrollLeft === null) {
+        return;
+      }
+
+      pendingScrollLeftRef.current = null;
+      setEffectiveScrollLeft((currentScrollLeft) =>
+        currentScrollLeft === pendingScrollLeft ? currentScrollLeft : pendingScrollLeft,
+      );
+      onScrollLeftChangeRef.current(pendingScrollLeft);
+    });
+  }, []);
 
   React.useLayoutEffect(() => {
     const scroller = scrollRef.current;
@@ -34,8 +69,23 @@ export function HorizontalLogScroller({
     if (scroller.scrollLeft !== scrollLeft) {
       scroller.scrollLeft = scrollLeft;
     }
-    setEffectiveScrollLeft(scrollLeft);
+    pendingScrollLeftRef.current = null;
+    cancelScrollFrameRef.current?.();
+    cancelScrollFrameRef.current = null;
+    applyHorizontalScrollVisualOffset(scroller, scrollLeft);
+    setEffectiveScrollLeft((currentScrollLeft) =>
+      currentScrollLeft === scrollLeft ? currentScrollLeft : scrollLeft,
+    );
   }, [scrollLeft]);
+
+  React.useEffect(
+    () => () => {
+      cancelScrollFrameRef.current?.();
+      cancelScrollFrameRef.current = null;
+      pendingScrollLeftRef.current = null;
+    },
+    [],
+  );
 
   React.useLayoutEffect(() => {
     const scroller = scrollRef.current;
@@ -83,9 +133,8 @@ export function HorizontalLogScroller({
     }
 
     scroller.scrollLeft = nextScrollLeft;
-    setEffectiveScrollLeft(nextScrollLeft);
-    onScrollLeftChange(nextScrollLeft);
-  }, [onScrollLeftChange]);
+    queueScrollLeftUpdate(nextScrollLeft);
+  }, [queueScrollLeftUpdate]);
 
   React.useEffect(() => {
     const scroller = scrollRef.current;
@@ -99,12 +148,9 @@ export function HorizontalLogScroller({
     return () => scroller.removeEventListener("wheel", handleHorizontalWheel);
   }, [handleHorizontalWheel]);
 
-  const handleScroll = (event: UIEvent<HTMLDivElement>) => {
-    const nextScrollLeft = event.currentTarget.scrollLeft;
-
-    setEffectiveScrollLeft(nextScrollLeft);
-    onScrollLeftChange(nextScrollLeft);
-  };
+  const handleScroll = React.useCallback((event: UIEvent<HTMLDivElement>) => {
+    queueScrollLeftUpdate(event.currentTarget.scrollLeft);
+  }, [queueScrollLeftUpdate]);
 
   return (
     <div
@@ -113,7 +159,12 @@ export function HorizontalLogScroller({
       role="region"
       aria-label={`Horizontal log scroller for ${title}`}
       onScroll={handleScroll}
-      style={{ overflowX: "auto" }}
+      style={
+        {
+          overflowX: "auto",
+          "--crosslog-horizontal-scroll-left": `${effectiveScrollLeft}px`,
+        } as React.CSSProperties
+      }
     >
       <div className="crosslog-log-scroller__content" style={getContentStyle(effectiveContentWidth)}>
         <div
@@ -137,6 +188,27 @@ function getHorizontalWheelDelta(event: WheelEvent): number {
   }
 
   return event.shiftKey ? event.deltaY : 0;
+}
+
+function applyHorizontalScrollVisualOffset(scroller: HTMLElement, scrollLeft: number): void {
+  const value = `${Math.max(0, Math.round(scrollLeft))}px`;
+
+  scroller.style.setProperty("--crosslog-horizontal-scroll-left", value);
+  scroller
+    .querySelector<HTMLElement>(".crosslog-log-viewport")
+    ?.style.setProperty("--crosslog-horizontal-scroll-left", value);
+}
+
+function scheduleAnimationFrame(callback: () => void): () => void {
+  if (typeof globalThis.requestAnimationFrame === "function") {
+    const frameId = globalThis.requestAnimationFrame(() => callback());
+
+    return () => globalThis.cancelAnimationFrame(frameId);
+  }
+
+  const timeoutId = globalThis.setTimeout(callback, 0);
+
+  return () => globalThis.clearTimeout(timeoutId);
 }
 
 function getContentStyle(contentWidth: number): React.CSSProperties | undefined {

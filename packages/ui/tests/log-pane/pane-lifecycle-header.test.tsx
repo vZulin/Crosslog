@@ -53,6 +53,7 @@ describe("pane lifecycle header", () => {
     );
 
     expect(getByTestId(redesignedShellTestIds.paneHeaderDeleted).textContent).toBe("Deleted");
+    expect(getByTestId(redesignedShellTestIds.paneHeaderDeleted).closest(".crosslog-pane-header__title-row")).toBeTruthy();
     expect(getByRole("status", { name: "File state for app.log: Deleted" })).toBeTruthy();
     expect(getByLabelText("Search in app.log")).toBeTruthy();
 
@@ -74,6 +75,7 @@ describe("pane lifecycle header", () => {
     );
 
     expect(getByTestId(redesignedShellTestIds.paneHeaderReplaced).textContent).toBe("Replaced");
+    expect(getByTestId(redesignedShellTestIds.paneHeaderReplaced).closest(".crosslog-pane-header__title-row")).toBeTruthy();
     expect(getByTestId(redesignedShellTestIds.paneHeaderLifecycle).textContent).toBe("Replaced, Live");
     expect(getByRole("status", { name: "File state for app.log: Replaced, Live" })).toBeTruthy();
   });
@@ -147,6 +149,7 @@ describe("pane lifecycle header", () => {
     expect(getByTestId(redesignedShellTestIds.paneHeaderError).getAttribute("title")).toBe(
       "Permission denied",
     );
+    expect(getByTestId(redesignedShellTestIds.paneHeaderError).closest(".crosslog-pane-header__title-row")).toBeTruthy();
     expect(getByRole("status", { name: "File state for app.log: Error" })).toBeTruthy();
   });
 

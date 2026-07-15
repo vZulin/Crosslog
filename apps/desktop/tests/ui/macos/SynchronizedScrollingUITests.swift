@@ -1,6 +1,8 @@
 import XCTest
 
 final class SynchronizedScrollingUITests: CrosslogUITests {
+    private let activePaneRenderedRowCount = 600
+
     func testTopbarSynchronizationStateIsPublished() {
         let app = launchApplication()
         openSampleLogs(in: app)
@@ -32,7 +34,7 @@ final class SynchronizedScrollingUITests: CrosslogUITests {
 
         performUiTestAction(.openLargeLog)
         waitForUiTestTitle("files=idea.3.log", in: app, timeout: 20)
-        waitForUiTestTitle("renderedRows=400", in: app)
+        waitForUiTestTitle("renderedRows=\(activePaneRenderedRowCount)", in: app)
         _ = waitForTitleInteger("visibleRows", atLeast: 1, in: app)
 
         enqueueUiTestActions(Array(repeating: .wheelNavigateActivePaneDown, count: 110))
@@ -50,7 +52,7 @@ final class SynchronizedScrollingUITests: CrosslogUITests {
 
             if let selectedLine = selectedLineNumber(from: title), selectedLine >= 250 {
                 XCTAssertGreaterThan(titleInteger("visibleRows", from: title) ?? 0, 0)
-                XCTAssertEqual(titleInteger("renderedRows", from: title), 400)
+                XCTAssertEqual(titleInteger("renderedRows", from: title), activePaneRenderedRowCount)
                 return
             }
 
@@ -77,7 +79,7 @@ final class SynchronizedScrollingUITests: CrosslogUITests {
             assertLargeLogViewportHasVisibleRows(in: app)
 
             if let selectedLine = selectedLineNumber(from: window.title), selectedLine >= 650 {
-                XCTAssertEqual(titleInteger("renderedRows", from: window.title), 400)
+                XCTAssertEqual(titleInteger("renderedRows", from: window.title), activePaneRenderedRowCount)
                 return
             }
 
@@ -146,7 +148,12 @@ final class SynchronizedScrollingUITests: CrosslogUITests {
         line: UInt = #line
     ) {
         waitForUiTestTitle("files=idea.3.log", in: app, timeout: 20, file: file, line: line)
-        waitForUiTestTitle("renderedRows=400", in: app, file: file, line: line)
+        waitForUiTestTitle(
+            "renderedRows=\(activePaneRenderedRowCount)",
+            in: app,
+            file: file,
+            line: line
+        )
         _ = waitForTitleInteger("visibleRows", atLeast: 1, in: app, file: file, line: line)
     }
 

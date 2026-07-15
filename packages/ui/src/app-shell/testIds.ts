@@ -34,6 +34,7 @@ export const redesignedShellTestIds = {
   workspaceScrollbarThumb: "workspace-scrollbar-thumb",
   logPane: "log-pane",
   paneResizeBoundary: "pane-resize-boundary",
+  paneReorderOutline: "pane-reorder-outline",
   paneHeader: "pane-header",
   paneHeaderClose: "pane-header-close",
   paneHeaderSearch: "pane-header-search",

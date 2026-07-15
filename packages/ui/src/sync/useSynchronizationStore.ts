@@ -50,8 +50,8 @@ export const useSynchronizationStore = create<SynchronizationStoreState>((set) =
       },
     })),
   setPlanResult: (targets, excludedPaneIds, visualLineOffset) =>
-    set({
-      targets: Object.fromEntries(
+    set((state) => {
+      const nextTargets = Object.fromEntries(
         targets.map((target) => [
           target.paneId,
           {
@@ -59,8 +59,18 @@ export const useSynchronizationStore = create<SynchronizationStoreState>((set) =
             visualLineOffset,
           },
         ]),
-      ),
-      excludedPaneIds,
+      );
+      const targetsUnchanged = areSynchronizationTargetsEqual(state.targets, nextTargets);
+      const excludedPaneIdsUnchanged = areStringArraysEqual(state.excludedPaneIds, excludedPaneIds);
+
+      if (targetsUnchanged && excludedPaneIdsUnchanged) {
+        return state;
+      }
+
+      return {
+        targets: targetsUnchanged ? state.targets : nextTargets,
+        excludedPaneIds: excludedPaneIdsUnchanged ? state.excludedPaneIds : excludedPaneIds,
+      };
     }),
   restoreSessionState: (session) =>
     set({
@@ -82,4 +92,29 @@ export const useSynchronizationStore = create<SynchronizationStoreState>((set) =
 
 export function getPaneOffset(offsets: Readonly<Record<string, TimeOffset>>, paneId: string): TimeOffset {
   return offsets[paneId] ?? zeroTimeOffset;
+}
+
+function areSynchronizationTargetsEqual(
+  current: Readonly<Record<string, SynchronizationTargetViewState>>,
+  next: Readonly<Record<string, SynchronizationTargetViewState>>,
+): boolean {
+  const currentPaneIds = Object.keys(current);
+  const nextPaneIds = Object.keys(next);
+
+  return (
+    currentPaneIds.length === nextPaneIds.length &&
+    currentPaneIds.every((paneId) => {
+      const currentTarget = current[paneId];
+      const nextTarget = next[paneId];
+
+      return (
+        currentTarget?.lineNumber === nextTarget?.lineNumber &&
+        currentTarget?.visualLineOffset === nextTarget?.visualLineOffset
+      );
+    })
+  );
+}
+
+function areStringArraysEqual(left: readonly string[], right: readonly string[]): boolean {
+  return left.length === right.length && left.every((value, index) => value === right[index]);
 }

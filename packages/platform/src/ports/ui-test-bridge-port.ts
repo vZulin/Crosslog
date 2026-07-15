@@ -174,6 +174,8 @@ export type UiTestAction = (typeof uiTestActions)[number];
 export interface UiTestBridge {
   readonly isEnabled: () => Promise<boolean>;
   readonly publishShellState: (state: UiTestShellState) => Promise<void>;
+  readonly publishPaneNavigation?: (paneNavigation: UiTestPaneNavigationEvidence) => Promise<void>;
+  readonly publishSynchronizationTargetLine?: (lineNumber: number | null) => Promise<void>;
   readonly consumePendingAction: () => Promise<UiTestAction | null>;
 }
 
@@ -258,6 +260,39 @@ export function formatUiTestShellState(state: UiTestShellState): string {
     }`,
     `regions=${state.redesignedRegions.length > 0 ? state.redesignedRegions.join(",") : "none"}`,
   ].join(";");
+}
+
+export function updateUiTestSynchronizationTargetLine(
+  formattedState: string,
+  lineNumber: number | null,
+): string {
+  return updateFormattedUiTestField(
+    formattedState,
+    "syncTargetLine",
+    formatNullableNumber(lineNumber),
+  );
+}
+
+export function updateUiTestPaneNavigation(
+  formattedState: string,
+  paneNavigation: UiTestPaneNavigationEvidence,
+): string {
+  return [
+    ["paneOrder", paneNavigation.paneOrder.length > 0 ? paneNavigation.paneOrder.join(",") : "none"],
+    ["selectedLine", formatNullableNumber(paneNavigation.selectedLineNumber)],
+    ["maxGutterDigits", formatNullableNumber(paneNavigation.maxGutterDigitCount)],
+    ["lastNavigation", paneNavigation.lastNavigation],
+    ["syncTargetLine", formatNullableNumber(paneNavigation.syncTargetLineNumber)],
+    ["renderedRows", formatNullableNumber(paneNavigation.renderedRowCount)],
+    ["visibleRows", formatNullableNumber(paneNavigation.visibleRowCount)],
+  ].reduce(
+    (state, [key, value]) => updateFormattedUiTestField(state, key, value),
+    formattedState,
+  );
+}
+
+function updateFormattedUiTestField(formattedState: string, key: string, value: string): string {
+  return formattedState.replace(new RegExp(`${key}=[^;]*`), `${key}=${value}`);
 }
 
 function hasVisibleObsoleteControls(state: UiTestShellState): boolean {

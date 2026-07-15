@@ -1,5 +1,4 @@
 import React from "react";
-import { flushSync } from "react-dom";
 import type { SearchMatch } from "@crosslog/core";
 import { redesignedShellTestIds } from "../app-shell/testIds";
 import type { LogSyntaxToken } from "./logSyntaxHighlighting";
@@ -31,6 +30,14 @@ export interface VirtualLogViewportProps {
   ) => void;
   readonly horizontalScrollLeft?: number;
   readonly horizontalContentWidth?: number;
+  readonly onUiTestNavigationEvidenceChange?: () => void;
+}
+
+interface PendingVerticalScrollUpdate {
+  readonly nextLineNumber: number;
+  readonly nextFirstVisibleLineNumber: number | null;
+  readonly anchorLineNumber: number;
+  readonly anchorVisualLineOffset: number;
 }
 
 export function createVisibleLogLineWindow(
@@ -67,6 +74,7 @@ export function VirtualLogViewport({
   onTimeAnchorChange,
   horizontalScrollLeft = 0,
   horizontalContentWidth,
+  onUiTestNavigationEvidenceChange,
 }: VirtualLogViewportProps) {
   const visibleLineCapacity = Math.max(1, Math.min(maxVisibleLines ?? 120, Math.max(lines.length, 1)));
   const searchMatchesByLineNumber = React.useMemo(
@@ -84,7 +92,10 @@ export function VirtualLogViewport({
   );
   const [lastNavigation, setLastNavigation] = React.useState<"none" | "click" | "keyboard" | "wheel">("none");
   const viewportRef = React.useRef<HTMLOListElement | null>(null);
+  const selectedLineNumberRef = React.useRef(selectedLineNumber);
   const selectionLockedRef = React.useRef(false);
+  const pendingVerticalScrollUpdateRef = React.useRef<PendingVerticalScrollUpdate | null>(null);
+  const cancelVerticalScrollFrameRef = React.useRef<(() => void) | null>(null);
   // Guards only the exact scroll event caused by our own imperative scroll.
   // A stale boolean would incorrectly swallow the next user scroll if the
   // browser does not dispatch a programmatic scroll event.
@@ -101,6 +112,78 @@ export function VirtualLogViewport({
     readonly centerVertically: boolean | null;
   } | null>(null);
 
+  selectedLineNumberRef.current = selectedLineNumber;
+
+  const viewportStateRef = React.useRef({
+    lineCount: lines.length,
+    timestamps,
+    onTimeAnchorChange,
+    visibleLineCapacity,
+  });
+  viewportStateRef.current = {
+    lineCount: lines.length,
+    timestamps,
+    onTimeAnchorChange,
+    visibleLineCapacity,
+  };
+
+  const applyPendingVerticalScrollUpdate = React.useCallback(() => {
+    cancelVerticalScrollFrameRef.current = null;
+
+    const pendingUpdate = pendingVerticalScrollUpdateRef.current;
+
+    if (!pendingUpdate) {
+      return;
+    }
+
+    pendingVerticalScrollUpdateRef.current = null;
+    const currentState = viewportStateRef.current;
+
+    setFirstVisibleLineNumber((currentFirstVisibleLineNumber) =>
+      pendingUpdate.nextFirstVisibleLineNumber ??
+      keepLineVisible(
+        pendingUpdate.anchorLineNumber,
+        currentFirstVisibleLineNumber,
+        currentState.visibleLineCapacity,
+        currentState.lineCount,
+      ),
+    );
+
+    if (!selectionLockedRef.current) {
+      selectedLineNumberRef.current = pendingUpdate.nextLineNumber;
+      setSelectedLineNumber((currentSelectedLineNumber) =>
+        currentSelectedLineNumber === pendingUpdate.nextLineNumber
+          ? currentSelectedLineNumber
+          : pendingUpdate.nextLineNumber,
+      );
+    }
+
+    setLastNavigation("wheel");
+    currentState.onTimeAnchorChange?.(
+      pendingUpdate.anchorLineNumber,
+      currentState.timestamps?.[pendingUpdate.anchorLineNumber - 1] ?? null,
+      pendingUpdate.anchorVisualLineOffset,
+      "wheel",
+    );
+  }, []);
+
+  const scheduleVerticalScrollUpdate = React.useCallback(() => {
+    if (cancelVerticalScrollFrameRef.current !== null) {
+      return;
+    }
+
+    cancelVerticalScrollFrameRef.current = scheduleAnimationFrame(applyPendingVerticalScrollUpdate);
+  }, [applyPendingVerticalScrollUpdate]);
+
+  React.useEffect(
+    () => () => {
+      cancelVerticalScrollFrameRef.current?.();
+      cancelVerticalScrollFrameRef.current = null;
+      pendingVerticalScrollUpdateRef.current = null;
+    },
+    [],
+  );
+
   React.useLayoutEffect(() => {
     if (!activeSearchMatch) {
       return;
@@ -109,6 +192,7 @@ export function VirtualLogViewport({
     const safeTargetLineNumber = clampLineNumber(activeSearchMatch.lineNumber, lines.length);
 
     selectionLockedRef.current = true;
+    selectedLineNumberRef.current = safeTargetLineNumber;
     setSelectedLineNumber(safeTargetLineNumber);
     setFirstVisibleLineNumber((currentFirstLineNumber) =>
       ensureLineIsRendered(
@@ -138,6 +222,7 @@ export function VirtualLogViewport({
     const safeTargetLineNumber = clampLineNumber(synchronizationTargetLineNumber, lines.length);
 
     selectionLockedRef.current = true;
+    selectedLineNumberRef.current = safeTargetLineNumber;
     setSelectedLineNumber(safeTargetLineNumber);
     setFirstVisibleLineNumber((currentFirstLineNumber) =>
       getFirstVisibleLineNumberForTarget(
@@ -164,6 +249,7 @@ export function VirtualLogViewport({
     const safeSelectedLineNumber = clampLineNumber(selectedLineNumber, lines.length);
 
     if (safeSelectedLineNumber !== selectedLineNumber) {
+      selectedLineNumberRef.current = safeSelectedLineNumber;
       setSelectedLineNumber(safeSelectedLineNumber);
     }
 
@@ -300,27 +386,19 @@ export function VirtualLogViewport({
       return;
     }
 
-    const anchorLineNumber = selectionLockedRef.current ? selectedLineNumber : nextLineNumber;
+    const anchorLineNumber = selectionLockedRef.current
+      ? selectedLineNumberRef.current
+      : nextLineNumber;
     const anchorVisualLineOffset = getVisualLineOffsetForScrollTop(anchorLineNumber, scrollTop);
 
-    flushSync(() => {
-      setFirstVisibleLineNumber((currentFirstLineNumber) =>
-        nextFirstVisibleLineNumber ??
-        keepLineVisible(anchorLineNumber, currentFirstLineNumber, visibleLineCapacity, lines.length),
-      );
-
-      if (!selectionLockedRef.current) {
-        setSelectedLineNumber(nextLineNumber);
-      }
-
-      setLastNavigation("wheel");
-    });
-    onTimeAnchorChange?.(
+    pendingVerticalScrollUpdateRef.current = {
+      nextLineNumber,
+      nextFirstVisibleLineNumber,
       anchorLineNumber,
-      timestamps?.[anchorLineNumber - 1] ?? null,
       anchorVisualLineOffset,
-      "wheel",
-    );
+    };
+
+    scheduleVerticalScrollUpdate();
   };
 
   const visibleLines = createVisibleLogLineWindow(
@@ -337,6 +415,37 @@ export function VirtualLogViewport({
     : null;
   const rowHorizontalOffsetPx = Math.max(0, Math.round(horizontalScrollLeft));
 
+  React.useLayoutEffect(() => {
+    onUiTestNavigationEvidenceChange?.();
+  }, [
+    firstVisibleLineNumber,
+    lastNavigation,
+    lines.length,
+    onUiTestNavigationEvidenceChange,
+    selectedLineNumber,
+    synchronizationTargetLineNumber,
+    visibleLineCapacity,
+  ]);
+
+  const handleLineSelect = React.useCallback(
+    (lineNumber: number, timestamp: Date | null) => {
+      const viewport = viewportRef.current;
+      const visualLineOffset = viewport
+        ? getVisualLineOffsetForScrollTop(lineNumber, viewport.scrollTop)
+        : 0;
+
+      selectionLockedRef.current = true;
+      selectedLineNumberRef.current = lineNumber;
+      setSelectedLineNumber(lineNumber);
+      setFirstVisibleLineNumber((currentFirstLineNumber) =>
+        keepLineVisible(lineNumber, currentFirstLineNumber, visibleLineCapacity, lines.length),
+      );
+      setLastNavigation("click");
+      onTimeAnchorChange?.(lineNumber, timestamp, visualLineOffset, "click");
+    },
+    [lines.length, onTimeAnchorChange, visibleLineCapacity],
+  );
+
   const moveSelectedLine = React.useCallback(
     (delta: number, navigation: "keyboard" | "wheel") => {
       const viewport = viewportRef.current;
@@ -349,6 +458,7 @@ export function VirtualLogViewport({
           delta,
         );
 
+        selectedLineNumberRef.current = nextLineNumber;
         setFirstVisibleLineNumber((currentFirstLineNumber) =>
           keepLineVisible(nextLineNumber, currentFirstLineNumber, visibleLineCapacity, lines.length),
         );
@@ -408,6 +518,7 @@ export function VirtualLogViewport({
       style={
         {
           "--crosslog-line-number-digits": lineNumberDigitCount,
+          "--crosslog-horizontal-scroll-left": `${rowHorizontalOffsetPx}px`,
         } as React.CSSProperties
       }
       tabIndex={0}
@@ -419,45 +530,23 @@ export function VirtualLogViewport({
       />
       {visibleLines.map((line) => {
         const selected = line.lineNumber === selectedLineNumber;
-        const lineSearchMatches = searchMatchesByLineNumber.get(line.lineNumber) ?? [];
-        const lineTopPx = logViewportPaddingBlockPx + (line.lineNumber - 1) * logViewportRowHeightPx;
+        const lineSearchMatches = searchMatchesByLineNumber.get(line.lineNumber) ?? emptySearchMatches;
 
         return (
-          <li
-            className="crosslog-log-viewport__row"
+          <LogViewportRow
             key={line.lineNumber}
-            data-line-number={line.lineNumber}
-            data-active-search-match={
-              searchHighlightsVisible && line.lineNumber === activeSearchMatchLineNumber ? "true" : "false"
-            }
-            data-selected-line={selected ? "true" : "false"}
-            data-sync-target={line.lineNumber === synchronizationTargetLineNumber ? "true" : "false"}
-            style={getRowStyle(lineTopPx, rowHorizontalOffsetPx, rowInlineSizePx)}
-            onClick={() => {
-              const viewport = viewportRef.current;
-              const visualLineOffset = viewport
-                ? getVisualLineOffsetForScrollTop(line.lineNumber, viewport.scrollTop)
-                : 0;
-
-              selectionLockedRef.current = true;
-              setSelectedLineNumber(line.lineNumber);
-              setFirstVisibleLineNumber((currentFirstLineNumber) =>
-                keepLineVisible(line.lineNumber, currentFirstLineNumber, visibleLineCapacity, lines.length),
-              );
-              setLastNavigation("click");
-              onTimeAnchorChange?.(line.lineNumber, line.timestamp, visualLineOffset, "click");
-            }}
-          >
-            <span className="crosslog-log-viewport__line-number">{line.lineNumber}</span>
-            <code className="crosslog-log-viewport__line-text">
-              {renderLineText(
-                line.text,
-                lineSearchMatches,
-                line.lineNumber,
-                activeSearchMatch,
-              )}
-            </code>
-          </li>
+            lineNumber={line.lineNumber}
+            text={line.text}
+            timestamp={line.timestamp}
+            lineSearchMatches={lineSearchMatches}
+            activeSearchMatch={activeSearchMatch}
+            activeSearchMatchLineNumber={activeSearchMatchLineNumber}
+            searchHighlightsVisible={searchHighlightsVisible}
+            selected={selected}
+            synchronizationTargetLineNumber={synchronizationTargetLineNumber}
+            rowInlineSizePx={rowInlineSizePx}
+            onSelect={handleLineSelect}
+          />
         );
       })}
     </ol>
@@ -468,15 +557,75 @@ const horizontalKeyboardStepPx = 40;
 const logViewportPaddingBlockPx = 8;
 const logViewportRowHeightPx = 18;
 const logViewportInlinePaddingPx = 12;
+const emptySearchMatches: readonly SearchMatch[] = [];
+
+interface LogViewportRowProps {
+  readonly lineNumber: number;
+  readonly text: string;
+  readonly timestamp: Date | null;
+  readonly lineSearchMatches: readonly SearchMatch[];
+  readonly activeSearchMatch: SearchMatch | null;
+  readonly activeSearchMatchLineNumber: number | null;
+  readonly searchHighlightsVisible: boolean;
+  readonly selected: boolean;
+  readonly synchronizationTargetLineNumber?: number | null;
+  readonly rowInlineSizePx: number | null;
+  readonly onSelect: (lineNumber: number, timestamp: Date | null) => void;
+}
+
+const LogViewportRow = React.memo(function LogViewportRow({
+  lineNumber,
+  text,
+  timestamp,
+  lineSearchMatches,
+  activeSearchMatch,
+  activeSearchMatchLineNumber,
+  searchHighlightsVisible,
+  selected,
+  synchronizationTargetLineNumber,
+  rowInlineSizePx,
+  onSelect,
+}: LogViewportRowProps) {
+  const lineTopPx = logViewportPaddingBlockPx + (lineNumber - 1) * logViewportRowHeightPx;
+
+  return (
+    <li
+      className="crosslog-log-viewport__row"
+      data-line-number={lineNumber}
+      data-active-search-match={
+        searchHighlightsVisible && lineNumber === activeSearchMatchLineNumber ? "true" : "false"
+      }
+      data-selected-line={selected ? "true" : "false"}
+      data-sync-target={lineNumber === synchronizationTargetLineNumber ? "true" : "false"}
+      style={getRowStyle(lineTopPx, rowInlineSizePx)}
+      onClick={() => onSelect(lineNumber, timestamp)}
+    >
+      <span className="crosslog-log-viewport__line-number">{lineNumber}</span>
+      <code className="crosslog-log-viewport__line-text">
+        {renderLineText(text, lineSearchMatches, lineNumber, activeSearchMatch)}
+      </code>
+    </li>
+  );
+});
+
+function scheduleAnimationFrame(callback: () => void): () => void {
+  if (typeof globalThis.requestAnimationFrame === "function") {
+    const frameId = globalThis.requestAnimationFrame(() => callback());
+
+    return () => globalThis.cancelAnimationFrame(frameId);
+  }
+
+  const timeoutId = globalThis.setTimeout(callback, 0);
+
+  return () => globalThis.clearTimeout(timeoutId);
+}
 
 function getRowStyle(
   insetBlockStart: number,
-  horizontalScrollLeft: number,
   inlineSize: number | null,
 ): React.CSSProperties {
   return {
     insetBlockStart,
-    ...(horizontalScrollLeft > 0 ? { transform: `translateX(${-horizontalScrollLeft}px)` } : {}),
     ...(inlineSize !== null ? { inlineSize } : {}),
   };
 }

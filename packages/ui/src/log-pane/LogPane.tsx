@@ -6,6 +6,7 @@ import { PaneHeader } from "./PaneHeader";
 import { VirtualLogViewport, type LogViewportNavigationKind } from "./VirtualLogViewport";
 import { DeletedFileStatus } from "./DeletedFileStatus";
 import { TimeOffsetPopover } from "../sync/TimeOffsetPopover";
+import { useSynchronizationStore } from "../sync/useSynchronizationStore";
 import { PaneSearchPopover } from "../search/PaneSearchPopover";
 import { redesignedShellTestIds } from "../app-shell/testIds";
 import type { PaneHeaderLifecycleState } from "./useFileLifecycleEvents";
@@ -18,8 +19,6 @@ export interface LogPaneProps {
   readonly lifecycleState?: PaneHeaderLifecycleState;
   readonly renderedWidth?: number;
   readonly horizontalContentWidth?: number;
-  readonly synchronizationTargetLineNumber?: number | null;
-  readonly synchronizationTargetVisualLineOffset?: number | null;
   readonly onClose: (paneId: string) => void;
   readonly onActivate: (paneId: string) => void;
   readonly onReorderDragStart?: (paneId: string, event: React.PointerEvent<HTMLElement>) => void;
@@ -45,6 +44,7 @@ export interface LogPaneProps {
   readonly searchFocusRequestSequence?: number;
   readonly onSearchOpenChange?: (paneId: string, open: boolean) => void;
   readonly onTimeOffsetOpenChange?: (paneId: string, open: boolean) => void;
+  readonly onUiTestNavigationEvidenceChange?: () => void;
   readonly onCopied?: (title: string) => void;
   readonly clipboard?: ClipboardWriter;
 }
@@ -57,8 +57,6 @@ export function LogPane({
   lifecycleState,
   renderedWidth,
   horizontalContentWidth,
-  synchronizationTargetLineNumber,
-  synchronizationTargetVisualLineOffset,
   onClose,
   onActivate,
   onReorderDragStart,
@@ -78,11 +76,13 @@ export function LogPane({
   searchFocusRequestSequence = 0,
   onSearchOpenChange,
   onTimeOffsetOpenChange,
+  onUiTestNavigationEvidenceChange,
   onCopied,
   clipboard,
 }: LogPaneProps) {
   const searchButtonRef = React.useRef<HTMLButtonElement | null>(null);
   const timeOffsetButtonRef = React.useRef<HTMLButtonElement | null>(null);
+  const synchronizationTarget = useSynchronizationStore((store) => store.targets[pane.id]);
   const activeSearchMatch =
     pane.searchState.currentMatchIndex === null
       ? null
@@ -96,11 +96,17 @@ export function LogPane({
       id={redesignedShellTestIds.logPane}
       data-active={pane.active}
       data-pane-id={pane.id}
+      data-reorder-dragging={reorderDragging ? "true" : "false"}
       style={{
         inlineSize: `${renderedWidth ?? pane.width}px`,
       }}
       onFocus={() => onActivate(pane.id)}
       onClick={() => onActivate(pane.id)}
+      onWheelCapture={() => {
+        if (!pane.active) {
+          onActivate(pane.id);
+        }
+      }}
     >
       <PaneHeader
         active={pane.active}
@@ -177,9 +183,10 @@ export function LogPane({
             searchMatches={pane.searchState.matches}
             searchHighlightsVisible={searchHighlightsVisible}
             activeSearchMatch={searchHighlightsVisible ? activeSearchMatch : null}
-            maxVisibleLines={400}
-            synchronizationTargetLineNumber={synchronizationTargetLineNumber}
-            synchronizationTargetVisualLineOffset={synchronizationTargetVisualLineOffset}
+            maxVisibleLines={pane.active ? 600 : 120}
+            synchronizationTargetLineNumber={synchronizationTarget?.lineNumber ?? null}
+            synchronizationTargetVisualLineOffset={synchronizationTarget?.visualLineOffset ?? null}
+            onUiTestNavigationEvidenceChange={onUiTestNavigationEvidenceChange}
             onTimeAnchorChange={(lineNumber, timestamp, visualLineOffset, navigationKind) =>
               onTimeAnchorChange?.(pane.id, lineNumber, timestamp, visualLineOffset, navigationKind)
             }

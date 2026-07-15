@@ -73,6 +73,43 @@ test("opens and manages multiple log panes", async ({ page }) => {
   await expect(shell.paneWorkspace).toHaveJSProperty("scrollLeft", 120);
 });
 
+test("shows the pane reorder outline on the current slot and moves it only after crossing the next midpoint", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1920, height: 720 });
+  await gotoWithWebUiTestBridge(page);
+  await openSampleLogsWithWebUiBridge(page);
+
+  await beginPaneReorderDragFromHeader(page, "app.log");
+  await expect(page.getByTestId(redesignedShellTestIds.paneReorderOutline)).toBeVisible();
+
+  const appRect = await paneRect(page, "app.log");
+  const serviceRect = await paneRect(page, "service.log");
+  const serviceViewportRect = await paneViewportRect(page, "service.log");
+  const serviceMidpoint = serviceViewportRect.left + serviceViewportRect.width / 2;
+
+  expect(await reorderOutlineRect(page)).toMatchObject({
+    left: appRect.left,
+    width: appRect.width,
+  });
+
+  await movePaneReorderDrag(page, serviceMidpoint - 8);
+  expect(await reorderOutlineRect(page)).toMatchObject({
+    left: appRect.left,
+    width: appRect.width,
+  });
+
+  await movePaneReorderDrag(page, serviceMidpoint + 8);
+  expect(await reorderOutlineRect(page)).toMatchObject({
+    left: serviceRect.left,
+    width: appRect.width,
+  });
+
+  await finishPaneReorderDrag(page, serviceMidpoint + 8);
+  await waitForWebUiTestTitleFragment(page, "paneOrder=service.log,app.log,app-2026-06-16.log");
+  await expect(page.getByTestId(redesignedShellTestIds.paneReorderOutline)).toHaveCount(0);
+});
+
 test("opens a selected source from the empty workspace and leaves future controls disabled", async ({ page }) => {
   await gotoWithWebUiTestBridge(page);
 
@@ -150,11 +187,31 @@ async function dragReorderPaneFromHeader(
   draggedTitle: string,
   targetTitle: string,
 ) {
-  await page.evaluate(({ draggedPaneTitle }) => {
-    const draggedPane = Array.from(document.querySelectorAll<HTMLElement>('[data-testid="log-pane"]')).find(
+  await beginPaneReorderDragFromHeader(page, draggedTitle);
+  await movePaneReorderDragToPane(page, targetTitle, 0.75);
+  await finishPaneReorderDragToPane(page, targetTitle, 0.75);
+}
+
+async function clickHeaderSearchWithoutReorder(
+  page: Parameters<typeof getRedesignedShell>[0],
+  paneTitle: string,
+): Promise<void> {
+  await page
+    .getByTestId(redesignedShellTestIds.logPane)
+    .filter({ has: page.getByRole("heading", { name: paneTitle }) })
+    .getByTestId(redesignedShellTestIds.paneHeaderSearch)
+    .click();
+}
+
+async function beginPaneReorderDragFromHeader(
+  page: Parameters<typeof getRedesignedShell>[0],
+  draggedTitle: string,
+) {
+  await page.evaluate(({ draggedPaneTitle, paneHeaderTestId, paneTestId }) => {
+    const draggedPane = Array.from(document.querySelectorAll<HTMLElement>(`[data-testid="${paneTestId}"]`)).find(
       (pane) => pane.getAttribute("aria-label") === `Log pane ${draggedPaneTitle}`,
     );
-    const draggedHeader = draggedPane?.querySelector<HTMLElement>('[data-testid="pane-header"]');
+    const draggedHeader = draggedPane?.querySelector<HTMLElement>(`[data-testid="${paneHeaderTestId}"]`);
     const draggedTitleElement =
       draggedHeader?.querySelector<HTMLElement>(".crosslog-pane-header__title") ?? draggedHeader;
 
@@ -173,51 +230,142 @@ async function dragReorderPaneFromHeader(
       clientY: startY,
       pointerId: 9,
     }));
-  }, { draggedPaneTitle: draggedTitle });
+  }, {
+    draggedPaneTitle: draggedTitle,
+    paneHeaderTestId: redesignedShellTestIds.paneHeader,
+    paneTestId: redesignedShellTestIds.logPane,
+  });
 
   await page.waitForTimeout(0);
-  await page.evaluate(({ draggedPaneTitle, targetPaneTitle }) => {
-    const draggedPane = Array.from(document.querySelectorAll<HTMLElement>('[data-testid="log-pane"]')).find(
-      (pane) => pane.getAttribute("aria-label") === `Log pane ${draggedPaneTitle}`,
-    );
-    const draggedHeader = draggedPane?.querySelector<HTMLElement>('[data-testid="pane-header"]');
-    const targetPane = Array.from(document.querySelectorAll<HTMLElement>('[data-testid="log-pane"]')).find(
-      (pane) => pane.getAttribute("aria-label") === `Log pane ${targetPaneTitle}`,
-    );
-
-    if (!draggedHeader || !targetPane) {
-      throw new Error(`Missing reorder drag target for ${draggedPaneTitle} -> ${targetPaneTitle}.`);
-    }
-
-    const startRect = draggedHeader.getBoundingClientRect();
-    const targetRect = targetPane.getBoundingClientRect();
-    const startY = startRect.top + startRect.height / 2;
-    const targetX = targetRect.left + targetRect.width * 0.75;
-
-    window.dispatchEvent(new PointerEvent("pointermove", {
-      bubbles: true,
-      clientX: targetX,
-      clientY: startY,
-      pointerId: 9,
-    }));
-    window.dispatchEvent(new PointerEvent("pointerup", {
-      bubbles: true,
-      clientX: targetX,
-      clientY: startY,
-      pointerId: 9,
-    }));
-  }, { draggedPaneTitle: draggedTitle, targetPaneTitle: targetTitle });
 }
 
-async function clickHeaderSearchWithoutReorder(
+async function movePaneReorderDrag(page: Parameters<typeof getRedesignedShell>[0], clientX: number) {
+  await page.evaluate((nextClientX) => {
+    window.dispatchEvent(new PointerEvent("pointermove", {
+      bubbles: true,
+      clientX: nextClientX,
+      clientY: 24,
+      pointerId: 9,
+    }));
+  }, clientX);
+}
+
+async function finishPaneReorderDrag(page: Parameters<typeof getRedesignedShell>[0], clientX: number) {
+  await page.evaluate((nextClientX) => {
+    window.dispatchEvent(new PointerEvent("pointerup", {
+      bubbles: true,
+      clientX: nextClientX,
+      clientY: 24,
+      pointerId: 9,
+    }));
+  }, clientX);
+}
+
+async function movePaneReorderDragToPane(
   page: Parameters<typeof getRedesignedShell>[0],
-  paneTitle: string,
-): Promise<void> {
-  await page
-    .getByTestId(redesignedShellTestIds.logPane)
-    .filter({ has: page.getByRole("heading", { name: paneTitle }) })
-    .getByTestId(redesignedShellTestIds.paneHeaderSearch)
-    .click();
+  targetTitle: string,
+  horizontalFraction: number,
+) {
+  const targetClientX = await page.evaluate(({ paneTitle, paneTestId, fraction }) => {
+    const pane = Array.from(document.querySelectorAll<HTMLElement>(`[data-testid="${paneTestId}"]`)).find(
+      (entry) => entry.getAttribute("aria-label") === `Log pane ${paneTitle}`,
+    );
+
+    if (!pane) {
+      throw new Error(`Missing pane ${paneTitle}.`);
+    }
+
+    const rect = pane.getBoundingClientRect();
+    return rect.left + rect.width * fraction;
+  }, { paneTitle: targetTitle, paneTestId: redesignedShellTestIds.logPane, fraction: horizontalFraction });
+  await movePaneReorderDrag(page, targetClientX);
+}
+
+async function finishPaneReorderDragToPane(
+  page: Parameters<typeof getRedesignedShell>[0],
+  targetTitle: string,
+  horizontalFraction: number,
+) {
+  const targetClientX = await page.evaluate(({ paneTitle, paneTestId, fraction }) => {
+    const pane = Array.from(document.querySelectorAll<HTMLElement>(`[data-testid="${paneTestId}"]`)).find(
+      (entry) => entry.getAttribute("aria-label") === `Log pane ${paneTitle}`,
+    );
+
+    if (!pane) {
+      throw new Error(`Missing pane ${paneTitle}.`);
+    }
+
+    const rect = pane.getBoundingClientRect();
+    return rect.left + rect.width * fraction;
+  }, { paneTitle: targetTitle, paneTestId: redesignedShellTestIds.logPane, fraction: horizontalFraction });
+  await finishPaneReorderDrag(page, targetClientX);
+}
+
+async function paneRect(page: Parameters<typeof getRedesignedShell>[0], title: string): Promise<{
+  left: number;
+  width: number;
+}> {
+  return page.evaluate(({ paneTitle, paneTestId, paneRailTestId }) => {
+    const pane = Array.from(document.querySelectorAll<HTMLElement>(`[data-testid="${paneTestId}"]`)).find(
+      (entry) => entry.getAttribute("aria-label") === `Log pane ${paneTitle}`,
+    );
+    const paneRail = document.querySelector<HTMLElement>(`[data-testid="${paneRailTestId}"]`);
+
+    if (!pane || !paneRail) {
+      throw new Error(`Missing pane ${paneTitle}.`);
+    }
+
+    const rect = pane.getBoundingClientRect();
+    const paneRailRect = paneRail.getBoundingClientRect();
+    return { left: rect.left - paneRailRect.left, width: rect.width };
+  }, {
+    paneTitle: title,
+    paneTestId: redesignedShellTestIds.logPane,
+    paneRailTestId: "pane-rail",
+  });
+}
+
+async function reorderOutlineRect(page: Parameters<typeof getRedesignedShell>[0]): Promise<{
+  left: number;
+  width: number;
+}> {
+  return page.evaluate(({ outlineTestId, paneRailTestId }) => {
+    const outline = document.querySelector<HTMLElement>(`[data-testid="${outlineTestId}"]`);
+    const paneRail = document.querySelector<HTMLElement>(`[data-testid="${paneRailTestId}"]`);
+
+    if (!outline || !paneRail) {
+      throw new Error("Missing reorder outline or pane rail.");
+    }
+
+    const outlineRect = outline.getBoundingClientRect();
+    const paneRailRect = paneRail.getBoundingClientRect();
+
+    return {
+      left: outlineRect.left - paneRailRect.left,
+      width: outlineRect.width,
+    };
+  }, {
+    outlineTestId: redesignedShellTestIds.paneReorderOutline,
+    paneRailTestId: "pane-rail",
+  });
+}
+
+async function paneViewportRect(page: Parameters<typeof getRedesignedShell>[0], title: string): Promise<{
+  left: number;
+  width: number;
+}> {
+  return page.evaluate(({ paneTitle, paneTestId }) => {
+    const pane = Array.from(document.querySelectorAll<HTMLElement>(`[data-testid="${paneTestId}"]`)).find(
+      (entry) => entry.getAttribute("aria-label") === `Log pane ${paneTitle}`,
+    );
+
+    if (!pane) {
+      throw new Error(`Missing pane ${paneTitle}.`);
+    }
+
+    const rect = pane.getBoundingClientRect();
+    return { left: rect.left, width: rect.width };
+  }, { paneTitle: title, paneTestId: redesignedShellTestIds.logPane });
 }
 
 async function paneWidth(page: Parameters<typeof getRedesignedShell>[0], title: string): Promise<number> {

@@ -31,6 +31,7 @@ import {
   defaultFileOpenPolicy,
   flattenLineChunkText,
   createSynchronizationPlan,
+  createSynchronizationTimeline,
   createTimeAnchorPane,
   createTimestampRecognitionService,
   createSessionSnapshot,
@@ -50,6 +51,9 @@ import {
   type Session,
   type SessionDirectorySource,
   type SessionFileSource,
+  type SynchronizationLine,
+  type SynchronizationTimeline,
+  type TimestampRecognitionService,
 } from "@crosslog/core";
 import { ActivityRail } from "./ActivityRail";
 import { ActivityRailShell } from "./ActivityRailShell";
@@ -100,6 +104,57 @@ const uiTestClipboardWriter: ClipboardWriter = {
   writeText: async () => undefined,
 };
 
+interface PaneContent {
+  readonly lines: readonly string[];
+  readonly synchronizationLines: readonly SynchronizationLine[];
+  readonly synchronizationTimeline: SynchronizationTimeline;
+  readonly timestamps: readonly (Date | null)[];
+}
+
+type PaneContentCache = WeakMap<object, Map<string, PaneContent>>;
+
+const emptyPaneContent: PaneContent = {
+  lines: [],
+  synchronizationLines: [],
+  synchronizationTimeline: createSynchronizationTimeline([]),
+  timestamps: [],
+};
+
+function getCachedPaneContent(
+  cache: PaneContentCache,
+  contentIdentity: object,
+  paneId: string,
+  loadLines: () => readonly string[],
+  timestampService: TimestampRecognitionService,
+): PaneContent {
+  const contentByPaneId = cache.get(contentIdentity) ?? new Map<string, PaneContent>();
+  const cachedContent = contentByPaneId.get(paneId);
+
+  if (cachedContent) {
+    return cachedContent;
+  }
+
+  const lines = loadLines();
+  const timestamps = lines.map(
+    (line) => timestampService.recognizeTimestampInLine(line)?.timestamp ?? null,
+  );
+  const synchronizationLines = timestamps.map((timestamp, index) => ({
+    lineNumber: index + 1,
+    timestamp,
+  }));
+  const content = {
+    lines,
+    synchronizationLines,
+    synchronizationTimeline: createSynchronizationTimeline(synchronizationLines),
+    timestamps,
+  } satisfies PaneContent;
+
+  contentByPaneId.set(paneId, content);
+  cache.set(contentIdentity, contentByPaneId);
+
+  return content;
+}
+
 export function AppShell({
   platform,
   renderMacosTrafficLights = true,
@@ -143,7 +198,6 @@ export function AppShell({
   );
   const synchronizationEnabled = useSynchronizationStore((store) => store.enabled);
   const syncOffsets = useSynchronizationStore((store) => store.offsets);
-  const syncTargets = useSynchronizationStore((store) => store.targets);
   const excludedPaneIds = useSynchronizationStore((store) => store.excludedPaneIds);
   const setSynchronizationEnabled = useSynchronizationStore((store) => store.setEnabled);
   const setSynchronizationAnchor = useSynchronizationStore((store) => store.setAnchor);
@@ -242,6 +296,7 @@ export function AppShell({
     () => createTimestampRecognitionService(defaultTimestampFormats),
     [],
   );
+  const paneContentCacheRef = React.useRef<PaneContentCache>(new WeakMap());
   const currentDirectoryFile = getCurrentDirectoryFile(directorySource);
   const currentDirectoryFileIdentity = currentDirectoryFile?.identity.value ?? null;
   const currentDirectoryFilePlatform = currentDirectoryFile?.identity.platform ?? null;
@@ -375,7 +430,7 @@ export function AppShell({
     platform.kind,
   ]);
 
-  const paneData = React.useMemo(
+  const paneSourceData = React.useMemo(
     () =>
       state.panes.map((pane) => {
         const currentDirectoryFile =
@@ -388,12 +443,23 @@ export function AppShell({
                 getDirectoryFileSourceId(pane.sourceRef, currentDirectoryFile.identity.value)
               ] ?? null
             : null;
-        const lines = currentDirectoryFile
-          ? getDirectoryFileLines(currentDirectoryFile, directorySource, directoryFileSource)
-          : fileSource
-            ? flattenLineChunkText(fileSource.lineChunks)
-            : [];
-        const recognizedLines = lines.map((line, index) => timestampService.recognizeLine(index + 1, line, pane.id));
+        const contentIdentity = currentDirectoryFile
+          ? directoryFileSource?.lineChunks ?? currentDirectoryFile
+          : fileSource?.lineChunks ?? null;
+        const content = contentIdentity
+          ? getCachedPaneContent(
+              paneContentCacheRef.current,
+              contentIdentity,
+              pane.id,
+              () =>
+                currentDirectoryFile
+                  ? getDirectoryFileLines(currentDirectoryFile, directorySource, directoryFileSource)
+                  : fileSource
+                    ? flattenLineChunkText(fileSource.lineChunks)
+                    : [],
+              timestampService,
+            )
+          : emptyPaneContent;
         const status = fileSource?.deleted
           ? ("deleted" as const)
           : fileSource?.readError || fileSource?.watchState === "failed"
@@ -408,14 +474,12 @@ export function AppShell({
           pane: {
             ...pane,
             title: paneTitle,
-            timeOffset: getPaneOffset(syncOffsets, pane.id),
-            syncEnabled: synchronizationEnabled,
             status,
           },
-          lines,
-          timestamps: recognizedLines.map((line) => line.timestamp),
-          synchronizationTargetLineNumber: syncTargets[pane.id]?.lineNumber ?? null,
-          synchronizationTargetVisualLineOffset: syncTargets[pane.id]?.visualLineOffset ?? null,
+          lines: content.lines,
+          synchronizationLines: content.synchronizationLines,
+          synchronizationTimeline: content.synchronizationTimeline,
+          timestamps: content.timestamps,
           directorySource: pane.sourceRef === directorySource.id ? directorySource : undefined,
           lifecycleState: getPaneHeaderLifecycleState(fileSource),
         };
@@ -425,23 +489,32 @@ export function AppShell({
       directorySource,
       fileSources,
       state.panes,
-      syncOffsets,
-      syncTargets,
-      synchronizationEnabled,
       timestampService,
     ],
   );
+  const synchronizedPaneData = React.useMemo(
+    () =>
+      paneSourceData.map((entry) => ({
+        ...entry,
+        pane: {
+          ...entry.pane,
+          timeOffset: getPaneOffset(syncOffsets, entry.pane.id),
+          syncEnabled: synchronizationEnabled,
+        },
+      })),
+    [paneSourceData, syncOffsets, synchronizationEnabled],
+  );
   const sessionSnapshot = React.useMemo(
     () =>
-      paneData.length === 0
+      synchronizedPaneData.length === 0
         ? null
         : createSessionSnapshot({
-            panes: paneData.map((entry) => entry.pane),
+            panes: synchronizedPaneData.map((entry) => entry.pane),
             fileSources: Object.values(fileSources),
             directorySources: [directorySource],
             synchronizationEnabled,
           }),
-    [directorySource, fileSources, paneData, synchronizationEnabled],
+    [directorySource, fileSources, synchronizedPaneData, synchronizationEnabled],
   );
   const handleSessionSnapshotWriteFailed = React.useCallback(
     (error: unknown, failedSession: Session) => {
@@ -461,10 +534,10 @@ export function AppShell({
   const sessionSnapshotStatus = useSessionSnapshotWriter(
     platform.sessionStore,
     sessionSnapshot,
-    restoreState.status === "ready" && paneData.length > 0,
+    restoreState.status === "ready" && synchronizedPaneData.length > 0,
     handleSessionSnapshotWriteFailed,
   );
-  const panes = paneData.map((entry) => ({
+  const panes = synchronizedPaneData.map((entry) => ({
     ...entry,
     pane: {
       ...entry.pane,
@@ -598,8 +671,40 @@ export function AppShell({
   ]);
 
   React.useEffect(() => {
-    paneData.forEach((entry) => setPaneSearchLines(entry.pane.id, entry.lines));
-  }, [paneData, setPaneSearchLines]);
+    const uiTestBridge = platform.uiTestBridge;
+
+    if (!uiTestEnabled || !uiTestBridge?.publishSynchronizationTargetLine) {
+      return undefined;
+    }
+
+    return useSynchronizationStore.subscribe((store, previousStore) => {
+      if (store.targets === previousStore.targets) {
+        return;
+      }
+
+      const firstTarget = Object.values(store.targets)[0] ?? null;
+
+      void uiTestBridge.publishSynchronizationTargetLine?.(firstTarget?.lineNumber ?? null);
+    });
+  }, [platform.uiTestBridge, uiTestEnabled]);
+
+  const uiTestPaneTitlesRef = React.useRef<readonly string[]>([]);
+  uiTestPaneTitlesRef.current = panes.map((entry) => entry.pane.title);
+  const publishUiTestPaneNavigationEvidence = React.useCallback(() => {
+    const uiTestBridge = platform.uiTestBridge;
+
+    if (!uiTestEnabled || !uiTestBridge?.publishPaneNavigation) {
+      return;
+    }
+
+    void uiTestBridge.publishPaneNavigation(
+      getPublishedPaneNavigationEvidence(uiTestPaneTitlesRef.current),
+    );
+  }, [platform.uiTestBridge, uiTestEnabled]);
+
+  React.useEffect(() => {
+    paneSourceData.forEach((entry) => setPaneSearchLines(entry.pane.id, entry.lines));
+  }, [paneSourceData, setPaneSearchLines]);
 
   const scheduleSynchronizationNavigationLog = React.useCallback(
     (input: {
@@ -637,12 +742,12 @@ export function AppShell({
             ...input,
             directorySource,
             fileSources,
-            paneData,
+            paneData: synchronizedPaneData,
           }),
         );
       }, 0);
     },
-    [directorySource, fileSources, paneData, platform.diagnosticLogger, writeDiagnosticEvent],
+    [directorySource, fileSources, platform.diagnosticLogger, synchronizedPaneData, writeDiagnosticEvent],
   );
 
   const handleAnchorChange = (
@@ -674,14 +779,12 @@ export function AppShell({
       enabled: synchronizationEnabled,
       anchorPaneId: anchor.paneId,
       anchorTimestamp: anchor.anchorTimestamp,
-      panes: paneData.map((entry) => ({
+      panes: synchronizedPaneData.map((entry) => ({
         paneId: entry.pane.id,
         timeOffset: entry.pane.timeOffset,
         syncEnabled: entry.pane.syncEnabled,
-        lines: entry.timestamps.map((lineTimestamp, index) => ({
-          lineNumber: index + 1,
-          timestamp: lineTimestamp,
-        })),
+        lines: entry.synchronizationLines,
+        timeline: entry.synchronizationTimeline,
       })),
     });
 
@@ -1500,6 +1603,7 @@ export function AppShell({
         searchFocusRequestSequence={searchFocusRequestSequence}
         onSearchOpenChange={handleSearchOpenChange}
         onTimeOffsetOpenChange={handleTimeOffsetOpenChange}
+        onUiTestNavigationEvidenceChange={publishUiTestPaneNavigationEvidence}
         onCopied={setUiTestCopiedPaneTitle}
         clipboard={uiTestEnabled ? uiTestClipboardWriter : undefined}
       />

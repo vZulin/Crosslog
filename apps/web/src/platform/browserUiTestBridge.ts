@@ -1,8 +1,11 @@
 import {
   formatUiTestShellState,
   isUiTestAction,
+  updateUiTestPaneNavigation,
+  updateUiTestSynchronizationTargetLine,
   type UiTestAction,
   type UiTestBridge,
+  type UiTestPaneNavigationEvidence,
   type UiTestShellState,
 } from "@crosslog/platform";
 
@@ -31,6 +34,32 @@ class BrowserUiTestBridge implements UiTestBridge {
 
     document.title = `Crosslog UI Test | ${formattedState}`;
     window.__crosslogUiTestShellState = formattedState;
+  }
+
+  async publishPaneNavigation(paneNavigation: UiTestPaneNavigationEvidence): Promise<void> {
+    const currentState = window.__crosslogUiTestShellState;
+
+    if (!currentState) {
+      return;
+    }
+
+    const nextState = updateUiTestPaneNavigation(currentState, paneNavigation);
+
+    document.title = `Crosslog UI Test | ${nextState}`;
+    window.__crosslogUiTestShellState = nextState;
+  }
+
+  async publishSynchronizationTargetLine(lineNumber: number | null): Promise<void> {
+    const currentState = window.__crosslogUiTestShellState;
+
+    if (!currentState) {
+      return;
+    }
+
+    const nextState = updateUiTestSynchronizationTargetLine(currentState, lineNumber);
+
+    document.title = `Crosslog UI Test | ${nextState}`;
+    window.__crosslogUiTestShellState = nextState;
   }
 
   async consumePendingAction(): Promise<UiTestAction | null> {

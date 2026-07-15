@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { createSynchronizationPlan } from "../../src/sync/synchronization-engine";
+import {
+  createSynchronizationPlan,
+  createSynchronizationTimeline,
+} from "../../src/sync/synchronization-engine";
 import { validateTimeOffsetDraft } from "../../src/sync/time-offset";
 
 describe("synchronization engine", () => {
@@ -135,6 +138,33 @@ describe("synchronization engine", () => {
         timestamp: new Date("2026-06-16T10:01:00.000Z"),
       },
     ]);
+  });
+
+  it("uses a prepared timeline for out-of-order timestamps and preserves the first duplicate", () => {
+    const lines = [
+      { lineNumber: 10, timestamp: new Date("2026-06-16T10:00:02.000Z") },
+      { lineNumber: 20, timestamp: new Date("2026-06-16T10:00:01.000Z") },
+      { lineNumber: 30, timestamp: new Date("2026-06-16T10:00:02.000Z") },
+      { lineNumber: 40, timestamp: null },
+    ];
+    const plan = createSynchronizationPlan({
+      enabled: true,
+      anchorPaneId: "pane-a",
+      anchorTimestamp: new Date("2026-06-16T10:00:02.500Z"),
+      panes: [
+        {
+          paneId: "pane-a",
+          lines: [{ lineNumber: 1, timestamp: new Date("2026-06-16T10:00:02.500Z") }],
+        },
+        {
+          paneId: "pane-b",
+          lines,
+          timeline: createSynchronizationTimeline(lines),
+        },
+      ],
+    });
+
+    expect(plan.targets[0]?.lineNumber).toBe(10);
   });
 });
 

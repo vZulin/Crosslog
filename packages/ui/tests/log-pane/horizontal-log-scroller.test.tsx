@@ -1,11 +1,11 @@
 import React from "react";
 import { act } from "react";
-import { render } from "@testing-library/react";
+import { render, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { HorizontalLogScroller } from "../../src/log-pane/HorizontalLogScroller";
 
 describe("horizontal log scroller", () => {
-  it("keeps horizontal wheel input pane-local and updates scrollLeft", () => {
+  it("keeps horizontal wheel input pane-local and updates scrollLeft", async () => {
     const onScrollLeftChange = vi.fn();
     const { getByRole } = render(
       <HorizontalLogScroller
@@ -32,10 +32,10 @@ describe("horizontal log scroller", () => {
 
     expect(wheelEvent.defaultPrevented).toBe(true);
     expect(scroller.scrollLeft).toBe(96);
-    expect(onScrollLeftChange).toHaveBeenLastCalledWith(96);
+    await waitFor(() => expect(onScrollLeftChange).toHaveBeenLastCalledWith(96));
   });
 
-  it("treats shift-wheel as horizontal scrolling", () => {
+  it("treats shift-wheel as horizontal scrolling", async () => {
     const onScrollLeftChange = vi.fn();
     const { getByRole } = render(
       <HorizontalLogScroller
@@ -63,7 +63,7 @@ describe("horizontal log scroller", () => {
 
     expect(wheelEvent.defaultPrevented).toBe(true);
     expect(scroller.scrollLeft).toBe(120);
-    expect(onScrollLeftChange).toHaveBeenLastCalledWith(120);
+    await waitFor(() => expect(onScrollLeftChange).toHaveBeenLastCalledWith(120));
   });
 });
 

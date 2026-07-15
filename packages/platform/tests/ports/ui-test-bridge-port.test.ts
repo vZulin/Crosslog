@@ -1,8 +1,53 @@
 import { describe, expect, it } from "vitest";
-import { isUiTestAction, uiTestActions, type UiTestShellState } from "../../src/ports/ui-test-bridge-port";
+import {
+  isUiTestAction,
+  uiTestActions,
+  updateUiTestPaneNavigation,
+  updateUiTestSynchronizationTargetLine,
+  type UiTestShellState,
+} from "../../src/ports/ui-test-bridge-port";
 import { formatUiTestShellState } from "../../src/tauri/tauri-ui-test-bridge";
 
 describe("UI test bridge shell state contract", () => {
+  it("updates synchronization target evidence without republishing the shell", () => {
+    const formattedState = "state=logs;syncTargetLine=2;visibleRows=34";
+
+    expect(updateUiTestSynchronizationTargetLine(formattedState, 42)).toContain("syncTargetLine=42");
+    expect(updateUiTestSynchronizationTargetLine(formattedState, null)).toContain("syncTargetLine=unknown");
+  });
+
+  it("updates committed pane navigation evidence without republishing the shell", () => {
+    const formattedState = [
+      "state=logs",
+      "paneOrder=app.log",
+      "selectedLine=1",
+      "maxGutterDigits=3",
+      "lastNavigation=none",
+      "syncTargetLine=unknown",
+      "renderedRows=120",
+      "visibleRows=34",
+    ].join(";");
+
+    expect(updateUiTestPaneNavigation(formattedState, {
+      paneOrder: ["app.log", "service.log"],
+      selectedLineNumber: 42,
+      maxGutterDigitCount: 5,
+      lastNavigation: "wheel",
+      syncTargetLineNumber: 44,
+      renderedRowCount: 600,
+      visibleRowCount: 36,
+    })).toBe([
+      "state=logs",
+      "paneOrder=app.log,service.log",
+      "selectedLine=42",
+      "maxGutterDigits=5",
+      "lastNavigation=wheel",
+      "syncTargetLine=44",
+      "renderedRows=600",
+      "visibleRows=36",
+    ].join(";"));
+  });
+
   it("formats theme, platform, obsolete-control visibility, and workspace layout fields", () => {
     const state = createShellState({
       obsoleteControlVisibility: {

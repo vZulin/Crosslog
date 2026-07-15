@@ -10,6 +10,7 @@ import {
   waitForDesktopShell,
   waitForUiTestTitleFragment,
 } from "./helpers/redesigned-shell";
+import { redesignedShellTestIds } from "@crosslog/ui";
 
 describe("Desktop multi-pane layout", () => {
   it("opens, reorders, and searches across multiple log panes", async () => {
@@ -53,7 +54,13 @@ describe("Desktop multi-pane layout", () => {
     });
     await waitForUiTestTitleFragment("lastNavigation=keyboard");
 
-    enqueueDesktopUiTestAction("reorderFirstPaneAfterSecond");
+    await beginDesktopPaneReorderDrag("app.log");
+    await expectDesktopReorderOutlineAt("app.log");
+    await moveDesktopPaneReorderDragTo("service.log", 0.45);
+    await expectDesktopReorderOutlineAt("app.log");
+    await moveDesktopPaneReorderDragTo("service.log", 0.75);
+    await expectDesktopReorderOutlineAt("service.log");
+    await finishDesktopPaneReorderDragTo("service.log", 0.75);
     await waitForUiTestTitleFragment("paneOrder=service.log,app.log,app-2026-06-16.log");
     await activateLogPaneByTitle("service.log");
     enqueueDesktopUiTestAction("openActivePaneSearch");
@@ -143,6 +150,108 @@ async function waitForDesktopRightEdgeAlignment(): Promise<void> {
     interval: 250,
     timeout: 10_000,
     timeoutMsg: "Expected desktop workspace right edge alignment.",
+  });
+}
+
+async function beginDesktopPaneReorderDrag(title: string): Promise<void> {
+  await browser.execute((paneTitle: string, paneTestId: string, headerTestId: string) => {
+    const pane = Array.from(document.querySelectorAll<HTMLElement>(`[data-testid="${paneTestId}"]`)).find(
+      (entry) => entry.getAttribute("aria-label") === `Log pane ${paneTitle}`,
+    );
+    const header = pane?.querySelector<HTMLElement>(`[data-testid="${headerTestId}"]`);
+    const titleElement = header?.querySelector<HTMLElement>(".crosslog-pane-header__title") ?? header;
+
+    if (!titleElement) {
+      throw new Error(`Missing pane header drag origin for ${paneTitle}.`);
+    }
+
+    const rect = titleElement.getBoundingClientRect();
+    titleElement.dispatchEvent(new PointerEvent("pointerdown", {
+      bubbles: true,
+      button: 0,
+      clientX: rect.left + rect.width / 2,
+      clientY: rect.top + rect.height / 2,
+      pointerId: 9,
+    }));
+  }, title, redesignedShellTestIds.logPane, redesignedShellTestIds.paneHeader);
+
+  await browser.pause(0);
+}
+
+async function moveDesktopPaneReorderDragTo(title: string, horizontalFraction: number): Promise<void> {
+  const targetX = await browser.execute((paneTitle: string, paneTestId: string, fraction: number) => {
+    const pane = Array.from(document.querySelectorAll<HTMLElement>(`[data-testid="${paneTestId}"]`)).find(
+      (entry) => entry.getAttribute("aria-label") === `Log pane ${paneTitle}`,
+    );
+
+    if (!pane) {
+      throw new Error(`Missing pane ${paneTitle}.`);
+    }
+
+    const rect = pane.getBoundingClientRect();
+    return rect.left + rect.width * fraction;
+  }, title, redesignedShellTestIds.logPane, horizontalFraction);
+
+  await browser.execute((clientX: number) => {
+    window.dispatchEvent(new PointerEvent("pointermove", {
+      bubbles: true,
+      clientX,
+      clientY: 24,
+      pointerId: 9,
+    }));
+  }, targetX);
+}
+
+async function finishDesktopPaneReorderDragTo(title: string, horizontalFraction: number): Promise<void> {
+  const targetX = await browser.execute((paneTitle: string, paneTestId: string, fraction: number) => {
+    const pane = Array.from(document.querySelectorAll<HTMLElement>(`[data-testid="${paneTestId}"]`)).find(
+      (entry) => entry.getAttribute("aria-label") === `Log pane ${paneTitle}`,
+    );
+
+    if (!pane) {
+      throw new Error(`Missing pane ${paneTitle}.`);
+    }
+
+    const rect = pane.getBoundingClientRect();
+    return rect.left + rect.width * fraction;
+  }, title, redesignedShellTestIds.logPane, horizontalFraction);
+
+  await browser.execute((clientX: number) => {
+    window.dispatchEvent(new PointerEvent("pointerup", {
+      bubbles: true,
+      clientX,
+      clientY: 24,
+      pointerId: 9,
+    }));
+  }, targetX);
+}
+
+async function expectDesktopReorderOutlineAt(title: string): Promise<void> {
+  await browser.waitUntil(async () => {
+    return browser.execute((paneTitle: string, paneTestId: string, outlineTestId: string) => {
+      const pane = Array.from(document.querySelectorAll<HTMLElement>(`[data-testid="${paneTestId}"]`)).find(
+        (entry) => entry.getAttribute("aria-label") === `Log pane ${paneTitle}`,
+      );
+      const outline = document.querySelector<HTMLElement>(`[data-testid="${outlineTestId}"]`);
+      const paneRail = document.querySelector<HTMLElement>('[data-testid="pane-rail"]');
+
+      if (!pane || !outline || !paneRail) {
+        return false;
+      }
+
+      const paneRect = pane.getBoundingClientRect();
+      const outlineRect = outline.getBoundingClientRect();
+      const paneRailRect = paneRail.getBoundingClientRect();
+
+      return (
+        Math.abs((outlineRect.left - paneRailRect.left) - (paneRect.left - paneRailRect.left)) <= 1 &&
+        Math.abs(outlineRect.width - paneRect.width) <= 1
+      );
+    }, title, redesignedShellTestIds.logPane, redesignedShellTestIds.paneReorderOutline);
+  }, {
+    interval: 150,
+    timeout: 5_000,
+    timeoutMsg: `Expected reorder outline to align with ${title}.`,
   });
 }
 

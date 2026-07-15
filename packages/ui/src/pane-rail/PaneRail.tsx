@@ -1,9 +1,10 @@
 import React from "react";
-import type { DirectorySource, LogPane as LogPaneModel } from "@crosslog/core";
+import { reorderPaneLayout, type DirectorySource, type LogPane as LogPaneModel } from "@crosslog/core";
 import { LogPane } from "../log-pane/LogPane";
 import type { LogViewportNavigationKind } from "../log-pane/VirtualLogViewport";
 import type { ClipboardWriter } from "../log-pane/LogTextSelection";
 import type { PaneHeaderLifecycleState } from "../log-pane/useFileLifecycleEvents";
+import { redesignedShellTestIds } from "../app-shell/testIds";
 import { PaneResizer } from "./PaneResizer";
 import { PaneWorkspace } from "./PaneWorkspace";
 import { usePaneWorkspaceLayout } from "./usePaneWorkspaceLayout";
@@ -14,8 +15,6 @@ export interface PaneRailPane {
   readonly timestamps?: readonly (Date | null)[];
   readonly directorySource?: DirectorySource;
   readonly lifecycleState?: PaneHeaderLifecycleState;
-  readonly synchronizationTargetLineNumber?: number | null;
-  readonly synchronizationTargetVisualLineOffset?: number | null;
   readonly searchHighlightsVisible?: boolean;
 }
 
@@ -45,6 +44,7 @@ export interface PaneRailProps {
   readonly searchFocusRequestSequence?: number;
   readonly onSearchOpenChange?: (paneId: string, open: boolean) => void;
   readonly onTimeOffsetOpenChange?: (paneId: string, open: boolean) => void;
+  readonly onUiTestNavigationEvidenceChange?: () => void;
   readonly onCopied?: (title: string) => void;
   readonly clipboard?: ClipboardWriter;
 }
@@ -69,6 +69,7 @@ export function PaneRail({
   searchFocusRequestSequence = 0,
   onSearchOpenChange,
   onTimeOffsetOpenChange,
+  onUiTestNavigationEvidenceChange,
   onCopied,
   clipboard,
 }: PaneRailProps) {
@@ -84,6 +85,22 @@ export function PaneRail({
     readonly pointerId: number;
     readonly targetIndex: number;
   } | null>(null);
+  const [reorderOutlineRect, setReorderOutlineRect] = React.useState<ReorderOutlineRect | null>(null);
+
+  React.useLayoutEffect(() => {
+    if (!dragState) {
+      setReorderOutlineRect(null);
+      return;
+    }
+
+    const nextOutlineRect = measureReorderOutline(
+      paneWorkspaceLayout.workspaceRef.current,
+      dragState.paneId,
+      dragState.targetIndex,
+    );
+
+    setReorderOutlineRect((current) => (areOutlineRectsEqual(current, nextOutlineRect) ? current : nextOutlineRect));
+  }, [dragState, paneWorkspaceLayout.totalRenderedWidth, paneWorkspaceLayout.workspaceRef]);
 
   React.useEffect(() => {
     if (!dragState) {
@@ -172,8 +189,6 @@ export function PaneRail({
             timestamps={entry.timestamps}
             directorySource={entry.directorySource}
             lifecycleState={entry.lifecycleState}
-            synchronizationTargetLineNumber={entry.synchronizationTargetLineNumber}
-            synchronizationTargetVisualLineOffset={entry.synchronizationTargetVisualLineOffset}
             searchHighlightsVisible={entry.searchHighlightsVisible}
             onClose={onClosePane}
             onActivate={onActivatePane}
@@ -195,6 +210,7 @@ export function PaneRail({
             }
             onSearchOpenChange={onSearchOpenChange}
             onTimeOffsetOpenChange={onTimeOffsetOpenChange}
+            onUiTestNavigationEvidenceChange={onUiTestNavigationEvidenceChange}
             onCopied={onCopied}
             clipboard={clipboard}
           />
@@ -208,6 +224,18 @@ export function PaneRail({
           ) : null}
         </React.Fragment>
       ))}
+      {dragState && reorderOutlineRect ? (
+        <div
+          aria-hidden="true"
+          className="crosslog-pane-reorder-outline"
+          data-testid={redesignedShellTestIds.paneReorderOutline}
+          style={{
+            insetInlineStart: `${reorderOutlineRect.left}px`,
+            inlineSize: `${reorderOutlineRect.width}px`,
+            blockSize: `${reorderOutlineRect.height}px`,
+          }}
+        />
+      ) : null}
     </PaneWorkspace>
   );
 }
@@ -216,14 +244,24 @@ const averageLogCharacterWidthPx = 7.2;
 const horizontalContentPaddingPx = 48;
 const minimumHorizontalContentWidthPx = 320;
 const primaryPointerId = 1;
+const horizontalContentWidthCache = new WeakMap<readonly string[], number>();
 
 function estimateHorizontalContentWidth(lines: readonly string[]): number {
-  const longestLineLength = lines.reduce((longest, line) => Math.max(longest, line.length), 0);
+  const cachedWidth = horizontalContentWidthCache.get(lines);
 
-  return Math.max(
+  if (cachedWidth !== undefined) {
+    return cachedWidth;
+  }
+
+  const longestLineLength = lines.reduce((longest, line) => Math.max(longest, line.length), 0);
+  const estimatedWidth = Math.max(
     minimumHorizontalContentWidthPx,
     Math.ceil(longestLineLength * averageLogCharacterWidthPx + horizontalContentPaddingPx),
   );
+
+  horizontalContentWidthCache.set(lines, estimatedWidth);
+
+  return estimatedWidth;
 }
 
 function computeReorderTargetIndex(
@@ -249,4 +287,90 @@ function computeReorderTargetIndex(
 
 function isCurrentReorderPointer(event: PointerEvent, pointerId: number): boolean {
   return typeof event.pointerId !== "number" || event.pointerId === pointerId;
+}
+
+interface ReorderOutlineRect {
+  readonly left: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+interface PaneMeasurement {
+  readonly id: string;
+  readonly left: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+function measureReorderOutline(
+  workspace: HTMLElement | null,
+  draggedPaneId: string,
+  targetIndex: number,
+): ReorderOutlineRect | null {
+  const content = workspace?.querySelector<HTMLElement>(".crosslog-pane-workspace__content");
+
+  if (!content) {
+    return null;
+  }
+
+  const contentRect = content.getBoundingClientRect();
+  const paneMeasurements = Array.from(
+    content.querySelectorAll<HTMLElement>(`[data-testid="${redesignedShellTestIds.logPane}"]`),
+  )
+    .map((pane): PaneMeasurement | null => {
+      const paneId = pane.dataset.paneId;
+
+      if (!paneId) {
+        return null;
+      }
+
+      const rect = pane.getBoundingClientRect();
+      return {
+        id: paneId,
+        left: rect.left - contentRect.left,
+        width: rect.width,
+        height: rect.height,
+      };
+    })
+    .filter((pane): pane is PaneMeasurement => pane !== null);
+
+  if (paneMeasurements.length === 0) {
+    return null;
+  }
+
+  const reorderedMeasurements = reorderPaneLayout(paneMeasurements, draggedPaneId, targetIndex);
+  const reorderedPaneIndex = reorderedMeasurements.findIndex((pane) => pane.id === draggedPaneId);
+
+  if (reorderedPaneIndex < 0) {
+    return null;
+  }
+
+  const baseLeft = paneMeasurements[0]?.left ?? 0;
+  const left =
+    baseLeft +
+    reorderedMeasurements
+      .slice(0, reorderedPaneIndex)
+      .reduce((totalWidth, pane) => totalWidth + pane.width, 0);
+  const reorderedPane = reorderedMeasurements[reorderedPaneIndex];
+
+  if (!reorderedPane) {
+    return null;
+  }
+
+  return {
+    left,
+    width: reorderedPane.width,
+    height: reorderedPane.height,
+  };
+}
+
+function areOutlineRectsEqual(
+  current: ReorderOutlineRect | null,
+  next: ReorderOutlineRect | null,
+): boolean {
+  return (
+    current?.left === next?.left &&
+    current?.width === next?.width &&
+    current?.height === next?.height
+  );
 }

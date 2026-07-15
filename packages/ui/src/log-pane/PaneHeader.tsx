@@ -93,16 +93,6 @@ export function PaneHeader({
       id={redesignedShellTestIds.paneHeader}
       onPointerDown={handleHeaderPointerDown}
     >
-      <button
-        aria-label={`Reorder pane ${displayTitle}`}
-        aria-pressed={reorderDragging}
-        className="crosslog-pane-header__drag-handle"
-        data-dragging={reorderDragging ? "true" : "false"}
-        title="Reorder pane"
-        type="button"
-      >
-        <CrosslogIcon name="resize-boundary" />
-      </button>
       <div className={identityClassName}>
         {directorySource ? (
           <>
@@ -115,6 +105,9 @@ export function PaneHeader({
               >
                 {directorySource.displayName}
               </span>
+              {!selectedFile && visibleLifecycleIndicators.length > 0 ? (
+                <LifecycleBadgeGroup indicators={visibleLifecycleIndicators} />
+              ) : null}
             </span>
             {selectedFile ? (
               <span className="crosslog-pane-header__title-row crosslog-pane-header__title-row--selected-file">
@@ -127,6 +120,9 @@ export function PaneHeader({
                   {displayTitle}
                 </h2>
                 {liveIndicator ? <LiveLifecycleIndicator indicator={liveIndicator} /> : null}
+                {visibleLifecycleIndicators.length > 0 ? (
+                  <LifecycleBadgeGroup indicators={visibleLifecycleIndicators} />
+                ) : null}
               </span>
             ) : null}
             {directorySource.files.length === 0 ? (
@@ -140,17 +136,13 @@ export function PaneHeader({
               {displayTitle}
             </h2>
             {liveIndicator ? <LiveLifecycleIndicator indicator={liveIndicator} /> : null}
+            {visibleLifecycleIndicators.length > 0 ? (
+              <LifecycleBadgeGroup indicators={visibleLifecycleIndicators} />
+            ) : null}
           </span>
         )}
         {lifecycleIndicators.length > 0 ? (
           <LifecycleStatus indicators={lifecycleIndicators} title={displayTitle} />
-        ) : null}
-        {visibleLifecycleIndicators.length > 0 ? (
-          <div className="crosslog-pane-header__lifecycle-badges">
-            {visibleLifecycleIndicators.map((indicator) => (
-              <LifecycleBadge indicator={indicator} key={indicator.kind} />
-            ))}
-          </div>
         ) : null}
       </div>
       {directorySource && directorySource.files.length > 0 ? (
@@ -206,7 +198,7 @@ const interactiveHeaderControlSelector = [
   "textarea",
   "[contenteditable='true']",
   "[role='button']",
-  "button:not(.crosslog-pane-header__drag-handle)",
+  "button",
 ].join(",");
 
 function isPaneHeaderInteractiveControl(target: EventTarget | null): boolean {
@@ -308,6 +300,16 @@ function LifecycleBadge({ indicator }: { readonly indicator: LifecycleIndicator 
       title={indicator.description}
     >
       {indicator.label}
+    </span>
+  );
+}
+
+function LifecycleBadgeGroup({ indicators }: { readonly indicators: readonly LifecycleIndicator[] }) {
+  return (
+    <span className="crosslog-pane-header__lifecycle-badges">
+      {indicators.map((indicator) => (
+        <LifecycleBadge indicator={indicator} key={indicator.kind} />
+      ))}
     </span>
   );
 }
