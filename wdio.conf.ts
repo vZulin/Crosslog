@@ -34,6 +34,10 @@ export const config = {
       return;
     }
 
+    await browser.execute((presentationChangeEventName: string) => {
+      window.history.replaceState(null, "", window.location.pathname);
+      window.dispatchEvent(new Event(presentationChangeEventName));
+    }, "crosslog:shell-presentation-change");
     appendFileSync(actionsPath, "resetWorkspace\n", "utf8");
     await browser.waitUntil(async () => {
       const title = await browser.getTitle();
