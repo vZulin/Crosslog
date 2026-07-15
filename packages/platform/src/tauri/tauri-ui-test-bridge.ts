@@ -13,6 +13,7 @@ import {
 export class TauriUiTestBridge implements UiTestBridge {
   private enabled: Promise<boolean> | null = null;
   private publishedState: string | null = null;
+  private nativeTitleUpdateQueue: Promise<void> = Promise.resolve();
 
   isEnabled(): Promise<boolean> {
     this.enabled ??= invoke<boolean>("is_ui_test_mode").catch(() => false);
@@ -27,7 +28,7 @@ export class TauriUiTestBridge implements UiTestBridge {
     const formattedState = formatUiTestShellState(state);
     this.publishedState = formattedState;
     document.title = `Crosslog UI Test | ${formattedState}`;
-    await invoke("publish_ui_test_state", { state: formattedState });
+    await this.publishNativeTitle(formattedState);
   }
 
   async publishPaneNavigation(paneNavigation: UiTestPaneNavigationEvidence): Promise<void> {
@@ -39,7 +40,7 @@ export class TauriUiTestBridge implements UiTestBridge {
 
     this.publishedState = nextState;
     document.title = `Crosslog UI Test | ${nextState}`;
-    await invoke("publish_ui_test_state", { state: nextState });
+    await this.publishNativeTitle(nextState);
   }
 
   async publishSynchronizationTargetLine(lineNumber: number | null): Promise<void> {
@@ -51,7 +52,19 @@ export class TauriUiTestBridge implements UiTestBridge {
 
     this.publishedState = nextState;
     document.title = `Crosslog UI Test | ${nextState}`;
-    await invoke("publish_ui_test_state", { state: nextState });
+    await this.publishNativeTitle(nextState);
+  }
+
+  private publishNativeTitle(state: string): Promise<void> {
+    // React effects can publish several snapshots before Tauri finishes a
+    // native title update. Serialize them so an older snapshot cannot overwrite
+    // the title of a newer workspace state on Desktop UI test runners.
+    this.nativeTitleUpdateQueue = this.nativeTitleUpdateQueue
+      .catch(() => undefined)
+      .then(() => invoke("publish_ui_test_state", { state }))
+      .then(() => undefined);
+
+    return this.nativeTitleUpdateQueue;
   }
 
   async consumePendingAction(): Promise<UiTestAction | null> {
