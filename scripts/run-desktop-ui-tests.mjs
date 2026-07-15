@@ -285,6 +285,7 @@ function runWdioSpecs(environment) {
       shell: platform === "win32",
       stdio: ["inherit", "pipe", "pipe"],
       encoding: "utf8",
+      maxBuffer: 50 * 1024 * 1024,
     },
   );
   const output = `${result.stdout ?? ""}\n${result.stderr ?? ""}`;
