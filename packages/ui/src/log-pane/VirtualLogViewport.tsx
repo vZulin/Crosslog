@@ -41,6 +41,8 @@ interface PendingVerticalScrollUpdate {
   readonly anchorVisualLineOffset: number;
 }
 
+type ScrollDirection = "backward" | "forward";
+
 export function createVisibleLogLineWindow(
   lines: readonly string[],
   maxVisibleLines = 120,
@@ -112,6 +114,7 @@ export function VirtualLogViewport({
     readonly centerHorizontally: boolean | null;
     readonly centerVertically: boolean | null;
   } | null>(null);
+  const previousScrollTopRef = React.useRef(0);
 
   selectedLineNumberRef.current = selectedLineNumber;
 
@@ -384,11 +387,15 @@ export function VirtualLogViewport({
 
     const viewport = event.currentTarget;
     const scrollTop = viewport.scrollTop;
+    const scrollDirection: ScrollDirection =
+      scrollTop >= previousScrollTopRef.current ? "forward" : "backward";
+    previousScrollTopRef.current = scrollTop;
     const nextLineNumber = lineForScrollTop(event.currentTarget, lines.length);
     const nextFirstVisibleLineNumber = firstVisibleLineForScrollTop(
       scrollTop,
       visibleLineCapacity,
       lines.length,
+      scrollDirection,
     );
 
     if (nextLineNumber === null) {
@@ -740,6 +747,7 @@ function firstVisibleLineForScrollTop(
   scrollTop: number,
   maxVisibleLines: number,
   lineCount: number,
+  scrollDirection: ScrollDirection = "forward",
 ): number | null {
   if (lineCount <= 1) {
     return null;
@@ -747,7 +755,14 @@ function firstVisibleLineForScrollTop(
 
   const maxFirstVisibleLineNumber = Math.max(1, lineCount - Math.max(1, maxVisibleLines) + 1);
   const topLineNumber = lineForScrollOffset(scrollTop, lineCount);
-  const overscanBeforeLineCount = Math.floor(Math.max(1, maxVisibleLines) / 2);
+  // Keep the same DOM budget while placing most of it ahead of the scroll.
+  // Rendering work can take longer than one frame on a shared CI runner, so a
+  // symmetric window may end behind a fast forward scroll before its next
+  // state commit. Reverse the bias when the user scrolls back.
+  const overscanBeforeLineCount =
+    scrollDirection === "forward"
+      ? Math.floor(Math.max(1, maxVisibleLines) / 4)
+      : Math.ceil((Math.max(1, maxVisibleLines) * 3) / 4);
 
   return Math.max(1, Math.min(maxFirstVisibleLineNumber, topLineNumber - overscanBeforeLineCount));
 }
