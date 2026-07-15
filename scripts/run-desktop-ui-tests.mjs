@@ -198,6 +198,7 @@ function runBuiltMacosXCTestHarness(
 
 async function runWdioHarness() {
   const driverPort = Number.parseInt(process.env.CROSSLOG_TAURI_DRIVER_PORT ?? "4444", 10);
+  const driverStartupRetries = parseDriverStartupRetries();
   const baseEnvironment = { ...process.env, PATH: pathWithCargo() };
 
   if (!Number.isInteger(driverPort) || driverPort <= 0 || driverPort > 65_535) {
@@ -221,19 +222,99 @@ async function runWdioHarness() {
   };
   logWdioSpecSelection(wdioEnvironment.CROSSLOG_WDIO_SPECS);
   logRunnerEvent(`WDIO max instances configured: ${wdioEnvironment.CROSSLOG_WDIO_MAX_INSTANCES ?? "1"}`);
-  const driver = timeSync(`tauri-driver start on port ${driverPort}`, () => startTauriDriver(driverPort, wdioEnvironment));
+  let driver = null;
 
   try {
-    await timeAsync(`tauri-driver TCP readiness on port ${driverPort}`, () => waitForTcpPort(driverPort));
-    timeSync("WDIO desktop UI specs", () =>
-      runCommand("corepack", ["pnpm", "exec", "wdio", "run", "wdio.conf.ts"], wdioEnvironment),
-    );
+    for (let attempt = 1; attempt <= driverStartupRetries + 1; attempt += 1) {
+      driver = timeSync(
+        `tauri-driver start on port ${driverPort} (attempt ${attempt})`,
+        () => startTauriDriver(driverPort, wdioEnvironment),
+      );
+
+      await timeAsync(`tauri-driver TCP readiness on port ${driverPort}`, () => waitForTcpPort(driverPort));
+
+      const result = timeSync("WDIO desktop UI specs", () => runWdioSpecs(wdioEnvironment));
+
+      if (result.status === 0) {
+        return;
+      }
+
+      if (!isRetryableDriverStartupFailure(result.output) || attempt > driverStartupRetries) {
+        process.exit(result.status);
+      }
+
+      logRunnerEvent(
+        `Retrying Desktop UI specs after tauri-driver startup failure (${attempt}/${driverStartupRetries})`,
+      );
+      await driver.stop();
+      driver = null;
+      await delay(1_000);
+    }
   } finally {
     logRunnerEvent("tauri-driver stop started");
-    driver.stop();
+    await driver?.stop();
     rmSync(actionsPath, { force: true });
     logRunnerEvent("tauri-driver stop finished");
   }
+}
+
+function parseDriverStartupRetries() {
+  const defaultRetries = platform === "win32" ? 2 : 0;
+  const configuredRetries = Number.parseInt(
+    process.env.CROSSLOG_TAURI_DRIVER_STARTUP_RETRIES ?? String(defaultRetries),
+    10,
+  );
+
+  if (!Number.isInteger(configuredRetries) || configuredRetries < 0) {
+    console.error(
+      `CROSSLOG_TAURI_DRIVER_STARTUP_RETRIES must be a non-negative integer: ${process.env.CROSSLOG_TAURI_DRIVER_STARTUP_RETRIES}`,
+    );
+    process.exit(1);
+  }
+
+  return configuredRetries;
+}
+
+function runWdioSpecs(environment) {
+  const result = spawnSync(
+    "corepack",
+    ["pnpm", "exec", "wdio", "run", "wdio.conf.ts"],
+    {
+      cwd: repoRoot,
+      env: environment,
+      shell: platform === "win32",
+      stdio: ["inherit", "pipe", "pipe"],
+      encoding: "utf8",
+    },
+  );
+  const output = `${result.stdout ?? ""}\n${result.stderr ?? ""}`;
+
+  if (result.stdout) {
+    process.stdout.write(result.stdout);
+  }
+
+  if (result.stderr) {
+    process.stderr.write(result.stderr);
+  }
+
+  if (result.error) {
+    console.error(`Failed to run Desktop UI specs: ${result.error.message}`);
+  }
+
+  return {
+    output,
+    status: result.status ?? 1,
+  };
+}
+
+function isRetryableDriverStartupFailure(output) {
+  return /UND_ERR_SOCKET|DevToolsActivePort file doesn't exist|operation was aborted due to timeout when running .*\/session/i.test(
+    output,
+  );
+}
+
+function delay(milliseconds) {
+  return new Promise((resolvePromise) => setTimeout(resolvePromise, milliseconds));
 }
 
 function logWdioSpecSelection(specs) {
@@ -338,11 +419,20 @@ function startTauriDriver(port, env) {
   return {
     stop() {
       if (driverProcess.exitCode !== null || driverProcess.killed) {
-        return;
+        return Promise.resolve();
       }
 
       stopping = true;
-      driverProcess.kill();
+      return new Promise((resolvePromise) => {
+        const resolveOnce = () => {
+          clearTimeout(timeoutId);
+          resolvePromise();
+        };
+        const timeoutId = setTimeout(resolveOnce, 3_000);
+
+        driverProcess.once("exit", resolveOnce);
+        driverProcess.kill();
+      });
     },
   };
 }

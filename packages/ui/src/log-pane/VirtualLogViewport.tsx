@@ -95,6 +95,8 @@ export function VirtualLogViewport({
   );
   const [lastNavigation, setLastNavigation] = React.useState<"none" | "click" | "keyboard" | "wheel">("none");
   const viewportRef = React.useRef<HTMLOListElement | null>(null);
+  // Keep syntax work outside the scroll commit's hot path for rows that remain in the window.
+  const syntaxTokenCacheRef = React.useRef<Map<string, readonly LogSyntaxToken[]>>(new Map());
   const selectedLineNumberRef = React.useRef(selectedLineNumber);
   const selectionLockedRef = React.useRef(false);
   const pendingVerticalScrollUpdateRef = React.useRef<PendingVerticalScrollUpdate | null>(null);
@@ -436,6 +438,27 @@ export function VirtualLogViewport({
     selectedLineNumber,
     firstVisibleLineNumber,
   );
+  const syntaxTokensByLine = visibleLines.map((line) => {
+    const cache = syntaxTokenCacheRef.current;
+    const cachedTokens = cache.get(line.text);
+
+    if (cachedTokens) {
+      return cachedTokens;
+    }
+
+    const tokens = tokenizeLogLineSyntax(line.text);
+    cache.set(line.text, tokens);
+
+    if (cache.size > 2_048) {
+      const oldestKey = cache.keys().next().value;
+
+      if (oldestKey !== undefined) {
+        cache.delete(oldestKey);
+      }
+    }
+
+    return tokens;
+  });
   const lineNumberDigitCount = getLineNumberDigitCount(lines.length);
   const virtualScrollHeightPx = getVirtualScrollHeight(lines.length);
   const rowInlineSizePx = Number.isFinite(horizontalContentWidth)
@@ -556,7 +579,7 @@ export function VirtualLogViewport({
         className="crosslog-log-viewport__spacer"
         style={{ blockSize: virtualScrollHeightPx }}
       />
-      {visibleLines.map((line) => {
+      {visibleLines.map((line, lineIndex) => {
         const selected = line.lineNumber === selectedLineNumber;
         const lineSearchMatches = searchMatchesByLineNumber.get(line.lineNumber) ?? emptySearchMatches;
 
@@ -573,6 +596,7 @@ export function VirtualLogViewport({
             selected={selected}
             synchronizationTargetLineNumber={synchronizationTargetLineNumber}
             rowInlineSizePx={rowInlineSizePx}
+            syntaxTokens={syntaxTokensByLine[lineIndex] ?? emptySyntaxTokens}
             onSelect={handleLineSelect}
           />
         );
@@ -586,6 +610,7 @@ const logViewportPaddingBlockPx = 8;
 const logViewportRowHeightPx = 18;
 const logViewportInlinePaddingPx = 12;
 const emptySearchMatches: readonly SearchMatch[] = [];
+const emptySyntaxTokens: readonly LogSyntaxToken[] = [];
 
 interface LogViewportRowProps {
   readonly lineNumber: number;
@@ -598,6 +623,7 @@ interface LogViewportRowProps {
   readonly selected: boolean;
   readonly synchronizationTargetLineNumber?: number | null;
   readonly rowInlineSizePx: number | null;
+  readonly syntaxTokens: readonly LogSyntaxToken[];
   readonly onSelect: (lineNumber: number, timestamp: Date | null) => void;
 }
 
@@ -612,6 +638,7 @@ const LogViewportRow = React.memo(function LogViewportRow({
   selected,
   synchronizationTargetLineNumber,
   rowInlineSizePx,
+  syntaxTokens,
   onSelect,
 }: LogViewportRowProps) {
   const lineTopPx = logViewportPaddingBlockPx + (lineNumber - 1) * logViewportRowHeightPx;
@@ -630,7 +657,7 @@ const LogViewportRow = React.memo(function LogViewportRow({
     >
       <span className="crosslog-log-viewport__line-number">{lineNumber}</span>
       <code className="crosslog-log-viewport__line-text">
-        {renderLineText(text, lineSearchMatches, lineNumber, activeSearchMatch)}
+        {renderLineText(text, lineSearchMatches, lineNumber, activeSearchMatch, syntaxTokens)}
       </code>
     </li>
   );
@@ -973,9 +1000,8 @@ function renderLineText(
   matches: readonly SearchMatch[],
   lineNumber: number,
   activeSearchMatch: SearchMatch | null,
+  syntaxTokens: readonly LogSyntaxToken[],
 ): React.ReactNode {
-  const syntaxTokens = tokenizeLogLineSyntax(text);
-
   if (matches.length === 0 && syntaxTokens.length === 0) {
     return text;
   }

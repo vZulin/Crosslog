@@ -32,6 +32,7 @@ enum CrosslogUITestAction: String {
 
 class CrosslogUITests: XCTestCase {
     private var actionsURL: URL?
+    private var actionAcknowledgementsURL: URL?
 
     override func setUp() {
         super.setUp()
@@ -50,6 +51,9 @@ class CrosslogUITests: XCTestCase {
         app.launchArguments.append("--crosslog-ui-test")
         app.launchEnvironment["CROSSLOG_UI_TEST"] = "1"
         app.launchEnvironment["CROSSLOG_UI_TEST_ACTIONS_PATH"] = actionsURL.path
+        if let actionAcknowledgementsURL {
+            app.launchEnvironment["CROSSLOG_UI_TEST_ACTION_ACK_PATH"] = actionAcknowledgementsURL.path
+        }
         app.launchEnvironment["CROSSLOG_UI_TEST_PERSIST_SESSION"] = "1"
         if let largeLogPath = largeLogFixturePath() {
             app.launchEnvironment["CROSSLOG_UI_TEST_LARGE_LOG_PATH"] = largeLogPath
@@ -92,6 +96,8 @@ class CrosslogUITests: XCTestCase {
             return
         }
 
+        let acknowledgementCount = actionAcknowledgementCount()
+
         do {
             let handle = try FileHandle(forWritingTo: actionsURL)
             try handle.seekToEnd()
@@ -102,7 +108,12 @@ class CrosslogUITests: XCTestCase {
             return
         }
 
-        waitForUiTestActionQueueToDrain(action, file: file, line: line)
+        waitForUiTestActionAcknowledgement(
+            action,
+            after: acknowledgementCount,
+            file: file,
+            line: line
+        )
     }
 
     func enqueueUiTestActions(
@@ -125,8 +136,9 @@ class CrosslogUITests: XCTestCase {
         }
     }
 
-    private func waitForUiTestActionQueueToDrain(
+    private func waitForUiTestActionAcknowledgement(
         _ action: CrosslogUITestAction,
+        after acknowledgementCount: Int,
         timeout: TimeInterval = 5,
         file: StaticString = #filePath,
         line: UInt = #line
@@ -139,12 +151,10 @@ class CrosslogUITests: XCTestCase {
         let deadline = Date().addingTimeInterval(timeout)
 
         while Date() < deadline {
-            let contents = (try? String(contentsOf: actionsURL, encoding: .utf8)) ?? ""
+            let acknowledgements = actionAcknowledgements()
 
-            if !contents
-                .components(separatedBy: .newlines)
-                .map({ $0.trimmingCharacters(in: .whitespacesAndNewlines) })
-                .contains(action.rawValue) {
+            if acknowledgements.count > acknowledgementCount,
+               acknowledgements.dropFirst(acknowledgementCount).contains(action.rawValue) {
                 return
             }
 
@@ -210,8 +220,27 @@ class CrosslogUITests: XCTestCase {
             .appendingPathComponent("crosslog-ui-actions-\(UUID().uuidString).txt")
 
         FileManager.default.createFile(atPath: url.path, contents: Data(), attributes: nil)
+        let acknowledgementURL = url.deletingLastPathComponent()
+            .appendingPathComponent("crosslog-ui-action-ack-\(UUID().uuidString).txt")
+        FileManager.default.createFile(atPath: acknowledgementURL.path, contents: Data(), attributes: nil)
+        actionAcknowledgementsURL = acknowledgementURL
         actionsURL = url
         return url
+    }
+
+    private func actionAcknowledgements() -> [String] {
+        guard let actionAcknowledgementsURL else {
+            return []
+        }
+
+        return ((try? String(contentsOf: actionAcknowledgementsURL, encoding: .utf8)) ?? "")
+            .components(separatedBy: .newlines)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+    }
+
+    private func actionAcknowledgementCount() -> Int {
+        actionAcknowledgements().count
     }
 
     private func largeLogFixturePath() -> String? {
@@ -243,6 +272,10 @@ class CrosslogUITests: XCTestCase {
         }
 
         try? FileManager.default.removeItem(at: actionsURL)
+        if let actionAcknowledgementsURL {
+            try? FileManager.default.removeItem(at: actionAcknowledgementsURL)
+        }
+        self.actionAcknowledgementsURL = nil
         self.actionsURL = nil
     }
 }

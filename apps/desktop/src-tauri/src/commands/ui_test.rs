@@ -1,6 +1,8 @@
 use std::{
     collections::HashMap,
-    env, fs, io,
+    env, fs,
+    fs::OpenOptions,
+    io::{self, Write},
     path::PathBuf,
     sync::{Mutex, OnceLock},
 };
@@ -102,7 +104,13 @@ pub fn consume_ui_test_action() -> Result<Option<String>, String> {
         .map_err(|_| "UI test action cursor lock poisoned.".to_owned())?;
     let offset = offsets.entry(actions_path).or_insert(0);
 
-    Ok(consume_action_from_contents(&contents, offset))
+    let action = consume_action_from_contents(&contents, offset);
+
+    if let Some(action) = action.as_deref() {
+        acknowledge_ui_test_action(action)?;
+    }
+
+    Ok(action)
 }
 
 pub(crate) fn ui_test_mode_enabled() -> bool {
@@ -113,6 +121,20 @@ pub(crate) fn ui_test_mode_enabled() -> bool {
 
 fn supported_ui_test_action(action: &str) -> bool {
     SUPPORTED_UI_TEST_ACTIONS.contains(&action)
+}
+
+fn acknowledge_ui_test_action(action: &str) -> Result<(), String> {
+    let Some(acknowledgements_path) = env::var_os("CROSSLOG_UI_TEST_ACTION_ACK_PATH") else {
+        return Ok(());
+    };
+
+    let mut file = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(acknowledgements_path)
+        .map_err(|error| error.to_string())?;
+
+    writeln!(file, "{action}").map_err(|error| error.to_string())
 }
 
 fn ui_test_action_offsets() -> &'static Mutex<HashMap<PathBuf, usize>> {
