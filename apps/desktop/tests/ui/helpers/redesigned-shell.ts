@@ -99,6 +99,7 @@ export async function openSampleLogsWithUiBridge(): Promise<void> {
   await waitForUiTestTitleFragment("state=logs");
   await waitForUiTestTitleFragment("panes=3");
   await waitForUiTestTitleFragment("session=written");
+  await waitForUiTestTitleFragment("active=app-2026-06-16.log");
   await expect(browser.$$(redesignedShellSelectors().logPane)).toBeElementsArrayOfSize(3);
 }
 

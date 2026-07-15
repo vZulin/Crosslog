@@ -970,16 +970,26 @@ export function AppShell({
     (action: UiTestAction) => {
       switch (action) {
         case "openSampleLogs":
-          if (state.panes.length === 0) {
-            samplePanes.forEach((pane) => dispatch({ type: "addPane", pane }));
-            setSourceOpeningEvidence((current) => ({
-              ...current,
-              status: "opened",
-              entryPoint: "ui-test-fixture",
-              selectedSourceKind: "mixed",
-              fixtureSamplePaneCount: current.fixtureSamplePaneCount + samplePanes.length,
-            }));
-          }
+          // Reset the hidden fixture workspace so grouped WDIO specs remain
+          // independent while sharing one stable tauri-driver session.
+          dispatch({ type: "replaceState", state: createLogPaneState(samplePanes) });
+          resetSynchronizationState();
+          resetPaneSearchState();
+          setOpenSearchPaneId(null);
+          setOpenTimeOffsetPaneId(null);
+          setFileSources(createInitialFileSources(platform.kind));
+          setDirectoryFileSources({});
+          dispatchDirectorySource({
+            type: "replaceSource",
+            source: createInitialDirectorySource(platform),
+          });
+          setSourceOpeningEvidence((current) => ({
+            ...current,
+            status: "opened",
+            entryPoint: "ui-test-fixture",
+            selectedSourceKind: "mixed",
+            fixtureSamplePaneCount: samplePanes.length,
+          }));
           break;
         case "openLargeLog":
           void openUiTestLargeLogSource(
@@ -1149,7 +1159,10 @@ export function AppShell({
       openSearchPaneId,
       requestActivePaneSearch,
       requestActivePaneTimeOffset,
+      resetPaneSearchState,
+      resetSynchronizationState,
       setPaneOffset,
+      platform,
       setSearchMode,
       setSearchQuery,
       showSearchHighlights,
