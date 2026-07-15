@@ -2,6 +2,8 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "apps/web/tests/ui",
+  // Wall-clock scroll probes need predictable CPU availability on shared CI runners.
+  workers: process.env.CI ? 2 : undefined,
   use: {
     baseURL: "http://127.0.0.1:4173",
     trace: "on-first-retry"
