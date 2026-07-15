@@ -60,7 +60,7 @@ async function openCopyMenuAt(
 ): Promise<CopyMenuPlacement> {
   await textActions.waitForExist();
 
-  return browser.execute((target: HTMLElement, requestedOffsetX: number, requestedOffsetY: number) => {
+  const pointer = await browser.execute((target: HTMLElement, requestedOffsetX: number, requestedOffsetY: number) => {
     const groupRect = target.getBoundingClientRect();
     const pointerX = Math.min(groupRect.right - 1, groupRect.left + requestedOffsetX);
     const pointerY = Math.min(groupRect.bottom - 1, groupRect.top + requestedOffsetY);
@@ -73,13 +73,17 @@ async function openCopyMenuAt(
       clientY: pointerY,
     }));
 
-    const action = target.querySelector<HTMLElement>('[role="menuitem"]');
+    return { pointerX, pointerY };
+  }, textActions, offsetX, offsetY);
 
-    if (!action) {
-      throw new Error("Copy action did not open.");
-    }
+  const action = await textActions.$('[role="menuitem"]');
+  await action.waitForExist({
+    timeoutMsg: "Copy action did not open.",
+  });
 
-    const actionRect = action.getBoundingClientRect();
+  return browser.execute((target: HTMLElement, menuAction: HTMLElement, pointerX: number, pointerY: number) => {
+    const groupRect = target.getBoundingClientRect();
+    const actionRect = menuAction.getBoundingClientRect();
 
     return {
       pointerX,
@@ -91,7 +95,7 @@ async function openCopyMenuAt(
       actionRight: actionRect.right,
       actionBottom: actionRect.bottom,
     };
-  }, textActions, offsetX, offsetY);
+  }, textActions, action, pointer.pointerX, pointer.pointerY);
 }
 
 async function dismissCopyMenu(textActions: WebdriverIO.Element): Promise<void> {

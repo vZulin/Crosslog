@@ -1,6 +1,7 @@
 import { spawn, spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { existsSync, lstatSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { request as httpRequest } from "node:http";
 import { createConnection } from "node:net";
 import { delimiter, join, resolve } from "node:path";
 import { platform } from "node:process";
@@ -240,10 +241,9 @@ async function runWdioHarness() {
       );
 
       try {
-        await timeAsync(`tauri-driver TCP readiness on port ${driverPort}`, () => waitForTcpPort(driverPort));
         await timeAsync(
-          `native WebDriver TCP readiness on port ${nativeDriverPort}`,
-          () => waitForTcpPort(nativeDriverPort),
+          `tauri-driver and native WebDriver readiness on port ${driverPort}`,
+          () => waitForWebDriverStatus(driverPort),
         );
       } catch (error) {
         if (attempt > driverStartupRetries) {
@@ -496,13 +496,13 @@ async function stopTauriDriver(driver, port, nativePort) {
   await waitForTcpPortToClose(nativePort);
 }
 
-async function waitForTcpPort(port) {
-  const deadline = Date.now() + 10_000;
+async function waitForWebDriverStatus(port) {
+  const deadline = Date.now() + 30_000;
   let lastError = null;
 
   while (Date.now() < deadline) {
     try {
-      await probeTcpPort(port);
+      await probeWebDriverStatus(port);
       return;
     } catch (error) {
       lastError = error;
@@ -511,8 +511,29 @@ async function waitForTcpPort(port) {
   }
 
   throw new Error(
-    `Timed out waiting for tauri-driver on 127.0.0.1:${port}: ${lastError?.message ?? "unknown error"}`,
+    `Timed out waiting for WebDriver readiness on 127.0.0.1:${port}: ${lastError?.message ?? "unknown error"}`,
   );
+}
+
+function probeWebDriverStatus(port) {
+  return new Promise((resolvePromise, rejectPromise) => {
+    const request = httpRequest({ host: "127.0.0.1", method: "GET", path: "/status", port }, (response) => {
+      response.resume();
+
+      if (response.statusCode && response.statusCode >= 200 && response.statusCode < 300) {
+        resolvePromise();
+        return;
+      }
+
+      rejectPromise(new Error(`unexpected HTTP status ${response.statusCode ?? "unknown"}`));
+    });
+
+    request.once("error", rejectPromise);
+    request.setTimeout(1_000, () => {
+      request.destroy(new Error("request timed out"));
+    });
+    request.end();
+  });
 }
 
 function probeTcpPort(port) {
