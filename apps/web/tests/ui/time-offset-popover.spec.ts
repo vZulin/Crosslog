@@ -38,7 +38,7 @@ test("applies valid pane offsets and rejects invalid offset drafts", async ({ pa
   await appPane.getByTestId(redesignedShellTestIds.timeOffsetHours).fill("24");
   await appPane.getByTestId(redesignedShellTestIds.timeOffsetSeconds).fill("60");
   await appPane.getByTestId(redesignedShellTestIds.timeOffsetMilliseconds).fill("1000");
-  await expect(appPane.getByRole("alert")).toContainText("Hours must be 0-23");
+  await expect(appPane.getByRole("alert")).toContainText("Hours must be between -23 and 23");
   await expect(appPane.getByTestId(redesignedShellTestIds.timeOffsetHours)).toHaveAttribute("aria-invalid", "true");
   await expect(appPane.getByTestId(redesignedShellTestIds.timeOffsetMinutes)).toHaveAttribute("aria-invalid", "true");
   await expect(appPane.getByTestId(redesignedShellTestIds.timeOffsetSeconds)).toHaveAttribute("aria-invalid", "true");
