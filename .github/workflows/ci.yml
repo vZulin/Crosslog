@@ -387,8 +387,9 @@ jobs:
 
           $webViewVersion = [version]$webViewExecutable.VersionInfo.ProductVersion
           $driverVersionResponse = Invoke-RestMethod -Uri "https://msedgedriver.microsoft.com/LATEST_RELEASE_$($webViewVersion.Major)_WINDOWS"
-          $driverVersion = [regex]::Match($driverVersionResponse.ToString(), "\d+\.\d+\.\d+\.\d+").Value
-          if (-not $driverVersion) {
+          $driverVersion = (($driverVersionResponse.ToString().ToCharArray() |
+            Where-Object { [char]::IsDigit($_) -or $_ -eq "." }) -join "")
+          if ($driverVersion -notmatch "^\d+\.\d+\.\d+\.\d+$") {
             throw "Microsoft Edge WebDriver version response did not contain a semantic version."
           }
           $driverDirectory = Join-Path $PWD ".build\msedgedriver"
