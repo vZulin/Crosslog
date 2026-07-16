@@ -386,7 +386,11 @@ jobs:
           }
 
           $webViewVersion = [version]$webViewExecutable.VersionInfo.ProductVersion
-          $driverVersion = (Invoke-RestMethod -Uri "https://msedgedriver.microsoft.com/LATEST_RELEASE_$($webViewVersion.Major)_WINDOWS").Trim()
+          $driverVersionResponse = Invoke-RestMethod -Uri "https://msedgedriver.microsoft.com/LATEST_RELEASE_$($webViewVersion.Major)_WINDOWS"
+          $driverVersion = [regex]::Match($driverVersionResponse.ToString(), "\d+\.\d+\.\d+\.\d+").Value
+          if (-not $driverVersion) {
+            throw "Microsoft Edge WebDriver version response did not contain a semantic version."
+          }
           $driverDirectory = Join-Path $PWD ".build\msedgedriver"
           $driverArchive = Join-Path $env:RUNNER_TEMP "msedgedriver-$driverVersion.zip"
 
