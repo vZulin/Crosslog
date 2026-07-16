@@ -200,6 +200,7 @@ function runBuiltMacosXCTestHarness(
 async function runWdioHarness() {
   const driverPort = Number.parseInt(process.env.CROSSLOG_TAURI_DRIVER_PORT ?? "4444", 10);
   const nativeDriverPort = Number.parseInt(process.env.CROSSLOG_TAURI_DRIVER_NATIVE_PORT ?? "4445", 10);
+  const nativeDriverPath = getOptionalPath("CROSSLOG_TAURI_NATIVE_DRIVER_PATH");
   const driverStartupRetries = parseDriverStartupRetries();
   const baseEnvironment = { ...process.env, PATH: pathWithCargo() };
 
@@ -231,13 +232,18 @@ async function runWdioHarness() {
   };
   logWdioSpecSelection(wdioEnvironment.CROSSLOG_WDIO_SPECS);
   logRunnerEvent(`WDIO max instances configured: ${wdioEnvironment.CROSSLOG_WDIO_MAX_INSTANCES ?? "1"}`);
+  logRunnerEvent(
+    nativeDriverPath
+      ? `Using configured native WebDriver: ${nativeDriverPath}`
+      : "Using native WebDriver discovered from PATH",
+  );
   let driver = null;
 
   try {
     for (let attempt = 1; attempt <= driverStartupRetries + 1; attempt += 1) {
       driver = timeSync(
         `tauri-driver start on port ${driverPort} (attempt ${attempt})`,
-        () => startTauriDriver(driverPort, nativeDriverPort, wdioEnvironment),
+        () => startTauriDriver(driverPort, nativeDriverPort, nativeDriverPath, wdioEnvironment),
       );
 
       try {
@@ -417,11 +423,17 @@ function ensureTauriDriverAvailable(env) {
   process.exit(1);
 }
 
-function startTauriDriver(port, nativePort, env) {
+function startTauriDriver(port, nativePort, nativeDriverPath, env) {
   let stopping = false;
+  const driverArgs = ["--port", String(port), "--native-port", String(nativePort)];
+
+  if (nativeDriverPath) {
+    driverArgs.push("--native-driver", nativeDriverPath);
+  }
+
   const driverProcess = spawn(
     process.env.CROSSLOG_TAURI_DRIVER_PATH ?? "tauri-driver",
-    ["--port", String(port), "--native-port", String(nativePort)],
+    driverArgs,
     {
       cwd: repoRoot,
       env,

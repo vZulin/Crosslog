@@ -239,7 +239,7 @@ jobs:
 
   windows-desktop-ui-app:
     name: Windows Desktop UI app
-    runs-on: windows-2022
+    runs-on: windows-latest
     timeout-minutes: 25
 
     steps:
@@ -307,7 +307,7 @@ jobs:
 
   windows-desktop-ui-tests:
     name: UI/E2E tests (${{ matrix.label }})
-    runs-on: windows-2022
+    runs-on: windows-latest
     needs: windows-desktop-ui-app
     timeout-minutes: 25
     strategy:
@@ -373,11 +373,45 @@ jobs:
           name: crosslog-windows-tauri-driver
           path: .build/tauri-driver
 
+      - name: Install matching Microsoft Edge WebDriver
+        shell: pwsh
+        run: |
+          $programFilesX86 = [Environment]::GetFolderPath("ProgramFilesX86")
+          $webViewExecutable = Get-ChildItem -Path (Join-Path $programFilesX86 "Microsoft\EdgeWebView\Application\*\msedgewebview2.exe") |
+            Sort-Object { [version]$_.VersionInfo.ProductVersion } -Descending |
+            Select-Object -First 1
+
+          if (-not $webViewExecutable) {
+            throw "Microsoft Edge WebView2 runtime executable was not found."
+          }
+
+          $webViewVersion = [version]$webViewExecutable.VersionInfo.ProductVersion
+          $driverVersion = (Invoke-RestMethod -Uri "https://msedgedriver.azureedge.net/LATEST_RELEASE_$($webViewVersion.Major)").Trim()
+          $driverDirectory = Join-Path $PWD ".build\msedgedriver"
+          $driverArchive = Join-Path $env:RUNNER_TEMP "msedgedriver-$driverVersion.zip"
+
+          New-Item -ItemType Directory -Force $driverDirectory | Out-Null
+          Invoke-WebRequest -Uri "https://msedgedriver.azureedge.net/$driverVersion/edgedriver_win64.zip" -OutFile $driverArchive
+          Expand-Archive -Path $driverArchive -DestinationPath $driverDirectory -Force
+
+          $driverExecutable = Join-Path $driverDirectory "msedgedriver.exe"
+          if (-not (Test-Path $driverExecutable)) {
+            throw "Microsoft Edge WebDriver executable was not extracted."
+          }
+
+          $driverMajor = ([version](Get-Item $driverExecutable).VersionInfo.ProductVersion).Major
+          if ($driverMajor -ne $webViewVersion.Major) {
+            throw "Microsoft Edge WebDriver $driverMajor does not match WebView2 $($webViewVersion.Major)."
+          }
+
+          Write-Host "Using Microsoft Edge WebDriver $driverVersion for WebView2 $webViewVersion."
+
       - name: Run UI tests
         env:
           CROSSLOG_DESKTOP_UI_SKIP_APP_BUILD: "true"
           CROSSLOG_TAURI_APP_PATH: apps/desktop/src-tauri/target/debug/crosslog-desktop.exe
           CROSSLOG_TAURI_DRIVER_PATH: .build/tauri-driver/tauri-driver.exe
+          CROSSLOG_TAURI_NATIVE_DRIVER_PATH: .build/msedgedriver/msedgedriver.exe
           CROSSLOG_WDIO_SPECS: ${{ matrix.wdio_specs }}
           CROSSLOG_WDIO_MAX_INSTANCES: "1"
         run: pwsh scripts/windows/test-ui.ps1 desktop
