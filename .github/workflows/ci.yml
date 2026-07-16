@@ -386,12 +386,12 @@ jobs:
           }
 
           $webViewVersion = [version]$webViewExecutable.VersionInfo.ProductVersion
-          $driverVersion = (Invoke-RestMethod -Uri "https://msedgedriver.azureedge.net/LATEST_RELEASE_$($webViewVersion.Major)").Trim()
+          $driverVersion = (Invoke-RestMethod -Uri "https://msedgedriver.microsoft.com/LATEST_RELEASE_$($webViewVersion.Major)_WINDOWS").Trim()
           $driverDirectory = Join-Path $PWD ".build\msedgedriver"
           $driverArchive = Join-Path $env:RUNNER_TEMP "msedgedriver-$driverVersion.zip"
 
           New-Item -ItemType Directory -Force $driverDirectory | Out-Null
-          Invoke-WebRequest -Uri "https://msedgedriver.azureedge.net/$driverVersion/edgedriver_win64.zip" -OutFile $driverArchive
+          Invoke-WebRequest -Uri "https://msedgedriver.microsoft.com/$driverVersion/edgedriver_win64.zip" -OutFile $driverArchive
           Expand-Archive -Path $driverArchive -DestinationPath $driverDirectory -Force
 
           $driverExecutable = Join-Path $driverDirectory "msedgedriver.exe"

@@ -117,6 +117,13 @@ describe("Desktop log search", () => {
     const horizontalOnlyStart = await readPaneSearchScrollMetrics(appPaneTitle);
     await setPaneSearchQuery(appPaneTitle, "outside-viewport");
     await waitForPaneSearchHighlight(appPaneTitle, 181, "outside-viewport", true);
+    await browser.waitUntil(
+      async () => (await readPaneSearchScrollMetrics(appPaneTitle)).scrollerScrollLeft > horizontalOnlyStart.scrollerScrollLeft,
+      {
+        timeout: 15_000,
+        timeoutMsg: "Search navigation did not move horizontally after restoring the target match.",
+      },
+    );
     const horizontalOnlyEnd = await readPaneSearchScrollMetrics(appPaneTitle);
 
     expect(horizontalOnlyEnd.viewportScrollTop).toBe(horizontalOnlyStart.viewportScrollTop);
