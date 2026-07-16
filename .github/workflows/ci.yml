@@ -409,6 +409,12 @@ jobs:
             throw "Microsoft Edge WebDriver $driverMajor does not match WebView2 $($webViewVersion.Major)."
           }
 
+          $driverLauncher = Join-Path $driverDirectory "start-msedgedriver.cmd"
+          @"
+          @echo off
+          "$driverExecutable" --verbose --append-log --log-path="%RUNNER_TEMP%\crosslog-msedgedriver.log" %*
+          "@ | Set-Content -Path $driverLauncher -Encoding ascii
+
           Write-Host "Using Microsoft Edge WebDriver $driverVersion for WebView2 $webViewVersion."
 
       - name: Run UI tests
@@ -416,10 +422,18 @@ jobs:
           CROSSLOG_DESKTOP_UI_SKIP_APP_BUILD: "true"
           CROSSLOG_TAURI_APP_PATH: apps/desktop/src-tauri/target/debug/crosslog-desktop.exe
           CROSSLOG_TAURI_DRIVER_PATH: .build/tauri-driver/tauri-driver.exe
-          CROSSLOG_TAURI_NATIVE_DRIVER_PATH: .build/msedgedriver/msedgedriver.exe
+          CROSSLOG_TAURI_NATIVE_DRIVER_PATH: .build/msedgedriver/start-msedgedriver.cmd
           CROSSLOG_WDIO_SPECS: ${{ matrix.wdio_specs }}
           CROSSLOG_WDIO_MAX_INSTANCES: "1"
         run: pwsh scripts/windows/test-ui.ps1 desktop
+
+      - name: Upload Microsoft Edge WebDriver diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crosslog-windows-edgedriver-diagnostics-${{ matrix.label }}
+          path: ${{ runner.temp }}/crosslog-msedgedriver.log
+          if-no-files-found: warn
 
   build-web:
     name: Build Web
