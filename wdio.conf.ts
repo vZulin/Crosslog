@@ -56,7 +56,10 @@ export const config = {
     {
       "wdio:maxInstances": maxInstances,
       "tauri:options": {
-        application: tauriApplicationPath
+        application: tauriApplicationPath,
+        webviewOptions: {
+          additionalBrowserArguments: ["remote-debugging-pipe"]
+        }
       }
     }
   ],
