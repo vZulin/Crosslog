@@ -49,7 +49,7 @@ export function TimeOffsetEditor({ title, value, onChange }: TimeOffsetEditorPro
           ) : null}
           <input
             type="text"
-            inputMode="numeric"
+            inputMode="text"
             aria-describedby={errorsByField[field] ? fieldErrorId(title, field) : undefined}
             aria-errormessage={errorsByField[field] ? fieldErrorId(title, field) : undefined}
             aria-invalid={errorsByField[field] ? true : undefined}

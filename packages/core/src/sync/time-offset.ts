@@ -51,10 +51,10 @@ const fieldLabels = {
 } as const satisfies Record<TimeOffsetField, string>;
 
 const boundedFieldRanges = {
-  hours: { min: 0, max: 23 },
-  minutes: { min: 0, max: 59 },
-  seconds: { min: 0, max: 59 },
-  milliseconds: { min: 0, max: 999 },
+  hours: { min: -23, max: 23 },
+  minutes: { min: -59, max: 59 },
+  seconds: { min: -59, max: 59 },
+  milliseconds: { min: -999, max: 999 },
 } as const satisfies Partial<Record<TimeOffsetField, { readonly min: number; readonly max: number }>>;
 
 export function timeOffsetToMilliseconds(offset: TimeOffset): number {
@@ -90,49 +90,14 @@ export function normalizeTimeOffset(offset: TimeOffset): TimeOffset {
 }
 
 export function createTimeOffsetDraft(offset: TimeOffset): TimeOffsetDraft {
-  const totalMilliseconds = timeOffsetToMilliseconds(offset);
-
-  if (totalMilliseconds >= 0) {
-    const normalized = normalizeTimeOffset(offset);
-
-    return {
-      days: String(normalized.days),
-      hours: String(normalized.hours),
-      minutes: String(normalized.minutes),
-      seconds: String(normalized.seconds),
-      milliseconds: String(normalized.milliseconds),
-    };
-  }
-
-  let remaining = Math.abs(totalMilliseconds);
-  const wholeDays = Math.trunc(remaining / MILLISECONDS_PER_DAY);
-  remaining %= MILLISECONDS_PER_DAY;
-
-  if (remaining === 0) {
-    return {
-      days: String(-wholeDays),
-      hours: "0",
-      minutes: "0",
-      seconds: "0",
-      milliseconds: "0",
-    };
-  }
-
-  const subDayMilliseconds = MILLISECONDS_PER_DAY - remaining;
-  const subDayOffset = normalizeTimeOffset({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-    milliseconds: subDayMilliseconds,
-  });
+  const normalized = normalizeTimeOffset(offset);
 
   return {
-    days: String(-(wholeDays + 1)),
-    hours: String(subDayOffset.hours),
-    minutes: String(subDayOffset.minutes),
-    seconds: String(subDayOffset.seconds),
-    milliseconds: String(subDayOffset.milliseconds),
+    days: String(normalized.days),
+    hours: String(normalized.hours),
+    minutes: String(normalized.minutes),
+    seconds: String(normalized.seconds),
+    milliseconds: String(normalized.milliseconds),
   };
 }
 
@@ -235,7 +200,7 @@ function parseTimeOffsetDraftField(
       error: {
         field,
         code: "outOfRange",
-        message: `${fieldLabels[field]} must be ${range.min}-${range.max}.`,
+        message: `${fieldLabels[field]} must be between ${range.min} and ${range.max}.`,
       },
     };
   }

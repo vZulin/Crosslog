@@ -44,7 +44,9 @@ describe("Desktop time offset popover", () => {
     await setInputValue(appOffsetMinutes, "60");
     await setInputValue(await appPane.$(byTestId(redesignedShellTestIds.timeOffsetSeconds)), "60");
     await setInputValue(await appPane.$(byTestId(redesignedShellTestIds.timeOffsetMilliseconds)), "1000");
-    await expect(await appOffsetPopover.$('[role="alert"]')).toHaveText(expect.stringContaining("Hours must be 0-23"));
+    await expect(await appOffsetPopover.$('[role="alert"]')).toHaveText(
+      expect.stringContaining("Hours must be between -23 and 23"),
+    );
     expect(await appPane.$(byTestId(redesignedShellTestIds.timeOffsetHours)).getAttribute("aria-invalid")).toBe("true");
     expect(await appOffsetMinutes.getAttribute("aria-invalid")).toBe("true");
     expect(await appPane.$(byTestId(redesignedShellTestIds.timeOffsetSeconds)).getAttribute("aria-invalid")).toBe("true");

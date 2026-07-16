@@ -34,23 +34,23 @@ describe("time offset", () => {
     expect(applyTimeOffset(timestamp, offset).toISOString()).toBe("2026-06-16T10:30:15.250Z");
   });
 
-  it("accepts documented draft boundaries before apply", () => {
+  it("accepts signed draft boundaries before apply", () => {
     expect(
       validateTimeOffsetDraft({
-        days: "999999",
-        hours: "23",
-        minutes: "59",
-        seconds: "59",
-        milliseconds: "999",
+        days: "-999999",
+        hours: "-23",
+        minutes: "-59",
+        seconds: "-59",
+        milliseconds: "-999",
       }),
     ).toEqual({
       valid: true,
       offset: {
-        days: 999999,
-        hours: 23,
-        minutes: 59,
-        seconds: 59,
-        milliseconds: 999,
+        days: -999999,
+        hours: -23,
+        minutes: -59,
+        seconds: -59,
+        milliseconds: -999,
       },
       errors: [],
     });
@@ -79,19 +79,19 @@ describe("time offset", () => {
   it("rejects non-whole and out-of-range draft fields before normalization", () => {
     const result = validateTimeOffsetDraft({
       days: "1.5",
-      hours: "24",
-      minutes: "60",
-      seconds: "-1",
+      hours: "-24",
+      minutes: "-60",
+      seconds: "60",
       milliseconds: "1000",
     });
 
     expect(result.valid).toBe(false);
     expect(result.errors).toEqual([
       { field: "days", code: "notWholeNumber", message: "Days must be a whole number." },
-      { field: "hours", code: "outOfRange", message: "Hours must be 0-23." },
-      { field: "minutes", code: "outOfRange", message: "Minutes must be 0-59." },
-      { field: "seconds", code: "outOfRange", message: "Seconds must be 0-59." },
-      { field: "milliseconds", code: "outOfRange", message: "Milliseconds must be 0-999." },
+      { field: "hours", code: "outOfRange", message: "Hours must be between -23 and 23." },
+      { field: "minutes", code: "outOfRange", message: "Minutes must be between -59 and 59." },
+      { field: "seconds", code: "outOfRange", message: "Seconds must be between -59 and 59." },
+      { field: "milliseconds", code: "outOfRange", message: "Milliseconds must be between -999 and 999." },
     ]);
   });
 
@@ -117,19 +117,19 @@ describe("time offset", () => {
     });
   });
 
-  it("creates field-bound drafts for negative offsets", () => {
+  it("creates signed drafts for negative offsets", () => {
     expect(
       createTimeOffsetDraft({
         days: 0,
         hours: 0,
-        minutes: -1,
+        minutes: -59,
         seconds: 0,
         milliseconds: 0,
       }),
     ).toEqual({
-      days: "-1",
-      hours: "23",
-      minutes: "59",
+      days: "0",
+      hours: "0",
+      minutes: "-59",
       seconds: "0",
       milliseconds: "0",
     });

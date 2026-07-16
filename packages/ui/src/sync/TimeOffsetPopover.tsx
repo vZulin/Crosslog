@@ -94,7 +94,7 @@ export function TimeOffsetPopover({ title, value, returnFocusRef, onApply, onClo
                 aria-invalid={errorsByField[field] ? true : undefined}
                 aria-label={`${label} offset for ${title}`}
                 data-testid={testId}
-                inputMode="numeric"
+                inputMode="text"
                 onChange={(event) => updateDraft(field, event.currentTarget.value)}
                 ref={index === 0 ? firstInputRef : undefined}
                 type="text"

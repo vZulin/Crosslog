@@ -55,6 +55,31 @@ describe("redesigned time offset popover", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
+  it("applies a negative minute offset", () => {
+    const onApply = vi.fn();
+    const { getByTestId } = render(
+      <TimeOffsetPopover
+        title="app.log"
+        value={{ days: 0, hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }}
+        onApply={onApply}
+        onClose={vi.fn()}
+      />,
+    );
+
+    fireEvent.change(getByTestId(redesignedShellTestIds.timeOffsetMinutes), {
+      target: { value: "-59" },
+    });
+    fireEvent.click(getByTestId(redesignedShellTestIds.timeOffsetApply));
+
+    expect(onApply).toHaveBeenCalledWith({
+      days: 0,
+      hours: 0,
+      minutes: -59,
+      seconds: 0,
+      milliseconds: 0,
+    });
+  });
+
   it("closes on Escape and returns focus to the invoking offset tag", () => {
     const onClose = vi.fn();
     const { getByRole, getByTestId } = render(<TimeOffsetFocusHarness onClose={onClose} />);
@@ -94,7 +119,7 @@ describe("redesigned time offset popover", () => {
       target: { value: "1000" },
     });
 
-    expect(within(popover).getByRole("alert").textContent).toContain("Hours must be 0-23");
+    expect(within(popover).getByRole("alert").textContent).toContain("Hours must be between -23 and 23");
     expect(getByTestId(redesignedShellTestIds.timeOffsetHours).getAttribute("aria-invalid")).toBe("true");
     expect(getByTestId(redesignedShellTestIds.timeOffsetMinutes).getAttribute("aria-invalid")).toBe("true");
     expect(getByTestId(redesignedShellTestIds.timeOffsetSeconds).getAttribute("aria-invalid")).toBe("true");
