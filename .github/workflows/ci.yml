@@ -239,7 +239,7 @@ jobs:
 
   windows-desktop-ui-app:
     name: Windows Desktop UI app
-    runs-on: windows-latest
+    runs-on: windows-2022
     timeout-minutes: 25
 
     steps:
@@ -307,7 +307,7 @@ jobs:
 
   windows-desktop-ui-tests:
     name: UI/E2E tests (${{ matrix.label }})
-    runs-on: windows-latest
+    runs-on: windows-2022
     needs: windows-desktop-ui-app
     timeout-minutes: 25
     strategy:
