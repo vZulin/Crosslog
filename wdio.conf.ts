@@ -64,7 +64,7 @@ export const config = {
   waitforTimeout: 10_000,
   // A listening tauri-driver does not prove that its WebView session can start.
   // The outer harness restarts the entire driver tree after this bounded Windows attempt.
-  connectionRetryTimeout: isWindows ? 30_000 : 120_000,
+  connectionRetryTimeout: isWindows ? 90_000 : 120_000,
   connectionRetryCount: isWindows ? 0 : 3,
   mochaOpts: {
     ui: "bdd",
